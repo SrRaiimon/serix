@@ -1,0 +1,460 @@
+import { ArrowLeftRight, ClipboardList, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
+import { useState } from 'react'
+import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import type { Exercise } from '../lib/catalog'
+import { clock, day, relative, rest, restOptions, uid } from '../lib/format'
+import { equipmentProfiles, generate, goals, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { muscleLabel } from '../lib/labels'
+import { back, navigate } from '../lib/router'
+import { lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, type AppData, type Routine } from '../lib/store'
+import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
+import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
+import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
+import { startEmpty, startRoutine } from '../lib/workout'
+import { AlternativesSheet } from './Alternatives'
+import { ExercisePicker, ExerciseSheet } from './Exercises'
+
+/** Comparte rutinas por enlace (hoja del sistema en el móvil; si no hay, copia al portapapeles). */
+async function sharePlan(routines: Routine[], title: string, programName: string | undefined, showToast: (t: string) => void) {
+  try {
+    const result = await shareLink(title, planLink(await encodePlan(routines, programName)))
+    if (result === 'copied') showToast('Enlace copiado: pégalo en WhatsApp')
+  } catch {
+    showToast('No se pudo compartir')
+  }
+}
+
+const timeTargets = [15, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1200, 1800]
+
+export function muscleSummary(r: Routine) {
+  return [...new Set(r.exercises.map((e) => e.muscle))].slice(0, 4).map(muscleLabel).join(', ')
+}
+
+export function RoutinesScreen() {
+  const data = useData()
+  const [showGenerator, setShowGenerator] = useState(false)
+  const [menu, setMenu] = useState(false)
+  const [editing, setEditing] = useState<string>()
+  const [programMenu, setProgramMenu] = useState<string>()
+  const [toast, showToast] = useToast()
+  const active = data.settings.activeProgram
+
+  const importFromLink = () => {
+    const text = prompt('Pega el enlace de la rutina que te han compartido:')
+    if (!text) return
+    const code = extractCode(text)
+    if (!code) return showToast('Eso no parece un enlace de rutina')
+    navigate('import', code)
+  }
+
+  const groups = new Map<string, Routine[]>()
+  for (const r of [...data.routines].sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)) {
+    const key = r.programName ?? ''
+    groups.set(key, [...(groups.get(key) ?? []), r])
+  }
+  const keys = [...groups.keys()].sort((a, b) => (a === active ? -1 : b === active ? 1 : a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)))
+
+  const createRoutine = () => {
+    const id = uid()
+    update((d) => {
+      d.routines.push({ id, name: 'Nueva rutina', notes: '', order: d.routines.length, createdAt: Date.now(), exercises: [] })
+    })
+    setEditing(id)
+  }
+
+  return (
+    <div className="screen">
+      <LargeTitle title="Rutinas" actions={<button className="icon-btn" onClick={() => setMenu(true)} aria-label="Nueva"><Plus size={22} /></button>} />
+      {data.routines.length === 0 ? (
+        <Empty icon={ClipboardList} title="Aún no tienes rutinas"
+          message="Genera un programa según tu objetivo o crea tu propia rutina desde cero."
+          action={<button className="btn primary" onClick={() => setShowGenerator(true)}><WandSparkles size={19} /> Generar programa</button>} />
+      ) : (
+        keys.map((key) => (
+          <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="list-header">
+              <span className="grow clamp-1">{key || 'Mis rutinas'}</span>
+              {key && key === active && <span className="tag accent">ACTIVO</span>}
+              {key && <button className="nav-btn" style={{ padding: 0, minHeight: 0 }} onClick={() => setProgramMenu(key)} aria-label="Opciones del programa"><Ellipsis size={20} /></button>}
+            </div>
+            <div className="list">
+              {groups.get(key)!.map((r) => <RoutineRow key={r.id} routine={r} data={data} />)}
+            </div>
+          </div>
+        ))
+      )}
+
+      {menu && (
+        <ActionSheet onClose={() => setMenu(false)} options={[
+          { label: 'Generar programa', onSelect: () => setShowGenerator(true) },
+          { label: 'Nueva rutina vacía', onSelect: createRoutine },
+          { label: 'Importar desde enlace', onSelect: importFromLink },
+          { label: 'Entrenamiento libre', onSelect: startEmpty },
+        ]} />
+      )}
+      {programMenu && (
+        <ActionSheet title={programMenu} onClose={() => setProgramMenu(undefined)} options={[
+          { label: 'Compartir programa', onSelect: () => void sharePlan(groups.get(programMenu) ?? [], programMenu, programMenu, showToast) },
+          ...(programMenu !== active ? [{ label: 'Marcar como activo', onSelect: () => updateSettings({ activeProgram: programMenu }) }] : []),
+          {
+            label: 'Eliminar programa', destructive: true, onSelect: () => {
+              if (!confirm('Se borrarán todas sus rutinas. Tu historial se conserva. ¿Continuar?')) return
+              update((d) => {
+                d.routines = d.routines.filter((r) => r.programName !== programMenu)
+                if (d.settings.activeProgram === programMenu) d.settings.activeProgram = ''
+              })
+            },
+          },
+        ]} />
+      )}
+      {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
+      {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
+      {toast}
+    </div>
+  )
+}
+
+function RoutineRow({ routine, data }: { routine: Routine; data: AppData }) {
+  const last = lastPerformed(data, routine.id)
+  return (
+    <button className="list-row" onClick={() => navigate('routines', routine.id)}>
+      <span className="grow">
+        <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
+        <span className="small muted clamp-1">{routine.exercises.length ? muscleSummary(routine) : 'Sin ejercicios'}</span>
+        <span className="small muted row" style={{ gap: 12, marginTop: 4 }}>
+          <span className="row" style={{ gap: 4 }}><Dumbbell size={13} /> {routine.exercises.length}</span>
+          <span className="row" style={{ gap: 4 }}><Layers size={13} /> {routineSets(routine)} series</span>
+          <span className="row" style={{ gap: 4 }}><Clock size={13} /> ~{routineMinutes(routine)} min</span>
+          {last && <span style={{ marginLeft: 'auto' }}>{relative(last)}</span>}
+        </span>
+      </span>
+    </button>
+  )
+}
+
+export function RoutineDetailScreen({ id }: { id: string }) {
+  const data = useData()
+  const routine = data.routines.find((r) => r.id === id)
+  const [editing, setEditing] = useState(false)
+  const [menu, setMenu] = useState(false)
+  const [detail, setDetail] = useState<string>()
+  const [toast, showToast] = useToast()
+  if (!routine) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={ClipboardList} title="Rutina eliminada" message="" /></div></>
+  const last = lastPerformed(data, routine.id)
+  const detailSlots = groupSlots(routine.exercises)
+
+  const duplicate = () => {
+    update((d) => {
+      d.routines.push({ ...structuredClone(routine), id: uid(), name: `${routine.name} (copia)`, createdAt: Date.now(), order: routine.order + 1 })
+    })
+  }
+
+  return (
+    <>
+      <NavBar showBack title={routine.name} right={<button className="icon-btn" onClick={() => setMenu(true)} aria-label="Opciones"><Ellipsis size={20} /></button>} />
+      <div className="screen with-nav">
+        <div className="grid-3">
+          <Tile icon={Dumbbell} value={routine.exercises.length} label="Ejercicios" />
+          <Tile icon={Layers} value={routineSets(routine)} label="Series" />
+          <Tile icon={Clock} value={`~${routineMinutes(routine)}′`} label="Duración" />
+        </div>
+        {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
+        <div className="list-header">Ejercicios</div>
+        <div className="list">
+          {routine.exercises.length === 0 && (
+            <button className="list-row accent" onClick={() => setEditing(true)}><Plus size={20} /> Añadir ejercicios</button>
+          )}
+          {routine.exercises.map((e, i) => {
+            const slot = detailSlots[i]
+            return (
+              <button key={i} className="list-row" onClick={() => setDetail(e.exerciseId)}
+                style={slot.letter ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : undefined}>
+                <Thumb exerciseId={e.exerciseId} size={50} />
+                <span className="grow">
+                  <span className="bold clamp-2" style={{ fontSize: 15 }}>
+                    {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
+                    {e.name}
+                  </span>
+                  <span className="small muted">
+                    {targetText(e)} · {slot.letter && !slot.last ? 'sin descanso' : `descanso ${rest(e.rest)}`}
+                  </span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        {last && <p className="small muted" style={{ margin: 0 }}>Último entrenamiento: {day(last)}</p>}
+        <div className="bottom-action">
+          <button className="btn primary block" disabled={!routine.exercises.length} onClick={() => startRoutine(routine)}>
+            <Play size={19} fill="currentColor" /> Empezar entrenamiento
+          </button>
+        </div>
+      </div>
+      {menu && (
+        <ActionSheet onClose={() => setMenu(false)} options={[
+          { label: 'Editar', onSelect: () => setEditing(true) },
+          { label: 'Compartir rutina', onSelect: () => void sharePlan([routine], routine.name, undefined, showToast) },
+          { label: 'Duplicar', onSelect: duplicate },
+          {
+            label: 'Eliminar', destructive: true, onSelect: () => {
+              update((d) => { d.routines = d.routines.filter((r) => r.id !== id) })
+              back()
+            },
+          },
+        ]} />
+      )}
+      {editing && <RoutineEditor id={routine.id} onClose={() => setEditing(false)} />}
+      {detail && <ExerciseSheet exerciseId={detail} onClose={() => setDetail(undefined)} />}
+      {toast}
+    </>
+  )
+}
+
+export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void }) {
+  const data = useData()
+  const routine = data.routines.find((r) => r.id === id)
+  const [picker, setPicker] = useState(false)
+  const [replacing, setReplacing] = useState<number>()
+  if (!routine) return null
+
+  const edit = (fn: (r: Routine) => void) => update((d) => {
+    const r = d.routines.find((x) => x.id === id)
+    if (r) fn(r)
+  })
+  const planned = (e: Exercise, base?: { sets: number; repsMin: number; repsMax: number; rest: number }) => {
+    const tracking = defaultTracking(e)
+    return {
+      exerciseId: e.id, name: e.name, muscle: e.muscle,
+      sets: base?.sets ?? 3, repsMin: base?.repsMin ?? 8, repsMax: base?.repsMax ?? 12, rest: base?.rest ?? data.settings.defaultRest,
+      tracking, ...(tracking === 'time' ? { targetSeconds: defaultTargetSeconds } : {}),
+    }
+  }
+  const add = (list: Exercise[]) => edit((r) => {
+    r.exercises.push(...list.map((e) => planned(e)))
+  })
+  const setTracking = (i: number, t: Tracking) => edit((r) => {
+    r.exercises[i].tracking = t
+    if (t === 'time') r.exercises[i].targetSeconds ??= defaultTargetSeconds
+  })
+  const move = (i: number, dir: -1 | 1) => edit((r) => {
+    const j = i + dir
+    ;[r.exercises[i], r.exercises[j]] = [r.exercises[j], r.exercises[i]]
+    normalizeGroups(r.exercises)
+  })
+  const slots = groupSlots(routine.exercises)
+
+  return (
+    <Sheet title="Editar rutina" onClose={onClose}
+      right={<button className="nav-btn bold" onClick={() => { if (!routine.name.trim()) edit((r) => { r.name = 'Rutina' }); onClose() }}>Listo</button>}>
+      <div className="list">
+        <div className="list-row"><input className="grow" style={{ fontSize: 17 }} value={routine.name} placeholder="Nombre de la rutina" onChange={(e) => edit((r) => { r.name = e.target.value })} /></div>
+        <div className="list-row"><textarea className="grow" rows={2} value={routine.notes} placeholder="Notas (opcional)" onChange={(e) => edit((r) => { r.notes = e.target.value })} /></div>
+      </div>
+      <div className="list-header">Ejercicios</div>
+      <div className="list">
+        {routine.exercises.map((e, i) => (
+          <div key={i} className="list-row" style={{
+            flexDirection: 'column', alignItems: 'stretch', gap: 10,
+            ...(slots[i].letter ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : {}),
+          }}>
+            {slots[i].letter && slots[i].first && (
+              <span className="group-head"><Link2 size={15} /> {groupKind(slots[i].size)} {slots[i].letter}: sin descanso entre ejercicios</span>
+            )}
+            <div className="row">
+              <Thumb exerciseId={e.exerciseId} size={40} />
+              <span className="grow bold clamp-2" style={{ fontSize: 15 }}>
+                {slots[i].letter && <span className="group-badge">{slots[i].letter}{slots[i].position}</span>}
+                {e.name}
+              </span>
+            </div>
+            <div className="row" style={{ alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <Stepper label="Series" value={e.sets} min={1} max={10} onChange={(v) => edit((r) => { r.exercises[i].sets = v })} />
+              {trackingOf(e) === 'weight_reps' && (
+                <>
+                  <Stepper label="Reps mín." value={e.repsMin} min={1} max={50} onChange={(v) => edit((r) => { r.exercises[i].repsMin = v; if (r.exercises[i].repsMax < v) r.exercises[i].repsMax = v })} />
+                  <Stepper label="Reps máx." value={e.repsMax} min={1} max={50} onChange={(v) => edit((r) => { r.exercises[i].repsMax = v; if (r.exercises[i].repsMin > v) r.exercises[i].repsMin = v })} />
+                </>
+              )}
+              {trackingOf(e) === 'time' && (
+                <div className="stepper">
+                  <span className="tiny muted">Tiempo</span>
+                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.targetSeconds ?? defaultTargetSeconds}
+                    onChange={(ev) => edit((r) => { r.exercises[i].targetSeconds = Number(ev.target.value) })}>
+                    {timeTargets.map((o) => <option key={o} value={o}>{clock(o)}</option>)}
+                  </select>
+                </div>
+              )}
+              {slots[i].letter && !slots[i].last ? (
+                <div className="stepper">
+                  <span className="tiny muted">Descanso</span>
+                  <span className="small muted" style={{ padding: '6px 0' }}>Ninguno</span>
+                </div>
+              ) : (
+                <div className="stepper">
+                  <span className="tiny muted">{slots[i].letter ? 'Tras la ronda' : 'Descanso'}</span>
+                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.rest} onChange={(ev) => edit((r) => { r.exercises[i].rest = Number(ev.target.value) })}>
+                    {restOptions.map((o) => <option key={o} value={o}>{rest(o)}</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="stepper">
+                <span className="tiny muted">Registro</span>
+                <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={trackingOf(e)}
+                  onChange={(ev) => setTracking(i, ev.target.value as Tracking)}>
+                  {trackingOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="row" style={{ justifyContent: 'flex-end', gap: 4 }}>
+              <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => setReplacing(i)} aria-label="Sustituir"><ArrowLeftRight size={17} /> Sustituir</button>
+              {i < routine.exercises.length - 1 && !(slots[i].letter && !slots[i].last) && (
+                <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => edit((r) => linkWithNext(r.exercises, i))} aria-label="Unir con el siguiente">
+                  <Link2 size={17} /> Unir
+                </button>
+              )}
+              {slots[i].letter && (
+                <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => edit((r) => unlink(r.exercises, i))} aria-label="Separar del grupo">
+                  <Unlink size={17} /> Separar
+                </button>
+              )}
+              <span className="grow" />
+              <button className="nav-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Subir">↑</button>
+              <button className="nav-btn" disabled={i === routine.exercises.length - 1} onClick={() => move(i, 1)} aria-label="Bajar">↓</button>
+              <button className="nav-btn" style={{ color: 'var(--red)' }} onClick={() => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) })} aria-label="Quitar"><Trash2 size={18} /></button>
+            </div>
+          </div>
+        ))}
+        <button className="list-row accent" onClick={() => setPicker(true)}><Plus size={20} /> Añadir ejercicios</button>
+      </div>
+      {picker && <ExercisePicker onDone={add} onClose={() => setPicker(false)} />}
+      {replacing !== undefined && routine.exercises[replacing] && (
+        <AlternativesSheet current={routine.exercises[replacing]} onClose={() => setReplacing(undefined)}
+          onPick={(picked) => edit((r) => { r.exercises[replacing] = { ...planned(picked, r.exercises[replacing]), groupId: r.exercises[replacing].groupId } })} />
+      )}
+    </Sheet>
+  )
+}
+
+export function saveProgram(program: GeneratedProgram) {
+  update((d) => {
+    program.days.forEach((dayPlan, index) => {
+      d.routines.push({
+        id: uid(),
+        name: dayPlan.name,
+        notes: program.summary,
+        programName: program.name,
+        order: index,
+        createdAt: Date.now(),
+        exercises: dayPlan.exercises.map((g) => {
+          const tracking = defaultTracking(g.exercise)
+          return {
+            exerciseId: g.exercise.id, name: g.exercise.name, muscle: g.exercise.muscle,
+            sets: g.sets, repsMin: g.repsMin, repsMax: g.repsMax, rest: g.rest, tracking,
+            ...(tracking === 'time' ? { targetSeconds: 60 } : {}),
+          }
+        }),
+      })
+    })
+    d.settings.activeProgram = program.name
+  })
+}
+
+export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; onChange: (c: GeneratorConfig) => void }) {
+  return (
+    <>
+      <div className="list-header">Objetivo</div>
+      <div className="list">
+        <label className="list-row">
+          <span className="grow">Objetivo</span>
+          <select className="select" value={config.goal} onChange={(e) => onChange({ ...config, goal: e.target.value as GeneratorConfig['goal'] })}>
+            {goals.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
+          </select>
+        </label>
+        <label className="list-row">
+          <span className="grow">Nivel</span>
+          <select className="select" value={config.level} onChange={(e) => onChange({ ...config, level: e.target.value as GeneratorConfig['level'] })}>
+            {levels.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="list-header">Disponibilidad</div>
+      <div className="card">
+        <span className="small muted">Días por semana</span>
+        <Segmented value={String(config.days)} options={[2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: String(n) }))} onChange={(v) => onChange({ ...config, days: Number(v) })} />
+        <span className="small muted">Minutos por sesión</span>
+        <Segmented value={String(config.minutes)} options={[30, 45, 60, 75, 90].map((n) => ({ value: String(n), label: String(n) }))} onChange={(v) => onChange({ ...config, minutes: Number(v) })} />
+      </div>
+      <div className="list-header">Material disponible</div>
+      <div className="list">
+        {equipmentProfiles.map((p) => (
+          <button key={p.id} className="list-row" onClick={() => onChange({ ...config, equipment: p.id })}>
+            <span className="grow">{p.label}</span>
+            {config.equipment === p.id && <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>}
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
+export function ProgramPreview({ program }: { program: GeneratedProgram }) {
+  return (
+    <>
+      <Card>
+        <strong style={{ fontSize: 19 }}>{program.name}</strong>
+        <span className="small muted">{program.summary}</span>
+      </Card>
+      {program.days.map((d) => (
+        <div key={d.name} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="list-header">{d.name}</div>
+          <div className="list">
+            {d.exercises.map((g) => (
+              <div key={g.exercise.id} className="list-row">
+                <Thumb exerciseId={g.exercise.id} size={44} />
+                <span className="grow">
+                  <span className="bold clamp-2" style={{ fontSize: 15 }}>{g.exercise.name}</span>
+                  <span className="small muted">{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })} · {rest(g.rest)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
+function GeneratorSheet({ onClose }: { onClose: () => void }) {
+  const catalog = useCatalog()
+  const { settings } = useData()
+  const [config, setConfig] = useState<GeneratorConfig>({
+    goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment,
+  })
+  const [program, setProgram] = useState<GeneratedProgram>()
+  const [variation, setVariation] = useState(0)
+
+  if (program) {
+    return (
+      <Sheet title="Vista previa" onClose={onClose}
+        left={<button className="nav-btn" onClick={() => setProgram(undefined)}>Atrás</button>}
+        right={<button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> Otra</button>}
+        footer={<button className="btn primary block" onClick={() => { saveProgram(program); onClose(); navigate('routines') }}>Guardar programa</button>}>
+        <ProgramPreview program={program} />
+      </Sheet>
+    )
+  }
+
+  return (
+    <Sheet title="Generar programa" onClose={onClose}
+      left={<button className="nav-btn" onClick={onClose}>Cerrar</button>}
+      footer={
+        <button className="btn primary block" onClick={() => {
+          updateSettings(config)
+          setVariation(0)
+          setProgram(generate(config, catalog, 0))
+        }}><WandSparkles size={19} /> Generar programa</button>
+      }>
+      <GeneratorForm config={config} onChange={setConfig} />
+    </Sheet>
+  )
+}

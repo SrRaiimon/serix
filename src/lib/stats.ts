@@ -1,0 +1,153 @@
+import { addDays, startOfWeek } from './format'
+import type { Session, SessionExercise, SetEntry } from './store'
+
+// Todas las funciones reciben sesiones terminadas.
+
+/** 1RM estimado con la fórmula de Epley. */
+export function e1rm(weight: number, reps: number): number {
+  if (reps <= 0 || weight <= 0) return 0
+  return reps === 1 ? weight : weight * (1 + reps / 30)
+}
+
+export const workingSets = (e: SessionExercise) => e.sets.filter((s) => s.done && !s.warmup)
+
+export const sessionVolume = (s: Session) =>
+  s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
+
+export const sessionSets = (s: Session) => s.exercises.reduce((t, e) => t + workingSets(e).length, 0)
+
+export const sessionReps = (s: Session) =>
+  s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.reps, 0), 0)
+
+export const sessionDuration = (s: Session) => (s.end ?? Date.now()) - s.start
+
+export interface PersonalRecord {
+  exerciseId: string
+  name: string
+  weight: number
+  reps: number
+  e1rm: number
+  date: number
+}
+
+export function records(sessions: Session[]): PersonalRecord[] {
+  const best = new Map<string, PersonalRecord>()
+  for (const s of sessions) {
+    for (const e of s.exercises) {
+      for (const set of workingSets(e)) {
+        if (set.weight <= 0 || set.reps <= 0) continue
+        const value = e1rm(set.weight, set.reps)
+        if (value > (best.get(e.exerciseId)?.e1rm ?? 0)) {
+          best.set(e.exerciseId, { exerciseId: e.exerciseId, name: e.name, weight: set.weight, reps: set.reps, e1rm: value, date: set.doneAt ?? s.start })
+        }
+      }
+    }
+  }
+  return [...best.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+}
+
+/** Récords batidos en `session` respecto a las sesiones anteriores. */
+export function newRecords(session: Session, history: Session[]): PersonalRecord[] {
+  const before = new Map(records(history.filter((s) => s.id !== session.id && s.start < session.start)).map((r) => [r.exerciseId, r.e1rm]))
+  return records([session]).filter((r) => {
+    const prev = before.get(r.exerciseId)
+    return prev !== undefined && r.e1rm > prev + 0.01
+  })
+}
+
+export interface WeekStat {
+  start: Date
+  volume: number
+  sessions: number
+  minutes: number
+}
+
+export function weekly(sessions: Session[], weeks: number): WeekStat[] {
+  const current = startOfWeek(Date.now())
+  const result: WeekStat[] = []
+  for (let i = weeks - 1; i >= 0; i--) {
+    const start = addDays(current, -7 * i)
+    const end = addDays(start, 7)
+    const inWeek = sessions.filter((s) => s.start >= start.getTime() && s.start < end.getTime())
+    result.push({
+      start,
+      volume: inWeek.reduce((t, s) => t + sessionVolume(s), 0),
+      sessions: inWeek.length,
+      minutes: inWeek.reduce((t, s) => t + sessionDuration(s) / 60000, 0),
+    })
+  }
+  return result
+}
+
+export function setsByMuscle(sessions: Session[], since: number): { muscle: string; sets: number }[] {
+  const counts = new Map<string, number>()
+  for (const s of sessions) {
+    if (s.start < since) continue
+    for (const e of s.exercises) counts.set(e.muscle, (counts.get(e.muscle) ?? 0) + workingSets(e).length)
+  }
+  return [...counts].filter(([, n]) => n > 0).map(([muscle, sets]) => ({ muscle, sets })).sort((a, b) => b.sets - a.sets)
+}
+
+/** Semanas seguidas con al menos un entrenamiento; la semana actual no rompe la racha. */
+export function streakWeeks(sessions: Session[]): number {
+  const weeks = new Set(sessions.map((s) => startOfWeek(s.start).getTime()))
+  let week = startOfWeek(Date.now())
+  if (!weeks.has(week.getTime())) week = addDays(week, -7)
+  let streak = 0
+  while (weeks.has(week.getTime())) {
+    streak++
+    week = addDays(week, -7)
+  }
+  return streak
+}
+
+export interface ExercisePoint {
+  date: number
+  e1rm: number
+  maxWeight: number
+  volume: number
+  /** Segundos de la serie más larga (ejercicios por tiempo o distancia). */
+  maxDuration: number
+  /** Kilómetros de la serie más larga. */
+  maxDistance: number
+}
+
+export function exerciseHistory(exerciseId: string, sessions: Session[]): ExercisePoint[] {
+  const points: ExercisePoint[] = []
+  for (const s of sessions) {
+    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(workingSets)
+    if (!sets.length) continue
+    points.push({
+      date: s.start,
+      e1rm: Math.max(...sets.map((x) => e1rm(x.weight, x.reps))),
+      maxWeight: Math.max(...sets.map((x) => x.weight)),
+      volume: sets.reduce((t, x) => t + x.weight * x.reps, 0),
+      maxDuration: Math.max(...sets.map((x) => x.duration ?? 0)),
+      maxDistance: Math.max(...sets.map((x) => x.distance ?? 0)),
+    })
+  }
+  return points.sort((a, b) => a.date - b.date)
+}
+
+/** Series de trabajo de la última vez que se hizo el ejercicio (`sessions` de más reciente a más antigua). */
+export function lastSets(exerciseId: string, sessions: Session[]): SetEntry[] {
+  for (const s of sessions) {
+    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(workingSets)
+    if (sets.length) return sets
+  }
+  return []
+}
+
+/**
+ * Sugerencia de subir peso a partir de la última vez:
+ * - 'reps': se llegó al máximo de repeticiones en todas las series sin ir al límite (RPE ≤ 9 o sin RPE).
+ * - 'easy': todas las series tenían RPE y ninguna pasó de 7, aunque no se llegara al máximo.
+ */
+export function progressionHint(last: SetEntry[], repsMax: number): 'reps' | 'easy' | null {
+  if (!last.length || !last.every((s) => s.weight > 0)) return null
+  const rpes = last.map((s) => s.rpe).filter((r): r is number => r !== undefined)
+  const hardest = rpes.length ? Math.max(...rpes) : undefined
+  if (repsMax > 0 && last.every((s) => s.reps >= repsMax) && (hardest === undefined || hardest <= 9)) return 'reps'
+  if (rpes.length === last.length && hardest !== undefined && hardest <= 7) return 'easy'
+  return null
+}
