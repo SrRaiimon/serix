@@ -1,4 +1,4 @@
-import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, WandSparkles } from 'lucide-react'
+import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -8,6 +8,7 @@ import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
+import { testBeep } from '../lib/timer'
 import { finishedSessions, replaceData, resetData, update, updateSettings, useData, type Measurement } from '../lib/store'
 import { SessionRow } from './Session'
 
@@ -103,9 +104,13 @@ export function ProfileScreen() {
           </select>
         </label>
         <label className="list-row">
-          <span className="grow">Pitido al terminar el descanso</span>
+          <span className="grow">
+            Pitido al terminar el descanso
+            <span className="small muted" style={{ display: 'block' }}>En iPhone no suena con el modo silencio activado</span>
+          </span>
           <input type="checkbox" className="toggle" checked={settings.restSound} onChange={(e) => updateSettings({ restSound: e.target.checked })} />
         </label>
+        {settings.restSound && <Row icon={Volume2} label="Probar pitido" onClick={testBeep} chevron={false} />}
         <label className="list-row">
           <span className="grow">
             Anotar esfuerzo (RPE)

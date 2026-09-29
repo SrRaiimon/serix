@@ -1451,6 +1451,19 @@ html.scroll-locked body {
   background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
 }
 
+.rest-done {
+  border: 0;
+  width: 100%;
+  font: inherit;
+  color: #fff;
+  background: var(--accent);
+  animation: rest-done-pulse 1s ease-in-out 3;
+}
+
+@keyframes rest-done-pulse {
+  50% { filter: brightness(1.18); }
+}
+
 .share-preview {
   display: block;
   width: 62%;

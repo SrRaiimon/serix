@@ -6,7 +6,7 @@ import { clock, editable, fromKg, increment, num, parseDecimal, rest, restOption
 import { muscleLabel } from '../lib/labels'
 import { lastSets, progressionHint } from '../lib/stats'
 import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
-import { addRest, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
+import { addRest, dismissRestDone, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { addExercises, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
@@ -467,6 +467,20 @@ function DurationInput({ seconds, placeholder, invalid, onChange }: {
 function RestBar() {
   const timer = useRestTimer()
   const now = useTick(250)
+  // Aviso visible unos segundos al terminar: útil si el móvil está en silencio (el iPhone, además,
+  // no vibra desde una web).
+  if (!timer.endAt && timer.finishedAt && now - timer.finishedAt < 5000) {
+    return (
+      <Overlay>
+        <button className="rest-bar rest-done" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }} onClick={dismissRestDone}>
+          <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Timer size={22} />
+            <strong>¡Descanso terminado! A por la siguiente serie</strong>
+          </div>
+        </button>
+      </Overlay>
+    )
+  }
   if (!timer.endAt) return null
   const remaining = Math.max(0, (timer.endAt - now) / 1000)
   const progress = timer.total > 0 ? remaining / (timer.total / 1000) : 0
