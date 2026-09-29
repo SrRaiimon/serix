@@ -203,10 +203,13 @@ export function saveAsRoutine(session: Session) {
 
 let wakeLock: WakeLockSentinel | undefined
 
-/** Mantiene la pantalla encendida durante el entrenamiento (si el navegador lo permite). */
+/**
+ * Mantiene la pantalla encendida durante el entrenamiento (si el navegador lo permite). El sistema
+ * lo retira al cambiar de app, así que al volver hay que pedirlo otra vez aunque ya se tuviera.
+ */
 export async function keepScreenOn(on: boolean) {
   try {
-    if (on && !wakeLock) wakeLock = await navigator.wakeLock?.request('screen')
+    if (on && (!wakeLock || wakeLock.released)) wakeLock = await navigator.wakeLock?.request('screen')
     if (!on && wakeLock) {
       await wakeLock.release()
       wakeLock = undefined
