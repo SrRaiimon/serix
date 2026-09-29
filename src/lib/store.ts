@@ -102,6 +102,9 @@ export interface Settings {
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */
   catalogVersion?: number
+  /** Fecha de la última copia exportada y hasta cuándo no recordarla. */
+  lastBackupAt?: number
+  backupSnoozeUntil?: number
 }
 
 export interface AppData {

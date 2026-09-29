@@ -98,6 +98,8 @@ function settings(v: unknown): Settings {
     favorites: list(s.favorites, (x) => (typeof x === 'string' ? x.slice(0, 200) : undefined), 2000),
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
     catalogVersion: optNum(s.catalogVersion, 1, 99),
+    lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
+    backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
   }
 }
 

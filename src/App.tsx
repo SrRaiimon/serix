@@ -4,6 +4,7 @@ import { FigureGallery } from './components/MoveFigure'
 import { CatalogContext, useTick } from './components/ui'
 import { loadCatalog, type Catalog } from './lib/catalog'
 import { migrateCatalog } from './lib/migrate'
+import { autoProtect } from './lib/protect'
 import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
 import { activeSession, loadData, useData } from './lib/store'
@@ -28,6 +29,7 @@ export default function App() {
       .then(([c]) => {
         migrateCatalog(c)
         setCatalog(c)
+        void autoProtect()
       })
       .catch((e: unknown) => setError(`No se pudo cargar la app: ${String(e)}`))
   }, [])

@@ -1,11 +1,12 @@
 import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Trophy, Weight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
-import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile } from '../components/ui'
+import { MuscleHeatMap } from '../components/MuscleMap'
+import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } from '../components/ui'
 import { duration, fromKg, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, records, sessionDuration, setsByMuscle, weekly } from '../lib/stats'
+import { exerciseHistory, muscleLoad, records, sessionDuration, setsByMuscle, weekly } from '../lib/stats'
 import { finishedSessions, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -45,6 +46,34 @@ export function ProgressScreen() {
   )
 }
 
+// Grupos principales que se revisan en el mapa de calor semanal.
+const MAIN_GROUPS: [string, string[]][] = [
+  ['Pecho', ['pectorals']], ['Espalda', ['lats', 'upper-back']], ['Hombros', ['delts']], ['Bíceps', ['biceps']],
+  ['Tríceps', ['triceps']], ['Cuádriceps', ['quads']], ['Isquiotibiales', ['hamstrings']], ['Glúteos', ['glutes']], ['Abdomen', ['abs']],
+]
+
+function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
+  const catalog = useCatalog()
+  const load = useMemo(
+    () => muscleLoad(sessions, Date.now() - 7 * 86400000, (id) => catalog.get(id)?.secondaryMuscles ?? []),
+    [sessions, catalog],
+  )
+  const trained = Object.values(load).some((v) => v > 0)
+  const missing = MAIN_GROUPS.filter(([, keys]) => keys.every((k) => (load[k] ?? 0) < 1)).map(([label]) => label)
+  return (
+    <Card title="Músculos esta semana" icon={PersonStanding}>
+      <MuscleHeatMap load={load} />
+      <span className="small muted">
+        {!trained
+          ? 'No has entrenado en los últimos 7 días.'
+          : missing.length
+            ? `Sin trabajar en los últimos 7 días: ${missing.join(', ')}.`
+            : 'Has trabajado todos los grupos principales en los últimos 7 días.'}
+      </span>
+    </Card>
+  )
+}
+
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const weeks = weekly(sessions, 12)
   const thisWeek = weeks[weeks.length - 1]
@@ -58,6 +87,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Dumbbell} value={sessions.length} label="Entrenos totales" />
         <Tile icon={Clock} value={duration(totalTime)} label="Tiempo total" />
       </div>
+      <WeeklyMuscles sessions={sessions} />
       <Card title="Volumen semanal" icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
         <span className="small muted">Últimas 12 semanas · {unit} levantados (peso × repeticiones)</span>

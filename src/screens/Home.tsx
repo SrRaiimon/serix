@@ -1,4 +1,4 @@
-import { Calendar, ClipboardList, Clock, Dumbbell, Flame, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick } from '../components/ui'
 import { addDays, clock, count, day, startOfDay, startOfWeek, volume } from '../lib/format'
@@ -7,6 +7,7 @@ import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
 import { activeSession, finishedSessions, lastPerformed, routineMinutes, useData, type AppData, type Routine, type Session } from '../lib/store'
 import { openWorkout, startEmpty, startRoutine } from '../lib/workout'
+import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from './Routines'
 import { SessionRow } from './Session'
 
@@ -48,6 +49,8 @@ export function HomeScreen() {
       </header>
 
       <InstallBanner />
+
+      {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
       {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} /> : (
         <Card title="Crea tu primer programa" icon={WandSparkles}>
@@ -160,5 +163,21 @@ function InstallBanner() {
       {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>Instalar</button>}
       <button onClick={dismiss} aria-label="Cerrar" style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
+  )
+}
+
+/** Recordatorio de copia: los datos solo están en este móvil. */
+function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {
+  return (
+    <Card title="Guarda una copia de tus datos" icon={Download}>
+      <span className="muted small">
+        Tus entrenamientos solo están en este móvil{lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}.
+        Exporta una copia y guárdala (en la nube, en tu correo…) por si cambias de móvil o se borra la app.
+      </span>
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn primary grow" onClick={exportBackup}>Exportar copia</button>
+        <button className="btn secondary" onClick={snoozeBackup}>Más tarde</button>
+      </div>
+    </Card>
   )
 }

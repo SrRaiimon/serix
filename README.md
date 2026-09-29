@@ -17,8 +17,11 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   sugerencia de progresión y **sustituir ejercicio** por alternativas equivalentes.
 - **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
   (frente y espalda). Los más habituales incluyen **figura animada** del movimiento e instrucciones.
-- **Progreso:** volumen y entrenamientos por semana, series por músculo, historial, récords y
+- **Progreso:** mapa de calor de los músculos trabajados en los últimos 7 días (y aviso de los
+  grupos sin tocar), volumen y entrenamientos por semana, series por músculo, historial, récords y
   evolución por ejercicio (1RM estimado, peso máximo, volumen).
+- **Compartir:** al terminar, una tarjeta-imagen del entrenamiento (músculos, cifras y récords)
+  generada en el propio móvil, lista para WhatsApp o Instagram; también como texto.
 - **Perfil:** medidas corporales, calendario, calculadoras de 1RM y de discos, kg/lb, copia de
   seguridad (exportar/importar) y la pantalla **Legal y privacidad**.
 - Se **actualiza sola**: al publicar una versión nueva, la app la carga en la siguiente apertura
@@ -37,6 +40,10 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   campos conocidos, tipos comprobados y valores dentro de rangos razonables; lo demás se descarta.
 - La app no pide permisos del sistema (ni ubicación, ni cámara, ni notificaciones). Durante un
   entrenamiento vibra y mantiene la pantalla encendida, dos funciones que no requieren autorización.
+- **Protección de los datos:** instalada, la app pide al navegador almacenamiento persistente para
+  que no borre los datos al liberar espacio (Chrome y Safari lo conceden sin preguntar). En el
+  navegador normal solo se pide si el usuario pulsa «Protección contra borrado» en Perfil. Además,
+  Inicio recuerda exportar una copia cada 30 días (a partir de 3 entrenamientos).
 
 ## Aviso legal
 

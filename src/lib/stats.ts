@@ -88,6 +88,24 @@ export function setsByMuscle(sessions: Session[], since: number): { muscle: stri
   return [...counts].filter(([, n]) => n > 0).map(([muscle, sets]) => ({ muscle, sets })).sort((a, b) => b.sets - a.sets)
 }
 
+/**
+ * Series por músculo desde una fecha: cada serie efectiva cuenta 1 para el músculo principal y 0,5
+ * para cada secundario (criterio habitual de «series fraccionadas»).
+ */
+export function muscleLoad(sessions: Session[], since: number, secondaryOf: (exerciseId: string) => string[]): Record<string, number> {
+  const load: Record<string, number> = {}
+  for (const s of sessions) {
+    if (s.start < since) continue
+    for (const e of s.exercises) {
+      const sets = workingSets(e).length
+      if (!sets) continue
+      load[e.muscle] = (load[e.muscle] ?? 0) + sets
+      for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load[m] = (load[m] ?? 0) + sets / 2
+    }
+  }
+  return load
+}
+
 /** Semanas seguidas con al menos un entrenamiento; la semana actual no rompe la racha. */
 export function streakWeeks(sessions: Session[]): number {
   const weeks = new Set(sessions.map((s) => startOfWeek(s.start).getTime()))

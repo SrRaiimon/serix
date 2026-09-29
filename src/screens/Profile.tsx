@@ -1,13 +1,14 @@
-import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, RotateCcw, Scale, ShieldCheck, Trash2, Upload, WandSparkles } from 'lucide-react'
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, WandSparkles } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
-import { count, day, duration, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
+import { count, day, duration, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { migrateCatalog } from '../lib/migrate'
-import { finishedSessions, getData, replaceData, resetData, update, updateSettings, useData, type Measurement } from '../lib/store'
+import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
+import { finishedSessions, replaceData, resetData, update, updateSettings, useData, type Measurement } from '../lib/store'
 import { SessionRow } from './Session'
 
 export function ProfileScreen() {
@@ -21,14 +22,12 @@ export function ProfileScreen() {
   const lastWeight = [...data.measurements].sort((a, b) => b.date - a.date).find((m) => m.weight !== undefined)?.weight
   const initials = settings.name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || 'Tú'
 
-  const exportData = () => {
-    const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `serix-copia-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+  const [storage, setStorage] = useState<StorageState>()
+  useEffect(() => { void storageState().then(setStorage) }, [])
+  const protect = async () => {
+    const ok = await requestProtection()
+    setStorage(await storageState())
+    showToast(ok ? 'Datos protegidos' : 'El navegador no lo ha permitido; instala la app o exporta copias')
   }
 
   const importData = async (file: File) => {
@@ -118,12 +117,16 @@ export function ProfileScreen() {
 
       <div className="list-header">Tus datos</div>
       <div className="list">
-        <Row icon={Download} label="Exportar copia de seguridad" onClick={exportData} chevron={false} />
+        <Row icon={Download} label="Exportar copia de seguridad" detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : 'Nunca'} onClick={exportBackup} chevron={false} />
         <Row icon={Upload} label="Importar copia de seguridad" onClick={() => fileInput.current?.click()} chevron={false} />
+        {storage && storage !== 'unsupported' && (
+          <Row icon={HardDrive} label="Protección contra borrado" detail={storage === 'protected' ? 'Activada' : 'Activar'}
+            onClick={storage === 'protected' ? undefined : () => void protect()} chevron={false} />
+        )}
         <Row icon={Trash2} label="Borrar todos los datos" className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
       </div>
       <p className="list-footer">
-        Tus datos se guardan solo en este dispositivo. Exporta una copia de vez en cuando: si borras los datos del navegador o cambias de móvil, podrás recuperarlos.
+        Tus datos se guardan solo en este dispositivo. La protección evita que el navegador los borre para liberar espacio, pero no sustituye a una copia: si borras la app o cambias de móvil, solo podrás recuperarlos con una copia exportada.
       </p>
 
       <div className="list">

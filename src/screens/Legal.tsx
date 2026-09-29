@@ -40,7 +40,8 @@ export function LegalScreen() {
           <p><strong>Tus datos se quedan en tu móvil.</strong> Rutinas, entrenamientos, medidas corporales y ajustes se guardan solo en el almacenamiento de este navegador o app. No hay cuentas, ni servidor propio, ni analítica, ni publicidad, y nadie más puede verlos.</p>
           <p><strong>Qué sale del móvil:</strong> al abrir la app, el navegador descarga sus archivos de GitHub Pages, que aloja la web. Como con cualquier página, GitHub recibe datos técnicos de la conexión, como la dirección IP, y los trata según su propia política de privacidad. La app no envía nada más a nadie.</p>
           <p><strong>Cookies:</strong> no se usan cookies. Solo se guarda en el dispositivo lo imprescindible para que la app funcione (tus datos y alguna preferencia), por lo que no hace falta pedir consentimiento.</p>
-          <p><strong>Compartir:</strong> cuando compartes una rutina o un entrenamiento, eres tú quien elige a quién enviarlo. Los enlaces de rutina contienen solo los ejercicios y las cifras, no tus datos personales.</p>
+          <p><strong>Compartir:</strong> cuando compartes una rutina o un entrenamiento, eres tú quien elige a quién enviarlo. Los enlaces de rutina contienen solo los ejercicios y las cifras, no tus datos personales. La imagen del entrenamiento se genera en tu propio móvil e incluye el nombre del entrenamiento, la fecha, las cifras y los ejercicios.</p>
+          <p><strong>Copias y protección:</strong> puedes exportar una copia en Perfil; la app te lo recuerda cada 30 días. Con la app instalada, también le pide al navegador que no borre sus datos para liberar espacio.</p>
           <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos», o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
         </Section>
 
