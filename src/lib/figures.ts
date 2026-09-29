@@ -22,10 +22,15 @@ export interface Pose {
   /** Elevación extra sobre el apoyo y desplazamiento horizontal (saltos). */
   lift?: number
   shift?: number
+  /** Subida de hombros (encogimientos), en píxeles. */
+  shrug?: number
+  /** Escorzo del muslo y del tronco (1 = longitud normal); de frente, sentado o inclinado. */
+  thighLen?: number
+  torsoLen?: number
 }
 
 export interface Prop {
-  type: 'plate' | 'dumbbell' | 'kettlebell' | 'bench' | 'box' | 'bar' | 'cable' | 'band' | 'pad' | 'seat' | 'platform' | 'grip' | 'rest'
+  type: 'plate' | 'dumbbell' | 'kettlebell' | 'bench' | 'box' | 'bar' | 'cable' | 'band' | 'pad' | 'seat' | 'platform' | 'grip' | 'rest' | 'barFront'
   at?: JointName
   to?: JointName
   point?: [number, number]
@@ -98,7 +103,8 @@ const jumpSquat: Figure = {
   frames: [{ ...SQUAT, upper: -150, fore: -160 }, { ...STAND, foot: 140, upper: 45, fore: 35, lift: 18 }],
 }
 
-const DEADLIFT_LOW = { torso: 58, head: 70, thigh: 125, shin: 195, foot: 90, upper: 180, fore: 180 }
+// Salida con el disco apoyado en el suelo, la barra pegada a la espinilla y la cadera sobre la rodilla.
+const DEADLIFT_LOW = { torso: 59, head: 71, thigh: 105, shin: 202, foot: 90, upper: 180, fore: 180 }
 const deadlift: Figure = {
   view: 'side', work: ['back', 'glutes', 'legs'], props: [{ type: 'plate', at: 'wrist', front: true }],
   frames: [DEADLIFT_LOW, { ...STAND, upper: 180, fore: 180 }],
@@ -373,14 +379,14 @@ const skullCrusherBand: Figure = { ...skullCrusher, props: [flatBench, { type: '
 
 // ---------------------------------------------------------------- tirón
 const pullUp: Figure = {
-  view: 'side', work: ['back', 'arms'], anchor: { joint: 'wrist', at: [132, -16] },
-  props: [{ type: 'bar', span: [80, 190], y: -18 }],
+  view: 'side', work: ['back', 'arms'], anchor: { joint: 'wrist', at: [132, -62] },
+  props: [{ type: 'bar', span: [80, 190], y: -64 }],
   frames: [
     { torso: 2, head: 0, thigh: 184, shin: -165, foot: 180, upper: 2, fore: 0 },
     { torso: -8, head: 0, thigh: 186, shin: -160, foot: 180, upper: 160, fore: 12 },
   ],
 }
-const pullUpBand: Figure = { ...pullUp, props: [...pullUp.props, { type: 'band', at: 'knee', point: [132, -16] }] }
+const pullUpBand: Figure = { ...pullUp, props: [...pullUp.props, { type: 'band', at: 'knee', point: [132, -62] }] }
 const scapularPull: Figure = { ...pullUp, work: ['back'], frames: [pullUp.frames[0], { ...pullUp.frames[0], upper: 6, fore: 3, lift: 8 }] }
 const pulldown: Figure = {
   view: 'side', work: ['back', 'arms'], anchor: { joint: 'hip', at: [110, 150] },
@@ -458,8 +464,8 @@ const plank: Figure = {
   ],
 }
 const hangingLegRaise: Figure = {
-  view: 'side', work: ['core'], anchor: { joint: 'wrist', at: [120, -16] },
-  props: [{ type: 'bar', span: [70, 180], y: -18 }],
+  view: 'side', work: ['core'], anchor: { joint: 'wrist', at: [120, -62] },
+  props: [{ type: 'bar', span: [70, 180], y: -64 }],
   frames: [
     { torso: 0, thigh: 180, shin: 180, foot: 150, upper: 2, fore: 0 },
     { torso: -8, thigh: 90, shin: 90, foot: 60, upper: 8, fore: 4 },
@@ -509,6 +515,114 @@ const sitUp: Figure = {
 }
 const standingPressKettlebell: Figure = { ...overheadDumbbell, props: [{ type: 'kettlebell', at: 'wrist', front: true, up: true }] }
 
+
+// ---------------------------------------------------------------- variantes con su propio material o vista
+// Sentadilla a un cajón o silla: el asiento queda justo bajo la cadera en la posición baja.
+const boxBehind: Prop = { type: 'box', span: [58, 104], y: 180 }
+const squatBox: Figure = { ...squatBarbell, props: [boxBehind, backBar] }
+const squatChair: Figure = { ...squatBodyweight, props: [{ type: 'seat', span: [58, 108], y: 180, back: [56, 110, 70] }] }
+const squatToBench: Figure = { ...squatDumbbells, props: [{ type: 'bench', span: [40, 104], y: 180 }, { type: 'dumbbell', at: 'wrist', front: true }] }
+
+// Peso muerto en déficit: de pie sobre una plataforma, con los discos en el suelo (hay que bajar más).
+const deficitPlatform: Prop = { type: 'box', span: [104, 164], y: 210 }
+const deadliftDeficit: Figure = {
+  view: 'side', work: ['back', 'glutes', 'legs'], anchor: { joint: 'ankle', at: [130, 205] },
+  props: [deficitPlatform, { type: 'plate', at: 'wrist', front: true }],
+  frames: [{ torso: 58, head: 70, thigh: 95, shin: 212, foot: 90, upper: 180, fore: 180 }, { ...STAND, upper: 180, fore: 180 }],
+}
+const rdlDeficit: Figure = {
+  ...deadliftDeficit, work: ['legs', 'glutes'],
+  frames: [{ ...STAND, upper: 180, fore: 180 }, RDL_LOW],
+}
+// Rack pull: la barra sale de los topes del rack a la altura de la rodilla.
+const rackPull: Figure = {
+  view: 'side', work: ['back', 'glutes', 'legs'],
+  props: [{ type: 'bar', span: [150, 172], y: 166 }, { type: 'plate', at: 'wrist', front: true }],
+  frames: [{ torso: 47, head: 60, thigh: 125, shin: 210, foot: 90, upper: 180, fore: 180 }, { ...STAND, upper: 180, fore: 180 }],
+}
+
+// Vista de frente: sentadilla abierta (plié) y peso muerto sumo, con las piernas abiertas y las
+// rodillas hacia fuera, que de perfil no se aprecian.
+const plieSquat: Figure = {
+  view: 'front', work: ['legs', 'glutes'], props: [{ type: 'dumbbell', at: 'wrist', front: true }],
+  frames: [
+    { torso: 0, thigh: 158, shin: 182, upper: 190, fore: 196 },
+    { torso: 0, torsoLen: 0.95, thigh: 118, shin: 172, upper: 190, fore: 196 },
+  ],
+}
+const sumoDeadlift: Figure = {
+  view: 'front', work: ['glutes', 'legs', 'back'], props: [{ type: 'barFront', front: true }],
+  frames: [
+    { torso: 0, torsoLen: 0.7, head: 0, thigh: 122, shin: 170, upper: 180, fore: 180 },
+    { torso: 0, thigh: 156, shin: 180, upper: 180, fore: 180 },
+  ],
+}
+
+// Encogimientos de hombros, de frente: solo suben los hombros.
+const SHRUG_STAND = { torso: 0, thigh: 176, shin: 180, upper: 180, fore: 180 }
+const shrugBarbell: Figure = { view: 'front', work: ['back'], props: [{ type: 'barFront', front: true }], period: 1800, frames: [SHRUG_STAND, { ...SHRUG_STAND, shrug: 10 }] }
+const shrugDumbbell: Figure = { ...shrugBarbell, props: [{ type: 'dumbbell', at: 'wrist', front: true }, { type: 'dumbbell', at: 'wrist2', front: true }] }
+const shrugCable: Figure = { ...shrugBarbell, props: [{ type: 'cable', at: 'wrist', point: [130, 222] }, { type: 'barFront', front: true }] }
+const uprightBarbell: Figure = { ...uprightRow, props: [{ type: 'barFront', front: true }] }
+const uprightCable: Figure = { ...uprightRow, props: [{ type: 'cable', at: 'wrist', point: [130, 222] }, { type: 'barFront', front: true }] }
+
+// Sentado visto de frente: el muslo apunta al espectador (escorzo) y el asiento queda detrás.
+const SEATED_FRONT = { torso: 0, thigh: 180, thighLen: 0.3, shin: 180 }
+const seatFront: Prop = { type: 'box', span: [96, 184], y: 158 }
+const lateralSeated: Figure = {
+  ...lateralRaise, anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront, ...lateralRaise.props],
+  frames: [{ ...SEATED_FRONT, upper: 172, fore: 174 }, { ...SEATED_FRONT, upper: 92, fore: 96 }],
+}
+const lateralSeatedCable: Figure = { ...lateralSeated, props: [seatFront, { type: 'cable', at: 'wrist', point: [60, 214] }] }
+const pecDeckSeated: Figure = {
+  ...pecDeck, anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront],
+  frames: [{ ...SEATED_FRONT, upper: 90, fore: 20 }, { ...SEATED_FRONT, upper: 150, fore: -30 }],
+}
+
+// Aperturas en polea: el cable sale del suelo junto al banco en lugar de mancuernas.
+const flyesCable: Figure = { ...flyes, props: [flatBench, { type: 'cable', at: 'wrist', point: [64, 216] }, { type: 'grip', at: 'wrist', front: true }] }
+const inclineFlyesCable: Figure = { ...inclineFlyes, props: [{ type: 'bench', span: [60, 150], y: 170 }, { type: 'rest', at: 'hip', to: 'shoulder', rel: 'torso', angle: -90, offset: 13 }, { type: 'cable', at: 'wrist', point: [84, 216] }, { type: 'grip', at: 'wrist', front: true }] }
+
+// Gemelos en un escalón: la punta del pie apoyada en el borde y el talón bajando por debajo de él.
+const CALF_STEP_LOW = { ...STAND, foot: 60 }
+const CALF_STEP_HIGH = { ...STAND, foot: 135 }
+const calfStepMachine: Figure = {
+  view: 'side', work: ['calves'], anchor: { joint: 'toe', at: [150, 204] }, period: 1800,
+  props: [{ type: 'box', span: [140, 198], y: 207 }],
+  frames: [{ ...CALF_STEP_LOW, upper: 165, fore: 12 }, { ...CALF_STEP_HIGH, upper: 165, fore: 12 }],
+}
+const calfStepBar: Figure = { ...calfStepMachine, props: [{ type: 'box', span: [140, 198], y: 207 }, backBar], frames: [{ ...CALF_STEP_LOW, ...armsOnBar }, { ...CALF_STEP_HIGH, ...armsOnBar }] }
+const calfStepBodyweight: Figure = { ...calfStepMachine, props: [{ type: 'box', span: [140, 198], y: 207 }], frames: [{ ...CALF_STEP_LOW, upper: 180, fore: 180 }, { ...CALF_STEP_HIGH, upper: 180, fore: 180 }] }
+const calfBand: Figure = { ...calfStand, props: [{ type: 'band', at: 'wrist', to: 'toe' }], frames: [{ ...STAND, upper: 170, fore: 12 }, { ...STAND, foot: 150, foot2: 150, upper: 170, fore: 12 }] }
+
+
+// ---------------------------------------------------------------- a un brazo, a una pierna y alternos
+/** A un brazo: el brazo lejano se queda quieto en la postura indicada. */
+function oneArm(f: Figure, upper2: number, fore2: number): Figure {
+  return { ...f, frames: f.frames.map((p) => ({ ...p, upper2, fore2 })) as [Pose, Pose] }
+}
+/** Alterno: el brazo lejano hace el mismo movimiento a contratiempo. */
+function alternate(f: Figure): Figure {
+  const [a, b] = f.frames
+  return { ...f, frames: [{ ...a, upper2: b.upper, fore2: b.fore }, { ...b, upper2: a.upper, fore2: a.fore }] }
+}
+const curlAlternate = alternate(curlDumbbell)
+const curlCableOneArm = oneArm(curlCable, 180, 180)
+const overheadAlternate = alternate(overheadDumbbell)
+const overheadOneArm = oneArm(overheadDumbbell, 180, 180)
+const kettlebellPressAlternate = alternate(standingPressKettlebell)
+const kettlebellRowAlternate = alternate(kettlebellRow)
+const lateralOneArm = oneArm(lateralRaise, 172, 174)
+const lateralCableOneArm = oneArm(lateralCable, 172, 174)
+const lateralSeatedCableOneArm = oneArm(lateralSeatedCable, 172, 174)
+const pushdownOneArm = oneArm(tricepsPushdown, 180, 180)
+const overheadTricepsOneArm = oneArm(overheadTriceps, 180, 180)
+const pulldownOneArm = oneArm(pulldown, 150, 150)
+const seatedRowOneArm = oneArm(seatedRow, 150, 120)
+const floorPressOneArm = oneArm(floorPress, 100, 60)
+const floorPressBarOneArm = oneArm(floorPressBar, 100, 60)
+const legExtensionOneLeg: Figure = { ...legExtension, frames: legExtension.frames.map((p) => ({ ...p, thigh2: 90, shin2: 185 })) as [Pose, Pose] }
+
 export const FIGURES: Record<string, Figure> = {
   Barbell_Full_Squat: squatBarbell,
   Front_Barbell_Squat: squatFront,
@@ -538,19 +652,19 @@ export const FIGURES: Record<string, Figure> = {
   Ball_Leg_Curl: ballLegCurl,
   'Floor_Glute-Ham_Raise': nordic,
   Leg_Extensions: legExtension,
-  'Single-Leg_Leg_Extension': legExtension,
-  Standing_Calf_Raises: calfBarbell,
-  Standing_Barbell_Calf_Raise: calfBarbell,
+  'Single-Leg_Leg_Extension': legExtensionOneLeg,
+  Standing_Calf_Raises: calfStepMachine,
+  Standing_Barbell_Calf_Raise: calfStepBar,
   Standing_Dumbbell_Calf_Raise: calfDumbbell,
   Seated_Calf_Raise: calfSeated,
-  'Calf_Raises_-_With_Bands': calfStand,
+  'Calf_Raises_-_With_Bands': calfBand,
   'Barbell_Bench_Press_-_Medium_Grip': benchPress,
   Dumbbell_Bench_Press: benchDumbbell,
   'Bench_Press_-_With_Bands': benchBand,
   'Barbell_Incline_Bench_Press_-_Medium_Grip': incline,
   Incline_Dumbbell_Press: inclineDumbbell,
-  Alternating_Floor_Press: floorPress,
-  'One-Arm_Kettlebell_Floor_Press': floorPress,
+  Alternating_Floor_Press: floorPressOneArm,
+  'One-Arm_Kettlebell_Floor_Press': floorPressOneArm,
   Dumbbell_Flyes: flyes,
   Incline_Dumbbell_Flyes: inclineFlyes,
   Pushups: pushUp,
@@ -561,7 +675,7 @@ export const FIGURES: Record<string, Figure> = {
   'Dips_-_Triceps_Version': dipsTriceps,
   Bench_Dips: benchDips,
   Cable_Crossover: cableCross,
-  Butterfly: pecDeck,
+  Butterfly: pecDeckSeated,
   'Cross_Over_-_With_Bands': bandCross,
   Barbell_Shoulder_Press: overheadPress,
   Dumbbell_Shoulder_Press: overheadDumbbell,
@@ -571,9 +685,9 @@ export const FIGURES: Record<string, Figure> = {
   Kettlebell_Arnold_Press: { ...overheadDumbbell, props: [{ type: 'kettlebell', at: 'wrist', front: true, up: true }] },
   'Handstand_Push-Ups': handstandPushUp,
   Side_Lateral_Raise: lateralRaise,
-  Seated_Side_Lateral_Raise: lateralRaise,
+  Seated_Side_Lateral_Raise: lateralSeated,
   'Lateral_Raise_-_With_Bands': lateralBand,
-  Cable_Seated_Lateral_Raise: lateralCable,
+  Cable_Seated_Lateral_Raise: lateralSeatedCableOneArm,
   'Upright_Row_-_With_Bands': uprightRow,
   Face_Pull: facePull,
   Triceps_Pushdown: tricepsPushdown,
@@ -598,7 +712,7 @@ export const FIGURES: Record<string, Figure> = {
   'EZ-Bar_Curl': curlBarbell,
   Dumbbell_Bicep_Curl: curlDumbbell,
   Hammer_Curls: curlDumbbell,
-  Alternate_Hammer_Curl: curlDumbbell,
+  Alternate_Hammer_Curl: curlAlternate,
   Standing_Biceps_Cable_Curl: curlCable,
   'Cable_Hammer_Curls_-_Rope_Attachment': curlCable,
   'Close-Grip_EZ-Bar_Curl_with_Band': curlBand,
@@ -609,31 +723,42 @@ export const FIGURES: Record<string, Figure> = {
   Mountain_Climbers: mountainClimbers,
   Box_Jump_Multiple_Response: boxJump,
   Farmers_Walk: farmersWalk,
+  Upright_Cable_Row: uprightCable,
+  Smith_Machine_Upright_Row: uprightBarbell,
+  Upright_Barbell_Row: uprightBarbell,
+  Cable_Shrugs: shrugCable,
+  Dumbbell_Shrug: shrugDumbbell,
+  Leverage_Shrug: shrugBarbell,
+  Smith_Machine_Behind_the_Back_Shrug: shrugBarbell,
+  Barbell_Shrug_Behind_The_Back: shrugBarbell,
+  Barbell_Shrug: shrugBarbell,
+  Rack_Pull_with_Bands: rackPull,
+  Reverse_Band_Box_Squat: squatBox,
   Barbell_Squat: squatBarbell,
-  Box_Squat: squatBarbell,
+  Box_Squat: squatBox,
   Narrow_Stance_Squats: squatBarbell,
   Wide_Stance_Barbell_Squat: squatBarbell,
   Olympic_Squat: squatBarbell,
   Smith_Machine_Squat: squatBarbell,
   Squat_with_Bands: squatBarbell,
   Squat_with_Chains: squatBarbell,
-  Speed_Box_Squat: squatBarbell,
+  Speed_Box_Squat: squatBox,
   Front_Squat_Clean_Grip: squatFront,
-  Dumbbell_Squat_To_A_Bench: squatDumbbells,
-  Plie_Dumbbell_Squat: squatDumbbells,
+  Dumbbell_Squat_To_A_Bench: squatToBench,
+  Plie_Dumbbell_Squat: plieSquat,
   Front_Squats_With_Two_Kettlebells: squatGoblet,
-  Chair_Squat: squatBodyweight,
+  Chair_Squat: squatChair,
   Rocket_Jump: jumpSquat,
-  Deficit_Deadlift: deadlift,
+  Deficit_Deadlift: deadliftDeficit,
   Clean_Deadlift: deadlift,
   Snatch_Deadlift: deadlift,
-  Sumo_Deadlift: deadlift,
-  Sumo_Deadlift_with_Bands: deadlift,
-  Sumo_Deadlift_with_Chains: deadlift,
+  Sumo_Deadlift: sumoDeadlift,
+  Sumo_Deadlift_with_Bands: sumoDeadlift,
+  Sumo_Deadlift_with_Chains: sumoDeadlift,
   Leverage_Deadlift: deadlift,
-  Rack_Pulls: deadlift,
+  Rack_Pulls: rackPull,
   'Stiff-Legged_Barbell_Deadlift': rdl,
-  Romanian_Deadlift_from_Deficit: rdl,
+  Romanian_Deadlift_from_Deficit: rdlDeficit,
   Wide_Stance_Stiff_Legs: rdl,
   'Smith_Machine_Stiff-Legged_Deadlift': rdl,
   Good_Morning: goodMorningBar,
@@ -642,9 +767,9 @@ export const FIGURES: Record<string, Figure> = {
   Dumbbell_Rear_Lunge: lungeDumbbells,
   'Smith_Single-Leg_Split_Squat': lungeBarbell,
   Elevated_Back_Lunge: lungeBarbell,
-  Smith_Machine_Calf_Raise: calfBarbell,
+  Smith_Machine_Calf_Raise: calfStepBar,
   Rocking_Standing_Calf_Raise: calfBarbell,
-  Calf_Raise_On_A_Dumbbell: calfStand,
+  Calf_Raise_On_A_Dumbbell: calfStepBodyweight,
   Barbell_Seated_Calf_Raise: calfSeated,
   'Dumbbell_Seated_One-Leg_Calf_Raise': calfSeated,
   'Wide-Grip_Barbell_Bench_Press': benchPress,
@@ -666,12 +791,12 @@ export const FIGURES: Record<string, Figure> = {
   Incline_Dumbbell_Bench_With_Palms_Facing_In: inclineDumbbell,
   Floor_Press: floorPressBar,
   Floor_Press_with_Chains: floorPressBar,
-  One_Arm_Floor_Press: floorPressBar,
+  One_Arm_Floor_Press: floorPressBarOneArm,
   Dumbbell_Floor_Press: floorPressDumbbell,
   'One-Arm_Flat_Bench_Dumbbell_Flye': flyes,
-  Flat_Bench_Cable_Flyes: flyes,
+  Flat_Bench_Cable_Flyes: flyesCable,
   'Incline_Dumbbell_Flyes_-_With_A_Twist': inclineFlyes,
-  Incline_Cable_Flye: inclineFlyes,
+  Incline_Cable_Flye: inclineFlyesCable,
   Pushups_Close_and_Wide_Hand_Positions: pushUp,
   'Close-Grip_Push-Up_off_of_a_Dumbbell': pushUp,
   'Push-Ups_With_Feet_Elevated': declinePushUp,
@@ -679,25 +804,25 @@ export const FIGURES: Record<string, Figure> = {
   Standing_Military_Press: overheadPress,
   Standing_Dumbbell_Press: overheadDumbbell,
   'Standing_Palms-In_Dumbbell_Press': overheadDumbbell,
-  Standing_Alternating_Dumbbell_Press: overheadDumbbell,
-  'Dumbbell_One-Arm_Shoulder_Press': overheadDumbbell,
+  Standing_Alternating_Dumbbell_Press: overheadAlternate,
+  'Dumbbell_One-Arm_Shoulder_Press': overheadOneArm,
   Arnold_Dumbbell_Press: overheadDumbbell,
-  'Standing_Palm-In_One-Arm_Dumbbell_Press': overheadDumbbell,
+  'Standing_Palm-In_One-Arm_Dumbbell_Press': overheadOneArm,
   'Two-Arm_Kettlebell_Military_Press': standingPressKettlebell,
-  Alternating_Kettlebell_Press: standingPressKettlebell,
-  Kettlebell_Seesaw_Press: standingPressKettlebell,
-  'One-Arm_Side_Laterals': lateralRaise,
+  Alternating_Kettlebell_Press: kettlebellPressAlternate,
+  Kettlebell_Seesaw_Press: kettlebellPressAlternate,
+  'One-Arm_Side_Laterals': lateralOneArm,
   Power_Partials: lateralRaise,
   Dumbbell_Scaption: lateralRaise,
-  'Standing_Low-Pulley_Deltoid_Raise': lateralCable,
+  'Standing_Low-Pulley_Deltoid_Raise': lateralCableOneArm,
   Standing_Dumbbell_Upright_Row: uprightDumbbell,
   'Cable_Rope_Rear-Delt_Rows': facePull,
   'Triceps_Pushdown_-_Rope_Attachment': tricepsPushdown,
   'Triceps_Pushdown_-_V-Bar_Attachment': tricepsPushdown,
   Reverse_Grip_Triceps_Pushdown: tricepsPushdown,
-  Cable_One_Arm_Tricep_Extension: tricepsPushdown,
-  'Dumbbell_One-Arm_Triceps_Extension': overheadTriceps,
-  'Standing_One-Arm_Dumbbell_Triceps_Extension': overheadTriceps,
+  Cable_One_Arm_Tricep_Extension: pushdownOneArm,
+  'Dumbbell_One-Arm_Triceps_Extension': overheadTricepsOneArm,
+  'Standing_One-Arm_Dumbbell_Triceps_Extension': overheadTricepsOneArm,
   Kettlebell_Overhead_Triceps_Extension: overheadTricepsKettlebell,
   Standing_Overhead_Barbell_Triceps_Extension: overheadTricepsBar,
   'EZ-Bar_Skullcrusher': skullCrusher,
@@ -707,17 +832,17 @@ export const FIGURES: Record<string, Figure> = {
   'V-Bar_Pullup': pullUp,
   Underhand_Cable_Pulldowns: pulldown,
   'V-Bar_Pulldown': pulldown,
-  One_Arm_Lat_Pulldown: pulldown,
+  One_Arm_Lat_Pulldown: pulldownOneArm,
   'Reverse_Grip_Bent-Over_Rows': barbellRow,
   Smith_Machine_Bent_Over_Row: barbellRow,
   'Bent_Over_Two-Arm_Long_Bar_Row': barbellRow,
   'T-Bar_Row_with_Handle': barbellRow,
   'Bent_Over_Two-Dumbbell_Row_With_Palms_In': dumbbellRow,
-  Alternating_Kettlebell_Row: kettlebellRow,
+  Alternating_Kettlebell_Row: kettlebellRowAlternate,
   'One-Arm_Kettlebell_Row': oneArmRowKettlebell,
-  'Seated_One-arm_Cable_Pulley_Rows': seatedRow,
+  'Seated_One-arm_Cable_Pulley_Rows': seatedRowOneArm,
   Elevated_Cable_Rows: seatedRow,
-  Dumbbell_Alternate_Bicep_Curl: curlDumbbell,
+  Dumbbell_Alternate_Bicep_Curl: curlAlternate,
   Standing_Dumbbell_Reverse_Curl: curlDumbbell,
   Cross_Body_Hammer_Curl: curlDumbbell,
   'Standing_Inner-Biceps_Curl': curlDumbbell,
@@ -726,7 +851,7 @@ export const FIGURES: Record<string, Figure> = {
   'Wide-Grip_Standing_Barbell_Curl': curlBarbell,
   Reverse_Barbell_Curl: curlBarbell,
   'Close-Grip_EZ_Bar_Curl': curlBarbell,
-  'Standing_One-Arm_Cable_Curl': curlCable,
+  'Standing_One-Arm_Cable_Curl': curlCableOneArm,
   Reverse_Cable_Curl: curlCable,
   'Cross-Body_Crunch': crunch,
   'Sit-Up': sitUp,
