@@ -1,0 +1,562 @@
+{
+  "Alternate_Incline_Dumbbell_Curl": [
+    "Siéntate en un banco inclinado con una mancuerna en cada mano, los brazos colgando y las palmas al frente.",
+    "Sube una mancuerna hacia el hombro sin mover el codo y bájala con control.",
+    "Repite con el otro brazo. La inclinación estira más el bíceps."
+  ],
+  "Barbell_Curls_Lying_Against_An_Incline": [
+    "Túmbate boca arriba en un banco inclinado con una barra en las manos y los brazos colgando por detrás del tronco.",
+    "Flexiona los codos para subir la barra sin mover los brazos.",
+    "Baja con control hasta estirar."
+  ],
+  "Cable_Preacher_Curl": [
+    "Coloca un banco Scott frente a una polea baja y apoya los brazos en la almohadilla, con la barra en las manos.",
+    "Sube la barra flexionando los codos.",
+    "Baja con control hasta casi estirar."
+  ],
+  "Close-Grip_EZ_Bar_Curl": [
+    "De pie, agarra la barra Z por la parte interior, con las manos juntas.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros.",
+    "Baja con control."
+  ],
+  "Close-Grip_Standing_Barbell_Curl": [
+    "De pie, agarra la barra con las palmas al frente y las manos más juntas que los hombros.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros.",
+    "Baja con control."
+  ],
+  "Concentration_Curls": [
+    "Siéntate en un banco con las piernas abiertas y apoya la parte de atrás del brazo en la cara interna del muslo, con la mancuerna en la mano.",
+    "Sube la mancuerna hacia el hombro sin mover el brazo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Cross_Body_Hammer_Curl": [
+    "De pie, con una mancuerna en cada mano y las palmas enfrentadas.",
+    "Sube una mancuerna cruzándola por delante del cuerpo hacia el hombro contrario.",
+    "Baja con control y alterna."
+  ],
+  "Drag_Curl": [
+    "De pie, con la barra delante de los muslos y las palmas al frente.",
+    "Sube la barra pegada al cuerpo llevando los codos hacia atrás, como si la arrastraras por el tronco.",
+    "Baja por el mismo recorrido."
+  ],
+  "Dumbbell_Alternate_Bicep_Curl": [
+    "De pie, con una mancuerna en cada mano a los lados.",
+    "Sube una mancuerna girando la palma hacia arriba, con el codo pegado al cuerpo.",
+    "Baja con control y alterna."
+  ],
+  "Dumbbell_Prone_Incline_Curl": [
+    "Túmbate boca abajo en un banco inclinado con una mancuerna en cada mano colgando.",
+    "Sube las mancuernas flexionando los codos sin moverlos.",
+    "Baja con control."
+  ],
+  "High_Cable_Curls": [
+    "Colócate entre dos poleas altas con un asa en cada mano y los brazos en cruz a la altura de los hombros.",
+    "Flexiona los codos llevando las manos hacia la cabeza, como si sacaras músculo.",
+    "Vuelve con control."
+  ],
+  "Incline_Dumbbell_Curl": [
+    "Siéntate en un banco inclinado con una mancuerna en cada mano y los brazos colgando.",
+    "Sube las mancuernas hacia los hombros sin adelantar los codos.",
+    "Baja con control hasta estirar."
+  ],
+  "Incline_Hammer_Curls": [
+    "Siéntate en un banco inclinado con una mancuerna en cada mano y las palmas enfrentadas.",
+    "Sube las mancuernas sin girar las muñecas.",
+    "Baja con control."
+  ],
+  "Incline_Inner_Biceps_Curl": [
+    "Siéntate en un banco inclinado con las mancuernas colgando y los brazos algo abiertos hacia fuera.",
+    "Sube las mancuernas manteniendo los codos abiertos.",
+    "Baja con control."
+  ],
+  "Lying_Cable_Curl": [
+    "Túmbate boca arriba en el suelo frente a una polea baja, con la barra en las manos y los brazos junto al cuerpo.",
+    "Flexiona los codos llevando la barra hacia el pecho.",
+    "Vuelve con control."
+  ],
+  "Lying_Close-Grip_Bar_Curl_On_High_Pulley": [
+    "Túmbate boca arriba en un banco con la cabeza hacia una polea alta y agarra la barra con los brazos verticales.",
+    "Flexiona los codos llevando la barra hacia la frente sin mover los brazos.",
+    "Vuelve con control."
+  ],
+  "Lying_High_Bench_Barbell_Curl": [
+    "Túmbate boca abajo en un banco alto con los brazos colgando por el extremo y la barra en las manos.",
+    "Sube la barra flexionando los codos.",
+    "Baja con control."
+  ],
+  "Lying_Supine_Dumbbell_Curl": [
+    "Túmbate boca arriba en un banco plano con una mancuerna en cada mano y los brazos colgando a los lados.",
+    "Sube las mancuernas hacia los hombros.",
+    "Baja con control hasta estirar."
+  ],
+  "Machine_Bicep_Curl": [
+    "Siéntate en la máquina con los brazos apoyados en la almohadilla.",
+    "Sube las asas flexionando los codos.",
+    "Baja con control."
+  ],
+  "Machine_Preacher_Curls": [
+    "Siéntate en la máquina de curl Scott con los brazos apoyados.",
+    "Sube las asas flexionando los codos.",
+    "Baja con control hasta casi estirar."
+  ],
+  "One_Arm_Dumbbell_Preacher_Curl": [
+    "Apoya un brazo en un banco Scott con la mancuerna en la mano.",
+    "Súbela flexionando el codo.",
+    "Baja con control hasta casi estirar y cambia de lado."
+  ],
+  "Overhead_Cable_Curl": [
+    "Colócate de lado a una polea alta con el asa en la mano, el brazo a la altura del hombro.",
+    "Flexiona el codo llevando la mano hacia la cabeza.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Preacher_Curl": [
+    "Siéntate en el banco Scott con los brazos apoyados en la almohadilla y la barra en las manos.",
+    "Sube la barra flexionando los codos.",
+    "Baja con control hasta casi estirar, sin rebotar abajo."
+  ],
+  "Preacher_Hammer_Dumbbell_Curl": [
+    "Apoya los brazos en un banco Scott con una mancuerna en cada mano y las palmas enfrentadas.",
+    "Sube las mancuernas sin girar las muñecas.",
+    "Baja con control."
+  ],
+  "Reverse_Barbell_Curl": [
+    "De pie, agarra la barra con las palmas hacia abajo, a la anchura de los hombros.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros.",
+    "Baja con control. Trabaja mucho el antebrazo."
+  ],
+  "Reverse_Barbell_Preacher_Curls": [
+    "Apoya los brazos en un banco Scott y agarra la barra Z con las palmas hacia abajo.",
+    "Súbela flexionando los codos.",
+    "Baja con control."
+  ],
+  "Reverse_Cable_Curl": [
+    "De pie frente a una polea baja, agarra la barra con las palmas hacia abajo.",
+    "Con los codos pegados al cuerpo, súbela hacia los hombros.",
+    "Baja con control."
+  ],
+  "Seated_Close-Grip_Concentration_Barbell_Curl": [
+    "Siéntate en un banco, inclínate hacia delante y apoya los codos en la cara interna de los muslos, con una barra en las manos.",
+    "Sube la barra hacia el pecho.",
+    "Baja con control."
+  ],
+  "Seated_Dumbbell_Curl": [
+    "Sentado en un banco, con una mancuerna en cada mano a los lados.",
+    "Sube las mancuernas girando las palmas hacia arriba.",
+    "Baja con control."
+  ],
+  "Seated_Dumbbell_Inner_Biceps_Curl": [
+    "Sentado, con una mancuerna en cada mano y los brazos algo abiertos hacia fuera.",
+    "Sube las mancuernas manteniendo los codos abiertos.",
+    "Baja con control."
+  ],
+  "Spider_Curl": [
+    "Túmbate boca abajo en un banco Scott por el lado vertical, con los brazos colgando y la barra Z en las manos.",
+    "Sube la barra flexionando los codos.",
+    "Baja con control."
+  ],
+  "Standing_Concentration_Curl": [
+    "De pie, inclina el tronco hacia delante y deja colgar el brazo con la mancuerna.",
+    "Súbela hacia el hombro sin mover el brazo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Standing_Dumbbell_Reverse_Curl": [
+    "De pie, con una mancuerna en cada mano y las palmas hacia atrás.",
+    "Sube las mancuernas con los codos pegados al cuerpo.",
+    "Baja con control."
+  ],
+  "Standing_Inner-Biceps_Curl": [
+    "De pie, con una mancuerna en cada mano y los brazos algo abiertos hacia fuera.",
+    "Sube las mancuernas manteniendo los codos abiertos.",
+    "Baja con control."
+  ],
+  "Standing_One-Arm_Cable_Curl": [
+    "De pie frente a una polea baja, con un asa en una mano.",
+    "Sube el asa hacia el hombro con el codo pegado al cuerpo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench": [
+    "De pie detrás de un banco inclinado, apoya el brazo sobre el respaldo con la mancuerna en la mano.",
+    "Súbela flexionando el codo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Two-Arm_Dumbbell_Preacher_Curl": [
+    "Apoya los brazos en un banco Scott con una mancuerna en cada mano.",
+    "Sube las mancuernas flexionando los codos.",
+    "Baja con control."
+  ],
+  "Wide-Grip_Standing_Barbell_Curl": [
+    "De pie, agarra la barra con las palmas al frente y las manos más abiertas que los hombros.",
+    "Con los codos pegados al cuerpo, sube la barra.",
+    "Baja con control."
+  ],
+  "Zottman_Curl": [
+    "De pie, con una mancuerna en cada mano y las palmas al frente.",
+    "Sube las mancuernas y, arriba, gira las palmas hacia abajo.",
+    "Baja así, despacio, y vuelve a girar las palmas abajo del todo."
+  ],
+  "Zottman_Preacher_Curl": [
+    "Apoya los brazos en un banco Scott con una mancuerna en cada mano y las palmas hacia arriba.",
+    "Sube las mancuernas y, arriba, gira las palmas hacia abajo.",
+    "Baja despacio y vuelve a girar las palmas."
+  ],
+  "Bench_Press_-_Powerlifting": [
+    "Túmbate en el banco con los ojos bajo la barra, junta las escápulas, arquea ligeramente la espalda y apoya bien los pies.",
+    "Saca la barra y bájala controlada hasta la parte baja del pecho.",
+    "Empuja con fuerza hasta estirar los brazos sin despegar los glúteos. Con alguien que te ayude."
+  ],
+  "Board_Press": [
+    "Túmbate en el banco y pide a alguien que coloque unas tablas sobre tu pecho.",
+    "Baja la barra hasta tocar las tablas.",
+    "Empuja hasta estirar los brazos. Trabaja la parte final del press."
+  ],
+  "Body-Up": [
+    "Colócate en plancha sobre los antebrazos.",
+    "Empuja con las manos estirando los codos hasta quedar sobre las palmas, sin mover los pies.",
+    "Baja con control a los antebrazos."
+  ],
+  "Cable_Incline_Triceps_Extension": [
+    "Túmbate en un banco inclinado de espaldas a una polea baja, con la barra por encima de la cabeza y los codos flexionados.",
+    "Estira los brazos sin mover los codos.",
+    "Vuelve con control."
+  ],
+  "Cable_Lying_Triceps_Extension": [
+    "Túmbate en un banco con la cabeza hacia una polea baja y agarra la barra con los brazos verticales.",
+    "Flexiona los codos llevando la barra hacia la frente y estíralos de nuevo.",
+    "Mantén los codos quietos."
+  ],
+  "Cable_One_Arm_Tricep_Extension": [
+    "De pie frente a una polea alta, agarra el asa con una mano y el codo pegado al cuerpo.",
+    "Estira el brazo hacia abajo sin mover el codo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Cable_Rope_Overhead_Triceps_Extension": [
+    "De espaldas a una polea, sujeta la cuerda por detrás de la cabeza con los codos apuntando al frente.",
+    "Estira los brazos hacia delante y arriba.",
+    "Vuelve con control."
+  ],
+  "Close-Grip_Barbell_Bench_Press": [
+    "Túmbate en el banco y agarra la barra a la anchura de los hombros o algo menos.",
+    "Bájala hasta la parte baja del pecho con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Close-Grip_Dumbbell_Press": [
+    "Túmbate en un banco con las mancuernas juntas sobre el pecho y las palmas enfrentadas.",
+    "Bájalas juntas hasta el pecho con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Close-Grip_EZ-Bar_Press": [
+    "Túmbate en un banco con una barra Z agarrada por la parte interior.",
+    "Bájala hasta el pecho con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Close-Grip_Push-Up_off_of_a_Dumbbell": [
+    "Colócate en posición de flexión con las manos sobre una mancuerna tumbada.",
+    "Baja con los codos pegados al cuerpo hasta que el pecho roce la mancuerna.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Decline_Close-Grip_Bench_To_Skull_Crusher": [
+    "Túmbate en un banco declinado con agarre estrecho.",
+    "Baja la barra al pecho y empuja; en la siguiente, flexiona solo los codos llevándola a la frente.",
+    "Alterna ambos movimientos con control."
+  ],
+  "Decline_Dumbbell_Triceps_Extension": [
+    "Túmbate en un banco declinado con una mancuerna en cada mano y los brazos verticales.",
+    "Flexiona los codos bajando las mancuernas junto a la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Decline_EZ_Bar_Triceps_Extension": [
+    "Túmbate en un banco declinado con la barra Z y los brazos verticales.",
+    "Flexiona los codos llevando la barra hacia la frente.",
+    "Estira los brazos para volver."
+  ],
+  "Dip_Machine": [
+    "Siéntate en la máquina de fondos y agarra las asas con los codos flexionados.",
+    "Empuja hacia abajo hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Dumbbell_Floor_Press": [
+    "Túmbate boca arriba en el suelo con una mancuerna en cada mano y los codos apoyados.",
+    "Empuja hasta estirar los brazos.",
+    "Baja hasta que los codos toquen el suelo."
+  ],
+  "Dumbbell_One-Arm_Triceps_Extension": [
+    "Sentado o de pie, sujeta una mancuerna con una mano por encima de la cabeza.",
+    "Flexiona el codo bajándola por detrás de la cabeza.",
+    "Estira el brazo para volver y cambia de lado."
+  ],
+  "Dumbbell_Tricep_Extension_-Pronated_Grip": [
+    "Túmbate en un banco con una mancuerna en cada mano, brazos verticales y palmas hacia los pies.",
+    "Flexiona los codos bajando las mancuernas hacia la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "EZ-Bar_Skullcrusher": [
+    "Túmbate en un banco con la barra Z sobre el pecho y los brazos estirados.",
+    "Flexiona los codos bajando la barra hacia la frente sin mover los brazos.",
+    "Estira los brazos para volver."
+  ],
+  "Floor_Press": [
+    "Túmbate boca arriba en el suelo dentro del rack con la barra sobre el pecho.",
+    "Baja la barra hasta que los codos toquen el suelo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Floor_Press_with_Chains": [
+    "Túmbate en el suelo con cadenas colgando de los extremos de la barra.",
+    "Baja la barra hasta que los codos toquen el suelo.",
+    "Empuja hasta estirar los brazos: la carga aumenta al subir."
+  ],
+  "Incline_Barbell_Triceps_Extension": [
+    "Túmbate en un banco inclinado con la barra sobre la cabeza y los brazos estirados.",
+    "Flexiona los codos bajando la barra por detrás de la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Incline_Push-Up_Close-Grip": [
+    "Apoya las manos juntas en un banco, con el cuerpo recto.",
+    "Baja con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "JM_Press": [
+    "Túmbate en el banco con agarre estrecho.",
+    "Baja la barra hacia la parte alta del pecho flexionando los codos, que se adelantan hacia los pies.",
+    "Empuja hasta estirar los brazos. Mezcla de press cerrado y extensión: poco peso."
+  ],
+  "Kettlebell_Overhead_Triceps_Extension": [
+    "Sujeta una kettlebell por el asa con las dos manos por encima de la cabeza.",
+    "Flexiona los codos bajándola por detrás de la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Kneeling_Cable_Triceps_Extension": [
+    "Arrodíllate de espaldas a una polea alta con la cuerda sujeta detrás de la cabeza.",
+    "Estira los brazos hacia delante.",
+    "Vuelve con control."
+  ],
+  "Low_Cable_Triceps_Extension": [
+    "De espaldas a una polea baja, sujeta la cuerda o barra por detrás de la cabeza.",
+    "Estira los brazos hacia arriba.",
+    "Vuelve con control."
+  ],
+  "Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head": [
+    "Túmbate en un banco con la barra sobre el pecho y agarre estrecho.",
+    "Flexiona los codos llevando la barra por detrás de la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Lying_Close-Grip_Barbell_Triceps_Press_To_Chin": [
+    "Túmbate en un banco con la barra Z sobre el pecho y agarre estrecho.",
+    "Baja la barra hacia la barbilla flexionando los codos.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Lying_Dumbbell_Tricep_Extension": [
+    "Túmbate en un banco con una mancuerna en cada mano y los brazos verticales.",
+    "Flexiona los codos bajando las mancuernas junto a las orejas.",
+    "Estira los brazos para volver."
+  ],
+  "Machine_Triceps_Extension": [
+    "Siéntate en la máquina con los brazos apoyados en la almohadilla.",
+    "Estira los brazos empujando las asas.",
+    "Vuelve con control."
+  ],
+  "One_Arm_Floor_Press": [
+    "Túmbate en el suelo con una barra sujeta por el centro con una mano.",
+    "Bájala hasta que el codo toque el suelo.",
+    "Empuja hasta estirar el brazo y cambia de lado. Controla el equilibrio de la barra."
+  ],
+  "One_Arm_Pronated_Dumbbell_Triceps_Extension": [
+    "Túmbate en un banco con una mancuerna en una mano, el brazo vertical y la palma hacia los pies.",
+    "Flexiona el codo bajando la mancuerna hacia el pecho contrario.",
+    "Estira el brazo para volver y cambia de lado."
+  ],
+  "One_Arm_Supinated_Dumbbell_Triceps_Extension": [
+    "Túmbate en un banco con una mancuerna en una mano, el brazo vertical y la palma hacia la cabeza.",
+    "Flexiona el codo bajando la mancuerna hacia el hombro.",
+    "Estira el brazo para volver y cambia de lado."
+  ],
+  "Pin_Presses": [
+    "Túmbate en un banco dentro del rack con la barra apoyada en los topes a pocos centímetros del pecho.",
+    "Empuja la barra desde los topes hasta estirar los brazos.",
+    "Vuelve a apoyarla en los topes."
+  ],
+  "Reverse_Band_Bench_Press": [
+    "Cuelga bandas de la parte alta del rack y engánchalas a la barra; te ayudarán abajo.",
+    "Haz el press de banca normal.",
+    "Empuja con fuerza hasta estirar los brazos. Para usuarios avanzados."
+  ],
+  "Reverse_Grip_Triceps_Pushdown": [
+    "Agarra la barra de la polea alta con las palmas hacia arriba.",
+    "Estira los brazos hacia abajo con los codos pegados al cuerpo.",
+    "Vuelve con control."
+  ],
+  "Reverse_Triceps_Bench_Press": [
+    "Túmbate en el banco y agarra la barra con las palmas mirando hacia ti.",
+    "Bájala hasta la parte baja del pecho con los codos pegados.",
+    "Empuja hasta estirar los brazos. Usa poco peso y alguien que te ayude."
+  ],
+  "Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension": [
+    "Sentado en el borde de un banco, inclínate hacia delante con la mancuerna en una mano y el brazo pegado al cuerpo.",
+    "Estira el codo llevando la mancuerna hacia atrás.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Seated_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension": [
+    "Sentado en el borde de un banco, inclínate hacia delante con una mancuerna en cada mano.",
+    "Estira los codos llevando las mancuernas hacia atrás.",
+    "Vuelve con control."
+  ],
+  "Seated_Triceps_Press": [
+    "Sentado, sujeta una mancuerna con las dos manos por encima de la cabeza.",
+    "Flexiona los codos bajándola por detrás de la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Smith_Machine_Close-Grip_Bench_Press": [
+    "Coloca un banco bajo la barra de la máquina Smith y agárrala con agarre estrecho.",
+    "Bájala al pecho con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Speed_Band_Overhead_Triceps": [
+    "De espaldas al anclaje de una banda, sujétala por detrás de la cabeza con los codos flexionados.",
+    "Estira los brazos de forma rápida hacia delante y arriba.",
+    "Vuelve con control y repite con ritmo."
+  ],
+  "Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension": [
+    "Inclínate hacia delante con una mano apoyada en un banco y la mancuerna en la otra, con el brazo pegado al cuerpo.",
+    "Estira el codo llevando la mancuerna hacia atrás.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Standing_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension": [
+    "De pie, inclina el tronco con una mancuerna en cada mano y los brazos pegados al cuerpo.",
+    "Estira los codos llevando las mancuernas hacia atrás.",
+    "Vuelve con control."
+  ],
+  "Standing_Low-Pulley_One-Arm_Triceps_Extension": [
+    "De espaldas a una polea baja, sujeta el asa con una mano por detrás de la cabeza.",
+    "Estira el brazo hacia arriba.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Standing_One-Arm_Dumbbell_Triceps_Extension": [
+    "De pie, sujeta una mancuerna con una mano por encima de la cabeza.",
+    "Flexiona el codo bajándola por detrás de la cabeza.",
+    "Estira el brazo para volver y cambia de lado."
+  ],
+  "Standing_Overhead_Barbell_Triceps_Extension": [
+    "De pie, sujeta una barra o barra Z por encima de la cabeza con agarre estrecho.",
+    "Flexiona los codos bajándola por detrás de la cabeza.",
+    "Estira los brazos para volver."
+  ],
+  "Standing_Towel_Triceps_Extension": [
+    "De pie, sujeta una toalla con una mano por detrás de la cabeza y el otro extremo con la otra mano en la zona lumbar.",
+    "Estira el brazo de arriba mientras la otra mano ofrece resistencia tirando hacia abajo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Tate_Press": [
+    "Túmbate en un banco con una mancuerna en cada mano, brazos estirados y palmas hacia los pies.",
+    "Flexiona los codos hacia fuera bajando las mancuernas hasta que se toquen sobre el pecho.",
+    "Estira los brazos para volver."
+  ],
+  "Tricep_Dumbbell_Kickback": [
+    "Apoya una rodilla y una mano en un banco, con la mancuerna en la otra mano y el brazo pegado al cuerpo, paralelo al suelo.",
+    "Estira el codo llevando la mancuerna hacia atrás.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Triceps_Overhead_Extension_with_Rope": [
+    "De espaldas a una polea baja, sujeta la cuerda por detrás de la cabeza.",
+    "Estira los brazos hacia arriba separando un poco las manos al final.",
+    "Vuelve con control."
+  ],
+  "Triceps_Pushdown_-_Rope_Attachment": [
+    "Coloca la cuerda en la polea alta y agárrala con los codos pegados al cuerpo.",
+    "Estira los brazos hacia abajo separando los extremos de la cuerda al final.",
+    "Vuelve con control."
+  ],
+  "Triceps_Pushdown_-_V-Bar_Attachment": [
+    "Coloca la barra en V en la polea alta y agárrala con los codos pegados al cuerpo.",
+    "Estira los brazos hacia abajo.",
+    "Vuelve con control."
+  ],
+  "Bottoms-Up_Clean_From_The_Hang_Position": [
+    "Sujeta una kettlebell colgando entre las piernas.",
+    "Con un impulso de cadera, súbela hasta la altura del hombro con la bola hacia arriba, apretando fuerte el asa.",
+    "Bájala con control. Exige mucho agarre."
+  ],
+  "Cable_Wrist_Curl": [
+    "Siéntate frente a una polea baja con los antebrazos sobre los muslos y la barra en las manos, palmas hacia arriba.",
+    "Flexiona las muñecas subiendo la barra.",
+    "Baja con control."
+  ],
+  "Dumbbell_Lying_Pronation": [
+    "Túmbate con el antebrazo apoyado y una mancuerna ligera sujeta por un extremo, con la palma hacia arriba.",
+    "Gira la muñeca hasta dejar la palma hacia abajo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Dumbbell_Lying_Supination": [
+    "Túmbate con el antebrazo apoyado y una mancuerna ligera sujeta por un extremo, con la palma hacia abajo.",
+    "Gira la muñeca hasta dejar la palma hacia arriba.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Finger_Curls": [
+    "Sentado, con los antebrazos sobre los muslos y la barra en las manos, palmas hacia arriba.",
+    "Deja que la barra ruede hasta la punta de los dedos.",
+    "Ciérralos para subirla de nuevo y flexiona la muñeca."
+  ],
+  "Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench": [
+    "Arrodíllate junto a un banco con los antebrazos encima y las manos fuera, con una mancuerna en cada una y las palmas hacia abajo.",
+    "Sube el dorso de las manos flexionando las muñecas hacia arriba.",
+    "Baja con control."
+  ],
+  "Palms-Down_Wrist_Curl_Over_A_Bench": [
+    "Arrodíllate junto a un banco con los antebrazos encima y la barra en las manos, palmas hacia abajo.",
+    "Sube la barra flexionando las muñecas hacia arriba.",
+    "Baja con control."
+  ],
+  "Palms-Up_Barbell_Wrist_Curl_Over_A_Bench": [
+    "Arrodíllate junto a un banco con los antebrazos encima y la barra en las manos, palmas hacia arriba.",
+    "Sube la barra flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench": [
+    "Arrodíllate junto a un banco con los antebrazos encima y una mancuerna en cada mano, palmas hacia arriba.",
+    "Sube las mancuernas flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Seated_Dumbbell_Palms-Down_Wrist_Curl": [
+    "Sentado, con los antebrazos sobre los muslos y una mancuerna en cada mano, palmas hacia abajo.",
+    "Sube el dorso de las manos flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Seated_Dumbbell_Palms-Up_Wrist_Curl": [
+    "Sentado, con los antebrazos sobre los muslos y una mancuerna en cada mano, palmas hacia arriba.",
+    "Sube las mancuernas flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Seated_One-Arm_Dumbbell_Palms-Down_Wrist_Curl": [
+    "Sentado, con un antebrazo sobre el muslo y la mancuerna en la mano, palma hacia abajo.",
+    "Sube el dorso de la mano flexionando la muñeca.",
+    "Baja con control y cambia de lado."
+  ],
+  "Seated_One-Arm_Dumbbell_Palms-Up_Wrist_Curl": [
+    "Sentado, con un antebrazo sobre el muslo y la mancuerna en la mano, palma hacia arriba.",
+    "Sube la mancuerna flexionando la muñeca.",
+    "Baja con control y cambia de lado."
+  ],
+  "Seated_Palm-Up_Barbell_Wrist_Curl": [
+    "Sentado, con los antebrazos sobre los muslos y la barra en las manos, palmas hacia arriba.",
+    "Sube la barra flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Seated_Palms-Down_Barbell_Wrist_Curl": [
+    "Sentado, con los antebrazos sobre los muslos y la barra en las manos, palmas hacia abajo.",
+    "Sube la barra flexionando las muñecas hacia arriba.",
+    "Baja con control."
+  ],
+  "Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl": [
+    "Siéntate frente a una polea baja con los antebrazos sobre los muslos y la barra en las manos, palmas hacia arriba.",
+    "Sube la barra flexionando las muñecas.",
+    "Baja con control."
+  ],
+  "Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl": [
+    "De pie, sujeta la barra por detrás de los muslos con las palmas mirando hacia atrás.",
+    "Flexiona las muñecas subiendo la barra.",
+    "Baja con control."
+  ],
+  "Wrist_Rotations_with_Straight_Bar": [
+    "De pie, sujeta una barra delante del cuerpo con los brazos estirados.",
+    "Gira las muñecas alternándolas, como si enrollaras una cuerda.",
+    "Mantén el ritmo durante el tiempo indicado."
+  ]
+}

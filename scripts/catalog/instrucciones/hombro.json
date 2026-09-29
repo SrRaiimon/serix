@@ -1,0 +1,402 @@
+{
+  "Alternating_Cable_Shoulder_Press": [
+    "Colócate entre dos poleas bajas con un asa en cada mano a la altura de los hombros.",
+    "Empuja un brazo hacia arriba hasta estirarlo y bájalo con control.",
+    "Repite con el otro y ve alternando."
+  ],
+  "Alternating_Kettlebell_Press": [
+    "Sujeta una kettlebell en cada mano en posición de rack, a la altura de los hombros.",
+    "Empuja una hasta estirar el brazo y bájala con control.",
+    "Repite con la otra y ve alternando, sin arquear la espalda."
+  ],
+  "Arnold_Dumbbell_Press": [
+    "Sentado o de pie, sujeta las mancuernas delante de los hombros con las palmas mirando hacia ti.",
+    "Empuja hacia arriba girando las muñecas para terminar con las palmas al frente y los brazos estirados.",
+    "Baja deshaciendo el giro."
+  ],
+  "Barbell_Incline_Shoulder_Raise": [
+    "Túmbate en un banco inclinado con una barra sujeta sobre el pecho y los brazos estirados.",
+    "Sin flexionar los codos, empuja la barra hacia arriba separando los omóplatos del banco.",
+    "Vuelve con control. Es un recorrido corto."
+  ],
+  "Barbell_Rear_Delt_Row": [
+    "De pie, con la barra en las manos e inclinado hacia delante con la espalda recta.",
+    "Tira de la barra hacia la parte alta del pecho con los codos muy abiertos, en línea con los hombros.",
+    "Baja con control."
+  ],
+  "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench": [
+    "De pie, inclínate hasta apoyar la frente en un banco, con una mancuerna en cada mano colgando.",
+    "Abre los brazos hacia los lados con los codos un poco flexionados.",
+    "Baja con control. Apoyar la cabeza evita balancearte."
+  ],
+  "Bent_Over_Low-Pulley_Side_Lateral": [
+    "Colócate de lado a una polea baja y agarra el asa con la mano más alejada. Inclina el tronco hacia delante.",
+    "Abre el brazo hacia el lado hasta la altura del hombro.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Bradford_Rocky_Presses": [
+    "Sentado o de pie, con la barra sobre los hombros por delante.",
+    "Súbela justo por encima de la cabeza y bájala por detrás hasta la nuca.",
+    "Vuelve por delante y ve alternando. Usa poco peso: el paso por detrás exige mucha movilidad."
+  ],
+  "Cable_Internal_Rotation": [
+    "Colócate de lado a una polea a la altura del codo, con el asa en la mano más cercana y el codo pegado al cuerpo a 90 grados.",
+    "Gira el antebrazo hacia el abdomen sin separar el codo del cuerpo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Cable_Rear_Delt_Fly": [
+    "Colócate entre dos poleas a la altura de los hombros y cruza los cables: la mano derecha agarra el izquierdo y viceversa.",
+    "Con los brazos casi estirados, ábrelos hacia atrás hasta quedar en cruz.",
+    "Vuelve con control."
+  ],
+  "Cable_Rope_Rear-Delt_Rows": [
+    "Coloca una cuerda en una polea a la altura del pecho.",
+    "Tira hacia la cara separando las manos y con los codos altos y abiertos.",
+    "Vuelve con control."
+  ],
+  "Cable_Shoulder_Press": [
+    "Siéntate o ponte de pie entre dos poleas bajas con un asa en cada mano a la altura de los hombros.",
+    "Empuja hacia arriba hasta estirar los brazos.",
+    "Baja con control."
+  ],
+  "Car_Drivers": [
+    "De pie, sujeta un disco con las dos manos delante del pecho, con los brazos estirados.",
+    "Gíralo a un lado y a otro como si fuera un volante, sin bajar los brazos.",
+    "Mantén la posición el tiempo o las repeticiones indicadas."
+  ],
+  "Clean_and_Press": [
+    "Colócate como para un peso muerto, con la barra delante de las piernas.",
+    "Sube la barra con fuerza hasta apoyarla en los hombros (cargada).",
+    "Empújala por encima de la cabeza hasta estirar los brazos y bájala en dos tiempos. Técnico: con poco peso al principio."
+  ],
+  "Cuban_Press": [
+    "De pie, con mancuernas ligeras delante de los muslos.",
+    "Sube los codos hasta la altura de los hombros, gira los antebrazos hacia arriba hasta quedar verticales y empuja por encima de la cabeza.",
+    "Baja deshaciendo los pasos. Es un ejercicio de salud del hombro: usa muy poco peso."
+  ],
+  "Double_Kettlebell_Jerk": [
+    "Sujeta dos kettlebells en posición de rack sobre los hombros.",
+    "Flexiona un poco las rodillas, impúlsate y mete el cuerpo debajo mientras los brazos quedan estirados arriba.",
+    "Ponte de pie con las kettlebells arriba y bájalas con control."
+  ],
+  "Double_Kettlebell_Push_Press": [
+    "Sujeta dos kettlebells en posición de rack sobre los hombros.",
+    "Flexiona un poco las rodillas y usa el impulso de las piernas para empujarlas por encima de la cabeza.",
+    "Bájalas con control a los hombros."
+  ],
+  "Dumbbell_Incline_Shoulder_Raise": [
+    "Túmbate en un banco inclinado con una mancuerna en cada mano sobre el pecho y los brazos estirados.",
+    "Sin flexionar los codos, empuja las mancuernas hacia arriba separando los omóplatos del banco.",
+    "Vuelve con control."
+  ],
+  "Dumbbell_Lying_One-Arm_Rear_Lateral_Raise": [
+    "Túmbate de lado en un banco con una mancuerna en la mano de arriba, colgando delante del cuerpo.",
+    "Sube el brazo hacia el techo con el codo un poco flexionado.",
+    "Baja con control y cambia de lado."
+  ],
+  "Dumbbell_Lying_Rear_Lateral_Raise": [
+    "Túmbate boca abajo en un banco inclinado con una mancuerna en cada mano colgando.",
+    "Abre los brazos hacia los lados hasta la altura de los hombros.",
+    "Baja con control."
+  ],
+  "Dumbbell_One-Arm_Shoulder_Press": [
+    "De pie o sentado, con una mancuerna en una mano a la altura del hombro.",
+    "Empújala hasta estirar el brazo sin inclinar el cuerpo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Dumbbell_One-Arm_Upright_Row": [
+    "De pie, con una mancuerna en una mano delante del muslo.",
+    "Tira hacia arriba llevando el codo alto hasta que la mano llegue al pecho.",
+    "Baja con control y cambia de lado."
+  ],
+  "Dumbbell_Scaption": [
+    "De pie, con una mancuerna en cada mano a los lados y los pulgares hacia arriba.",
+    "Sube los brazos estirados en diagonal, a medio camino entre el frente y el lado, hasta la altura de los hombros.",
+    "Baja con control."
+  ],
+  "External_Rotation": [
+    "Túmbate de lado con una mancuerna en la mano de arriba y el codo pegado al costado, flexionado a 90 grados.",
+    "Gira el antebrazo hacia arriba sin separar el codo del cuerpo.",
+    "Baja con control y cambia de lado. Usa muy poco peso."
+  ],
+  "External_Rotation_with_Band": [
+    "Sujeta una banda anclada a un lado a la altura del codo, con el codo pegado al cuerpo a 90 grados.",
+    "Gira el antebrazo hacia fuera sin separar el codo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "External_Rotation_with_Cable": [
+    "Colócate de lado a una polea a la altura del codo, con el asa en la mano más alejada y el codo pegado al cuerpo.",
+    "Gira el antebrazo hacia fuera sin separar el codo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Front_Cable_Raise": [
+    "De espaldas a una polea baja, con el asa en una mano entre las piernas.",
+    "Sube el brazo estirado al frente hasta la altura del hombro.",
+    "Baja con control y cambia de lado."
+  ],
+  "Front_Dumbbell_Raise": [
+    "De pie, con una mancuerna en cada mano delante de los muslos.",
+    "Sube un brazo estirado al frente hasta la altura del hombro y bájalo con control.",
+    "Repite con el otro o sube los dos a la vez."
+  ],
+  "Front_Incline_Dumbbell_Raise": [
+    "Siéntate en un banco inclinado con la espalda apoyada y una mancuerna en cada mano.",
+    "Sube los brazos estirados al frente hasta la altura de los hombros.",
+    "Baja con control."
+  ],
+  "Front_Two-Dumbbell_Raise": [
+    "De pie, con una mancuerna en cada mano delante de los muslos.",
+    "Sube los dos brazos estirados al frente hasta la altura de los hombros.",
+    "Baja con control sin balancear el cuerpo."
+  ],
+  "Internal_Rotation_with_Band": [
+    "Sujeta una banda anclada a un lado a la altura del codo, con el codo pegado al cuerpo a 90 grados.",
+    "Gira el antebrazo hacia el abdomen sin separar el codo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Jerk_Balance": [
+    "Con la barra sobre la parte delantera de los hombros y los pies en posición de tijera corta.",
+    "Empuja la barra hacia arriba mientras das un paso adelante con el pie delantero, terminando con los brazos estirados.",
+    "Recupera la posición con control. Técnico: con poco peso."
+  ],
+  "Kettlebell_Halo": [
+    "Sujeta una kettlebell por las asas, boca abajo, delante del pecho.",
+    "Llévala alrededor de la cabeza en círculo, pasando por detrás de la nuca, sin mover el tronco.",
+    "Haz las vueltas indicadas en un sentido y luego en el otro."
+  ],
+  "Kettlebell_Halo_With_Overhead_Extension": [
+    "Haz una vuelta de halo alrededor de la cabeza con la kettlebell.",
+    "Al volver al frente, empújala por encima de la cabeza hasta estirar los brazos.",
+    "Bájala y repite cambiando de sentido."
+  ],
+  "Kettlebell_Pirate_Ships": [
+    "De pie, con los pies separados y una kettlebell sujeta con las dos manos, con los brazos estirados al frente.",
+    "Gira el tronco llevando la kettlebell en arco hacia un lado y luego hacia el otro.",
+    "Mantén el abdomen firme y los brazos estirados."
+  ],
+  "Kettlebell_Seesaw_Press": [
+    "Sujeta una kettlebell en cada mano en posición de rack.",
+    "Empuja una hacia arriba mientras la otra baja, como un balancín.",
+    "Mantén el ritmo sin arquear la espalda."
+  ],
+  "Kettlebell_Thruster": [
+    "Sujeta una o dos kettlebells en posición de rack sobre los hombros.",
+    "Baja en sentadilla y, al subir, aprovecha el impulso para empujar las kettlebells por encima de la cabeza.",
+    "Bájalas a los hombros y enlaza la siguiente repetición."
+  ],
+  "Kettlebell_Turkish_Get-Up_Lunge_style": [
+    "Túmbate boca arriba con la kettlebell en una mano, el brazo estirado hacia el techo y la rodilla de ese lado flexionada.",
+    "Sin dejar de mirar la kettlebell, incorpórate apoyando el otro codo y luego la mano, sube la cadera y pasa la pierna estirada por detrás hasta quedar arrodillado.",
+    "Ponte de pie como en una zancada y deshaz los pasos para volver al suelo. Aprende primero sin peso."
+  ],
+  "Kettlebell_Turkish_Get-Up_Squat_style": [
+    "Túmbate boca arriba con la kettlebell en una mano y el brazo estirado hacia el techo.",
+    "Incorpórate apoyando el otro codo y la mano, sube la cadera y lleva las piernas bajo el cuerpo hasta quedar en sentadilla.",
+    "Ponte de pie y deshaz los pasos. Aprende primero sin peso."
+  ],
+  "Landmine_Linear_Jammer": [
+    "Coloca un extremo de la barra en una esquina o soporte y sujeta el otro con las dos manos delante del pecho.",
+    "Baja en media sentadilla y, al subir, empuja la barra hacia arriba y delante hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Leverage_Shoulder_Press": [
+    "Siéntate en la máquina con la espalda apoyada y las asas a la altura de los hombros.",
+    "Empuja hasta estirar los brazos.",
+    "Baja con control."
+  ],
+  "Low_Pulley_Row_To_Neck": [
+    "De pie frente a una polea baja con una cuerda o barra.",
+    "Tira hacia el cuello llevando los codos altos y abiertos.",
+    "Baja con control."
+  ],
+  "Lying_One-Arm_Lateral_Raise": [
+    "Túmbate de lado en un banco con una mancuerna en la mano de arriba.",
+    "Sube el brazo estirado hasta que quede vertical.",
+    "Baja con control y cambia de lado."
+  ],
+  "Lying_Rear_Delt_Raise": [
+    "Túmbate boca abajo en un banco plano o inclinado con las mancuernas colgando.",
+    "Abre los brazos hacia los lados hasta la altura de los hombros.",
+    "Baja con control."
+  ],
+  "Machine_Shoulder_Military_Press": [
+    "Siéntate en la máquina con la espalda apoyada y las asas a la altura de los hombros.",
+    "Empuja hasta estirar los brazos.",
+    "Baja con control."
+  ],
+  "One-Arm_Incline_Lateral_Raise": [
+    "Túmbate de lado sobre un banco inclinado con una mancuerna en la mano de arriba.",
+    "Sube el brazo hasta que quede vertical.",
+    "Baja con control y cambia de lado."
+  ],
+  "One-Arm_Kettlebell_Clean_and_Jerk": [
+    "Con la kettlebell entre las piernas, súbela con un impulso de cadera hasta la posición de rack.",
+    "Flexiona un poco las rodillas y empújala por encima de la cabeza metiendo el cuerpo debajo.",
+    "Ponte de pie, bájala y repite. Cambia de mano."
+  ],
+  "One-Arm_Kettlebell_Jerk": [
+    "Sujeta la kettlebell en posición de rack sobre el hombro.",
+    "Flexiona un poco las rodillas, impúlsate y mete el cuerpo debajo con el brazo estirado.",
+    "Ponte de pie y bájala con control. Cambia de mano."
+  ],
+  "One-Arm_Kettlebell_Military_Press_To_The_Side": [
+    "Sujeta la kettlebell en posición de rack sobre el hombro.",
+    "Inclínate ligeramente hacia el lado contrario mientras la empujas hacia arriba.",
+    "Bájala con control y cambia de lado."
+  ],
+  "One-Arm_Kettlebell_Push_Press": [
+    "Sujeta la kettlebell en posición de rack sobre el hombro.",
+    "Flexiona un poco las rodillas y usa el impulso de las piernas para empujarla por encima de la cabeza.",
+    "Bájala con control y cambia de mano."
+  ],
+  "One-Arm_Kettlebell_Split_Jerk": [
+    "Sujeta la kettlebell en posición de rack sobre el hombro.",
+    "Impúlsate con las piernas y empújala arriba mientras abres las piernas en tijera.",
+    "Junta los pies con el brazo estirado y bájala con control."
+  ],
+  "One-Arm_Side_Laterals": [
+    "De pie, sujétate a algo estable con una mano y sostén una mancuerna con la otra.",
+    "Sube el brazo hacia el lado hasta la altura del hombro.",
+    "Baja con control y cambia de lado."
+  ],
+  "Power_Partials": [
+    "De pie, con una mancuerna en cada mano a los lados.",
+    "Haz elevaciones laterales cortas y rápidas en la parte baja del recorrido.",
+    "Mantén el ritmo durante la serie sin balancear el cuerpo."
+  ],
+  "Push_Press_-_Behind_the_Neck": [
+    "Con la barra sobre los trapecios y un agarre algo más abierto que los hombros.",
+    "Flexiona un poco las rodillas y usa el impulso de las piernas para empujar la barra por encima de la cabeza.",
+    "Bájala con control. Exige buena movilidad de hombros: usa poco peso."
+  ],
+  "Reverse_Flyes_With_External_Rotation": [
+    "Inclinado hacia delante con la espalda recta y una mancuerna ligera en cada mano.",
+    "Abre los brazos hacia los lados y, arriba, gira los antebrazos hacia arriba.",
+    "Deshaz el giro y baja con control."
+  ],
+  "Reverse_Machine_Flyes": [
+    "Siéntate en la máquina de aperturas mirando hacia el respaldo, con el pecho apoyado.",
+    "Agarra las asas y abre los brazos hacia atrás hasta quedar en cruz.",
+    "Vuelve con control."
+  ],
+  "Seated_Barbell_Military_Press": [
+    "Siéntate en un banco con respaldo vertical y la barra a la altura de los hombros.",
+    "Empújala hasta estirar los brazos sobre la cabeza.",
+    "Baja con control hasta la barbilla."
+  ],
+  "Seated_Cable_Shoulder_Press": [
+    "Siéntate en un banco entre dos poleas bajas con un asa en cada mano a la altura de los hombros.",
+    "Empuja hasta estirar los brazos.",
+    "Baja con control."
+  ],
+  "See-Saw_Press_Alternating_Side_Press": [
+    "De pie, con una mancuerna en cada mano a la altura de los hombros.",
+    "Empuja una hacia arriba mientras te inclinas un poco hacia el lado contrario.",
+    "Bájala mientras subes la otra, como un balancín."
+  ],
+  "Side_Laterals_to_Front_Raise": [
+    "De pie, con una mancuerna en cada mano.",
+    "Sube los brazos hacia los lados hasta la altura de los hombros, llévalos al frente y bájalos.",
+    "En la siguiente repetición haz el recorrido al revés."
+  ],
+  "Single-Arm_Linear_Jammer": [
+    "Coloca un extremo de la barra en una esquina y sujeta el otro con una mano a la altura del hombro.",
+    "Baja en media sentadilla y, al subir, empuja la barra hacia arriba y delante hasta estirar el brazo.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Single_Dumbbell_Raise": [
+    "De pie, sujeta una mancuerna con las dos manos delante de los muslos.",
+    "Súbela con los brazos estirados hasta la altura de los hombros.",
+    "Baja con control."
+  ],
+  "Smith_Incline_Shoulder_Raise": [
+    "Túmbate en un banco inclinado bajo la barra de la máquina Smith con los brazos estirados.",
+    "Sin flexionar los codos, empuja la barra separando los omóplatos del banco.",
+    "Vuelve con control."
+  ],
+  "Smith_Machine_One-Arm_Upright_Row": [
+    "De lado a la máquina Smith, agarra la barra con una mano delante del muslo.",
+    "Tira hacia arriba llevando el codo alto hasta la altura del pecho.",
+    "Baja con control y cambia de lado."
+  ],
+  "Smith_Machine_Overhead_Shoulder_Press": [
+    "Siéntate en un banco bajo la barra de la máquina Smith, a la altura de los hombros.",
+    "Empuja hasta estirar los brazos.",
+    "Baja con control hasta la barbilla."
+  ],
+  "Standing_Alternating_Dumbbell_Press": [
+    "De pie, con una mancuerna en cada mano a la altura de los hombros.",
+    "Empuja una hacia arriba y bájala con control.",
+    "Repite con la otra sin arquear la espalda."
+  ],
+  "Standing_Barbell_Press_Behind_Neck": [
+    "De pie, con la barra sobre los trapecios y un agarre algo más abierto que los hombros.",
+    "Empújala hasta estirar los brazos sobre la cabeza.",
+    "Baja con control solo hasta donde sea cómodo. Si notas molestias, hazlo por delante."
+  ],
+  "Standing_Bradford_Press": [
+    "De pie, con la barra sobre los hombros por delante.",
+    "Súbela justo por encima de la cabeza y bájala por detrás hasta la nuca.",
+    "Vuelve por delante y ve alternando. Poco peso."
+  ],
+  "Standing_Dumbbell_Press": [
+    "De pie, con una mancuerna en cada mano a la altura de los hombros.",
+    "Empuja hasta estirar los brazos sobre la cabeza.",
+    "Baja con control."
+  ],
+  "Standing_Dumbbell_Straight-Arm_Front_Delt_Raise_Above_Head": [
+    "De pie, con una mancuerna en cada mano delante de los muslos.",
+    "Sube los brazos estirados al frente hasta llevarlos por encima de la cabeza.",
+    "Baja con control. Usa poco peso."
+  ],
+  "Standing_Front_Barbell_Raise_Over_Head": [
+    "De pie, con una barra o disco sujeto delante de los muslos y los brazos estirados.",
+    "Súbelo al frente hasta llevarlo por encima de la cabeza.",
+    "Baja con control."
+  ],
+  "Standing_Low-Pulley_Deltoid_Raise": [
+    "De lado a una polea baja, con el asa en la mano más alejada.",
+    "Sube el brazo hacia el lado hasta la altura del hombro.",
+    "Baja con control y cambia de lado."
+  ],
+  "Standing_Military_Press": [
+    "De pie, con la barra apoyada delante de los hombros y las manos algo más abiertas que ellos.",
+    "Aprieta abdomen y glúteos y empuja la barra en vertical hasta estirar los brazos.",
+    "Baja con control hasta la barbilla."
+  ],
+  "Standing_Palm-In_One-Arm_Dumbbell_Press": [
+    "De pie, con una mancuerna en una mano a la altura del hombro y la palma mirando hacia dentro.",
+    "Empújala hasta estirar el brazo.",
+    "Baja con control y cambia de lado."
+  ],
+  "Standing_Palms-In_Dumbbell_Press": [
+    "De pie, con una mancuerna en cada mano a la altura de los hombros y las palmas enfrentadas.",
+    "Empuja hasta estirar los brazos.",
+    "Baja con control."
+  ],
+  "Straight_Raises_on_Incline_Bench": [
+    "Túmbate boca abajo en un banco inclinado con una barra ligera en las manos, colgando.",
+    "Sube la barra al frente con los brazos estirados hasta la altura de la cabeza.",
+    "Baja con control."
+  ],
+  "Two-Arm_Kettlebell_Clean": [
+    "Coloca dos kettlebells entre los pies.",
+    "Con la espalda recta, súbelas con un impulso de cadera hasta la posición de rack sobre los hombros.",
+    "Bájalas con control y repite."
+  ],
+  "Two-Arm_Kettlebell_Jerk": [
+    "Sujeta dos kettlebells en posición de rack sobre los hombros.",
+    "Flexiona un poco las rodillas, impúlsate y mete el cuerpo debajo con los brazos estirados.",
+    "Ponte de pie y bájalas con control."
+  ],
+  "Two-Arm_Kettlebell_Military_Press": [
+    "Sujeta dos kettlebells en posición de rack sobre los hombros.",
+    "Empújalas hasta estirar los brazos sin arquear la espalda.",
+    "Bájalas con control."
+  ],
+  "Upright_Barbell_Row": [
+    "De pie, con la barra delante de los muslos y un agarre algo más estrecho que los hombros.",
+    "Tira hacia arriba llevando los codos altos hasta que la barra llegue al pecho.",
+    "Baja con control. No subas más si notas molestias en los hombros."
+  ]
+}

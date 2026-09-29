@@ -58,11 +58,11 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   público, las fotos proceden de webs con derechos (su propio autor lo reconoce) y los textos están
   copiados de bodybuilding.com.
 - **Instrucciones:** escritas para este proyecto (`scripts/catalog/instrucciones/`), sin partir de
-  textos de terceros. Por ahora cubren los 126 ejercicios que usan el generador y el registro por
-  tiempo o distancia.
+  textos de terceros. Cubren 716 de los 876 ejercicios; quedan sin texto los de material poco
+  habitual o cuyo nombre no permite describir la técnica con seguridad.
 - **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
   animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
-  Las figuras cubren unos 95 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
+  Las figuras cubren 221 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
 - **Dependencias:** React (MIT) y Lucide (ISC). Sus textos completos van en `public/licenses.txt`,
   que `scripts/licenses.mjs` genera en cada build y la app enlaza desde la pantalla legal.
 

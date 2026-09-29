@@ -1,0 +1,212 @@
+{
+  "Alternate_Leg_Diagonal_Bound": [
+    "Desde una carrera suave, impúlsate con una pierna hacia delante y en diagonal.",
+    "Cae sobre la pierna contraria y enlaza el siguiente salto hacia el otro lado.",
+    "Busca distancia y aterrizajes controlados."
+  ],
+  "Backward_Medicine_Ball_Throw": [
+    "De pie, con el balón medicinal sujeto con las dos manos entre las piernas.",
+    "Flexiona cadera y rodillas y, al estirarte con fuerza, lanza el balón hacia atrás por encima de la cabeza.",
+    "Asegúrate de que no haya nadie detrás."
+  ],
+  "Bench_Jump": [
+    "De pie junto a un banco bajo y estable.",
+    "Salta por encima de él de un lado a otro con los pies juntos.",
+    "Cae con suavidad flexionando las rodillas."
+  ],
+  "Carioca_Quick_Step": [
+    "Desplázate de lado cruzando un pie por delante y luego por detrás del otro.",
+    "Mantén la cadera girando y los pies rápidos.",
+    "Recorre la distancia y vuelve en el otro sentido."
+  ],
+  "Catch_and_Overhead_Throw": [
+    "Colócate frente a un compañero o una pared con el balón medicinal.",
+    "Recibe el balón por encima de la cabeza y devuélvelo lanzándolo con fuerza con las dos manos.",
+    "Mantén el abdomen firme durante el lanzamiento."
+  ],
+  "Chest_Push_multiple_response": [
+    "De pie, con el balón medicinal a la altura del pecho.",
+    "Lánzalo con fuerza hacia delante estirando los brazos y da un paso para seguirlo.",
+    "Recógelo y repite varias veces seguidas."
+  ],
+  "Chest_Push_single_response": [
+    "De pie, con el balón medicinal a la altura del pecho.",
+    "Lánzalo con fuerza hacia delante estirando los brazos.",
+    "Recógelo y vuelve a colocarte antes del siguiente."
+  ],
+  "Double_Leg_Butt_Kick": [
+    "De pie, salta hacia arriba con los dos pies.",
+    "En el aire, lleva los talones hacia los glúteos.",
+    "Cae con suavidad y enlaza el siguiente salto."
+  ],
+  "Dumbbell_Seated_Box_Jump": [
+    "Siéntate en un banco frente a un cajón con una mancuerna ligera en cada mano.",
+    "Ponte de pie de forma explosiva y salta al cajón.",
+    "Baja con cuidado y vuelve a sentarte."
+  ],
+  "Fast_Skipping": [
+    "Avanza saltando sobre la parte delantera de los pies, alternándolos.",
+    "Lleva las rodillas hacia arriba y mueve los brazos en coordinación.",
+    "Busca rapidez con pasos cortos."
+  ],
+  "Front_Box_Jump": [
+    "De pie frente a un cajón estable.",
+    "Flexiona un poco las piernas, balancea los brazos y salta al cajón cayendo con las rodillas flexionadas.",
+    "Baja caminando y repite. Elige una altura segura."
+  ],
+  "Front_Cone_Hops_or_hurdle_hops": [
+    "Coloca varios conos u obstáculos bajos en fila.",
+    "Salta por encima de ellos con los dos pies juntos, enlazando los saltos.",
+    "Cae con suavidad y reacciona rápido."
+  ],
+  "Hurdle_Hops": [
+    "Coloca varias vallas bajas en fila.",
+    "Salta por encima de ellas con los pies juntos, subiendo las rodillas.",
+    "Enlaza los saltos con aterrizajes suaves."
+  ],
+  "Knee_Tuck_Jump": [
+    "De pie, con los pies a la anchura de la cadera.",
+    "Salta hacia arriba llevando las rodillas al pecho.",
+    "Cae con suavidad y enlaza el siguiente salto."
+  ],
+  "Lateral_Bound": [
+    "De pie sobre una pierna.",
+    "Salta hacia el lado lo más lejos que puedas y cae sobre la otra pierna.",
+    "Estabiliza y salta de vuelta."
+  ],
+  "Lateral_Box_Jump": [
+    "De pie junto a un cajón bajo y estable.",
+    "Salta de lado al cajón y bájate por el otro lado.",
+    "Alterna la dirección con aterrizajes controlados."
+  ],
+  "Lateral_Cone_Hops": [
+    "Coloca un cono a tu lado.",
+    "Salta por encima de él de lado a lado con los pies juntos.",
+    "Mantén el ritmo con aterrizajes suaves."
+  ],
+  "Linear_Acceleration_Wall_Drill": [
+    "Apoya las manos en una pared con el cuerpo inclinado y en línea recta.",
+    "Sube una rodilla y cambia de pierna rápidamente, como al arrancar a correr.",
+    "Mantén la inclinación y el ritmo."
+  ],
+  "Linear_Depth_Jump": [
+    "Súbete a un cajón bajo.",
+    "Déjate caer al suelo y, nada más tocarlo, salta hacia delante lo más lejos que puedas.",
+    "Cae con suavidad. Es un ejercicio avanzado: empieza con poca altura."
+  ],
+  "Medicine_Ball_Chest_Pass": [
+    "Frente a un compañero o una pared, sujeta el balón medicinal a la altura del pecho.",
+    "Lánzalo con fuerza estirando los brazos.",
+    "Recíbelo con los brazos flexionados y repite."
+  ],
+  "Medicine_Ball_Full_Twist": [
+    "De espaldas a un compañero, con el balón medicinal en las manos.",
+    "Gira el tronco para pasárselo por un lado y recíbelo por el otro.",
+    "Mantén los pies fijos y el abdomen firme."
+  ],
+  "Medicine_Ball_Scoop_Throw": [
+    "De lado a una pared, con el balón medicinal junto a la cadera.",
+    "Gira la cadera y lánzalo con fuerza contra la pared con un movimiento de barrido.",
+    "Recógelo y repite. Cambia de lado."
+  ],
+  "Overhead_Slam": [
+    "De pie, con el balón medicinal sujeto por encima de la cabeza.",
+    "Lánzalo con fuerza contra el suelo delante de ti flexionando el tronco.",
+    "Recógelo en el rebote y repite. Usa un balón que no rebote demasiado."
+  ],
+  "Plyo_Push-up": [
+    "Colócate en posición de flexión.",
+    "Baja y empuja con tanta fuerza que las manos se despeguen del suelo.",
+    "Cae con los codos un poco flexionados y enlaza la siguiente."
+  ],
+  "Prowler_Sprint": [
+    "Sujeta las asas del trineo con los brazos estirados y el cuerpo inclinado.",
+    "Empuja corriendo con pasos potentes.",
+    "Recorre la distancia y descansa antes de la siguiente."
+  ],
+  "Rocket_Jump": [
+    "Baja en media sentadilla con los brazos abajo.",
+    "Salta hacia arriba lo más alto que puedas estirando los brazos por encima de la cabeza.",
+    "Cae con suavidad."
+  ],
+  "Scissors_Jump": [
+    "Colócate en posición de zancada.",
+    "Salta y cambia las piernas en el aire.",
+    "Cae en zancada con la otra pierna delante y enlaza."
+  ],
+  "Side_Standing_Long_Jump": [
+    "De pie, de lado a la dirección del salto.",
+    "Flexiona las piernas y salta hacia el lado lo más lejos que puedas.",
+    "Cae con los dos pies y estabiliza."
+  ],
+  "Side_to_Side_Box_Shuffle": [
+    "De pie junto a un cajón bajo con un pie encima.",
+    "Salta de un lado a otro del cajón cambiando el pie de apoyo arriba.",
+    "Mantén un ritmo rápido y controlado."
+  ],
+  "Single-Leg_Lateral_Hop": [
+    "De pie sobre una pierna.",
+    "Salta hacia el lado sobre la misma pierna y cae estabilizando.",
+    "Vuelve saltando. Cambia de pierna."
+  ],
+  "Single-Leg_Stride_Jump": [
+    "De pie junto a un banco bajo, con un pie encima.",
+    "Impúlsate con esa pierna para saltar hacia arriba y cae en la misma posición.",
+    "Haz todas las repeticiones y cambia de lado."
+  ],
+  "Single_Leg_Butt_Kick": [
+    "Desde una carrera suave, lleva el talón de una pierna al glúteo en cada zancada.",
+    "Mantén el ritmo con la otra pierna haciendo zancadas normales.",
+    "Cambia de pierna en la siguiente serie."
+  ],
+  "Sledgehammer_Swings": [
+    "De pie frente a un neumático, sujeta la maza con las dos manos.",
+    "Súbela por encima del hombro y golpea el neumático con fuerza, deslizando la mano de arriba hacia la de abajo.",
+    "Alterna los lados. Mantén los pies firmes y deja espacio alrededor."
+  ],
+  "Split_Jump": [
+    "Colócate en posición de zancada.",
+    "Salta hacia arriba y cae en la misma posición.",
+    "Enlaza los saltos y cambia la pierna de delante en la siguiente serie."
+  ],
+  "Standing_Long_Jump": [
+    "De pie, con los pies a la anchura de la cadera.",
+    "Flexiona las piernas, balancea los brazos y salta hacia delante lo más lejos que puedas.",
+    "Cae con los dos pies y estabiliza."
+  ],
+  "Standing_Two-Arm_Overhead_Throw": [
+    "De pie, con el balón medicinal por encima de la cabeza.",
+    "Lánzalo con fuerza hacia delante con las dos manos, como un saque de banda.",
+    "Recógelo y repite."
+  ],
+  "Star_Jump": [
+    "Baja en media sentadilla con los brazos junto al cuerpo.",
+    "Salta abriendo brazos y piernas en forma de estrella.",
+    "Cierra antes de caer y aterriza con suavidad."
+  ],
+  "Stride_Jump_Crossover": [
+    "De pie junto a un banco bajo, con un pie encima.",
+    "Salta por encima del banco cambiando de lado y apoyando el otro pie arriba.",
+    "Alterna con ritmo y control."
+  ],
+  "Supine_Chest_Throw": [
+    "Túmbate boca arriba con el balón medicinal a la altura del pecho.",
+    "Lánzalo hacia arriba estirando los brazos.",
+    "Recógelo con control y repite. Usa un balón ligero o hazlo con compañero."
+  ],
+  "Supine_One-Arm_Overhead_Throw": [
+    "Túmbate boca arriba con el balón medicinal en una mano por encima de la cabeza.",
+    "Incorpórate ligeramente y lánzalo hacia delante a un compañero.",
+    "Recógelo y repite. Cambia de brazo."
+  ],
+  "Supine_Two-Arm_Overhead_Throw": [
+    "Túmbate boca arriba con el balón medicinal sujeto con las dos manos por encima de la cabeza.",
+    "Incorpórate ligeramente y lánzalo hacia delante a un compañero.",
+    "Recógelo y repite."
+  ],
+  "Vertical_Swing": [
+    "De pie, con los pies separados y una mancuerna sujeta con las dos manos por un extremo.",
+    "Llévala entre las piernas flexionando la cadera y súbela por encima de la cabeza con un impulso de cadera.",
+    "Deja que baje de nuevo entre las piernas con control."
+  ]
+}

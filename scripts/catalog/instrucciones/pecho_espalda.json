@@ -1,0 +1,457 @@
+{
+  "Around_The_Worlds": [
+    "Túmbate en un banco plano con una mancuerna ligera en cada mano apoyada sobre los muslos, con las palmas hacia arriba.",
+    "Con los brazos casi estirados, describe un arco amplio hacia los lados hasta llevar las mancuernas por encima de la cabeza.",
+    "Vuelve por el mismo recorrido. Usa poco peso: el hombro trabaja en posiciones exigentes."
+  ],
+  "Barbell_Guillotine_Bench_Press": [
+    "Túmbate en el banco y agarra la barra algo más abierto de lo habitual.",
+    "Baja la barra hacia la parte alta del pecho, cerca del cuello, con los codos abiertos.",
+    "Empuja hasta estirar los brazos. Es arriesgado: usa poco peso y siempre con alguien que te ayude."
+  ],
+  "Bent-Arm_Dumbbell_Pullover": [
+    "Túmbate en un banco sujetando una mancuerna con las dos manos sobre el pecho, con los codos flexionados.",
+    "Llévala por detrás de la cabeza hasta notar el estiramiento, sin cambiar el ángulo de los codos.",
+    "Vuelve arriba describiendo el mismo arco."
+  ],
+  "Cable_Chest_Press": [
+    "Colócate de espaldas entre dos poleas a la altura del pecho, con un asa en cada mano y un pie adelantado.",
+    "Empuja las asas hacia delante hasta estirar los brazos.",
+    "Vuelve con control hasta que las manos queden a la altura del pecho."
+  ],
+  "Cable_Iron_Cross": [
+    "Colócate entre dos poleas altas con un asa en cada mano y los brazos abiertos en cruz.",
+    "Con los codos un poco flexionados, baja las manos hasta juntarlas delante de la cadera.",
+    "Vuelve con control a la posición en cruz."
+  ],
+  "Clock_Push-Up": [
+    "Colócate en posición de flexión.",
+    "Haz una flexión y, al subir, desplaza las manos un paso hacia un lado mientras los pies pivotan.",
+    "Repite avanzando como las agujas de un reloj hasta dar la vuelta y cambia de sentido."
+  ],
+  "Decline_Barbell_Bench_Press": [
+    "Túmbate en el banco declinado con los pies bien sujetos.",
+    "Saca la barra con un agarre algo más abierto que los hombros y bájala hasta la parte baja del pecho.",
+    "Empuja hasta estirar los brazos. Pide ayuda para sacar y dejar la barra."
+  ],
+  "Decline_Dumbbell_Bench_Press": [
+    "Túmbate en el banco declinado con los pies sujetos y una mancuerna en cada mano sobre el pecho.",
+    "Baja las mancuernas a los lados de la parte baja del pecho.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Decline_Dumbbell_Flyes": [
+    "Túmbate en el banco declinado con las mancuernas sobre el pecho y las palmas enfrentadas.",
+    "Con los codos un poco flexionados, abre los brazos hacia los lados hasta notar el estiramiento.",
+    "Vuelve a cerrar describiendo un arco."
+  ],
+  "Decline_Smith_Press": [
+    "Coloca un banco declinado bajo la barra de la máquina Smith y túmbate con los pies sujetos.",
+    "Quita los seguros y baja la barra hasta la parte baja del pecho.",
+    "Empuja hasta estirar los brazos y vuelve a poner los seguros."
+  ],
+  "Dumbbell_Bench_Press_with_Neutral_Grip": [
+    "Túmbate en un banco plano con las mancuernas sobre el pecho y las palmas enfrentadas.",
+    "Bájalas a los lados del pecho con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos. El agarre neutro suele ser cómodo para los hombros."
+  ],
+  "Flat_Bench_Cable_Flyes": [
+    "Coloca un banco plano entre dos poleas bajas y túmbate con un asa en cada mano sobre el pecho.",
+    "Con los codos un poco flexionados, abre los brazos hacia los lados hasta notar el estiramiento.",
+    "Vuelve a cerrar describiendo un arco."
+  ],
+  "Front_Raise_And_Pullover": [
+    "Túmbate en un banco con una barra ligera sujeta sobre los muslos, con los brazos estirados.",
+    "Sube la barra describiendo un arco por encima del pecho hasta llevarla por detrás de la cabeza.",
+    "Vuelve por el mismo recorrido hasta los muslos."
+  ],
+  "Hammer_Grip_Incline_DB_Bench_Press": [
+    "Ajusta el banco a unos 30 grados y túmbate con las mancuernas sobre el pecho y las palmas enfrentadas.",
+    "Bájalas a los lados del pecho con los codos cerca del cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Incline_Cable_Chest_Press": [
+    "Coloca un banco inclinado entre dos poleas bajas y túmbate con un asa en cada mano a la altura del pecho.",
+    "Empuja hacia arriba hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Incline_Cable_Flye": [
+    "Coloca un banco inclinado entre dos poleas bajas y túmbate con un asa en cada mano sobre el pecho.",
+    "Con los codos un poco flexionados, abre los brazos hasta notar el estiramiento.",
+    "Vuelve a cerrar describiendo un arco."
+  ],
+  "Incline_Dumbbell_Bench_With_Palms_Facing_In": [
+    "Ajusta el banco a unos 30 grados y túmbate con las mancuernas sobre el pecho y las palmas enfrentadas.",
+    "Bájalas a los lados del pecho y empuja hasta estirar los brazos.",
+    "Mantén los codos cerca del cuerpo."
+  ],
+  "Incline_Dumbbell_Flyes_-_With_A_Twist": [
+    "Túmbate en un banco inclinado con las mancuernas sobre el pecho y las palmas enfrentadas.",
+    "Abre los brazos hacia los lados con los codos un poco flexionados.",
+    "Al cerrar, gira las muñecas para terminar con los meñiques juntos arriba y aprieta el pecho."
+  ],
+  "Incline_Push-Up": [
+    "Apoya las manos en un banco o superficie elevada, algo más abiertas que los hombros, con el cuerpo recto.",
+    "Baja el pecho hacia el banco flexionando los codos.",
+    "Empuja hasta estirar los brazos. Es más fácil que la flexión en el suelo."
+  ],
+  "Incline_Push-Up_Medium": [
+    "Apoya las manos en un banco a la anchura de los hombros, con el cuerpo recto.",
+    "Baja el pecho hacia el banco con los codos a unos 45 grados del cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Incline_Push-Up_Reverse_Grip": [
+    "Apoya las manos en un banco con las palmas mirando hacia ti, a la anchura de los hombros.",
+    "Baja el pecho hacia el banco con los codos pegados al cuerpo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Incline_Push-Up_Wide": [
+    "Apoya las manos en un banco, bastante más abiertas que los hombros, con el cuerpo recto.",
+    "Baja el pecho hacia el banco.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Isometric_Wipers": [
+    "Colócate en posición de flexión con las manos más abiertas que los hombros.",
+    "Desplaza el peso hacia un brazo flexionándolo mientras el otro queda casi estirado.",
+    "Vuelve al centro y pasa al otro lado, con el cuerpo recto en todo momento."
+  ],
+  "Leverage_Chest_Press": [
+    "Siéntate en la máquina con la espalda apoyada y las asas a la altura del pecho.",
+    "Empuja hasta estirar los brazos.",
+    "Vuelve con control sin que el peso toque la pila."
+  ],
+  "Leverage_Decline_Chest_Press": [
+    "Siéntate en la máquina de press declinado con la espalda apoyada.",
+    "Empuja las asas hacia delante y abajo hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Leverage_Incline_Chest_Press": [
+    "Siéntate en la máquina de press inclinado con la espalda apoyada.",
+    "Empuja las asas hacia arriba y delante hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Low_Cable_Crossover": [
+    "Coloca las poleas en la posición baja y agarra un asa con cada mano. Da un paso al frente.",
+    "Con los codos un poco flexionados, sube las manos hasta juntarlas delante del pecho.",
+    "Vuelve con control. Trabaja más la parte alta del pecho."
+  ],
+  "Machine_Bench_Press": [
+    "Túmbate o siéntate en la máquina con las asas a la altura del pecho.",
+    "Empuja hasta estirar los brazos.",
+    "Vuelve con control."
+  ],
+  "Neck_Press": [
+    "Túmbate en el banco y agarra la barra algo más abierto que los hombros.",
+    "Baja la barra hacia la base del cuello, con los codos abiertos.",
+    "Empuja hasta estirar los brazos. Usa poco peso y siempre con alguien que te ayude."
+  ],
+  "One-Arm_Flat_Bench_Dumbbell_Flye": [
+    "Túmbate en un banco plano con una mancuerna en una mano sobre el pecho y la otra mano sujeta al banco.",
+    "Con el codo un poco flexionado, abre el brazo hacia el lado hasta notar el estiramiento.",
+    "Vuelve a cerrar. Haz todas las repeticiones y cambia de brazo."
+  ],
+  "One_Arm_Dumbbell_Bench_Press": [
+    "Túmbate en un banco plano con una mancuerna en una mano sobre el pecho.",
+    "Bájala al lado del pecho sin dejar que el cuerpo gire.",
+    "Empuja hasta estirar el brazo. Cambia de lado. Exige estabilidad del tronco."
+  ],
+  "Push-Ups_With_Feet_Elevated": [
+    "Apoya los pies sobre un banco y las manos en el suelo, algo más abiertas que los hombros.",
+    "Con el cuerpo recto, baja hasta que la cara quede cerca del suelo.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Push_Up_to_Side_Plank": [
+    "Haz una flexión normal.",
+    "Al subir, gira el cuerpo hacia un lado y eleva un brazo hacia el techo, quedando en plancha lateral.",
+    "Vuelve a la posición de flexión y repite hacia el otro lado."
+  ],
+  "Pushups_Close_and_Wide_Hand_Positions": [
+    "Haz una flexión con las manos juntas bajo el pecho.",
+    "Separa las manos bastante más que los hombros y haz otra flexión.",
+    "Alterna las dos posiciones durante la serie."
+  ],
+  "Single-Arm_Cable_Crossover": [
+    "Coloca una polea alta y agarra el asa con una mano; colócate de lado a la máquina.",
+    "Con el codo un poco flexionado, lleva la mano hacia la cadera contraria describiendo un arco.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Single-Arm_Push-Up": [
+    "Colócate en posición de flexión con los pies bastante separados y una mano detrás de la espalda.",
+    "Baja con el cuerpo recto, sin girar la cadera.",
+    "Empuja hasta estirar el brazo. Es un ejercicio avanzado."
+  ],
+  "Smith_Machine_Bench_Press": [
+    "Coloca un banco plano bajo la barra de la máquina Smith y túmbate.",
+    "Quita los seguros y baja la barra hasta el pecho.",
+    "Empuja hasta estirar los brazos y vuelve a poner los seguros."
+  ],
+  "Smith_Machine_Decline_Press": [
+    "Coloca un banco declinado bajo la barra de la máquina Smith y túmbate con los pies sujetos.",
+    "Baja la barra hasta la parte baja del pecho.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Smith_Machine_Incline_Bench_Press": [
+    "Coloca un banco inclinado bajo la barra de la máquina Smith y túmbate.",
+    "Baja la barra hasta la parte alta del pecho.",
+    "Empuja hasta estirar los brazos."
+  ],
+  "Standing_Cable_Chest_Press": [
+    "De espaldas a una polea a la altura del pecho, con el asa en una o las dos manos y un pie adelantado.",
+    "Empuja hacia delante hasta estirar los brazos, sin arquear la espalda.",
+    "Vuelve con control."
+  ],
+  "Straight-Arm_Dumbbell_Pullover": [
+    "Túmbate en un banco sujetando una mancuerna con las dos manos sobre el pecho, con los brazos casi estirados.",
+    "Llévala por detrás de la cabeza describiendo un arco hasta notar el estiramiento.",
+    "Vuelve arriba por el mismo recorrido."
+  ],
+  "Wide-Grip_Barbell_Bench_Press": [
+    "Túmbate en el banco y agarra la barra bastante más abierto que los hombros.",
+    "Bájala hasta el pecho con control.",
+    "Empuja hasta estirar los brazos. Si notas molestias en los hombros, cierra el agarre."
+  ],
+  "Wide-Grip_Decline_Barbell_Bench_Press": [
+    "Túmbate en el banco declinado con los pies sujetos y agarra la barra bastante más abierto que los hombros.",
+    "Bájala hasta la parte baja del pecho.",
+    "Empuja hasta estirar los brazos. Pide ayuda para sacar y dejar la barra."
+  ],
+  "Wide-Grip_Decline_Barbell_Pullover": [
+    "Túmbate en un banco declinado con los pies sujetos y una barra sobre el pecho, con agarre abierto.",
+    "Con los brazos casi estirados, llévala por detrás de la cabeza.",
+    "Vuelve por el mismo recorrido."
+  ],
+  "Bent-Arm_Barbell_Pullover": [
+    "Túmbate en un banco con una barra Z o recta sobre el pecho, con los codos flexionados.",
+    "Llévala por detrás de la cabeza sin cambiar el ángulo de los codos.",
+    "Vuelve arriba apretando la espalda y el pecho."
+  ],
+  "Cable_Incline_Pushdown": [
+    "Coloca un banco inclinado mirando a una polea alta y túmbate boca arriba con la barra en las manos por encima de la cabeza.",
+    "Con los brazos estirados, lleva la barra hasta los muslos.",
+    "Vuelve con control."
+  ],
+  "Elevated_Cable_Rows": [
+    "Siéntate en una plataforma elevada frente a la polea baja, con las piernas apoyadas.",
+    "Tira del agarre hacia el abdomen con la espalda recta.",
+    "Vuelve estirando los brazos; la altura permite un mayor estiramiento."
+  ],
+  "Kneeling_High_Pulley_Row": [
+    "Arrodíllate frente a una polea alta con una barra o cuerda, con los brazos estirados hacia arriba.",
+    "Tira hacia el pecho llevando los codos hacia abajo y atrás.",
+    "Vuelve con control."
+  ],
+  "Kneeling_Single-Arm_High_Pulley_Row": [
+    "Arrodíllate frente a una polea alta con un asa en una mano.",
+    "Tira hacia el costado llevando el codo hacia abajo y atrás.",
+    "Vuelve con control y cambia de brazo."
+  ],
+  "Leverage_Iso_Row": [
+    "Siéntate en la máquina con el pecho apoyado en la almohadilla.",
+    "Tira de las asas llevando los codos hacia atrás y juntando las escápulas; puedes trabajar un brazo o los dos.",
+    "Vuelve con control."
+  ],
+  "One_Arm_Lat_Pulldown": [
+    "Siéntate en la máquina de jalón con un asa en una mano.",
+    "Tira hacia abajo llevando el codo hacia el costado.",
+    "Sube con control estirando el brazo y cambia de lado."
+  ],
+  "Rope_Straight-Arm_Pulldown": [
+    "Coloca una cuerda en la polea alta y agárrala con los brazos estirados.",
+    "Inclina un poco el tronco y, sin flexionar los codos, lleva la cuerda hasta los muslos.",
+    "Vuelve con control."
+  ],
+  "Shotgun_Row": [
+    "Colócate de frente a una polea baja, con un pie adelantado y el asa en una mano.",
+    "Tira del asa hacia la cadera llevando el codo atrás y girando un poco el tronco.",
+    "Vuelve estirando el brazo y cambia de lado."
+  ],
+  "Straight-Arm_Pulldown": [
+    "Coloca una barra en la polea alta y agárrala con los brazos estirados, a la anchura de los hombros.",
+    "Inclina un poco el tronco y, sin flexionar los codos, lleva la barra hasta los muslos.",
+    "Vuelve con control hasta la altura de la cabeza."
+  ],
+  "Underhand_Cable_Pulldowns": [
+    "Siéntate en la máquina de jalón y agarra la barra con las palmas hacia ti, a la anchura de los hombros.",
+    "Tira hacia la parte alta del pecho llevando los codos hacia abajo.",
+    "Sube con control."
+  ],
+  "V-Bar_Pulldown": [
+    "Coloca el triángulo en la polea alta y siéntate con los muslos sujetos.",
+    "Tira hacia la parte alta del pecho llevando los codos pegados al cuerpo.",
+    "Sube con control estirando los brazos."
+  ],
+  "V-Bar_Pullup": [
+    "Coloca un triángulo sobre la barra de dominadas y agárralo con las dos manos.",
+    "Tira hasta que el pecho se acerque al triángulo, con los codos hacia abajo.",
+    "Baja con control."
+  ],
+  "Wide-Grip_Pulldown_Behind_The_Neck": [
+    "Siéntate en la máquina de jalón y agarra la barra muy abierta.",
+    "Inclina un poco la cabeza hacia delante y baja la barra por detrás de la nuca solo hasta donde sea cómodo.",
+    "Sube con control. Si notas molestias en los hombros, haz el jalón por delante."
+  ],
+  "Wide-Grip_Rear_Pull-Up": [
+    "Cuélgate de la barra con un agarre muy abierto.",
+    "Tira llevando la nuca hacia la barra, solo hasta donde sea cómodo para los hombros.",
+    "Baja con control. Si notas molestias, haz la dominada por delante."
+  ],
+  "Alternating_Kettlebell_Row": [
+    "Con una kettlebell en cada mano, inclina el tronco hacia delante con la espalda recta.",
+    "Tira de una kettlebell hacia la cadera y bájala.",
+    "Repite con la otra y ve alternando."
+  ],
+  "Bent_Over_One-Arm_Long_Bar_Row": [
+    "Coloca un extremo de la barra en una esquina o soporte y carga el otro. Colócate a un lado.",
+    "Con el tronco inclinado y la espalda recta, agarra la barra con una mano cerca de los discos.",
+    "Tira hacia la cadera llevando el codo atrás y baja con control. Cambia de lado."
+  ],
+  "Bent_Over_Two-Arm_Long_Bar_Row": [
+    "Coloca un extremo de la barra en una esquina o soporte y carga el otro. Colócate a horcajadas sobre ella.",
+    "Con el tronco inclinado, agárrala con las dos manos justo detrás de los discos.",
+    "Tira hacia el pecho juntando las escápulas y baja con control."
+  ],
+  "Bent_Over_Two-Dumbbell_Row_With_Palms_In": [
+    "Con una mancuerna en cada mano y las palmas enfrentadas, inclina el tronco con la espalda recta.",
+    "Tira de las mancuernas hacia la cadera con los codos pegados al cuerpo.",
+    "Baja con control."
+  ],
+  "Dumbbell_Incline_Row": [
+    "Túmbate boca abajo en un banco inclinado con una mancuerna en cada mano colgando.",
+    "Tira de las mancuernas hacia la cadera juntando las escápulas.",
+    "Baja con control. El banco evita balancearte."
+  ],
+  "Incline_Bench_Pull": [
+    "Túmbate boca abajo en un banco inclinado con una barra en las manos colgando.",
+    "Tira de la barra hacia el banco llevando los codos atrás.",
+    "Baja con control."
+  ],
+  "Leverage_High_Row": [
+    "Siéntate en la máquina con los muslos sujetos y agarra las asas por encima de la cabeza.",
+    "Tira hacia abajo y atrás llevando los codos hacia los costados.",
+    "Vuelve con control."
+  ],
+  "Lying_Cambered_Barbell_Row": [
+    "Túmbate boca abajo en un banco alto con una barra curvada en las manos colgando.",
+    "Tira hacia el banco llevando los codos atrás; la curva de la barra permite más recorrido.",
+    "Baja con control."
+  ],
+  "Lying_T-Bar_Row": [
+    "Túmbate boca abajo en la máquina de remo en T con el pecho apoyado.",
+    "Agarra las asas y tira hacia el pecho juntando las escápulas.",
+    "Baja con control."
+  ],
+  "Middle_Back_Shrug": [
+    "Túmbate boca abajo en un banco inclinado con una mancuerna en cada mano, los brazos colgando.",
+    "Sin flexionar los codos, junta las escápulas llevando los hombros hacia atrás.",
+    "Aguanta un segundo y vuelve con control."
+  ],
+  "One-Arm_Kettlebell_Row": [
+    "Apoya una mano y una rodilla en un banco, o inclina el tronco con la espalda recta, con una kettlebell en la otra mano.",
+    "Tira de la kettlebell hacia la cadera con el codo pegado al cuerpo.",
+    "Baja con control y cambia de lado."
+  ],
+  "One-Arm_Long_Bar_Row": [
+    "Coloca un extremo de la barra en una esquina y carga el otro.",
+    "Con el tronco inclinado y una mano en la rodilla, agarra la barra con la otra.",
+    "Tira hacia la cadera y baja con control. Cambia de lado."
+  ],
+  "Reverse_Grip_Bent-Over_Rows": [
+    "Agarra la barra con las palmas hacia delante, a la anchura de los hombros, e inclina el tronco con la espalda recta.",
+    "Tira de la barra hacia la parte baja del abdomen con los codos pegados al cuerpo.",
+    "Baja con control."
+  ],
+  "Seated_One-arm_Cable_Pulley_Rows": [
+    "Siéntate en la máquina de remo con un asa en una mano.",
+    "Tira hacia la cadera llevando el codo atrás, con la espalda recta.",
+    "Vuelve estirando el brazo y cambia de lado."
+  ],
+  "Smith_Machine_Bent_Over_Row": [
+    "Colócate en la máquina Smith con la barra a la altura de las rodillas e inclina el tronco con la espalda recta.",
+    "Agarra la barra y tira hacia la parte baja del pecho.",
+    "Baja con control."
+  ],
+  "T-Bar_Row_with_Handle": [
+    "Coloca un extremo de la barra en una esquina y carga el otro. Pasa un agarre en V por debajo, junto a los discos.",
+    "Con el tronco inclinado y la espalda recta, tira del agarre hacia el pecho.",
+    "Baja con control."
+  ],
+  "Barbell_Shrug_Behind_The_Back": [
+    "De pie, con la barra sujeta detrás de los muslos y las palmas hacia atrás.",
+    "Sube los hombros hacia las orejas lo más alto que puedas.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Cable_Shrugs": [
+    "De pie frente a una polea baja con una barra en las manos.",
+    "Sube los hombros hacia las orejas sin flexionar los codos.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Calf-Machine_Shoulder_Shrug": [
+    "Colócate en la máquina de gemelos de pie con los hombros bajo las almohadillas, pero con los pies planos.",
+    "Sube los hombros lo más alto que puedas.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Clean_Shrug": [
+    "De pie, con la barra delante de los muslos y agarre de cargada.",
+    "Flexiona un poco las rodillas y extiende con fuerza cadera y piernas mientras encoges los hombros.",
+    "No flexiones los codos. Baja con control."
+  ],
+  "Leverage_Shrug": [
+    "Colócate en la máquina de encogimientos con las asas a los lados.",
+    "Sube los hombros hacia las orejas.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Smith_Machine_Behind_the_Back_Shrug": [
+    "De espaldas a la barra de la máquina Smith, sujétala por detrás de los muslos.",
+    "Sube los hombros lo más alto que puedas.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Smith_Machine_Upright_Row": [
+    "De pie frente a la barra de la máquina Smith, sujétala a la altura de los muslos con agarre estrecho.",
+    "Tira hacia arriba llevando los codos altos hasta que las manos lleguen al pecho.",
+    "Baja con control. No subas más si notas molestias en los hombros."
+  ],
+  "Snatch_Shrug": [
+    "De pie, con la barra delante de los muslos y agarre muy abierto.",
+    "Flexiona un poco las rodillas y extiende con fuerza mientras encoges los hombros.",
+    "Baja con control."
+  ],
+  "Standing_Dumbbell_Upright_Row": [
+    "De pie, con una mancuerna en cada mano delante de los muslos.",
+    "Tira hacia arriba llevando los codos altos hasta que las manos lleguen a la altura del pecho.",
+    "Baja con control."
+  ],
+  "Upright_Cable_Row": [
+    "De pie frente a una polea baja con una barra corta en las manos.",
+    "Tira hacia arriba llevando los codos altos hasta que la barra llegue al pecho.",
+    "Baja con control."
+  ],
+  "Deficit_Deadlift": [
+    "Súbete a un disco o plataforma baja con la barra sobre la mitad del pie.",
+    "Flexiona cadera y rodillas con la espalda recta y agarra la barra.",
+    "Sube empujando el suelo hasta quedar de pie. El déficit alarga el recorrido: usa menos peso."
+  ],
+  "Hyperextensions_With_No_Hyperextension_Bench": [
+    "Túmbate boca abajo sobre un banco con la cadera en el borde y pide a alguien que te sujete los tobillos.",
+    "Baja el tronco flexionando la cadera con la espalda recta.",
+    "Sube hasta alinear el tronco con las piernas, sin arquear de más."
+  ],
+  "Rack_Pull_with_Bands": [
+    "Coloca la barra en los topes del rack a la altura de las rodillas y engancha bandas a los extremos.",
+    "Con la espalda recta, sube hasta quedar de pie: la resistencia aumenta al final.",
+    "Baja con control hasta los topes."
+  ],
+  "Rack_Pulls": [
+    "Coloca la barra en los topes del rack a la altura de las rodillas.",
+    "Agárrala con la espalda recta y el pecho alto y sube hasta quedar de pie.",
+    "Baja con control hasta los topes."
+  ],
+  "Seated_Good_Mornings": [
+    "Siéntate en un banco con la barra sobre los trapecios.",
+    "Con la espalda recta, inclina el tronco hacia delante.",
+    "Vuelve a subir. Usa poco peso."
+  ],
+  "Stiff_Leg_Barbell_Good_Morning": [
+    "Con la barra sobre los trapecios y las piernas casi estiradas.",
+    "Inclina el tronco hacia delante llevando la cadera atrás, con la espalda recta.",
+    "Vuelve arriba estirando la cadera. Usa un peso moderado."
+  ]
+}

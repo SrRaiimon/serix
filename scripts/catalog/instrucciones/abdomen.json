@@ -1,0 +1,282 @@
+{
+  "3_4_Sit-Up": [
+    "Túmbate boca arriba con las rodillas flexionadas y los pies apoyados.",
+    "Sube el tronco hasta unos tres cuartos del recorrido completo, sin llegar a sentarte.",
+    "Baja con control sin apoyar del todo la espalda."
+  ],
+  "Ab_Crunch_Machine": [
+    "Siéntate en la máquina y sujeta las asas o apoya el pecho en la almohadilla.",
+    "Enrolla el tronco hacia delante contrayendo el abdomen.",
+    "Vuelve con control."
+  ],
+  "Advanced_Kettlebell_Windmill": [
+    "Sube una kettlebell por encima de la cabeza con el brazo estirado, con los pies apuntando hacia el lado contrario.",
+    "Mirándola en todo momento, lleva la cadera hacia el lado del brazo que la sujeta y baja la otra mano hasta el suelo.",
+    "Vuelve a subir con el brazo siempre vertical. Requiere buena movilidad: poco peso."
+  ],
+  "Air_Bike": [
+    "Túmbate boca arriba con las manos junto a las sienes y las piernas levantadas.",
+    "Lleva un codo hacia la rodilla contraria mientras estiras la otra pierna.",
+    "Alterna los lados con un movimiento de pedaleo."
+  ],
+  "Alternate_Heel_Touchers": [
+    "Túmbate boca arriba con las rodillas flexionadas y los hombros ligeramente despegados del suelo.",
+    "Inclínate hacia un lado hasta tocar el talón con la mano.",
+    "Alterna los lados sin apoyar los hombros."
+  ],
+  "Barbell_Ab_Rollout": [
+    "Arrodíllate en el suelo con una barra con discos delante, agarrada a la anchura de los hombros.",
+    "Rueda la barra hacia delante estirando el cuerpo todo lo que puedas sin que la zona lumbar se hunda.",
+    "Vuelve tirando con el abdomen. Empieza con recorridos cortos."
+  ],
+  "Barbell_Rollout_from_Bench": [
+    "Arrodíllate sobre un banco con una barra con discos en el suelo delante.",
+    "Rueda la barra hacia delante estirando el cuerpo.",
+    "Vuelve tirando con el abdomen sin arquear la espalda."
+  ],
+  "Barbell_Side_Bend": [
+    "De pie, con la barra sobre los trapecios.",
+    "Inclina el tronco hacia un lado sin girarlo.",
+    "Vuelve al centro y repite hacia el otro lado."
+  ],
+  "Bent-Knee_Hip_Raise": [
+    "Túmbate boca arriba con las rodillas flexionadas y las piernas levantadas, los brazos a los lados.",
+    "Sube la cadera del suelo llevando las rodillas hacia el pecho.",
+    "Baja con control."
+  ],
+  "Bottoms_Up": [
+    "Túmbate boca arriba con las piernas estiradas hacia el techo.",
+    "Sube la cadera del suelo empujando los pies hacia arriba.",
+    "Baja con control sin balancearte."
+  ],
+  "Butt-Ups": [
+    "Colócate en plancha sobre los antebrazos.",
+    "Sube la cadera hacia el techo formando una V invertida.",
+    "Vuelve a la plancha con control."
+  ],
+  "Cable_Reverse_Crunch": [
+    "Túmbate boca arriba frente a una polea baja con la tobillera o la cuerda enganchada a los pies.",
+    "Lleva las rodillas hacia el pecho levantando la cadera del suelo.",
+    "Vuelve con control."
+  ],
+  "Cable_Russian_Twists": [
+    "Siéntate de lado a una polea baja con el asa sujeta con las dos manos y el tronco algo inclinado hacia atrás.",
+    "Gira el tronco llevando el asa hacia el lado contrario.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Cable_Seated_Crunch": [
+    "Siéntate en un banco de espaldas a una polea alta con la cuerda sujeta junto a la cabeza.",
+    "Enrolla el tronco hacia delante contrayendo el abdomen.",
+    "Vuelve con control."
+  ],
+  "Cocoons": [
+    "Túmbate boca arriba con los brazos estirados por detrás de la cabeza y las piernas estiradas.",
+    "Encoge el cuerpo llevando las rodillas al pecho mientras los brazos se acercan a las rodillas.",
+    "Vuelve a estirar con control."
+  ],
+  "Cross-Body_Crunch": [
+    "Túmbate boca arriba con las rodillas flexionadas y las manos junto a las sienes.",
+    "Sube el tronco llevando un codo hacia la rodilla contraria.",
+    "Baja y alterna los lados."
+  ],
+  "Crunch_-_Hands_Overhead": [
+    "Túmbate boca arriba con las rodillas flexionadas y los brazos estirados por encima de la cabeza.",
+    "Despega los hombros del suelo manteniendo los brazos junto a las orejas.",
+    "Baja con control."
+  ],
+  "Crunch_-_Legs_On_Exercise_Ball": [
+    "Túmbate boca arriba con las pantorrillas sobre un fitball.",
+    "Despega los hombros del suelo contrayendo el abdomen.",
+    "Baja con control."
+  ],
+  "Decline_Crunch": [
+    "Túmbate en un banco declinado con los pies sujetos.",
+    "Despega los hombros del banco enrollando el tronco.",
+    "Baja con control."
+  ],
+  "Decline_Oblique_Crunch": [
+    "Túmbate en un banco declinado con los pies sujetos.",
+    "Sube el tronco girando para llevar un codo hacia la rodilla contraria.",
+    "Baja y alterna los lados."
+  ],
+  "Decline_Reverse_Crunch": [
+    "Túmbate en un banco declinado con la cabeza en la parte alta, sujetando el banco con las manos.",
+    "Lleva las rodillas hacia el pecho levantando la cadera.",
+    "Baja con control."
+  ],
+  "Double_Kettlebell_Windmill": [
+    "Sujeta una kettlebell arriba con el brazo estirado y otra colgando en la otra mano.",
+    "Mirando la de arriba, lleva la cadera hacia su lado y baja la otra kettlebell hacia el suelo.",
+    "Vuelve a subir. Ejercicio avanzado: domina antes el molino con una."
+  ],
+  "Dumbbell_Side_Bend": [
+    "De pie, con una mancuerna en una mano y la otra en la cintura.",
+    "Inclina el tronco hacia el lado de la mancuerna y vuelve al centro contrayendo el costado contrario.",
+    "Haz todas las repeticiones y cambia de lado."
+  ],
+  "Elbow_to_Knee": [
+    "Túmbate boca arriba con las manos junto a las sienes y las piernas levantadas.",
+    "Sube el tronco llevando un codo hacia la rodilla contraria.",
+    "Baja y alterna."
+  ],
+  "Flat_Bench_Leg_Pull-In": [
+    "Túmbate boca arriba en un banco plano sujetándote a él con las manos y las piernas estiradas.",
+    "Lleva las rodillas hacia el pecho.",
+    "Vuelve a estirar las piernas sin apoyarlas."
+  ],
+  "Flat_Bench_Lying_Leg_Raise": [
+    "Túmbate boca arriba en un banco plano sujetándote a él con las manos.",
+    "Sube las piernas estiradas hasta que queden verticales.",
+    "Bájalas con control sin arquear la espalda."
+  ],
+  "Frog_Sit-Ups": [
+    "Túmbate boca arriba con las plantas de los pies juntas y las rodillas abiertas.",
+    "Sube el tronco hacia las rodillas.",
+    "Baja con control."
+  ],
+  "Gorilla_Chin_Crunch": [
+    "Cuélgate de la barra con agarre supino.",
+    "Haz una dominada mientras llevas las rodillas hacia el pecho.",
+    "Baja con control estirando piernas y brazos."
+  ],
+  "Jackknife_Sit-Up": [
+    "Túmbate boca arriba con brazos y piernas estirados.",
+    "Sube a la vez el tronco y las piernas estiradas hasta tocar los pies con las manos.",
+    "Baja con control."
+  ],
+  "Janda_Sit-Up": [
+    "Túmbate boca arriba con las rodillas flexionadas y aprieta los talones contra el suelo.",
+    "Manteniendo esa presión, sube el tronco despacio.",
+    "Baja con control. Reduce la ayuda de los flexores de la cadera."
+  ],
+  "Kettlebell_Figure_8": [
+    "De pie, en media sentadilla, con una kettlebell en una mano.",
+    "Pásala entre las piernas a la otra mano describiendo un ocho alrededor de ellas.",
+    "Mantén la espalda recta durante todo el movimiento."
+  ],
+  "Kettlebell_Pass_Between_The_Legs": [
+    "De pie, en media sentadilla, con una kettlebell en una mano.",
+    "Pásala entre las piernas a la otra mano y vuelve a pasarla.",
+    "Mantén la espalda recta y el ritmo constante."
+  ],
+  "Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists": [
+    "Arrodíllate frente a una polea alta con la cuerda junto a la cabeza.",
+    "Enrolla el tronco llevando los codos hacia una rodilla y luego hacia la otra.",
+    "Vuelve con control entre repeticiones."
+  ],
+  "Landmine_180s": [
+    "Coloca un extremo de la barra en una esquina y sujeta el otro con los brazos estirados delante de ti.",
+    "Gira el tronco llevando la barra en arco hacia una cadera y luego hacia la otra.",
+    "Mantén el abdomen firme y los pies apoyados."
+  ],
+  "Leg_Pull-In": [
+    "Siéntate en el suelo apoyando las manos detrás y las piernas estiradas levantadas.",
+    "Lleva las rodillas hacia el pecho inclinando un poco el tronco.",
+    "Vuelve a estirar las piernas sin apoyarlas."
+  ],
+  "Oblique_Crunches": [
+    "Túmbate de lado con las rodillas flexionadas y la mano de arriba junto a la sien.",
+    "Sube el tronco hacia la cadera contrayendo el costado.",
+    "Baja con control y cambia de lado."
+  ],
+  "Oblique_Crunches_-_On_The_Floor": [
+    "Túmbate boca arriba con las rodillas flexionadas y caídas hacia un lado.",
+    "Despega los hombros del suelo contrayendo el abdomen.",
+    "Baja con control y cambia de lado."
+  ],
+  "One-Arm_High-Pulley_Cable_Side_Bends": [
+    "De lado a una polea alta, agarra el asa con la mano más cercana.",
+    "Inclina el tronco hacia el lado contrario tirando del cable.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Pallof_Press": [
+    "De lado a una polea a la altura del pecho, sujeta el asa con las dos manos pegada al pecho.",
+    "Estira los brazos al frente sin dejar que el cable gire tu tronco.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Pallof_Press_With_Rotation": [
+    "De lado a una polea a la altura del pecho, sujeta el asa con las dos manos y los brazos estirados.",
+    "Gira el tronco alejándote de la polea y vuelve con control.",
+    "Cambia de lado."
+  ],
+  "Reverse_Crunch": [
+    "Túmbate boca arriba con las rodillas flexionadas levantadas y los brazos a los lados.",
+    "Lleva las rodillas hacia el pecho despegando la cadera del suelo.",
+    "Baja con control."
+  ],
+  "Rope_Crunch": [
+    "Arrodíllate frente a una polea alta con la cuerda junto a la cabeza.",
+    "Enrolla el tronco llevando los codos hacia los muslos.",
+    "Vuelve con control."
+  ],
+  "Seated_Barbell_Twist": [
+    "Siéntate en un banco con una barra sin peso sobre los trapecios.",
+    "Gira el tronco a un lado y al otro con control, sin mover la cadera.",
+    "Mantén la espalda recta."
+  ],
+  "Seated_Flat_Bench_Leg_Pull-In": [
+    "Siéntate en el borde de un banco sujetándote a él, con las piernas estiradas y el tronco inclinado hacia atrás.",
+    "Lleva las rodillas hacia el pecho.",
+    "Vuelve a estirar las piernas."
+  ],
+  "Seated_Leg_Tucks": [
+    "Siéntate en el suelo con las manos apoyadas detrás y las piernas estiradas levantadas.",
+    "Lleva las rodillas hacia el pecho acercando el tronco.",
+    "Vuelve a estirar con control."
+  ],
+  "Side_Jackknife": [
+    "Túmbate de lado con las piernas estiradas y la mano de arriba junto a la sien.",
+    "Sube a la vez el tronco y la pierna de arriba contrayendo el costado.",
+    "Baja con control y cambia de lado."
+  ],
+  "Sit-Up": [
+    "Túmbate boca arriba con las rodillas flexionadas, los pies apoyados y las manos en el pecho.",
+    "Sube el tronco hasta quedar sentado.",
+    "Baja con control."
+  ],
+  "Smith_Machine_Hip_Raise": [
+    "Túmbate boca arriba bajo la barra de la máquina Smith con los pies apoyados en ella y las piernas verticales.",
+    "Empuja la barra hacia arriba levantando la cadera con el abdomen.",
+    "Baja con control."
+  ],
+  "Spell_Caster": [
+    "De pie, con una mancuerna en cada mano a un lado de la cadera.",
+    "Gira el tronco y lleva las mancuernas describiendo un arco hacia el otro lado, a la altura del pecho.",
+    "Vuelve y repite. Cambia de lado."
+  ],
+  "Spider_Crawl": [
+    "Colócate en posición de flexión.",
+    "Avanza con las manos mientras llevas una rodilla hacia el codo del mismo lado.",
+    "Alterna los lados avanzando con el cuerpo bajo."
+  ],
+  "Standing_Cable_Lift": [
+    "De lado a una polea baja, sujeta el asa con las dos manos junto a la cadera.",
+    "Tira en diagonal hacia arriba, cruzando el cuerpo hasta por encima del hombro contrario.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Standing_Cable_Wood_Chop": [
+    "De lado a una polea alta, sujeta el asa con las dos manos por encima del hombro.",
+    "Tira en diagonal hacia abajo hasta la cadera contraria, girando el tronco.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Standing_Rope_Crunch": [
+    "De espaldas a una polea alta, sujeta la cuerda junto a la cabeza.",
+    "Enrolla el tronco hacia delante contrayendo el abdomen.",
+    "Vuelve con control."
+  ],
+  "Tuck_Crunch": [
+    "Túmbate boca arriba con las rodillas flexionadas levantadas y las manos junto a las sienes.",
+    "Despega los hombros acercando el pecho a las rodillas.",
+    "Baja con control."
+  ],
+  "Isometric_Neck_Exercise_-_Front_And_Back": [
+    "Sentado o de pie, coloca las manos en la frente.",
+    "Empuja la cabeza contra las manos sin moverla y aguanta unos segundos.",
+    "Repite con las manos detrás de la cabeza. Hazlo con suavidad."
+  ],
+  "Isometric_Neck_Exercise_-_Sides": [
+    "Sentado o de pie, coloca una mano en el lado de la cabeza.",
+    "Empuja la cabeza contra la mano sin moverla y aguanta unos segundos.",
+    "Cambia de lado. Hazlo con suavidad."
+  ]
+}

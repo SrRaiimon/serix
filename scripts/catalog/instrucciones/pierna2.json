@@ -1,0 +1,502 @@
+{
+  "Barbell_Squat": [
+    "Apoya la barra sobre los trapecios, sácala del rack y colócate con los pies a la anchura de los hombros.",
+    "Coge aire, aprieta el abdomen y baja llevando la cadera atrás y abajo, con las rodillas en la dirección de los pies.",
+    "Baja hasta donde mantengas la espalda neutra y sube empujando el suelo con todo el pie.",
+    "Usa los topes de seguridad del rack."
+  ],
+  "Barbell_Hack_Squat": [
+    "De pie, con la barra en el suelo detrás de los talones. Agáchate con la espalda recta y agárrala por detrás con las palmas hacia atrás.",
+    "Ponte de pie estirando piernas y cadera, con la barra pegada a la parte de atrás de las piernas.",
+    "Baja con control flexionando las rodillas hasta que la barra casi toque el suelo."
+  ],
+  "Barbell_Side_Split_Squat": [
+    "Con la barra sobre los trapecios, separa mucho los pies hacia los lados.",
+    "Flexiona una rodilla y lleva la cadera hacia ese lado, con la otra pierna estirada.",
+    "Vuelve al centro empujando con la pierna flexionada. Alterna o completa un lado y cambia."
+  ],
+  "Barbell_Step_Ups": [
+    "Con la barra sobre los trapecios, colócate frente a un banco o cajón estable.",
+    "Apoya un pie entero encima y sube empujando con esa pierna, sin impulsarte con la de abajo.",
+    "Baja con control. Usa poca altura y poco peso hasta dominar el equilibrio."
+  ],
+  "Box_Squat": [
+    "Coloca un cajón o banco detrás de ti a una altura en la que los muslos queden paralelos al suelo. Apoya la barra sobre los trapecios.",
+    "Baja llevando la cadera atrás hasta sentarte suavemente en el cajón, sin dejarte caer.",
+    "Mantén la tensión un instante y sube empujando con todo el pie."
+  ],
+  "Cable_Deadlifts": [
+    "Coloca una barra corta o una cuerda en la polea baja y colócate de frente, a un paso de distancia.",
+    "Con la espalda recta, flexiona cadera y rodillas y agarra el accesorio.",
+    "Ponte de pie estirando piernas y cadera y vuelve a bajar con control, llevando la cadera atrás."
+  ],
+  "Cable_Hip_Adduction": [
+    "Engancha una tobillera a la polea baja y colócala en el tobillo más cercano a la máquina.",
+    "Con el cuerpo erguido y agarrado a la máquina, lleva la pierna hacia dentro, cruzándola por delante de la otra.",
+    "Vuelve con control. Haz todas las repeticiones y cambia de pierna."
+  ],
+  "Chair_Squat": [
+    "Colócate de pie delante de una silla o banco estable, con los pies a la anchura de los hombros.",
+    "Baja llevando la cadera atrás hasta rozar el asiento, con el pecho alto.",
+    "Sube empujando con todo el pie sin llegar a sentarte del todo. Es una buena forma de aprender la sentadilla."
+  ],
+  "Clean_Pull": [
+    "Colócate como para un peso muerto, con agarre algo más abierto que los hombros.",
+    "Sube la barra pegada a las piernas y, al pasar las rodillas, extiende con fuerza cadera, rodillas y tobillos, encogiendo los hombros.",
+    "No flexiones los codos: el objetivo es la extensión explosiva. Baja la barra con control."
+  ],
+  "Clean_from_Blocks": [
+    "Coloca la barra sobre unos bloques a la altura de las rodillas o algo más arriba.",
+    "Extiende de forma explosiva cadera y piernas y métete debajo de la barra para recibirla sobre los hombros con los codos altos.",
+    "Ponte de pie. Es un levantamiento técnico: apréndelo con un entrenador."
+  ],
+  "Clean": [
+    "Colócate como para un peso muerto, con la barra sobre la mitad del pie.",
+    "Súbela pegada a las piernas y, al pasar las rodillas, extiende con fuerza cadera y piernas.",
+    "Métete debajo de la barra y recíbela sobre los hombros en sentadilla frontal, con los codos altos, y ponte de pie.",
+    "Es un levantamiento muy técnico: apréndelo con un entrenador y con poco peso."
+  ],
+  "Clean_Deadlift": [
+    "Colócate como para una cargada: barra sobre la mitad del pie, agarre algo más abierto que los hombros y la espalda recta.",
+    "Sube la barra pegada a las piernas manteniendo el ángulo del tronco hasta pasar las rodillas.",
+    "Termina de pie y baja con control. Refuerza la primera parte de la cargada."
+  ],
+  "Dumbbell_Rear_Lunge": [
+    "De pie, con una mancuerna en cada mano a los lados del cuerpo.",
+    "Da un paso largo hacia atrás y baja hasta que la rodilla de atrás casi toque el suelo.",
+    "Empuja con la pierna de delante para volver al inicio y alterna las piernas. Suele ser más amable con la rodilla que la zancada hacia delante."
+  ],
+  "Dumbbell_Squat_To_A_Bench": [
+    "Colócate delante de un banco con una mancuerna en cada mano.",
+    "Baja llevando la cadera atrás hasta rozar el banco, con el pecho alto.",
+    "Sube empujando con todo el pie sin llegar a sentarte."
+  ],
+  "Elevated_Back_Lunge": [
+    "Sube a una plataforma baja o un disco con la barra sobre los trapecios.",
+    "Da un paso atrás hacia el suelo y baja hasta que la rodilla de atrás casi lo toque.",
+    "Vuelve a subir empujando con la pierna de la plataforma. La altura permite bajar más."
+  ],
+  "Frankenstein_Squat": [
+    "Apoya la barra sobre la parte delantera de los hombros y estira los brazos al frente sin agarrarla.",
+    "Baja en sentadilla manteniendo el tronco muy vertical para que la barra no se caiga.",
+    "Sube empujando con todo el pie. Sirve para aprender la posición de la sentadilla frontal; usa poco peso."
+  ],
+  "Front_Squat_Clean_Grip": [
+    "Apoya la barra sobre la parte delantera de los hombros sujetándola con los dedos, con los codos altos.",
+    "Baja con el tronco lo más vertical posible y los codos arriba.",
+    "Sube empujando con todo el pie sin dejar caer los codos."
+  ],
+  "Front_Squats_With_Two_Kettlebells": [
+    "Sujeta una kettlebell en cada mano apoyada sobre el antebrazo, a la altura de los hombros.",
+    "Baja en sentadilla con el pecho alto y los codos cerca del cuerpo.",
+    "Sube empujando con todo el pie."
+  ],
+  "Hack_Squat": [
+    "Colócate en la máquina con la espalda contra el respaldo y los hombros bajo las almohadillas. Pies a la anchura de los hombros en la plataforma.",
+    "Quita los seguros y baja flexionando las rodillas hasta que los muslos queden paralelos a la plataforma.",
+    "Empuja con todo el pie hasta casi estirar las piernas y vuelve a poner los seguros al terminar."
+  ],
+  "Hang_Clean": [
+    "De pie, con la barra en las manos delante de los muslos.",
+    "Baja la barra hasta justo por encima de las rodillas llevando la cadera atrás.",
+    "Extiende de forma explosiva cadera y piernas, métete debajo de la barra y recíbela sobre los hombros con los codos altos.",
+    "Es técnico: apréndelo con un entrenador."
+  ],
+  "Hang_Clean_-_Below_the_Knees": [
+    "De pie, con la barra en las manos delante de los muslos.",
+    "Baja la barra hasta justo por debajo de las rodillas llevando la cadera atrás, con la espalda recta.",
+    "Extiende de forma explosiva cadera y piernas y recibe la barra sobre los hombros. Apréndelo con un entrenador."
+  ],
+  "Heaving_Snatch_Balance": [
+    "Coloca la barra sobre los trapecios con un agarre muy abierto.",
+    "Haz un pequeño impulso con las piernas y empuja la barra hacia arriba mientras te dejas caer en sentadilla, con los brazos estirados.",
+    "Estabiliza abajo y ponte de pie. Ejercicio técnico de arrancada: con poco peso y supervisión."
+  ],
+  "Hip_Flexion_with_Band": [
+    "Engancha una banda a un punto bajo detrás de ti y pásala por el tobillo.",
+    "De pie y sujeto a algo estable, sube la rodilla hacia el pecho contra la resistencia de la banda.",
+    "Baja con control. Haz todas las repeticiones y cambia de pierna."
+  ],
+  "Jefferson_Squats": [
+    "Coloca la barra en el suelo entre las piernas, con un pie delante y otro detrás de ella.",
+    "Agárrala con una mano por delante y otra por detrás del cuerpo.",
+    "Ponte de pie con la espalda recta y baja con control. Alterna la posición de los pies entre series."
+  ],
+  "Jerk_Dip_Squat": [
+    "Con la barra sobre la parte delantera de los hombros, como en el envión.",
+    "Flexiona un poco las rodillas con el tronco vertical y el peso en los talones.",
+    "Estira las piernas con fuerza, sin empujar con los brazos. Entrena el impulso del envión."
+  ],
+  "Leverage_Deadlift": [
+    "Colócate en la máquina de peso muerto con los pies bajo las asas.",
+    "Flexiona cadera y rodillas con la espalda recta y agarra las asas.",
+    "Ponte de pie estirando piernas y cadera y baja con control."
+  ],
+  "Lying_Machine_Squat": [
+    "Túmbate en la máquina con los hombros bajo las almohadillas y los pies en la plataforma.",
+    "Quita los seguros y baja flexionando las rodillas.",
+    "Empuja hasta casi estirar las piernas sin bloquear las rodillas."
+  ],
+  "Narrow_Stance_Hack_Squats": [
+    "Colócate en la máquina hack con los pies juntos o casi juntos en la parte baja de la plataforma.",
+    "Baja con control flexionando las rodillas.",
+    "Empuja hasta casi estirar las piernas. La postura estrecha carga más la parte externa del cuádriceps."
+  ],
+  "Narrow_Stance_Leg_Press": [
+    "Siéntate en la prensa con los pies juntos en el centro de la plataforma.",
+    "Baja la plataforma flexionando las rodillas sin despegar la cadera del asiento.",
+    "Empuja hasta casi estirar las piernas."
+  ],
+  "Narrow_Stance_Squats": [
+    "Con la barra sobre los trapecios, colócate con los pies más juntos que en la sentadilla normal.",
+    "Baja con el tronco recto y las rodillas hacia delante.",
+    "Sube empujando con todo el pie. Carga más el cuádriceps."
+  ],
+  "Olympic_Squat": [
+    "Apoya la barra alta sobre los trapecios, con los pies a la anchura de los hombros.",
+    "Baja con el tronco muy vertical hasta el fondo de la sentadilla, dejando que las rodillas avancen.",
+    "Sube empujando con todo el pie."
+  ],
+  "Plie_Dumbbell_Squat": [
+    "Separa mucho los pies, con las puntas hacia fuera, y sujeta una mancuerna con las dos manos entre las piernas.",
+    "Baja con el tronco recto y las rodillas abiertas en la dirección de los pies.",
+    "Sube apretando glúteos y aductores."
+  ],
+  "Power_Snatch_from_Blocks": [
+    "Coloca la barra sobre bloques a la altura de las rodillas y agárrala con un agarre muy abierto.",
+    "Extiende de forma explosiva cadera y piernas y lleva la barra por encima de la cabeza en un solo movimiento, recibiéndola en media sentadilla.",
+    "Ponte de pie. Es muy técnico: apréndelo con un entrenador."
+  ],
+  "Reverse_Band_Box_Squat": [
+    "Cuelga bandas de la parte alta del rack y engánchalas a la barra; te ayudarán abajo.",
+    "Con la barra sobre los trapecios, baja hasta sentarte suavemente en un cajón.",
+    "Sube empujando con todo el pie. Para usuarios avanzados."
+  ],
+  "Smith_Machine_Leg_Press": [
+    "Túmbate bajo la máquina Smith con los pies apoyados en la barra.",
+    "Quita los seguros y baja la barra flexionando las rodillas hacia el pecho.",
+    "Empuja hasta casi estirar las piernas. Vuelve a poner los seguros al terminar."
+  ],
+  "Smith_Machine_Pistol_Squat": [
+    "Colócate en la máquina Smith con la barra sobre los trapecios y un pie adelantado; la otra pierna, estirada al frente.",
+    "Baja en sentadilla sobre una sola pierna hasta donde controles.",
+    "Sube empujando con esa pierna. Es exigente: empieza con poco recorrido."
+  ],
+  "Smith_Machine_Squat": [
+    "Colócate bajo la barra de la máquina Smith, apoyada en los trapecios, con los pies algo adelantados.",
+    "Quita los seguros y baja llevando la cadera atrás y abajo.",
+    "Sube empujando con todo el pie y vuelve a poner los seguros al terminar."
+  ],
+  "Smith_Single-Leg_Split_Squat": [
+    "Con la barra de la máquina Smith sobre los trapecios, adelanta un pie y deja el otro atrás.",
+    "Baja en vertical hasta que la rodilla de atrás casi toque el suelo.",
+    "Sube empujando con la pierna de delante. Haz todas las repeticiones y cambia de lado."
+  ],
+  "Snatch": [
+    "Colócate con la barra sobre la mitad del pie y un agarre muy abierto.",
+    "Súbela pegada a las piernas y, al pasar las rodillas, extiende con fuerza cadera y piernas.",
+    "Métete debajo y recíbela con los brazos estirados por encima de la cabeza en sentadilla profunda; luego ponte de pie.",
+    "Es el levantamiento más técnico del gimnasio: apréndelo con un entrenador."
+  ],
+  "Snatch_Balance": [
+    "Coloca la barra sobre los trapecios con agarre muy abierto.",
+    "Empuja la barra hacia arriba mientras te dejas caer en sentadilla profunda, recibiéndola con los brazos estirados.",
+    "Estabiliza y ponte de pie. Con poco peso y supervisión."
+  ],
+  "Snatch_Deadlift": [
+    "Colócate como para una arrancada, con agarre muy abierto y la espalda recta.",
+    "Sube la barra pegada a las piernas hasta quedar de pie.",
+    "Baja con control. Fortalece la primera parte de la arrancada."
+  ],
+  "Snatch_Pull": [
+    "Colócate como para una arrancada, con agarre muy abierto.",
+    "Sube la barra pegada a las piernas y extiende con fuerza cadera, rodillas y tobillos encogiendo los hombros, sin flexionar los codos.",
+    "Baja la barra con control."
+  ],
+  "Speed_Box_Squat": [
+    "Coloca un cajón detrás de ti y usa un peso ligero sobre los trapecios.",
+    "Baja con control hasta sentarte en el cajón y sube lo más rápido que puedas.",
+    "Busca velocidad, no cansancio: pocas repeticiones por serie."
+  ],
+  "Split_Clean": [
+    "Colócate como para una cargada.",
+    "Extiende con fuerza cadera y piernas y recibe la barra sobre los hombros abriendo las piernas en tijera, una delante y otra detrás.",
+    "Junta los pies para terminar. Apréndelo con un entrenador."
+  ],
+  "Split_Jerk": [
+    "Con la barra sobre la parte delantera de los hombros, flexiona un poco las rodillas.",
+    "Impúlsate con las piernas y empuja la barra por encima de la cabeza mientras abres las piernas en tijera.",
+    "Estabiliza con los brazos estirados y junta los pies. Técnico: apréndelo con un entrenador."
+  ],
+  "Squat_with_Bands": [
+    "Engancha bandas de la parte baja del rack a los extremos de la barra.",
+    "Haz la sentadilla normal: la resistencia aumenta a medida que subes.",
+    "Sube con fuerza y baja con control."
+  ],
+  "Squat_with_Chains": [
+    "Cuelga cadenas de los extremos de la barra de modo que toquen el suelo cuando estés abajo.",
+    "Haz la sentadilla normal: la carga aumenta a medida que subes y las cadenas se despegan del suelo.",
+    "Sube con fuerza y baja con control."
+  ],
+  "Weighted_Jump_Squat": [
+    "Coloca una barra ligera sobre los trapecios.",
+    "Baja en media sentadilla y salta hacia arriba con fuerza.",
+    "Cae con las rodillas flexionadas para amortiguar y enlaza la siguiente repetición. Usa poco peso."
+  ],
+  "Wide_Stance_Barbell_Squat": [
+    "Con la barra sobre los trapecios, separa los pies bastante más que los hombros, con las puntas hacia fuera.",
+    "Baja con el tronco recto y las rodillas abiertas en la dirección de los pies.",
+    "Sube empujando con todo el pie. Trabaja más glúteos y aductores."
+  ],
+  "Alternating_Hang_Clean": [
+    "Sujeta una kettlebell en cada mano colgando entre las piernas.",
+    "Con un impulso de cadera, sube una kettlebell hasta apoyarla en el antebrazo a la altura del hombro.",
+    "Bájala y repite con la otra. La kettlebell debe rodar sobre la muñeca, sin golpearla."
+  ],
+  "Band_Good_Morning_Pull_Through": [
+    "Ancla una banda baja detrás de ti y sujétala con las dos manos entre las piernas.",
+    "Con las rodillas un poco flexionadas, lleva la cadera atrás dejando que la banda tire de las manos hacia atrás.",
+    "Estira la cadera apretando los glúteos para volver arriba."
+  ],
+  "Double_Kettlebell_Alternating_Hang_Clean": [
+    "Sujeta dos kettlebells: una en posición de rack sobre el hombro y otra colgando entre las piernas.",
+    "Con un impulso de cadera, baja la de arriba mientras subes la de abajo al hombro.",
+    "Alterna con ritmo y control."
+  ],
+  "Dumbbell_Clean": [
+    "De pie, con una mancuerna en cada mano delante de los muslos.",
+    "Flexiona un poco cadera y rodillas y extiende con fuerza para subir las mancuernas hasta los hombros.",
+    "Recíbelas con las rodillas un poco flexionadas y ponte de pie."
+  ],
+  "Glute_Ham_Raise": [
+    "Colócate en la máquina con los tobillos sujetos y las rodillas apoyadas justo detrás de la almohadilla.",
+    "Con el cuerpo recto, baja hacia delante hasta quedar paralelo al suelo.",
+    "Sube flexionando las rodillas con los isquiotibiales, sin doblar la cadera."
+  ],
+  "Good_Morning": [
+    "Con la barra sobre los trapecios y los pies a la anchura de la cadera, flexiona un poco las rodillas.",
+    "Inclina el tronco hacia delante llevando la cadera atrás, con la espalda recta.",
+    "Baja hasta notar estiramiento en los isquiotibiales y vuelve arriba estirando la cadera. Usa un peso moderado."
+  ],
+  "Good_Morning_off_Pins": [
+    "Coloca los topes del rack a la altura a la que quedará la barra con el tronco inclinado.",
+    "Métete bajo la barra, apóyala en los trapecios y, desde abajo, estira la cadera para subir.",
+    "Vuelve a dejar la barra en los topes con control."
+  ],
+  "Hanging_Bar_Good_Morning": [
+    "Cuelga la barra del rack con cadenas o correas a la altura que tendrá con el tronco inclinado.",
+    "Métete debajo con la barra en los trapecios y la espalda recta, y sube estirando la cadera.",
+    "Vuelve a bajar hasta dejar el peso colgado."
+  ],
+  "Kettlebell_Dead_Clean": [
+    "Coloca la kettlebell en el suelo entre los pies.",
+    "Con la espalda recta, agárrala y súbela con un impulso de cadera hasta apoyarla sobre el antebrazo a la altura del hombro.",
+    "Déjala en el suelo y repite. Cambia de mano."
+  ],
+  "Kettlebell_Hang_Clean": [
+    "Sujeta la kettlebell colgando entre las piernas.",
+    "Con un impulso de cadera, súbela hasta la posición de rack sobre el antebrazo, con el codo pegado al cuerpo.",
+    "Bájala controlando el recorrido y repite."
+  ],
+  "Kettlebell_One-Legged_Deadlift": [
+    "De pie sobre una pierna, con la kettlebell en la mano contraria.",
+    "Inclina el tronco hacia delante mientras la otra pierna se estira hacia atrás, con la espalda recta.",
+    "Baja hasta que el tronco quede casi paralelo al suelo y vuelve arriba apretando el glúteo."
+  ],
+  "Muscle_Snatch": [
+    "Colócate como para una arrancada, con agarre muy abierto.",
+    "Extiende con fuerza cadera y piernas y lleva la barra por encima de la cabeza sin volver a flexionar las rodillas.",
+    "Termina con los brazos estirados. Técnico: con poco peso."
+  ],
+  "Natural_Glute_Ham_Raise": [
+    "Arrodíllate con los tobillos sujetos bajo algo firme o por un compañero.",
+    "Con el cuerpo recto de rodillas a cabeza, déjate caer hacia delante lo más despacio que puedas.",
+    "Frena con las manos al llegar abajo y empújate para volver. Muy exigente."
+  ],
+  "One-Arm_Kettlebell_Clean": [
+    "Sujeta la kettlebell con una mano, colgando entre las piernas.",
+    "Con un impulso de cadera, súbela hasta apoyarla sobre el antebrazo a la altura del hombro.",
+    "Bájala y repite. Cambia de mano."
+  ],
+  "One-Arm_Open_Palm_Kettlebell_Clean": [
+    "Sujeta la kettlebell por el asa con una mano, colgando entre las piernas.",
+    "Con un impulso de cadera, lánzala hacia arriba, suelta el asa y recógela con la palma abierta bajo la bola.",
+    "Es de coordinación avanzada: practica con poco peso y espacio libre."
+  ],
+  "Power_Clean": [
+    "Colócate como para un peso muerto, con agarre algo más abierto que los hombros.",
+    "Sube la barra pegada a las piernas y extiende con fuerza cadera y piernas.",
+    "Recibe la barra sobre los hombros en media sentadilla, con los codos altos, y ponte de pie.",
+    "Técnico: apréndelo con un entrenador."
+  ],
+  "Power_Clean_from_Blocks": [
+    "Coloca la barra sobre bloques a la altura de las rodillas.",
+    "Extiende con fuerza cadera y piernas y recibe la barra sobre los hombros en media sentadilla.",
+    "Ponte de pie. Técnico: con poco peso y supervisión."
+  ],
+  "Prone_Manual_Hamstring": [
+    "Túmbate boca abajo con las piernas estiradas; un compañero sujeta tu tobillo.",
+    "Flexiona la rodilla llevando el talón hacia el glúteo mientras tu compañero ofrece resistencia.",
+    "Vuelve a estirar la pierna con control. Cambia de pierna."
+  ],
+  "Reverse_Hyperextension": [
+    "Túmbate boca abajo en la máquina o en un banco alto, con la cadera en el borde y las piernas colgando.",
+    "Sujétate y sube las piernas estiradas hasta alinearlas con el tronco, apretando los glúteos.",
+    "Bájalas con control."
+  ],
+  "Romanian_Deadlift_from_Deficit": [
+    "Súbete a un disco o plataforma baja con la barra en las manos.",
+    "Con las rodillas un poco flexionadas, lleva la cadera atrás y baja la barra pegada a las piernas.",
+    "La plataforma permite bajar un poco más; no redondees la espalda. Vuelve arriba estirando la cadera."
+  ],
+  "Smith_Machine_Hang_Power_Clean": [
+    "Colócate frente a la barra de la máquina Smith y agárrala a la altura de los muslos.",
+    "Extiende con fuerza cadera y piernas y lleva la barra hasta los hombros, girando los codos al frente.",
+    "Baja con control."
+  ],
+  "Smith_Machine_Stiff-Legged_Deadlift": [
+    "De pie en la máquina Smith, con la barra en las manos delante de los muslos.",
+    "Con las rodillas casi estiradas, lleva la cadera atrás y baja la barra.",
+    "Baja hasta notar estiramiento en los isquiotibiales y vuelve arriba."
+  ],
+  "Standing_Leg_Curl": [
+    "Colócate en la máquina de pie con el rodillo detrás del tobillo.",
+    "Flexiona la rodilla llevando el talón hacia el glúteo, sin mover el muslo.",
+    "Baja con control. Haz todas las repeticiones y cambia de pierna."
+  ],
+  "Stiff-Legged_Barbell_Deadlift": [
+    "De pie, con la barra en las manos delante de los muslos y las rodillas casi estiradas.",
+    "Inclínate llevando la cadera atrás y deja que la barra baje cerca de las piernas, con la espalda recta.",
+    "Baja hasta notar el estiramiento en los isquiotibiales y vuelve arriba."
+  ],
+  "Sumo_Deadlift": [
+    "Separa mucho los pies, con las puntas hacia fuera, y la barra sobre la mitad del pie.",
+    "Agárrala por dentro de las piernas, con los brazos rectos, las rodillas abiertas y el pecho alto.",
+    "Sube empujando el suelo y abriendo las rodillas hasta quedar de pie. Baja con control."
+  ],
+  "Sumo_Deadlift_with_Bands": [
+    "Engancha bandas de la parte baja del rack a los extremos de la barra.",
+    "Haz el peso muerto sumo: la resistencia aumenta al subir.",
+    "Termina de pie apretando los glúteos y baja con control."
+  ],
+  "Sumo_Deadlift_with_Chains": [
+    "Cuelga cadenas de los extremos de la barra.",
+    "Haz el peso muerto sumo: la carga aumenta a medida que subes.",
+    "Termina de pie y baja con control."
+  ],
+  "Wide_Stance_Stiff_Legs": [
+    "De pie con los pies bastante separados y la barra en las manos.",
+    "Con las rodillas casi estiradas, lleva la cadera atrás y baja la barra con la espalda recta.",
+    "Vuelve arriba apretando los glúteos."
+  ],
+  "Barbell_Glute_Bridge": [
+    "Túmbate boca arriba con la barra sobre la cadera (con almohadilla), las rodillas flexionadas y los pies apoyados.",
+    "Sube la cadera empujando con los talones hasta alinear rodillas, cadera y hombros.",
+    "Aprieta los glúteos un segundo y baja con control."
+  ],
+  "Butt_Lift_Bridge": [
+    "Túmbate boca arriba con las rodillas flexionadas, los pies apoyados y los brazos a los lados.",
+    "Sube la cadera empujando con los talones y apretando los glúteos.",
+    "Aguanta un segundo arriba y baja con control."
+  ],
+  "Flutter_Kicks": [
+    "Túmbate boca abajo sobre un banco con la cadera en el borde y las piernas estiradas hacia atrás.",
+    "Sujétate al banco y mueve las piernas arriba y abajo alternándolas, con movimientos cortos.",
+    "Mantén los glúteos apretados durante toda la serie."
+  ],
+  "Glute_Kickback": [
+    "Ponte a cuatro patas, con las manos bajo los hombros y las rodillas bajo la cadera.",
+    "Lleva una pierna hacia atrás y arriba, con la rodilla flexionada, hasta alinear el muslo con el tronco.",
+    "Aprieta el glúteo y baja con control. Cambia de pierna."
+  ],
+  "Hip_Extension_with_Bands": [
+    "Ancla una banda delante de ti a baja altura y pásala por un tobillo.",
+    "De pie y sujeto a algo estable, lleva la pierna estirada hacia atrás contra la resistencia.",
+    "Vuelve con control. Cambia de pierna."
+  ],
+  "Hip_Lift_with_Band": [
+    "Túmbate boca arriba con una banda sobre la cadera, sujeta con las manos o anclada al suelo.",
+    "Con las rodillas flexionadas, sube la cadera apretando los glúteos.",
+    "Baja con control."
+  ],
+  "Kneeling_Squat": [
+    "Arrodíllate en el suelo, sobre una superficie blanda, con la barra sobre los trapecios.",
+    "Siéntate hacia atrás sobre los talones.",
+    "Lleva la cadera hacia delante hasta quedar erguido sobre las rodillas, apretando los glúteos."
+  ],
+  "One-Legged_Cable_Kickback": [
+    "Engancha una tobillera a la polea baja y colócala en un tobillo. Colócate de frente a la máquina.",
+    "Sujeto a la máquina, lleva la pierna estirada hacia atrás apretando el glúteo.",
+    "Vuelve con control. Haz todas las repeticiones y cambia de pierna."
+  ],
+  "Pull_Through": [
+    "Colócate de espaldas a una polea baja con una cuerda, sujetándola entre las piernas.",
+    "Da unos pasos hacia delante, flexiona un poco las rodillas y lleva la cadera atrás dejando que la cuerda pase entre las piernas.",
+    "Estira la cadera con fuerza apretando los glúteos."
+  ],
+  "Step-up_with_Knee_Raise": [
+    "Colócate frente a un banco o cajón estable.",
+    "Sube con una pierna y, arriba, eleva la rodilla contraria hasta la altura de la cadera.",
+    "Baja con control y alterna las piernas."
+  ],
+  "Barbell_Seated_Calf_Raise": [
+    "Siéntate en un banco con la parte delantera de los pies sobre un disco y la barra apoyada sobre los muslos, cerca de las rodillas (con almohadilla).",
+    "Sube los talones lo más alto posible.",
+    "Baja con control para estirar el gemelo."
+  ],
+  "Calf_Press": [
+    "Siéntate en la máquina con la parte delantera de los pies en el borde de la plataforma.",
+    "Empuja con los dedos de los pies estirando los tobillos.",
+    "Vuelve con control hasta estirar el gemelo."
+  ],
+  "Calf_Press_On_The_Leg_Press_Machine": [
+    "Siéntate en la prensa con las piernas casi estiradas y solo la parte delantera de los pies en el borde de la plataforma.",
+    "Empuja con los dedos de los pies estirando los tobillos, sin flexionar las rodillas.",
+    "Vuelve con control. No quites los seguros de la prensa si no los necesitas."
+  ],
+  "Calf_Raise_On_A_Dumbbell": [
+    "Apoya la parte delantera de un pie sobre el mango de una mancuerna en el suelo y sujétate a algo estable.",
+    "Sube de puntillas lo más alto posible.",
+    "Baja con control. Cambia de pie."
+  ],
+  "Dumbbell_Seated_One-Leg_Calf_Raise": [
+    "Siéntate con la parte delantera de un pie sobre un disco y una mancuerna apoyada en el muslo, cerca de la rodilla.",
+    "Sube el talón lo más alto posible.",
+    "Baja con control. Cambia de pierna."
+  ],
+  "Rocking_Standing_Calf_Raise": [
+    "De pie, con la barra sobre los trapecios.",
+    "Sube de puntillas y luego balancéate hacia atrás apoyando los talones y levantando las puntas.",
+    "Alterna ambos movimientos con ritmo y control."
+  ],
+  "Smith_Machine_Calf_Raise": [
+    "Colócate en la máquina Smith con la barra sobre los trapecios y la parte delantera de los pies sobre un disco.",
+    "Sube de puntillas lo más alto posible.",
+    "Baja con control para estirar el gemelo."
+  ],
+  "Smith_Machine_Reverse_Calf_Raises": [
+    "Colócate en la máquina Smith con los talones sobre un disco y las puntas en el aire.",
+    "Sube las puntas de los pies hacia las espinillas.",
+    "Baja con control. Trabaja la parte delantera de la pierna."
+  ],
+  "Band_Hip_Adductions": [
+    "Ancla una banda a un lado a baja altura y pásala por el tobillo más cercano.",
+    "Lleva la pierna hacia dentro, cruzándola por delante de la otra.",
+    "Vuelve con control y cambia de lado."
+  ],
+  "Thigh_Adductor": [
+    "Siéntate en la máquina con las piernas abiertas y las almohadillas en la cara interna de las rodillas.",
+    "Junta las piernas apretando los aductores.",
+    "Vuelve a abrir con control."
+  ],
+  "Monster_Walk": [
+    "Coloca una banda alrededor de los tobillos o por encima de las rodillas.",
+    "En media sentadilla, camina dando pasos cortos hacia delante y en diagonal, manteniendo la banda tensa.",
+    "Haz los pasos marcados y vuelve caminando hacia atrás."
+  ],
+  "Thigh_Abductor": [
+    "Siéntate en la máquina con las piernas juntas y las almohadillas en la cara externa de las rodillas.",
+    "Abre las piernas apretando los glúteos.",
+    "Vuelve con control."
+  ]
+}
