@@ -26,9 +26,6 @@ function serviceWorker(): Plugin {
   }
 }
 
-// Fecha de compilación, visible en Perfil para saber qué versión tiene cada móvil.
-const buildDate = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-
 /**
  * Política de seguridad de contenidos (solo en producción: el servidor de desarrollo necesita
  * scripts en línea). Todo se carga de la propia web: si alguien lograra inyectar código de otro
@@ -56,6 +53,7 @@ function contentSecurityPolicy(): Plugin {
 
 export default defineConfig({
   base: './',
-  define: { __APP_VERSION__: JSON.stringify(buildDate) },
+  // Versión visible en Perfil y en Legal: la de package.json (se sube el último número en cada publicación).
+  define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('package.json', 'utf8')).version) },
   plugins: [react(), serviceWorker(), contentSecurityPolicy()],
 })

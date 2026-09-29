@@ -137,7 +137,7 @@ export function ProfileScreen() {
       <div className="list">
         <Row icon={ShieldCheck} label="Legal y privacidad" onClick={() => navigate('profile', 'legal')} />
       </div>
-      <p className="list-footer">Versión del {__APP_VERSION__}</p>
+      <p className="list-footer">Versión {__APP_VERSION__}</p>
       <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void importData(f); e.target.value = '' }} />
 
       {confirmReset && (

@@ -57,7 +57,7 @@ export function LegalScreen() {
         </Section>
 
         <p className="list-footer" style={{ margin: 0 }}>
-          <FileText size={13} style={{ verticalAlign: -2 }} /> Versión del {__APP_VERSION__}
+          <FileText size={13} style={{ verticalAlign: -2 }} /> Versión {__APP_VERSION__}
         </p>
       </div>
     </>

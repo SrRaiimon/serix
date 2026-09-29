@@ -5,7 +5,7 @@ import { lastSets, workingSets } from './stats'
 import { normalizeGroups } from './groups'
 import { defaultTracking, type Tracking } from './tracking'
 import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise } from './store'
-import { stopRest } from './timer'
+import { resetRestView } from './timer'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
 
@@ -159,7 +159,7 @@ export function finishSession(id: string) {
     session.end = Date.now()
     saved = true
   })
-  stopRest()
+  resetRestView()
   setUI({ open: false, summaryId: saved ? id : undefined })
   if (saved) navigator.vibrate?.(80)
 }
@@ -168,7 +168,7 @@ export function discardSession(id: string) {
   update((d) => {
     d.sessions = d.sessions.filter((s) => s.id !== id)
   })
-  stopRest()
+  resetRestView()
   setUI({ open: false })
 }
 

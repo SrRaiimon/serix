@@ -1464,6 +1464,121 @@ html.scroll-locked body {
   50% { filter: brightness(1.18); }
 }
 
+/* Cuenta atrás del descanso a pantalla completa */
+.rest-expand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rest-full {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom) + 24px);
+  background: #000;
+  color: #f5f5f7;
+  border: 0;
+  font: inherit;
+}
+
+.rest-full-min {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 12px);
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: #1c1c1e;
+  color: #f5f5f7;
+  display: grid;
+  place-items: center;
+}
+
+.rest-full-ring {
+  position: relative;
+  width: min(86vw, 58vh);
+  aspect-ratio: 1;
+}
+
+.rest-full-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rest-full-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rest-full-label {
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8e8e93;
+}
+
+.rest-full-time {
+  font-size: min(22vw, 15vh);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.rest-full-time.last {
+  color: var(--accent);
+}
+
+.rest-full-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.rest-full-actions .btn {
+  min-height: 56px;
+  font-size: 18px;
+}
+
+.rest-full-actions .btn.plain {
+  background: #1c1c1e;
+  color: #f5f5f7;
+}
+
+.rest-full-done {
+  background: var(--accent);
+  color: #fff;
+  gap: 12px;
+  font-size: 20px;
+  animation: rest-done-pulse 1s ease-in-out 3;
+}
+
+.rest-full-message {
+  font-size: 36px;
+  font-weight: 800;
+}
+
 .share-preview {
   display: block;
   width: 62%;

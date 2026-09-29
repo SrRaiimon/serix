@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, ChevronDown, Ellipsis, Link2, Plus, Timer, Trash2 } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -6,7 +6,7 @@ import { clock, editable, fromKg, increment, num, parseDecimal, rest, restOption
 import { muscleLabel } from '../lib/labels'
 import { lastSets, progressionHint } from '../lib/stats'
 import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
-import { addRest, dismissRestDone, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
+import { addRest, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { addExercises, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
@@ -472,38 +472,84 @@ function RestBar() {
   if (!timer.endAt && timer.finishedAt && now - timer.finishedAt < 5000) {
     return (
       <Overlay>
-        <button className="rest-bar rest-done" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }} onClick={dismissRestDone}>
-          <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <Timer size={22} />
-            <strong>¡Descanso terminado! A por la siguiente serie</strong>
-          </div>
-        </button>
+        {timer.big ? (
+          <button className="rest-full rest-full-done" onClick={() => { dismissRestDone(); setRestBig(true) }}>
+            <Timer size={64} />
+            <strong className="rest-full-message">¡Descanso terminado!</strong>
+            <span>A por la siguiente serie</span>
+          </button>
+        ) : (
+          <button className="rest-bar rest-done" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }} onClick={dismissRestDone}>
+            <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <Timer size={22} />
+              <strong>¡Descanso terminado! A por la siguiente serie</strong>
+            </div>
+          </button>
+        )}
       </Overlay>
     )
   }
   if (!timer.endAt) return null
   const remaining = Math.max(0, (timer.endAt - now) / 1000)
   const progress = timer.total > 0 ? remaining / (timer.total / 1000) : 0
+  if (timer.big) return <RestFullScreen remaining={remaining} progress={progress} />
   const r = 17
   const c = 2 * Math.PI * r
   return (
     <Overlay>
     <div className="rest-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }}>
       <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
-          <circle cx="21" cy="21" r={r} stroke="var(--fill)" strokeWidth="5" fill="none" />
-          <circle cx="21" cy="21" r={r} stroke="var(--accent)" strokeWidth="5" fill="none" strokeLinecap="round"
-            strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 21 21)" />
-        </svg>
-        <div className="grow">
-          <div className="tiny muted row" style={{ gap: 4 }}><Timer size={12} /> Descanso</div>
-          <div className="rest-time">{clock(Math.ceil(remaining))}</div>
-        </div>
+        <button className="rest-expand" onClick={() => setRestBig(true)} aria-label="Ver la cuenta atrás en grande">
+          <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
+            <circle cx="21" cy="21" r={r} stroke="var(--fill)" strokeWidth="5" fill="none" />
+            <circle cx="21" cy="21" r={r} stroke="var(--accent)" strokeWidth="5" fill="none" strokeLinecap="round"
+              strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 21 21)" />
+          </svg>
+          <div className="grow" style={{ textAlign: 'left' }}>
+            <div className="tiny muted row" style={{ gap: 4 }}><Timer size={12} /> Descanso <Maximize2 size={11} /></div>
+            <div className="rest-time">{clock(Math.ceil(remaining))}</div>
+          </div>
+        </button>
         <button className="btn small plain" onClick={() => addRest(-15)}>−15</button>
         <button className="btn small plain" onClick={() => addRest(15)}>+15</button>
         <button className="btn small primary" onClick={stopRest}>Saltar</button>
       </div>
     </div>
+    </Overlay>
+  )
+}
+
+/** Cuenta atrás a pantalla completa, legible a distancia con el móvil apoyado. Fondo negro: en
+ * pantallas OLED apenas gasta batería. */
+function RestFullScreen({ remaining, progress }: { remaining: number; progress: number }) {
+  useScrollLock()
+  const r = 46
+  const c = 2 * Math.PI * r
+  const last = remaining <= 5
+  return (
+    <Overlay>
+      <div className="rest-full" role="timer" aria-label={`Descanso: quedan ${Math.ceil(remaining)} segundos`}>
+        <button className="rest-full-min" onClick={() => setRestBig(false)} aria-label="Reducir"><Minimize2 size={22} /></button>
+        <div className="rest-full-ring">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r={r} stroke="#1f2126" strokeWidth="4" fill="none" />
+            {/* Halo suave (anillo ancho y translúcido) bajo el progreso */}
+            <circle cx="50" cy="50" r={r} stroke="var(--accent)" strokeOpacity="0.18" strokeWidth="9" fill="none" strokeLinecap="round"
+              strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 50 50)" />
+            <circle cx="50" cy="50" r={r} stroke="var(--accent)" strokeWidth="4" fill="none" strokeLinecap="round"
+              strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 50 50)" />
+          </svg>
+          <div className="rest-full-center">
+            <span className="rest-full-label">Descanso</span>
+            <span className={`rest-full-time ${last ? 'last' : ''}`}>{clock(Math.ceil(remaining))}</span>
+          </div>
+        </div>
+        <div className="rest-full-actions">
+          <button className="btn plain" onClick={() => addRest(-15)}>−15 s</button>
+          <button className="btn plain" onClick={() => addRest(15)}>+15 s</button>
+          <button className="btn primary" onClick={stopRest}>Saltar</button>
+        </div>
+      </div>
     </Overlay>
   )
 }

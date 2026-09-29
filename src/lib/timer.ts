@@ -14,6 +14,8 @@ interface TimerState {
   total: number
   /** Cuándo terminó el último descanso (para el aviso en pantalla). */
   finishedAt?: number
+  /** Mostrar la cuenta atrás a pantalla completa. */
+  big?: boolean
 }
 
 let state: TimerState = { total: 0 }
@@ -21,6 +23,8 @@ const listeners = new Set<() => void>()
 let finishTimeout: ReturnType<typeof setTimeout> | undefined
 let audio: AudioContext | undefined
 let scheduled: { nodes: OscillatorNode[]; at: number } | undefined
+/** Si se amplió el descanso, los siguientes del entrenamiento se abren ya en grande. */
+let preferBig = false
 
 function set(next: TimerState) {
   state = next
@@ -121,7 +125,7 @@ function finish() {
     if (soundOn()) playBeep()
   }
   scheduled = undefined
-  set({ total: 0, finishedAt: Date.now() })
+  set({ total: 0, finishedAt: Date.now(), big: state.big })
   navigator.vibrate?.([200, 100, 200])
 }
 
@@ -136,7 +140,7 @@ function schedule() {
 export function startRest(seconds: number) {
   if (seconds <= 0) return
   unlockAudio()
-  set({ endAt: Date.now() + seconds * 1000, total: seconds * 1000 })
+  set({ endAt: Date.now() + seconds * 1000, total: seconds * 1000, big: preferBig })
   schedule()
 }
 
@@ -144,7 +148,7 @@ export function addRest(seconds: number) {
   if (!state.endAt) return
   const endAt = state.endAt + seconds * 1000
   if (endAt <= Date.now()) return stopRest()
-  set({ endAt, total: Math.max(state.total + seconds * 1000, endAt - Date.now()) })
+  set({ ...state, endAt, total: Math.max(state.total + seconds * 1000, endAt - Date.now()) })
   schedule()
 }
 
@@ -152,6 +156,18 @@ export function stopRest() {
   clearTimeout(finishTimeout)
   cancelBeep()
   set({ total: 0 })
+}
+
+/** Amplía o reduce la cuenta atrás (y lo recuerda para los siguientes descansos). */
+export function setRestBig(on: boolean) {
+  preferBig = on
+  set({ ...state, big: on })
+}
+
+/** Al terminar el entrenamiento se vuelve a la barra normal. */
+export function resetRestView() {
+  preferBig = false
+  stopRest()
 }
 
 /** Oculta el aviso de «descanso terminado». */

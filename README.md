@@ -25,7 +25,8 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Perfil:** medidas corporales, calendario, calculadoras de 1RM y de discos, kg/lb, copia de
   seguridad (exportar/importar) y la pantalla **Legal y privacidad**.
 - Se **actualiza sola**: al publicar una versión nueva, la app la carga en la siguiente apertura
-  (nunca durante un entrenamiento). La versión se ve en Perfil.
+  (nunca durante un entrenamiento). La versión (p. ej. 0.0.1) se ve en Perfil y sale de
+  `package.json`: en cada publicación se sube el último número.
 
 ## Privacidad y seguridad
 
