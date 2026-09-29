@@ -218,7 +218,7 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
   return (
     <>
-      <MoveFigure exerciseId={exercise.id} label={exercise.name} />
+      <MoveFigure exercise={exercise} />
       <MuscleMap exercise={exercise} />
       <div>
         <h1 style={{ margin: '0 0 10px', fontSize: 26, lineHeight: 1.15 }}>{exercise.name}</h1>

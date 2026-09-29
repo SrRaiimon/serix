@@ -1392,24 +1392,22 @@ html.scroll-locked body {
   background: linear-gradient(135deg, rgba(255, 180, 143, 0.8), rgba(255, 122, 77, 0.6));
 }
 
-/* Figura de movimiento (MoveFigure): maniquí propio con la zona trabajada en naranja */
+/* Figura de movimiento (MoveFigure): mismo estilo que el mapa muscular (silueta + paneles de músculo) */
 :root {
-  --fig-near: #5c6270;
-  --fig-far: #8a909c;
-  --fig-head: #6a707e;
-  --fig-gear: #d5d9e1;
-  --fig-gear-ring: #c3c8d2;
-  --fig-gear-dark: #8b93a3;
+  --fig-metal-1: #eef0f4;
+  --fig-metal-2: #c7ccd6;
+  --fig-dark-1: #9aa2b1;
+  --fig-dark-2: #6f7787;
+  --fig-gear-ring: rgba(0, 0, 0, 0.12);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fig-near: #6d7381;
-    --fig-far: #474c57;
-    --fig-head: #7a808e;
-    --fig-gear: #3a3f49;
-    --fig-gear-ring: #2f333b;
-    --fig-gear-dark: #8f97a6;
+    --fig-metal-1: #4a505b;
+    --fig-metal-2: #2c3037;
+    --fig-dark-1: #a3abb9;
+    --fig-dark-2: #6b7382;
+    --fig-gear-ring: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -1427,19 +1425,23 @@ html.scroll-locked body {
   margin: 0 auto;
 }
 
-.fig-near { fill: var(--fig-near); }
-.fig-far { fill: var(--fig-far); }
-.fig-head { fill: var(--fig-head); }
-.fig-work { fill: #ff6a3d; }
-.fig-gear { fill: var(--fig-gear); }
+.fig-body { fill: var(--mm-body); }
+.fig-stop-p1 { stop-color: #ffa06b; }
+.fig-stop-p2 { stop-color: #ff6a3d; }
+.fig-stop-p3 { stop-color: #e8481f; }
+.fig-stop-s1 { stop-color: #ffb48f; }
+.fig-stop-s2 { stop-color: #ff7a4d; }
+.fig-stop-metal1 { stop-color: var(--fig-metal-1); }
+.fig-stop-metal2 { stop-color: var(--fig-metal-2); }
+.fig-stop-dark1 { stop-color: var(--fig-dark-1); }
+.fig-stop-dark2 { stop-color: var(--fig-dark-2); }
 .fig-gear-ring { fill: none; stroke: var(--fig-gear-ring); stroke-width: 2; }
-.fig-gear-dark { fill: var(--fig-gear-dark); }
-.fig-gear-stroke { fill: none; stroke: var(--fig-gear-dark); stroke-width: 4; stroke-linecap: round; }
+.fig-gear-stroke { fill: none; stroke: var(--fig-dark-1); stroke-width: 4; stroke-linecap: round; }
 .fig-shadow { fill: var(--mm-shadow); }
-.fig-cable { stroke: var(--fig-gear-dark); stroke-width: 1.6; }
+.fig-cable { stroke: var(--fig-dark-2); stroke-width: 1.6; }
 .fig-band { stroke: #2fb56a; stroke-width: 3; stroke-linecap: round; }
-.fig-platform { stroke: var(--fig-gear-dark); stroke-width: 7; stroke-linecap: round; }
-.fig-rest { stroke: var(--fig-gear); stroke-width: 12; stroke-linecap: round; }
+.fig-platform { stroke: var(--fig-dark-2); stroke-width: 7; stroke-linecap: round; }
+.fig-rest { stroke: var(--fig-metal-2); stroke-width: 12; stroke-linecap: round; }
 
 .muscle-thumb {
   background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));

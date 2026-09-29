@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react'
+import { useCatalog } from './ui'
 import { FIGURES, FLOOR, type Figure, type JointName, type Part, type Pose, type Prop } from '../lib/figures'
 
 // Figura de movimiento propia (dibujo original generado con código): un maniquí de perfil o de
@@ -86,7 +87,7 @@ function blend(a: Pose, b: Pose, t: number): Pose {
 }
 
 /** Segmento afilado con extremos redondeados. */
-function Limb({ a, b, wa, wb, className, glow }: { a: Pt; b: Pt; wa: number; wb: number; className: string; glow?: string }) {
+function Limb({ a, b, wa, wb, className, fill, filter }: { a: Pt; b: Pt; wa: number; wb: number; className?: string; fill?: string; filter?: string }) {
   const dx = b[0] - a[0]
   const dy = b[1] - a[1]
   const len = Math.hypot(dx, dy) || 1
@@ -94,7 +95,7 @@ function Limb({ a, b, wa, wb, className, glow }: { a: Pt; b: Pt; wa: number; wb:
   const ny = dx / len
   const p = (pt: Pt, w: number, s: number) => `${(pt[0] + (nx * w * s) / 2).toFixed(1)},${(pt[1] + (ny * w * s) / 2).toFixed(1)}`
   return (
-    <g className={className} filter={className === 'fig-work' && glow ? `url(#${glow})` : undefined}>
+    <g className={className} fill={fill} filter={filter}>
       <polygon points={`${p(a, wa, 1)} ${p(b, wb, 1)} ${p(b, wb, -1)} ${p(a, wa, -1)}`} />
       <circle cx={a[0]} cy={a[1]} r={wa / 2} />
       <circle cx={b[0]} cy={b[1]} r={wb / 2} />
@@ -102,7 +103,18 @@ function Limb({ a, b, wa, wb, className, glow }: { a: Pt; b: Pt; wa: number; wb:
   )
 }
 
-function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
+/** Panel de músculo sobre la silueta: algo más estrecho y corto, para que se vea la separación. */
+function Panel({ a, b, wa, wb, fill, filter, inset = 3 }: { a: Pt; b: Pt; wa: number; wb: number; fill: string; filter?: string; inset?: number }) {
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+  const k = Math.min(inset / len, 0.3)
+  const a2: Pt = [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]
+  const b2: Pt = [b[0] - (b[0] - a[0]) * k, b[1] - (b[1] - a[1]) * k]
+  return <Limb a={a2} b={b2} wa={Math.max(2, wa - 3.5)} wb={Math.max(2, wb - 3.5)} fill={fill} filter={filter} />
+}
+
+function PropShape({ prop, j, pose, ids }: { prop: Prop; j: Joints; pose: Pose; ids: string }) {
+  const metal = `url(#${ids}metal)`
+  const dark = `url(#${ids}dark)`
   const origin: Pt = prop.at ? j[prop.at] : prop.point ?? [0, 0]
   const angle = (prop.angle ?? 0) + (prop.rel === 'torso' ? pose.torso : 0)
   const [x, y] = prop.offset ? step(origin, angle, prop.offset) : origin
@@ -110,14 +122,14 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
     case 'plate':
       return (
         <g>
-          <circle cx={x} cy={y} r={prop.size ?? 32} className="fig-gear" />
+          <circle cx={x} cy={y} r={prop.size ?? 32} fill={metal} />
           <circle cx={x} cy={y} r={(prop.size ?? 32) * 0.55} className="fig-gear-ring" />
-          <circle cx={x} cy={y} r={4.5} className="fig-gear-dark" />
+          <circle cx={x} cy={y} r={4.5} fill={dark} />
         </g>
       )
     case 'dumbbell':
       return (
-        <g className="fig-gear-dark">
+        <g fill={dark}>
           <rect x={x - 13} y={y - 2.5} width={26} height={5} rx={2.5} />
           <rect x={x - 17} y={y - 9} width={8} height={18} rx={3} />
           <rect x={x + 9} y={y - 9} width={8} height={18} rx={3} />
@@ -126,12 +138,12 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
     case 'kettlebell':
       // Colgando de la mano o, en los press, apoyada por encima de ella.
       return prop.up ? (
-        <g className="fig-gear-dark">
+        <g fill={dark}>
           <circle cx={x} cy={y - 11} r={10} />
           <path d={`M${x - 6},${y - 4} Q${x - 7},${y + 5} ${x},${y + 5} Q${x + 7},${y + 5} ${x + 6},${y - 4}`} className="fig-gear-stroke" />
         </g>
       ) : (
-        <g className="fig-gear-dark">
+        <g fill={dark}>
           <circle cx={x} cy={y + 13} r={10} />
           <path d={`M${x - 6},${y + 6} Q${x - 7},${y - 3} ${x},${y - 3} Q${x + 7},${y - 3} ${x + 6},${y + 6}`} className="fig-gear-stroke" />
         </g>
@@ -141,23 +153,23 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
       const top = prop.y!
       return (
         <g>
-          <rect x={x0 + 12} y={top + 6} width={6} height={FLOOR - top - 6} className="fig-gear-dark" />
-          <rect x={x1 - 18} y={top + 6} width={6} height={FLOOR - top - 6} className="fig-gear-dark" />
-          <rect x={x0} y={top} width={x1 - x0} height={11} rx={5} className="fig-gear" transform={prop.tilt ? `rotate(${prop.tilt} ${x1} ${top})` : undefined} />
+          <rect x={x0 + 12} y={top + 6} width={6} height={FLOOR - top - 6} fill={dark} />
+          <rect x={x1 - 18} y={top + 6} width={6} height={FLOOR - top - 6} fill={dark} />
+          <rect x={x0} y={top} width={x1 - x0} height={11} rx={5} fill={metal} transform={prop.tilt ? `rotate(${prop.tilt} ${x1} ${top})` : undefined} />
         </g>
       )
     }
     case 'box': {
       const [x0, x1] = prop.span!
-      return <rect x={x0} y={prop.y} width={x1 - x0} height={FLOOR - prop.y!} rx={5} className="fig-gear" />
+      return <rect x={x0} y={prop.y} width={x1 - x0} height={FLOOR - prop.y!} rx={5} fill={metal} />
     }
     case 'bar': {
       const [x0, x1] = prop.span!
       const top = prop.y!
       return (
         <g>
-          <rect x={x1 - 6} y={top} width={6} height={FLOOR - top} className="fig-gear" />
-          <rect x={x0} y={top - 3} width={x1 - x0} height={6} rx={3} className="fig-gear-dark" />
+          <rect x={x1 - 6} y={top} width={6} height={FLOOR - top} fill={metal} />
+          <rect x={x0} y={top - 3} width={x1 - x0} height={6} rx={3} fill={dark} />
         </g>
       )
     }
@@ -165,7 +177,7 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
       return (
         <g>
           <line x1={prop.point![0]} y1={prop.point![1]} x2={x} y2={y} className="fig-cable" />
-          <circle cx={prop.point![0]} cy={prop.point![1]} r={6} className="fig-gear-dark" />
+          <circle cx={prop.point![0]} cy={prop.point![1]} r={6} fill={dark} />
         </g>
       )
     case 'band': {
@@ -173,7 +185,7 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
       return <line x1={ax} y1={ay} x2={x} y2={y} className="fig-band" />
     }
     case 'pad':
-      return prop.size === 0 ? null : <circle cx={x} cy={y} r={prop.size ?? 8} className="fig-gear-dark" />
+      return prop.size === 0 ? null : <circle cx={x} cy={y} r={prop.size ?? 8} fill={dark} />
     case 'platform': {
       const [ex, ey] = step([x, y], angle, 10)
       const a = step([ex, ey], angle - 90, 30)
@@ -186,9 +198,9 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
       const back = prop.back
       return (
         <g>
-          <rect x={(x0 + x1) / 2 - 3} y={top + 6} width={6} height={FLOOR - top - 6} className="fig-gear-dark" />
-          {back && <rect x={back[0]} y={back[1]} width={10} height={back[2]} rx={4} className="fig-gear" transform={back[3] ? `rotate(${back[3]} ${back[0] + 5} ${back[1] + back[2]})` : undefined} />}
-          <rect x={x0} y={top} width={x1 - x0} height={10} rx={4} className="fig-gear" />
+          <rect x={(x0 + x1) / 2 - 3} y={top + 6} width={6} height={FLOOR - top - 6} fill={dark} />
+          {back && <rect x={back[0]} y={back[1]} width={10} height={back[2]} rx={4} fill={metal} transform={back[3] ? `rotate(${back[3]} ${back[0] + 5} ${back[1] + back[2]})` : undefined} />}
+          <rect x={x0} y={top} width={x1 - x0} height={10} rx={4} fill={metal} />
         </g>
       )
     }
@@ -200,46 +212,123 @@ function PropShape({ prop, j, pose }: { prop: Prop; j: Joints; pose: Pose }) {
       return <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="fig-rest" />
     }
     case 'grip':
-      return <rect x={x - 18} y={y - 3} width={36} height={6} rx={3} className="fig-gear-dark" />
+      return <rect x={x - 18} y={y - 3} width={36} height={6} rx={3} fill={dark} />
   }
 }
 
-export function Scene({ figure, pose, glow }: { figure: Figure; pose: Pose; glow: string }) {
+// Zonas del muñeco que se pueden resaltar y los músculos del catálogo que las activan.
+type Zone = 'thigh' | 'hip' | 'shin' | 'chest' | 'belly' | 'deltoid' | 'upperArm' | 'forearm' | 'neck'
+const ZONES: Record<string, Zone[]> = {
+  quads: ['thigh'], hamstrings: ['thigh'], adductors: ['thigh'], abductors: ['thigh', 'hip'], glutes: ['hip'],
+  calves: ['shin'], pectorals: ['chest'], lats: ['chest'], 'upper-back': ['chest'], traps: ['chest', 'neck'],
+  abs: ['belly'], spine: ['belly'], delts: ['deltoid'], biceps: ['upperArm'], triceps: ['upperArm'], forearms: ['forearm'], neck: ['neck'],
+}
+// Si no se conocen los músculos del ejercicio, se usan las zonas generales de la figura.
+const PART_ZONES: Record<Part, Zone[]> = {
+  legs: ['thigh'], calves: ['shin'], glutes: ['hip'], back: ['chest'], chest: ['chest'], core: ['belly'],
+  shoulders: ['deltoid'], arms: ['upperArm'], forearms: ['forearm'],
+}
+
+export interface Muscles { muscle: string; secondaryMuscles: string[] }
+
+function zonesFor(figure: Figure, muscles?: Muscles) {
+  const primary = new Set<Zone>()
+  const secondary = new Set<Zone>()
+  if (muscles) {
+    for (const z of ZONES[muscles.muscle] ?? []) primary.add(z)
+    for (const m of muscles.secondaryMuscles) for (const z of ZONES[m] ?? []) if (!primary.has(z)) secondary.add(z)
+  }
+  if (!primary.size) for (const part of figure.work) for (const z of PART_ZONES[part]) primary.add(z)
+  return { primary, secondary }
+}
+
+const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
+
+export function Scene({ figure, pose, ids, muscles }: { figure: Figure; pose: Pose; ids: string; muscles?: Muscles }) {
   const j = place(figure, pose)
-  const work = new Set<Part>(figure.work)
-  const cls = (part: Part, far = false) => (work.has(part) ? 'fig-work' : far ? 'fig-far' : 'fig-near')
-  const torso: Part = work.has('back') ? 'back' : work.has('chest') ? 'chest' : 'core'
+  const { primary, secondary } = zonesFor(figure, muscles)
+  const glow = `url(#${ids}g)`
+  const fill = (zone: Zone, far = false) =>
+    primary.has(zone) ? `url(#${ids}p${far ? 'f' : ''})` : secondary.has(zone) ? `url(#${ids}s${far ? 'f' : ''})` : `url(#${ids}m${far ? 'f' : ''})`
+  const filter = (zone: Zone) => (primary.has(zone) ? glow : undefined)
   const isFront = figure.view === 'front'
   const pelvis: Pt = isFront ? [(j.hip[0] + j.hip2[0]) / 2, j.hip[1]] : j.hip
   const neck: Pt = isFront ? [(j.shoulder[0] + j.shoulder2[0]) / 2, j.shoulder[1] - 4] : j.shoulder
-  const shadowX = figure.anchor ? (figure.view === 'front' ? pelvis[0] : 130) : pelvis[0]
+  const waist = lerp(pelvis, neck, 0.46)
+  const tw = isFront ? [28, 42] : W.torso
+  const torsoMid = tw[0] + (tw[1] - tw[0]) * 0.46
+  const head = j.head
+  const neckTop = lerp(neck, head, 0.55)
+  const shadowX = figure.anchor ? (isFront ? pelvis[0] : 130) : pelvis[0]
+
+  // Extremidad completa: silueta y dos paneles (segmento superior e inferior).
+  const limb = (from: Pt, mid: Pt, to: Pt, w1: readonly number[], w2: readonly number[], z1: Zone, z2: Zone, far: boolean) => (
+    <g>
+      <Limb a={from} b={mid} wa={w1[0] + 2.5} wb={w1[1] + 2.5} className="fig-body" />
+      <Limb a={mid} b={to} wa={w2[0] + 2.5} wb={w2[1] + 2.5} className="fig-body" />
+      <Panel a={from} b={mid} wa={w1[0]} wb={w1[1]} fill={fill(z1, far)} filter={far ? undefined : filter(z1)} />
+      <Panel a={mid} b={to} wa={w2[0]} wb={w2[1]} fill={fill(z2, far)} filter={far ? undefined : filter(z2)} />
+    </g>
+  )
+  const narrow = (w: readonly number[], d: number) => [w[0] - d, w[1] - d] as const
+
   return (
     <g>
       <ellipse cx={shadowX} cy={FLOOR + 3} rx={figure.shadow ?? 62} ry={5} className="fig-shadow" />
-      {figure.props.filter((p) => !p.front).map((p, i) => <PropShape key={i} prop={p} j={j} pose={pose} />)}
-      <Limb a={j.hip2} b={j.knee2} wa={W.thigh[0] - 2} wb={W.thigh[1] - 2} className={cls('legs', true)} glow={glow} />
-      <Limb a={j.knee2} b={j.ankle2} wa={W.shin[0] - 2} wb={W.shin[1] - 2} className={cls('calves', true)} glow={glow} />
-      <Limb a={j.ankle2} b={j.toe2} wa={9} wb={6} className="fig-far" />
-      <Limb a={j.shoulder2} b={j.elbow2} wa={W.upper[0] - 2} wb={W.upper[1] - 2} className={cls(work.has('shoulders') && !work.has('arms') ? 'shoulders' : 'arms', true)} glow={glow} />
-      <Limb a={j.elbow2} b={j.wrist2} wa={W.fore[0] - 2} wb={W.fore[1] - 2} className={cls('forearms', true)} glow={glow} />
-      <Limb a={pelvis} b={neck} wa={isFront ? 30 : W.torso[0]} wb={isFront ? 44 : W.torso[1]} className={cls(torso)} glow={glow} />
-      {work.has('glutes') && <circle cx={j.hip[0]} cy={j.hip[1]} r={12} className="fig-work" filter={`url(#${glow})`} />}
-      <circle cx={j.head[0]} cy={j.head[1]} r={11} className="fig-head" />
-      {work.has('shoulders') && <circle cx={j.shoulder[0]} cy={j.shoulder[1]} r={9.5} className="fig-work" filter={`url(#${glow})`} />}
-      <Limb a={j.hip} b={j.knee} wa={W.thigh[0]} wb={W.thigh[1]} className={cls('legs')} glow={glow} />
-      <Limb a={j.knee} b={j.ankle} wa={W.shin[0]} wb={W.shin[1]} className={cls('calves')} glow={glow} />
-      <Limb a={j.ankle} b={j.toe} wa={10} wb={7} className="fig-near" />
-      <Limb a={j.shoulder} b={j.elbow} wa={W.upper[0]} wb={W.upper[1]} className={cls(work.has('shoulders') && !work.has('arms') ? 'shoulders' : 'arms')} glow={glow} />
-      <Limb a={j.elbow} b={j.wrist} wa={W.fore[0]} wb={W.fore[1]} className={cls('forearms')} glow={glow} />
-      {figure.props.filter((p) => p.front).map((p, i) => <PropShape key={i} prop={p} j={j} pose={pose} />)}
+      {figure.props.filter((p) => !p.front).map((p, i) => <PropShape key={i} prop={p} j={j} pose={pose} ids={ids} />)}
+      {/* Lado lejano */}
+      {limb(j.hip2, j.knee2, j.ankle2, narrow(W.thigh, 2), narrow(W.shin, 2), 'thigh', 'shin', true)}
+      <Limb a={j.ankle2} b={j.toe2} wa={9} wb={6} className="fig-body" />
+      {limb(j.shoulder2, j.elbow2, j.wrist2, narrow(W.upper, 2), narrow(W.fore, 2), 'upperArm', 'forearm', true)}
+      {/* Tronco, cadera, cuello y cabeza */}
+      <Limb a={pelvis} b={neck} wa={tw[0] + 3} wb={tw[1] + 3} className="fig-body" />
+      <Panel a={pelvis} b={waist} wa={tw[0]} wb={torsoMid} fill={fill('belly')} filter={filter('belly')} inset={2} />
+      <Panel a={waist} b={neck} wa={torsoMid} wb={tw[1]} fill={fill('chest')} filter={filter('chest')} inset={2} />
+      {(isFront ? [j.hip, j.hip2] : [j.hip]).map(([x, y], i) => (
+        <g key={i}>
+          <circle cx={x} cy={y} r={11.5} className="fig-body" />
+          <circle cx={x} cy={y} r={9.5} fill={fill('hip')} filter={filter('hip')} />
+        </g>
+      ))}
+      <Limb a={neck} b={neckTop} wa={11} wb={10} className="fig-body" />
+      <Panel a={neck} b={neckTop} wa={9} wb={8} fill={fill('neck')} filter={filter('neck')} inset={1} />
+      <circle cx={head[0]} cy={head[1]} r={12.5} className="fig-body" />
+      <circle cx={head[0]} cy={head[1]} r={10.8} fill={`url(#${ids}m)`} />
+      {/* Lado cercano */}
+      {limb(j.hip, j.knee, j.ankle, W.thigh, W.shin, 'thigh', 'shin', false)}
+      <Limb a={j.ankle} b={j.toe} wa={10} wb={7} className="fig-body" />
+      {limb(j.shoulder, j.elbow, j.wrist, W.upper, W.fore, 'upperArm', 'forearm', false)}
+      {/* De frente se ven los dos hombros; de perfil, solo el cercano. */}
+      {(isFront ? [j.shoulder, j.shoulder2] : [j.shoulder]).map(([x, y], i) => (
+        <g key={i}>
+          <circle cx={x} cy={y} r={9} className="fig-body" />
+          <circle cx={x} cy={y} r={7.2} fill={fill('deltoid')} filter={filter('deltoid')} />
+        </g>
+      ))}
+      <circle cx={j.wrist[0]} cy={j.wrist[1]} r={4.5} className="fig-body" />
+      {figure.props.filter((p) => p.front).map((p, i) => <PropShape key={i} prop={p} j={j} pose={pose} ids={ids} />)}
     </g>
   )
 }
 
-export function GlowDefs({ id }: { id: string }) {
+/** Degradados (mismos colores que el mapa muscular) y brillo del músculo principal. */
+export function FigureDefs({ id }: { id: string }) {
+  const grad = (key: string, stops: [string, string, number?][]) => (
+    <linearGradient id={`${id}${key}`} x1="0" y1="0" x2="1" y2="1">
+      {stops.map(([offset, cls, opacity], i) => <stop key={i} offset={offset} className={cls} stopOpacity={opacity} />)}
+    </linearGradient>
+  )
   return (
     <defs>
-      <filter id={id} x="-40%" y="-40%" width="180%" height="180%">
+      {grad('m', [['0', 'mm-stop-m1'], ['1', 'mm-stop-m2']])}
+      {grad('mf', [['0', 'mm-stop-m1', 0.55], ['1', 'mm-stop-m2', 0.55]])}
+      {grad('p', [['0', 'fig-stop-p1'], ['0.55', 'fig-stop-p2'], ['1', 'fig-stop-p3']])}
+      {grad('pf', [['0', 'fig-stop-p1', 0.7], ['1', 'fig-stop-p3', 0.7]])}
+      {grad('s', [['0', 'fig-stop-s1', 0.85], ['1', 'fig-stop-s2', 0.7]])}
+      {grad('sf', [['0', 'fig-stop-s1', 0.55], ['1', 'fig-stop-s2', 0.45]])}
+      {grad('metal', [['0', 'fig-stop-metal1'], ['1', 'fig-stop-metal2']])}
+      {grad('dark', [['0', 'fig-stop-dark1'], ['1', 'fig-stop-dark2']])}
+      <filter id={`${id}g`} x="-40%" y="-40%" width="180%" height="180%">
         <feGaussianBlur stdDeviation="2.6" result="b" />
         <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
@@ -259,9 +348,9 @@ export function hasFigure(exerciseId: string) {
 }
 
 /** Figura animada del ejercicio (si hay una para él). */
-export function MoveFigure({ exerciseId, label }: { exerciseId: string; label: string }) {
-  const figure = FIGURES[exerciseId]
-  const glow = useId().replace(/:/g, '') + 'g'
+export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; name: string } }) {
+  const figure = FIGURES[exercise.id]
+  const ids = useId().replace(/:/g, '')
   const [t, setT] = useState(0)
   useEffect(() => {
     if (!figure) return
@@ -286,9 +375,9 @@ export function MoveFigure({ exerciseId, label }: { exerciseId: string; label: s
   if (!figure) return null
   return (
     <div className="move-figure">
-      <svg viewBox="0 -40 260 280" role="img" aria-label={`Movimiento: ${label}`}>
-        <GlowDefs id={glow} />
-        <Scene figure={figure} pose={withArc(figure, blend(figure.frames[0], figure.frames[1], t), t)} glow={glow} />
+      <svg viewBox="0 -40 260 280" role="img" aria-label={`Movimiento: ${exercise.name}`}>
+        <FigureDefs id={ids} />
+        <Scene figure={figure} pose={withArc(figure, blend(figure.frames[0], figure.frames[1], t), t)} ids={ids} muscles={exercise} />
       </svg>
     </div>
   )
@@ -296,16 +385,18 @@ export function MoveFigure({ exerciseId, label }: { exerciseId: string; label: s
 
 /** Galería de todas las figuras (solo en desarrollo, para revisarlas de un vistazo). */
 export function FigureGallery() {
-  const glow = useId().replace(/:/g, '') + 'g'
+  const catalog = useCatalog()
+  const muscles = (id: string) => catalog.get(id)
+  const ids = useId().replace(/:/g, '')
   const seen = new Set<Figure>()
   const unique = Object.entries(FIGURES).filter(([, f]) => (seen.has(f) ? false : (seen.add(f), true)))
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8, padding: 8 }}>
-      <svg width="0" height="0" style={{ position: 'absolute' }}><GlowDefs id={glow} /></svg>
+      <svg width="0" height="0" style={{ position: 'absolute' }}><FigureDefs id={ids} /></svg>
       {unique.map(([key, figure]) => (
         <div key={key} className="move-figure" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: 4 }}>
           {figure.frames.map((pose, i) => (
-            <svg key={i} viewBox="0 -40 260 280"><Scene figure={figure} pose={pose} glow={glow} /></svg>
+            <svg key={i} viewBox="0 -40 260 280"><Scene figure={figure} pose={pose} ids={ids} muscles={muscles(key)} /></svg>
           ))}
           <div style={{ gridColumn: '1 / -1', fontSize: 11, color: 'var(--mm-text)', padding: '0 6px' }}>{key}</div>
         </div>
