@@ -2,7 +2,7 @@ import { FileText, HeartPulse, Lock, Mail, Scale } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Card, NavBar } from '../components/ui'
 
-export const REPO_URL = 'https://github.com/SrRaiimon/gymapp'
+export const REPO_URL = 'https://github.com/SrRaiimon/serix'
 
 /** Aviso de salud: corto y discreto en el cuestionario inicial, como texto normal en Legal. */
 export function HealthNotice({ plain = false }: { plain?: boolean }) {

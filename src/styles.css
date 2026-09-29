@@ -1308,78 +1308,92 @@ html.scroll-locked body {
 }
 
 /* Mapa muscular (MuscleMap): dibujo propio, músculo principal y secundarios resaltados */
+:root {
+  --mm-bg-1: #f7f7fa;
+  --mm-bg-2: #eceef3;
+  --mm-body: #c9cdd6;
+  --mm-muscle-1: #ffffff;
+  --mm-muscle-2: #e6e8ee;
+  --mm-shadow: rgba(0, 0, 0, 0.08);
+  --mm-text: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mm-bg-1: #23262d;
+    --mm-bg-2: #16181d;
+    --mm-body: #121418;
+    --mm-muscle-1: #464b56;
+    --mm-muscle-2: #33373f;
+    --mm-shadow: rgba(0, 0, 0, 0.45);
+    --mm-text: #9aa0ab;
+  }
+}
+
 .muscle-map {
   border-radius: 20px;
-  background: #fff;
-  padding: 16px 12px 12px;
+  background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
+  padding: 18px 12px 12px;
 }
 
 .muscle-map svg {
   display: block;
   width: 100%;
-  max-width: 360px;
+  max-width: 340px;
   height: auto;
   margin: 0 auto;
 }
 
 .mm-body {
-  fill: #fff;
-  stroke: #1d2433;
-  stroke-width: 2;
-  stroke-linejoin: round;
+  fill: var(--mm-body);
 }
 
-.mm-muscle {
-  fill: #fff;
-  stroke: #1d2433;
-  stroke-width: 1.3;
-  stroke-linejoin: round;
+.mm-head {
+  stroke: var(--mm-body);
+  stroke-width: 3;
 }
 
-.mm-detail {
-  fill: none;
-  stroke: #1d2433;
-  stroke-width: 1.2;
-  stroke-linecap: round;
+.mm-stop-m1 {
+  stop-color: var(--mm-muscle-1);
 }
 
-.mm-muscle.mm-primary,
-.mm-legend i.mm-primary {
-  fill: #ff6a3d;
-  background: #ff6a3d;
+.mm-stop-m2 {
+  stop-color: var(--mm-muscle-2);
 }
 
-.mm-muscle.mm-secondary,
-.mm-legend i.mm-secondary {
-  fill: #ffc4b0;
-  background: #ffc4b0;
+.mm-shadow {
+  fill: var(--mm-shadow);
 }
 
 .mm-legend {
   display: flex;
   justify-content: center;
   gap: 18px;
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 13px;
-  color: #5b6475;
+  color: var(--mm-text);
 }
 
 .mm-legend i {
   display: inline-block;
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  margin-right: 5px;
-  vertical-align: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: 0;
 }
 
-.muscle-thumb .mm-body,
-.muscle-thumb .mm-muscle {
-  stroke-width: 2.4;
+.mm-key-primary {
+  background: linear-gradient(135deg, #ffa06b, #e8481f);
+  box-shadow: 0 0 6px rgba(255, 106, 61, 0.7);
 }
 
-.muscle-thumb .mm-detail {
-  stroke-width: 1.8;
+.mm-key-secondary {
+  background: linear-gradient(135deg, rgba(255, 180, 143, 0.8), rgba(255, 122, 77, 0.6));
+}
+
+.muscle-thumb {
+  background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
 }
 
 .legal-text p {

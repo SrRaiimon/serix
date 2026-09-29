@@ -4,7 +4,7 @@ App web instalable (PWA) para quien entrena: rutinas adaptadas a tu objetivo y m
 cada serie y seguimiento de tu progreso. Funciona en Android, iPhone y ordenador, y sin conexión una
 vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 
-**Abrir la app:** https://srraiimon.github.io/gymapp/
+**Abrir la app:** https://srraiimon.github.io/serix/
 
 ## Qué incluye
 
@@ -45,8 +45,9 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - La pantalla legal explica qué datos se guardan, cómo borrarlos, las licencias y el contacto
   (incidencias de GitHub).
 - **Nombre:** «Serix» se comprobó en [TMview](https://www.tmdn.org/tmview/) (OEPM, EUIPO y OMPI) el
-  29-09-2026, sin marcas coincidentes ni apps con ese nombre. El enlace conserva `/gymapp/` (y la base
-  de datos interna, `gymapp`) para no romper las instalaciones ni los datos existentes.
+  29-09-2026, sin marcas coincidentes ni apps con ese nombre. La base de datos interna se sigue
+  llamando `gymapp` para conservar los datos de quien usaba la primera versión (la web anterior estaba
+  en el mismo dominio, srraiimon.github.io, así que los datos se comparten).
 
 ## Licencias
 

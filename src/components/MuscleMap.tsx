@@ -1,118 +1,109 @@
+import { useId } from 'react'
 import type { Exercise } from '../lib/catalog'
+import { DECOR, HEAD, REGIONS, SILHOUETTE } from './muscleShapes'
 
-// Mapa muscular propio (dibujo original, sin imágenes de terceros). Cada vista mide 200 x 400 con el
-// eje de simetría en x = 100: solo se define la mitad izquierda y se refleja. Las claves de los
-// músculos son las del catálogo.
+// Mapa muscular propio (dibujo original, sin imágenes de terceros): músculo principal en naranja con
+// brillo y secundarios en naranja suave. Los colores base salen de variables CSS (tema claro/oscuro).
 
 type View = 'front' | 'back'
-
-const OUTLINE = 'M100,62 L91,62 Q90,56 90,52 Q80,66 70,70 Q58,74 56,88 Q52,104 52,118 Q50,134 48,148 '
-  + 'Q44,170 42,190 Q40,200 42,206 Q46,212 50,206 Q52,196 54,190 Q60,168 62,150 Q64,134 66,120 '
-  + 'Q70,112 72,108 Q76,130 76,150 Q74,164 72,176 Q70,200 72,226 Q74,250 76,262 Q72,290 74,318 '
-  + 'Q76,340 78,358 Q74,368 80,372 L94,372 Q96,366 94,358 Q94,330 96,300 Q96,280 94,266 Q98,240 98,214 L100,200'
-
-const ARMS = {
-  upper: 'M58,108 Q54,124 54,138 Q58,146 62,142 Q66,128 68,110 Q64,104 58,108 Z',
-  forearms: 'M52,150 Q46,168 44,188 Q48,192 52,188 Q58,170 62,152 Q58,146 52,150 Z',
-}
-
-const REGIONS: Record<View, Record<string, string>> = {
-  front: {
-    neck: 'M92,52 Q93,58 95,62 L91,62 Z',
-    traps: 'M91,62 Q82,66 72,70 Q84,70 94,66 Z',
-    delts: 'M72,70 Q58,74 56,90 Q56,100 58,106 Q66,98 70,88 Q74,78 78,72 Z',
-    pectorals: 'M99,76 Q88,72 78,74 Q70,84 70,100 Q76,110 90,110 Q98,108 99,100 Z',
-    biceps: ARMS.upper,
-    forearms: ARMS.forearms,
-    abs: 'M91,112 L99,112 L99,124 L91,124 Z M91,127 L99,127 L99,139 L91,139 Z M91,142 L99,142 L99,154 L91,154 Z M91,157 Q95,176 99,182 L99,157 Z',
-    obliques: 'M88,112 Q80,112 76,118 Q78,140 78,156 Q84,166 88,170 Z',
-    abductors: 'M76,178 Q72,194 73,212 Q76,198 80,184 Z',
-    quads: 'M79,184 Q74,208 76,238 Q79,256 88,258 Q96,252 96,232 Q96,206 90,188 Z',
-    adductors: 'M92,190 Q98,200 98,214 Q96,226 96,232 Q94,212 90,198 Z',
-    calves: 'M78,274 Q74,296 78,320 Q82,334 86,336 Q90,318 90,296 Q88,280 84,272 Z',
-  },
-  back: {
-    neck: 'M92,52 Q93,58 95,62 L91,62 Z',
-    traps: 'M100,56 L92,58 Q84,66 72,70 Q84,76 92,92 Q96,104 100,112 Z',
-    delts: 'M72,70 Q58,74 56,90 Q56,100 58,106 Q66,98 70,88 Q74,80 76,74 Z',
-    triceps: ARMS.upper,
-    forearms: ARMS.forearms,
-    'upper-back': 'M76,76 Q72,88 74,100 Q82,100 90,94 Q84,82 76,76 Z',
-    lats: 'M74,102 Q72,120 78,146 Q86,150 96,140 Q98,124 92,98 Q84,104 74,102 Z',
-    spine: 'M96,140 Q90,150 88,166 Q94,172 99,172 L99,120 Q98,130 96,140 Z',
-    abductors: 'M75,176 Q71,188 72,200 Q75,190 78,178 Z',
-    glutes: 'M78,176 Q73,190 76,206 Q88,214 99,208 L99,178 Q88,172 78,176 Z',
-    hamstrings: 'M76,212 Q72,232 76,252 Q84,260 94,254 Q98,236 96,214 Q86,218 76,212 Z',
-    calves: 'M78,270 Q72,290 76,312 Q82,322 88,318 Q92,300 90,282 Q86,270 78,270 Z',
-  },
-}
-
-const DETAILS: Record<View, string> = {
-  front: 'M99,74 L99,112 M78,262 Q86,268 94,264',
-  back: 'M100,62 L100,176 M80,262 Q86,266 94,262',
-}
+type Muscles = Pick<Exercise, 'muscle' | 'secondaryMuscles'>
 
 const BACK_MUSCLES = new Set(['triceps', 'lats', 'upper-back', 'spine', 'glutes', 'hamstrings', 'traps', 'calves'])
 
 // Encuadre de la miniatura según la zona del músculo principal (x, y, ancho y alto del viewBox).
-const CROP: Record<string, string> = {
-  upper: '10 40 180 180', core: '10 90 180 180', hips: '10 150 180 180', legs: '10 200 180 180',
-}
+const CROP = { upper: '10 44 180 180', core: '10 110 180 180', hips: '10 180 180 180', legs: '10 250 180 180' }
 const ZONE: Record<string, keyof typeof CROP> = {
   abs: 'core', spine: 'core', glutes: 'hips', abductors: 'hips', adductors: 'hips', quads: 'hips', hamstrings: 'hips', calves: 'legs',
 }
 
-function Figure({ view, primary, secondary }: { view: View; primary: Set<string>; secondary: Set<string> }) {
+function muscleSets({ muscle, secondaryMuscles }: Muscles) {
+  const primary = new Set([muscle])
+  if (primary.has('abs')) primary.add('obliques')
+  const secondary = new Set(secondaryMuscles.filter((m) => !primary.has(m)))
+  if (secondary.has('abs')) secondary.add('obliques')
+  return { primary, secondary }
+}
+
+/** Degradados de cada dibujo, con identificadores únicos para que no choquen entre miniaturas. */
+function Defs({ id, glow }: { id: string; glow: boolean }) {
+  return (
+    <defs>
+      <linearGradient id={`${id}m`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" className="mm-stop-m1" />
+        <stop offset="1" className="mm-stop-m2" />
+      </linearGradient>
+      <linearGradient id={`${id}p`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#ffa06b" />
+        <stop offset="0.55" stopColor="#ff6a3d" />
+        <stop offset="1" stopColor="#e8481f" />
+      </linearGradient>
+      <linearGradient id={`${id}s`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#ffb48f" stopOpacity="0.8" />
+        <stop offset="1" stopColor="#ff7a4d" stopOpacity="0.6" />
+      </linearGradient>
+      {glow && (
+        <filter id={`${id}g`} x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.2" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      )}
+    </defs>
+  )
+}
+
+function Figure({ view, muscles, id, glow }: { view: View; muscles: Muscles; id: string; glow: boolean }) {
+  const { primary, secondary } = muscleSets(muscles)
+  const regions = Object.entries(REGIONS[view])
+  const base = regions.filter(([name]) => DECOR.has(name) || !primary.has(name))
+  const highlighted = regions.filter(([name]) => !DECOR.has(name) && primary.has(name))
+  const fill = (name: string) => (!DECOR.has(name) && secondary.has(name) ? `url(#${id}s)` : `url(#${id}m)`)
   const half = (
     <>
-      <path d={OUTLINE} className="mm-body" />
-      {Object.entries(REGIONS[view]).map(([name, d]) => (
-        <path key={name} d={d} className={primary.has(name) ? 'mm-muscle mm-primary' : secondary.has(name) ? 'mm-muscle mm-secondary' : 'mm-muscle'} />
-      ))}
-      <path d={DETAILS[view]} className="mm-detail" />
+      <path d={SILHOUETTE} className="mm-body" />
+      {base.map(([name, d]) => <path key={name} d={d} fill={fill(name)} />)}
+      {/* El principal se dibuja al final para que su brillo quede por encima de lo demás. */}
+      {highlighted.map(([name, d]) => <path key={name} d={d} fill={`url(#${id}p)`} filter={glow ? `url(#${id}g)` : undefined} />)}
     </>
   )
   return (
     <>
-      <ellipse cx="100" cy="32" rx="16" ry="20" className="mm-body mm-head" />
+      <path d={HEAD} fill={`url(#${id}m)`} className="mm-head" />
+      <path d={HEAD} fill={`url(#${id}m)`} className="mm-head" transform="translate(200,0) scale(-1,1)" />
       {half}
       <g transform="translate(200,0) scale(-1,1)">{half}</g>
     </>
   )
 }
 
-function sets(exercise: Pick<Exercise, 'muscle' | 'secondaryMuscles'>) {
-  const primary = new Set([exercise.muscle])
-  if (primary.has('abs')) primary.add('obliques')
-  const secondary = new Set(exercise.secondaryMuscles.filter((m) => !primary.has(m)))
-  if (secondary.has('abs')) secondary.add('obliques')
-  return { primary, secondary }
-}
-
 /** Frente y espalda con el músculo principal y los secundarios resaltados. */
-export function MuscleMap({ exercise }: { exercise: Pick<Exercise, 'name' | 'muscle' | 'secondaryMuscles'> }) {
-  const { primary, secondary } = sets(exercise)
+export function MuscleMap({ exercise }: { exercise: Muscles & Pick<Exercise, 'name'> }) {
+  const id = useId()
+  const hasSecondary = muscleSets(exercise).secondary.size > 0
   return (
     <div className="muscle-map">
-      <svg viewBox="0 0 420 380" role="img" aria-label={`Músculos que trabaja: ${exercise.name}`}>
-        <Figure view="front" primary={primary} secondary={secondary} />
-        <g transform="translate(220,0)"><Figure view="back" primary={primary} secondary={secondary} /></g>
+      <svg viewBox="0 0 420 450" role="img" aria-label={`Músculos que trabaja: ${exercise.name}`}>
+        <Defs id={id} glow />
+        <ellipse cx="100" cy="430" rx="60" ry="6" className="mm-shadow" />
+        <ellipse cx="320" cy="430" rx="60" ry="6" className="mm-shadow" />
+        <Figure view="front" muscles={exercise} id={id} glow />
+        <g transform="translate(220,0)"><Figure view="back" muscles={exercise} id={id} glow /></g>
       </svg>
       <div className="mm-legend">
-        <span><i className="mm-primary" /> Principal</span>
-        {secondary.size > 0 && <span><i className="mm-secondary" /> Secundarios</span>}
+        <span><i className="mm-key-primary" /> Principal</span>
+        {hasSecondary && <span><i className="mm-key-secondary" /> Secundarios</span>}
       </div>
     </div>
   )
 }
 
 /** Miniatura: la vista (frente o espalda) y la zona del cuerpo donde está el músculo principal. */
-export function MuscleThumb({ exercise, size }: { exercise: Pick<Exercise, 'muscle' | 'secondaryMuscles'>; size: number }) {
-  const { primary, secondary } = sets(exercise)
+export function MuscleThumb({ exercise, size }: { exercise: Muscles; size: number }) {
+  const id = useId()
   const view: View = BACK_MUSCLES.has(exercise.muscle) ? 'back' : 'front'
   return (
     <svg className="thumb muscle-thumb" width={size} height={size} viewBox={CROP[ZONE[exercise.muscle] ?? 'upper']} aria-hidden="true">
-      <Figure view={view} primary={primary} secondary={secondary} />
+      <Defs id={id} glow={false} />
+      <Figure view={view} muscles={exercise} id={id} glow={false} />
     </svg>
   )
 }
