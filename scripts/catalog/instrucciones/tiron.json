@@ -1,0 +1,136 @@
+{
+  "Pullups": [
+    "Cuélgate de la barra con las manos algo más abiertas que los hombros y las palmas mirando al frente.",
+    "Baja los hombros y tira llevando los codos hacia abajo hasta que la barbilla supere la barra.",
+    "Baja con control hasta estirar casi del todo los brazos.",
+    "Si todavía no puedes hacerlas, usa una banda elástica o la máquina de asistencia."
+  ],
+  "Wide-Grip_Lat_Pulldown": [
+    "Siéntate en la máquina con los muslos bajo los rodillos y agarra la barra bastante más abierto que los hombros.",
+    "Con el pecho alto, tira de la barra hacia la parte alta del pecho llevando los codos hacia abajo y atrás.",
+    "Aprieta un segundo y sube con control hasta estirar los brazos.",
+    "No tires de la barra por detrás de la nuca ni te balancees hacia atrás."
+  ],
+  "Full_Range-Of-Motion_Lat_Pulldown": [
+    "Siéntate en la máquina con los muslos sujetos y agarra la barra a la anchura de los hombros.",
+    "Arriba, deja que los hombros suban para estirar bien la espalda.",
+    "Tira bajando primero los hombros y luego los codos hasta que la barra llegue al pecho.",
+    "Vuelve arriba con control, estirando del todo."
+  ],
+  "Close-Grip_Front_Lat_Pulldown": [
+    "Coloca un agarre estrecho (triángulo o barra corta) en la polea alta y siéntate con los muslos sujetos.",
+    "Tira hacia la parte alta del pecho llevando los codos pegados al cuerpo.",
+    "Aprieta un segundo y sube con control hasta estirar los brazos."
+  ],
+  "Chin-Up": [
+    "Cuélgate de la barra con las palmas mirando hacia ti, a la anchura de los hombros.",
+    "Tira llevando los codos hacia abajo hasta que la barbilla supere la barra.",
+    "Baja con control hasta casi estirar los brazos. Trabaja mucho el bíceps además de la espalda."
+  ],
+  "Band_Assisted_Pull-Up": [
+    "Engancha una banda elástica a la barra y apoya en ella una rodilla o un pie.",
+    "Agarra la barra algo más abierto que los hombros y tira hasta que la barbilla la supere.",
+    "Baja con control. Usa bandas cada vez más finas a medida que ganes fuerza."
+  ],
+  "Bent_Over_Barbell_Row": [
+    "De pie, con la barra en las manos, flexiona un poco las rodillas e inclina el tronco hacia delante con la espalda recta, casi paralelo al suelo.",
+    "Tira de la barra hacia la parte baja del pecho llevando los codos hacia atrás.",
+    "Junta las escápulas un segundo y baja con control hasta estirar los brazos.",
+    "No des tirones con la espalda: si la necesitas para subir el peso, baja la carga."
+  ],
+  "Seated_Cable_Rows": [
+    "Siéntate en la máquina con los pies en los apoyos, las rodillas un poco flexionadas y el agarre en las manos.",
+    "Con la espalda recta, tira del agarre hacia el abdomen llevando los codos hacia atrás.",
+    "Junta las escápulas un segundo y vuelve con control hasta estirar los brazos, sin inclinar el tronco adelante y atrás."
+  ],
+  "Bent_Over_Two-Dumbbell_Row": [
+    "Con una mancuerna en cada mano, flexiona un poco las rodillas e inclina el tronco con la espalda recta.",
+    "Tira de las mancuernas hacia la cadera llevando los codos hacia atrás.",
+    "Junta las escápulas y baja con control."
+  ],
+  "One-Arm_Dumbbell_Row": [
+    "Apoya una rodilla y la mano del mismo lado en un banco, con la espalda recta y paralela al suelo.",
+    "Con la otra mano, tira de la mancuerna hacia la cadera llevando el codo hacia atrás y pegado al cuerpo.",
+    "Baja con control hasta estirar el brazo. Haz todas las repeticiones y cambia de lado."
+  ],
+  "Two-Arm_Kettlebell_Row": [
+    "Con una kettlebell en cada mano, flexiona un poco las rodillas e inclina el tronco con la espalda recta.",
+    "Tira de las kettlebells hacia la cadera llevando los codos hacia atrás.",
+    "Junta las escápulas y baja con control."
+  ],
+  "Inverted_Row": [
+    "Colócate debajo de una barra a la altura de la cadera (en el rack o una máquina Smith) y agárrala algo más abierto que los hombros.",
+    "Con el cuerpo recto y los talones en el suelo, tira hasta que el pecho toque la barra.",
+    "Baja con control. Cuanto más horizontal esté el cuerpo, más difícil."
+  ],
+  "Barbell_Shrug": [
+    "De pie, con la barra en las manos delante de los muslos y los brazos estirados.",
+    "Sube los hombros hacia las orejas lo más alto que puedas, sin flexionar los codos.",
+    "Aguanta un segundo y baja con control. No gires los hombros."
+  ],
+  "Dumbbell_Shrug": [
+    "De pie, con una mancuerna en cada mano a los lados del cuerpo.",
+    "Sube los hombros hacia las orejas lo más alto que puedas.",
+    "Aguanta un segundo y baja con control."
+  ],
+  "Kettlebell_Sumo_High_Pull": [
+    "Colócate con los pies bastante abiertos y la kettlebell en el suelo entre ellos. Agárrala con las dos manos.",
+    "Con la espalda recta, sube estirando piernas y cadera y, al final, tira de la kettlebell hasta el pecho con los codos altos.",
+    "Bájala con control siguiendo el mismo recorrido."
+  ],
+  "Upright_Row_-_With_Bands": [
+    "Pisa el centro de la banda y sujeta los extremos delante de los muslos.",
+    "Tira hacia arriba llevando los codos altos hasta que las manos lleguen a la altura del pecho.",
+    "Baja con control. No subas más si notas molestias en los hombros."
+  ],
+  "Scapular_Pull-Up": [
+    "Cuélgate de la barra con los brazos estirados.",
+    "Sin flexionar los codos, baja los hombros alejándolos de las orejas para que el cuerpo suba unos centímetros.",
+    "Vuelve a la posición colgada con control. Ayuda a preparar las dominadas y a cuidar los hombros."
+  ],
+  "Barbell_Curl": [
+    "De pie, con la barra agarrada a la anchura de los hombros y las palmas hacia delante.",
+    "Con los codos pegados al cuerpo, flexiónalos para subir la barra hacia los hombros.",
+    "Aprieta un segundo y baja con control hasta estirar los brazos. No te balancees."
+  ],
+  "Dumbbell_Bicep_Curl": [
+    "De pie, con una mancuerna en cada mano a los lados y las palmas hacia delante.",
+    "Con los codos pegados al cuerpo, sube las mancuernas hacia los hombros.",
+    "Aprieta un segundo y baja con control."
+  ],
+  "EZ-Bar_Curl": [
+    "De pie, agarra la barra Z por la parte curvada, a la anchura de los hombros.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros.",
+    "Baja con control. El agarre en ángulo suele ser más cómodo para las muñecas."
+  ],
+  "Standing_Biceps_Cable_Curl": [
+    "De pie frente a una polea baja con una barra corta, agarrada con las palmas hacia arriba.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros.",
+    "Aprieta un segundo y baja con control. La polea mantiene la tensión en todo el recorrido."
+  ],
+  "Close-Grip_EZ-Bar_Curl_with_Band": [
+    "Pasa una banda por debajo de los pies y engánchala a los extremos de una barra Z. Agárrala con las manos juntas.",
+    "Con los codos pegados al cuerpo, sube la barra hacia los hombros; la banda añade resistencia arriba.",
+    "Baja con control."
+  ],
+  "Hammer_Curls": [
+    "De pie, con una mancuerna en cada mano a los lados y las palmas enfrentadas.",
+    "Sin girar las muñecas, sube las mancuernas hacia los hombros con los codos pegados al cuerpo.",
+    "Baja con control. Trabaja también el antebrazo."
+  ],
+  "Cable_Hammer_Curls_-_Rope_Attachment": [
+    "Coloca una cuerda en la polea baja y agárrala con las palmas enfrentadas.",
+    "Con los codos pegados al cuerpo, sube la cuerda hacia los hombros.",
+    "Baja con control."
+  ],
+  "Alternate_Hammer_Curl": [
+    "De pie, con una mancuerna en cada mano y las palmas enfrentadas.",
+    "Sube una mancuerna hacia el hombro sin girar la muñeca y bájala con control.",
+    "Repite con el otro brazo y ve alternando."
+  ],
+  "Farmers_Walk": [
+    "Coge un peso pesado en cada mano (mancuernas, kettlebells o asas específicas), agachándote con la espalda recta.",
+    "Ponte de pie y camina con pasos cortos, el pecho alto y los hombros hacia atrás.",
+    "Recorre la distancia o el tiempo marcado y deja el peso en el suelo con la espalda recta."
+  ]
+}

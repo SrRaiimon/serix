@@ -1,6 +1,7 @@
 import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart } from '../components/charts'
+import { MoveFigure } from '../components/MoveFigure'
 import { MuscleMap } from '../components/MuscleMap'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
@@ -217,6 +218,7 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
   return (
     <>
+      <MoveFigure exerciseId={exercise.id} label={exercise.name} />
       <MuscleMap exercise={exercise} />
       <div>
         <h1 style={{ margin: '0 0 10px', fontSize: 26, lineHeight: 1.15 }}>{exercise.name}</h1>

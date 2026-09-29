@@ -10,10 +10,12 @@ Entradas:
   - dist/exercises.json de Free Exercise DB (solo metadatos)
   - names_es.txt: nombres en español, traducidos a mano ("nombre en inglés|nombre en español")
   - old_to_new.json: equivalencias del catálogo anterior (map_old_ids.py)
+  - instrucciones/*.json: pasos de ejecución escritos para este proyecto (texto original, sin
+    partir de ninguna fuente de terceros), por identificador de ejercicio
 
 Uso: python3 build_catalog.py <fedb>/dist/exercises.json old_to_new.json
 """
-import json, os, sys
+import glob, json, os, sys
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, '..', '..')
@@ -34,6 +36,13 @@ CATEGORY = {'powerlifting': 'strength', 'olympic weightlifting': 'strength', 'st
 def main(src, mapping_path):
     data = json.load(open(src))
     names = dict(l.rstrip('\n').split('|', 1) for l in open(os.path.join(HERE, 'names_es.txt'), encoding='utf-8') if l.strip())
+    steps = {}
+    for path in sorted(glob.glob(os.path.join(HERE, 'instrucciones', '*.json'))):
+        for key, value in json.load(open(path, encoding='utf-8')).items():
+            assert key not in steps, f'{key} repetido'
+            assert value and all(isinstance(v, str) and v.strip() for v in value), key
+            steps[key] = value
+    assert not set(steps) - {e['id'] for e in data}, sorted(set(steps) - {e['id'] for e in data})
     out = []
     for e in data:
         muscle = MUSCLE[e['primaryMuscles'][0]]
@@ -48,7 +57,7 @@ def main(src, mapping_path):
             'category': category,
             'level': e['level'],
             'secondaryMuscles': [MUSCLE[m] for m in e['secondaryMuscles'] if m in MUSCLE],
-            'instructions': [],
+            'instructions': steps.get(e['id'], []),
         })
     catalog = {'version': 2, 'source': 'Datos de ejercicios: lista de Free Exercise DB (solo nombres y clasificación)',
                'count': len(out), 'exercises': out}
@@ -57,7 +66,7 @@ def main(src, mapping_path):
     ids = {x['id'] for x in out}
     assert all(v in ids for v in mapping.values())
     json.dump(mapping, open(os.path.join(ROOT, 'public', 'exercise_ids_v1.json'), 'w'), separators=(',', ':'), sort_keys=True)
-    print(f'{len(out)} ejercicios, {len(mapping)} equivalencias')
+    print(f'{len(out)} ejercicios, {len(steps)} con instrucciones, {len(mapping)} equivalencias')
 
 
 if __name__ == '__main__':

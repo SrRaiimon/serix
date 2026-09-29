@@ -22,4 +22,5 @@ SOFTWARE.
 
 Los datos de ejercicios (public/exercises_es.json) son nombres y clasificaciones tomados de la
 lista de Free Exercise DB (https://github.com/yuhonas/free-exercise-db) y traducidos a mano. Las
-ilustraciones (src/components/MuscleMap.tsx) son dibujos originales de este proyecto.
+instrucciones (scripts/catalog/instrucciones/) y las ilustraciones (mapas musculares y figuras de
+movimiento, en src/components/ y src/lib/figures.ts) son contenido original de este proyecto.

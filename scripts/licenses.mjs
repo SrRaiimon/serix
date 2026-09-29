@@ -28,7 +28,8 @@ parts.push(
   '--- Datos de ejercicios ---',
   'Nombres y clasificación (músculos, material, nivel) tomados de la lista de Free Exercise DB',
   '(https://github.com/yuhonas/free-exercise-db) y traducidos a mano. Son datos de hecho: la app no',
-  'incluye fotos ni textos de terceros. Los mapas musculares son dibujos propios de Serix.',
+  'incluye fotos ni textos de terceros. Las instrucciones, los mapas musculares y las figuras de',
+  'movimiento son contenido propio de Serix.',
   '',
 )
 

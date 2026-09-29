@@ -1392,6 +1392,55 @@ html.scroll-locked body {
   background: linear-gradient(135deg, rgba(255, 180, 143, 0.8), rgba(255, 122, 77, 0.6));
 }
 
+/* Figura de movimiento (MoveFigure): maniquí propio con la zona trabajada en naranja */
+:root {
+  --fig-near: #5c6270;
+  --fig-far: #8a909c;
+  --fig-head: #6a707e;
+  --fig-gear: #d5d9e1;
+  --fig-gear-ring: #c3c8d2;
+  --fig-gear-dark: #8b93a3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fig-near: #6d7381;
+    --fig-far: #474c57;
+    --fig-head: #7a808e;
+    --fig-gear: #3a3f49;
+    --fig-gear-ring: #2f333b;
+    --fig-gear-dark: #8f97a6;
+  }
+}
+
+.move-figure {
+  border-radius: 20px;
+  background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
+  padding: 6px;
+}
+
+.move-figure svg {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.fig-near { fill: var(--fig-near); }
+.fig-far { fill: var(--fig-far); }
+.fig-head { fill: var(--fig-head); }
+.fig-work { fill: #ff6a3d; }
+.fig-gear { fill: var(--fig-gear); }
+.fig-gear-ring { fill: none; stroke: var(--fig-gear-ring); stroke-width: 2; }
+.fig-gear-dark { fill: var(--fig-gear-dark); }
+.fig-gear-stroke { fill: none; stroke: var(--fig-gear-dark); stroke-width: 4; stroke-linecap: round; }
+.fig-shadow { fill: var(--mm-shadow); }
+.fig-cable { stroke: var(--fig-gear-dark); stroke-width: 1.6; }
+.fig-band { stroke: #2fb56a; stroke-width: 3; stroke-linecap: round; }
+.fig-platform { stroke: var(--fig-gear-dark); stroke-width: 7; stroke-linecap: round; }
+.fig-rest { stroke: var(--fig-gear); stroke-width: 12; stroke-linecap: round; }
+
 .muscle-thumb {
   background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
 }

@@ -1,5 +1,6 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { FigureGallery } from './components/MoveFigure'
 import { CatalogContext, useTick } from './components/ui'
 import { loadCatalog, type Catalog } from './lib/catalog'
 import { migrateCatalog } from './lib/migrate'
@@ -55,6 +56,8 @@ function Main() {
 
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
   if (route[0] === 'import' && route[1]) return <div className="app"><ImportScreen code={route[1]} /></div>
+  // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
+  if (import.meta.env.DEV && route[0] === 'dev-figuras') return <FigureGallery />
   if (!data.settings.onboarded) return <OnboardingScreen />
 
   const tab = currentTab(route)

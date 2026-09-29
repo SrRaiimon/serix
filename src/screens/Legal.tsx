@@ -46,7 +46,7 @@ export function LegalScreen() {
 
         <Section title="Contenido y licencias" icon={Scale}>
           <p><strong>Ejercicios:</strong> los nombres y su clasificación (músculos, material y nivel) son datos de hecho tomados de la lista abierta <a href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noreferrer">Free Exercise DB</a> y traducidos a mano. La app no usa sus fotos ni sus textos.</p>
-          <p><strong>Ilustraciones:</strong> los mapas musculares son dibujos propios de Serix.</p>
+          <p><strong>Instrucciones e ilustraciones:</strong> los pasos de cada ejercicio, los mapas musculares y las figuras de movimiento son contenido propio de Serix.</p>
           <p><strong>Código de la app:</strong> licencia MIT. Usa React (MIT) y los iconos de Lucide (ISC), cuyos textos completos están en <a href="licenses.txt" target="_blank" rel="noreferrer">licenses.txt</a>.</p>
           <p>Serix es un proyecto personal, gratuito y sin ánimo de lucro, que se ofrece tal cual, sin garantías.</p>
         </Section>

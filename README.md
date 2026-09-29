@@ -16,7 +16,7 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   ejercicio), series de calentamiento, **RPE** opcional por serie, temporizador de descanso,
   sugerencia de progresión y **sustituir ejercicio** por alternativas equivalentes.
 - **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
-  (frente y espalda) con el músculo principal y los secundarios.
+  (frente y espalda). Los más habituales incluyen **figura animada** del movimiento e instrucciones.
 - **Progreso:** volumen y entrenamientos por semana, series por músculo, historial, récords y
   evolución por ejercicio (1RM estimado, peso máximo, volumen).
 - **Perfil:** medidas corporales, calendario, calculadoras de 1RM y de discos, kg/lb, copia de
@@ -57,7 +57,12 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   hecho. **No se usan sus fotos ni sus instrucciones**: aunque el repositorio se declara de dominio
   público, las fotos proceden de webs con derechos (su propio autor lo reconoce) y los textos están
   copiados de bodybuilding.com.
-- **Ilustraciones:** mapas musculares dibujados en código (`src/components/MuscleMap.tsx`), originales.
+- **Instrucciones:** escritas para este proyecto (`scripts/catalog/instrucciones/`), sin partir de
+  textos de terceros. Por ahora cubren los 126 ejercicios que usan el generador y el registro por
+  tiempo o distancia.
+- **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
+  animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
+  Las figuras cubren unos 95 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
 - **Dependencias:** React (MIT) y Lucide (ISC). Sus textos completos van en `public/licenses.txt`,
   que `scripts/licenses.mjs` genera en cada build y la app enlaza desde la pantalla legal.
 
@@ -81,7 +86,8 @@ Estructura:
 ## Catálogo de ejercicios
 
 `public/exercises_es.json` se genera con `scripts/catalog/build_catalog.py` a partir de la lista de
-Free Exercise DB (solo nombres y clasificación) y de `names_es.txt` (nombres traducidos a mano):
+Free Exercise DB (solo nombres y clasificación), de `names_es.txt` (nombres traducidos a mano) y de
+`instrucciones/*.json` (pasos escritos para el proyecto):
 
 ```bash
 git clone --depth 1 https://github.com/yuhonas/free-exercise-db.git /tmp/fedb

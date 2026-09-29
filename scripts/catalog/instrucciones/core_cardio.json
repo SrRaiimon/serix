@@ -1,0 +1,133 @@
+{
+  "Hanging_Leg_Raise": [
+    "Cuélgate de una barra con los brazos estirados y el cuerpo quieto.",
+    "Sube las piernas juntas (estiradas o con las rodillas flexionadas, que es más fácil) hasta la altura de la cadera o más arriba.",
+    "Baja con control sin balancearte. Intenta que la pelvis se enrolle un poco al final de la subida."
+  ],
+  "Dead_Bug": [
+    "Túmbate boca arriba con los brazos estirados hacia el techo y las rodillas flexionadas a 90 grados sobre la cadera.",
+    "Pega la zona lumbar al suelo y baja a la vez un brazo por detrás de la cabeza y la pierna contraria hacia el suelo.",
+    "Vuelve al centro y repite con el otro lado. La espalda no debe despegarse del suelo."
+  ],
+  "Crunches": [
+    "Túmbate boca arriba con las rodillas flexionadas, los pies apoyados y las manos en el pecho o junto a las sienes.",
+    "Despega los hombros del suelo enrollando la parte alta de la espalda, sin tirar del cuello.",
+    "Aprieta el abdomen un segundo y baja con control."
+  ],
+  "Russian_Twist": [
+    "Siéntate en el suelo con las rodillas flexionadas e inclina el tronco hacia atrás con la espalda recta.",
+    "Con las manos juntas (o sujetando un peso), gira el tronco para llevarlas a un lado de la cadera.",
+    "Gira al otro lado y ve alternando. Para hacerlo más difícil, levanta los pies del suelo."
+  ],
+  "Plank": [
+    "Apoya los antebrazos en el suelo, con los codos bajo los hombros, y estira las piernas apoyando las puntas de los pies.",
+    "Mantén el cuerpo en línea recta de la cabeza a los talones, apretando abdomen y glúteos.",
+    "Aguanta el tiempo indicado respirando con normalidad, sin dejar que la cadera se hunda ni se levante."
+  ],
+  "Side_Bridge": [
+    "Túmbate de lado apoyado en un antebrazo, con el codo bajo el hombro y las piernas estiradas una sobre otra.",
+    "Sube la cadera hasta que el cuerpo quede en línea recta.",
+    "Aguanta el tiempo indicado y cambia de lado."
+  ],
+  "Kettlebell_Windmill": [
+    "Sube una kettlebell por encima de la cabeza con el brazo estirado. Pies algo más abiertos que los hombros, apuntando hacia el lado contrario a la kettlebell.",
+    "Sin dejar de mirar la kettlebell, lleva la cadera hacia el lado del brazo que la sujeta y baja la otra mano por la pierna hacia el suelo.",
+    "Vuelve a subir con el brazo siempre vertical. Empieza con poco peso: exige movilidad y control."
+  ],
+  "Cable_Crunch": [
+    "Arrodíllate frente a una polea alta con una cuerda, sujetándola junto a la cabeza.",
+    "Enrolla el tronco llevando los codos hacia los muslos, sin mover la cadera.",
+    "Aprieta el abdomen un segundo y vuelve con control."
+  ],
+  "Stomach_Vacuum": [
+    "De pie, sentado o a cuatro patas, expulsa todo el aire de los pulmones.",
+    "Sin volver a coger aire, mete el ombligo hacia dentro y hacia arriba todo lo que puedas.",
+    "Aguanta unos segundos y relaja. Trabaja el músculo transverso del abdomen."
+  ],
+  "Mountain_Climbers": [
+    "Colócate en posición de flexión, con las manos bajo los hombros y el cuerpo recto.",
+    "Lleva una rodilla hacia el pecho y vuelve a estirarla mientras llevas la otra.",
+    "Alterna las piernas a buen ritmo sin que la cadera suba ni se hunda."
+  ],
+  "Rope_Jumping": [
+    "Sujeta la comba con los codos cerca del cuerpo y gírala con las muñecas.",
+    "Salta con los pies juntos lo justo para que pase la cuerda, cayendo con suavidad sobre la parte delantera de los pies.",
+    "Mantén un ritmo constante durante el tiempo indicado."
+  ],
+  "Box_Jump_Multiple_Response": [
+    "Colócate frente a un cajón estable, con los pies a la anchura de la cadera.",
+    "Flexiona un poco las piernas, balancea los brazos y salta al cajón cayendo con las dos piernas a la vez y las rodillas flexionadas.",
+    "Baja del cajón (mejor bajando con un pie que saltando) y enlaza el siguiente salto.",
+    "Elige una altura que puedas saltar con seguridad."
+  ],
+  "Freehand_Jump_Squat": [
+    "De pie, con los pies a la anchura de los hombros.",
+    "Baja en sentadilla y salta hacia arriba con fuerza, ayudándote de los brazos.",
+    "Cae con suavidad flexionando las piernas y enlaza la siguiente repetición."
+  ],
+  "Battling_Ropes": [
+    "Agarra un extremo de la cuerda con cada mano, con las piernas un poco flexionadas y el tronco algo inclinado.",
+    "Mueve los brazos arriba y abajo con fuerza para crear ondas en la cuerda, alternándolos o a la vez.",
+    "Mantén el ritmo durante el tiempo indicado sin encorvar la espalda."
+  ],
+  "Bicycling": [
+    "Ajusta el sillín para que la pierna quede casi estirada con el pedal abajo.",
+    "Pedalea a un ritmo que puedas mantener. Anota la distancia y el tiempo al terminar.",
+    "Usa casco y respeta las normas de circulación."
+  ],
+  "Bicycling_Stationary": [
+    "Ajusta el sillín para que la pierna quede casi estirada con el pedal abajo.",
+    "Pedalea con la resistencia y el ritmo que marque tu entrenamiento.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Elliptical_Trainer": [
+    "Súbete a la elíptica y sujeta las asas móviles.",
+    "Mueve piernas y brazos a la vez con un ritmo constante y el tronco erguido.",
+    "Ajusta la resistencia a tu entrenamiento y anota la distancia y el tiempo al terminar."
+  ],
+  "Jogging_Treadmill": [
+    "Colócate en la cinta y engancha la pinza de seguridad a la ropa.",
+    "Empieza caminando y sube la velocidad hasta un trote suave que te permita hablar.",
+    "Mantén el ritmo el tiempo indicado y anota la distancia al terminar."
+  ],
+  "Running_Treadmill": [
+    "Colócate en la cinta y engancha la pinza de seguridad a la ropa.",
+    "Calienta unos minutos caminando o trotando antes de subir a tu ritmo de carrera.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Trail_Running_Walking": [
+    "Elige una ruta que conozcas y lleva agua, calzado adecuado y el móvil.",
+    "Camina o corre a tu ritmo, acortando la zancada en las subidas y con cuidado en las bajadas.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Walking_Treadmill": [
+    "Colócate en la cinta y engancha la pinza de seguridad a la ropa.",
+    "Camina a paso vivo, con la espalda erguida y moviendo los brazos. Puedes subir la inclinación para hacerlo más exigente.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Rowing_Stationary": [
+    "Siéntate en el remo, sujeta los pies con las cintas y agarra el asa con los brazos estirados.",
+    "Empuja primero con las piernas, luego inclina un poco el tronco hacia atrás y termina tirando del asa hacia el abdomen.",
+    "Vuelve en orden inverso: brazos, tronco y piernas. Anota la distancia y el tiempo al terminar."
+  ],
+  "Recumbent_Bike": [
+    "Siéntate en la bicicleta reclinada con la espalda apoyada y ajusta el asiento para que la pierna quede casi estirada.",
+    "Pedalea con la resistencia y el ritmo que marque tu entrenamiento.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Skating": [
+    "Usa casco y protecciones y elige una zona adecuada.",
+    "Patina a un ritmo constante con las rodillas flexionadas y el peso sobre la parte central del pie.",
+    "Anota la distancia y el tiempo al terminar."
+  ],
+  "Stairmaster": [
+    "Súbete a la máquina y sujeta las asas sin apoyar todo el peso en ellas.",
+    "Sube escalones a un ritmo constante con el tronco erguido.",
+    "Mantén el ritmo durante el tiempo indicado."
+  ],
+  "Step_Mill": [
+    "Súbete a la escaladora de escalones y sujeta las asas sin cargar el peso en ellas.",
+    "Sube los escalones apoyando todo el pie, con el tronco erguido.",
+    "Mantén el ritmo durante el tiempo indicado."
+  ]
+}

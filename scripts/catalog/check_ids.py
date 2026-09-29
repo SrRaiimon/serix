@@ -6,10 +6,12 @@ import json, re, sys
 
 ids = {e['id'] for e in json.load(open('public/exercises_es.json'))['exercises']}
 bad = []
-for path in ['src/lib/generator.ts', 'src/lib/tracking.ts']:
+for path in ['src/lib/generator.ts', 'src/lib/tracking.ts', 'src/lib/figures.ts']:
     src = open(path).read()
     # Identificadores: palabras con guiones bajos o guiones y mayúscula inicial dentro de comillas.
-    for found in re.findall(r"'([A-Z0-9][A-Za-z0-9_\-\\']*?)'(?=[,\]\s])", src):
+    # Identificadores entre comillas (listas) y claves del mapa de figuras (Nombre: patrón).
+    found_all = re.findall(r"'([A-Z0-9][A-Za-z0-9_\-\\']*?)'(?=[,\]\s:])", src) + re.findall(r"^  ([A-Z][A-Za-z0-9_]+): ", src, re.M)
+    for found in found_all:
         found = found.replace("\\'", "'")
         if ('_' in found or '-' in found) and found not in ids:
             bad.append(f'{path}: {found}')
