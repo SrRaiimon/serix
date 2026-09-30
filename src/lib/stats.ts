@@ -169,3 +169,37 @@ export function progressionHint(last: SetEntry[], repsMax: number): 'reps' | 'ea
   if (rpes.length === last.length && hardest !== undefined && hardest <= 7) return 'easy'
   return null
 }
+
+export interface PeriodStats {
+  sessions: number
+  volume: number
+  sets: number
+  /** Milisegundos entrenados. */
+  time: number
+  /** Récords batidos en el periodo. */
+  records: number
+}
+
+/** Cifras de las sesiones que empiezan entre `from` y `to` (récords frente a todo lo anterior). */
+export function periodStats(sessions: Session[], from: number, to: number): PeriodStats {
+  const inside = sessions.filter((s) => s.start >= from && s.start < to)
+  return {
+    sessions: inside.length,
+    volume: inside.reduce((t, s) => t + sessionVolume(s), 0),
+    sets: inside.reduce((t, s) => t + sessionSets(s), 0),
+    time: inside.reduce((t, s) => t + sessionDuration(s), 0),
+    records: inside.reduce((t, s) => t + newRecords(s, sessions).length, 0),
+  }
+}
+
+/**
+ * Este mes hasta hoy y el mismo tramo del mes anterior (del día 1 al mismo día), para comparar
+ * sin que el mes en curso salga siempre perdiendo.
+ */
+export function monthToDate(sessions: Session[], now = new Date()): { current: PeriodStats; previous: PeriodStats } {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+  const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const daysInPrev = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
+  const prevEnd = new Date(prevStart.getFullYear(), prevStart.getMonth(), Math.min(now.getDate(), daysInPrev), now.getHours(), now.getMinutes(), now.getSeconds()).getTime()
+  return { current: periodStats(sessions, start, now.getTime() + 1), previous: periodStats(sessions, prevStart.getTime(), prevEnd + 1) }
+}

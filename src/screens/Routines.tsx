@@ -4,7 +4,7 @@ import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper
 import type { Exercise } from '../lib/catalog'
 import { clock, day, relative, rest, restOptions, uid } from '../lib/format'
 import { equipmentProfiles, generate, goals, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
-import { muscleLabel } from '../lib/labels'
+import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, type AppData, type Routine } from '../lib/store'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
@@ -13,6 +13,7 @@ import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, tracking
 import { startEmpty, startRoutine } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
+import { QrSheet } from '../components/Qr'
 
 /** Comparte rutinas por enlace (hoja del sistema en el móvil; si no hay, copia al portapapeles). */
 async function sharePlan(routines: Routine[], title: string, programName: string | undefined, showToast: (t: string) => void) {
@@ -24,11 +25,25 @@ async function sharePlan(routines: Routine[], title: string, programName: string
   }
 }
 
+/** Código QR de un enlace de rutinas: devuelve la hoja (o nada) y la función que la abre. */
+function useQr(showToast: (t: string) => void) {
+  const [qr, setQr] = useState<{ title: string; url: string; routines: Routine[]; programName?: string }>()
+  const open = async (routines: Routine[], title: string, programName?: string) => {
+    try {
+      setQr({ title, routines, programName, url: planLink(await encodePlan(routines, programName)) })
+    } catch {
+      showToast('No se pudo crear el código')
+    }
+  }
+  const sheet = qr && (
+    <QrSheet title={qr.title} url={qr.url} onClose={() => setQr(undefined)}
+      onShare={() => void sharePlan(qr.routines, qr.title, qr.programName, showToast)} />
+  )
+  return [sheet, open] as const
+}
+
 const timeTargets = [15, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1200, 1800]
 
-export function muscleSummary(r: Routine) {
-  return [...new Set(r.exercises.map((e) => e.muscle))].slice(0, 4).map(muscleLabel).join(', ')
-}
 
 export function RoutinesScreen() {
   const data = useData()
@@ -37,6 +52,7 @@ export function RoutinesScreen() {
   const [editing, setEditing] = useState<string>()
   const [programMenu, setProgramMenu] = useState<string>()
   const [toast, showToast] = useToast()
+  const [qrSheet, openQr] = useQr(showToast)
   const active = data.settings.activeProgram
 
   const importFromLink = () => {
@@ -95,6 +111,7 @@ export function RoutinesScreen() {
       {programMenu && (
         <ActionSheet title={programMenu} onClose={() => setProgramMenu(undefined)} options={[
           { label: 'Compartir programa', onSelect: () => void sharePlan(groups.get(programMenu) ?? [], programMenu, programMenu, showToast) },
+          { label: 'Mostrar código QR', onSelect: () => void openQr(groups.get(programMenu) ?? [], programMenu, programMenu) },
           ...(programMenu !== active ? [{ label: 'Marcar como activo', onSelect: () => updateSettings({ activeProgram: programMenu }) }] : []),
           {
             label: 'Eliminar programa', destructive: true, onSelect: () => {
@@ -109,6 +126,7 @@ export function RoutinesScreen() {
       )}
       {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
       {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
+      {qrSheet}
       {toast}
     </div>
   )
@@ -139,6 +157,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const [menu, setMenu] = useState(false)
   const [detail, setDetail] = useState<string>()
   const [toast, showToast] = useToast()
+  const [qrSheet, openQr] = useQr(showToast)
   if (!routine) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={ClipboardList} title="Rutina eliminada" message="" /></div></>
   const last = lastPerformed(data, routine.id)
   const detailSlots = groupSlots(routine.exercises)
@@ -194,6 +213,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         <ActionSheet onClose={() => setMenu(false)} options={[
           { label: 'Editar', onSelect: () => setEditing(true) },
           { label: 'Compartir rutina', onSelect: () => void sharePlan([routine], routine.name, undefined, showToast) },
+          { label: 'Mostrar código QR', onSelect: () => void openQr([routine], routine.name) },
           { label: 'Duplicar', onSelect: duplicate },
           {
             label: 'Eliminar', destructive: true, onSelect: () => {
@@ -205,6 +225,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
       )}
       {editing && <RoutineEditor id={routine.id} onClose={() => setEditing(false)} />}
       {detail && <ExerciseSheet exerciseId={detail} onClose={() => setDetail(undefined)} />}
+      {qrSheet}
       {toast}
     </>
   )

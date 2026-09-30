@@ -10,7 +10,8 @@ import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { testBeep } from '../lib/timer'
 import { finishedSessions, replaceData, resetData, update, updateSettings, useData, type Measurement } from '../lib/store'
-import { SessionRow } from './Session'
+import { PlatesView } from './Plates'
+import { SessionRow } from '../components/SessionRow'
 
 export function ProfileScreen() {
   const data = useData()
@@ -387,57 +388,16 @@ export function OneRepMaxScreen() {
 
 export function PlatesScreen() {
   const { unit } = useData().settings
-  const plates = unit === 'kg' ? [25, 20, 15, 10, 5, 2.5, 1.25] : [45, 35, 25, 10, 5, 2.5]
-  const bars = unit === 'kg' ? [20, 15, 10] : [45, 35, 25]
   const [target, setTarget] = useState('')
-  const [bar, setBar] = useState(bars[0])
-  const barWeight = bars.includes(bar) ? bar : bars[0]
   const total = parseDecimal(target) ?? 0
-  let side = Math.max(0, (total - barWeight) / 2)
-  const perSide: number[] = []
-  for (const p of plates) {
-    while (side + 0.0001 >= p) {
-      perSide.push(p)
-      side -= p
-    }
-  }
-  const grouped = plates.map((p) => ({ plate: p, n: perSide.filter((x) => x === p).length })).filter((g) => g.n > 0)
-  const colors = ['#e5383b', '#1e6fd9', '#f5b400', '#2fa84f', '#8e8e93', '#8e8e93', '#8e8e93']
-
   return (
     <>
       <NavBar showBack title="Calculadora de discos" />
       <div className="screen with-nav">
         <div className="list">
           <NumberField label="Peso objetivo" value={target} onChange={setTarget} suffix={unit} />
-          <label className="list-row">
-            <span className="grow">Barra</span>
-            <select className="select" value={barWeight} onChange={(e) => setBar(Number(e.target.value))}>
-              {bars.map((b) => <option key={b} value={b}>{num(b)} {unit}</option>)}
-            </select>
-          </label>
         </div>
-        {total > barWeight && (
-          <Card title="Discos por lado">
-            <svg viewBox="0 0 320 110" width="100%">
-              <rect x="0" y="50" width="70" height="10" rx="2" fill="#8e8e93" />
-              <rect x="70" y="38" width="8" height="34" rx="2" fill="#8e8e93" />
-              {perSide.map((p, i) => {
-                const h = Math.max(28, (p / plates[0]) * 100)
-                return <rect key={i} x={82 + i * 16} y={55 - h / 2} width={13} height={h} rx={3} fill={colors[plates.indexOf(p)]} />
-              })}
-              <rect x={82 + perSide.length * 16} y="50" width="30" height="10" rx="2" fill="#8e8e93" />
-            </svg>
-            {grouped.map((g) => (
-              <div key={g.plate} className="row between">
-                <span>{num(g.plate)} {unit}</span>
-                <strong>× {g.n}</strong>
-              </div>
-            ))}
-            {side > 0.01 && <span className="small" style={{ color: '#f08c00' }}>Faltan {num(side * 2)} {unit} que no se pueden cargar con los discos estándar.</span>}
-          </Card>
-        )}
-        {total > 0 && total <= barWeight && <p className="muted">El peso objetivo debe ser mayor que la barra.</p>}
+        {total > 0 && <Card title="Discos por lado"><PlatesView weightKg={toKg(total, unit)} showTotal={false} /></Card>}
       </div>
     </>
   )

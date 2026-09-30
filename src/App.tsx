@@ -8,16 +8,38 @@ import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
 import { activeSession, loadData, useData } from './lib/store'
 import { closeSummary, openWorkout, useWorkoutUI } from './lib/workout'
-import { ExerciseDetailScreen, ExercisesScreen } from './screens/Exercises'
 import { HomeScreen } from './screens/Home'
-import { ImportScreen } from './screens/Import'
-import { LegalScreen } from './screens/Legal'
-import { OnboardingScreen } from './screens/Onboarding'
-import { CalendarScreen, MeasurementsScreen, OneRepMaxScreen, PlatesScreen, ProfileScreen } from './screens/Profile'
-import { ExerciseProgressScreen, ProgressScreen } from './screens/Progress'
-import { RoutineDetailScreen, RoutinesScreen } from './screens/Routines'
-import { SessionDetailScreen, SummarySheet } from './screens/Session'
-import { WorkoutScreen } from './screens/Workout'
+
+// El resto de pantallas se descargan al abrirlas (el service worker las guarda todas para usarlas sin
+// conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
+const screens = {
+  exercises: () => import('./screens/Exercises'),
+  import: () => import('./screens/Import'),
+  legal: () => import('./screens/Legal'),
+  onboarding: () => import('./screens/Onboarding'),
+  profile: () => import('./screens/Profile'),
+  progress: () => import('./screens/Progress'),
+  routines: () => import('./screens/Routines'),
+  session: () => import('./screens/Session'),
+  workout: () => import('./screens/Workout'),
+}
+const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExercisesScreen })))
+const ExerciseDetailScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExerciseDetailScreen })))
+const ImportScreen = lazy(() => screens.import().then((m) => ({ default: m.ImportScreen })))
+const LegalScreen = lazy(() => screens.legal().then((m) => ({ default: m.LegalScreen })))
+const OnboardingScreen = lazy(() => screens.onboarding().then((m) => ({ default: m.OnboardingScreen })))
+const ProfileScreen = lazy(() => screens.profile().then((m) => ({ default: m.ProfileScreen })))
+const MeasurementsScreen = lazy(() => screens.profile().then((m) => ({ default: m.MeasurementsScreen })))
+const CalendarScreen = lazy(() => screens.profile().then((m) => ({ default: m.CalendarScreen })))
+const OneRepMaxScreen = lazy(() => screens.profile().then((m) => ({ default: m.OneRepMaxScreen })))
+const PlatesScreen = lazy(() => screens.profile().then((m) => ({ default: m.PlatesScreen })))
+const ProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ProgressScreen })))
+const ExerciseProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ExerciseProgressScreen })))
+const RoutinesScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutinesScreen })))
+const RoutineDetailScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutineDetailScreen })))
+const SessionDetailScreen = lazy(() => screens.session().then((m) => ({ default: m.SessionDetailScreen })))
+const SummarySheet = lazy(() => screens.session().then((m) => ({ default: m.SummarySheet })))
+const WorkoutScreen = lazy(() => screens.workout().then((m) => ({ default: m.WorkoutScreen })))
 
 const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => ({ default: m.FigureGallery })))
 
@@ -58,21 +80,25 @@ function Main() {
   const active = activeSession(data)
 
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
-  if (route[0] === 'import' && route[1]) return <div className="app"><ImportScreen code={route[1]} /></div>
+  if (route[0] === 'import' && route[1]) return <div className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></div>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
-  if (!data.settings.onboarded) return <OnboardingScreen />
+  if (!data.settings.onboarded) return <Suspense fallback={null}><OnboardingScreen /></Suspense>
 
   const tab = currentTab(route)
   const summary = ui.summaryId ? data.sessions.find((s) => s.id === ui.summaryId) : undefined
 
   return (
     <div className={`app ${active && !ui.open ? 'has-active' : ''}`}>
-      <Screen route={route} />
+      <Suspense fallback={<div className="screen" />}>
+        <Screen route={route} />
+      </Suspense>
       {active && !ui.open && <ActiveBar name={active.name} start={active.start} />}
       <TabBar tab={tab} />
-      {active && ui.open && <WorkoutScreen session={active} />}
-      {summary && <SummarySheet session={summary} onClose={closeSummary} />}
+      <Suspense fallback={null}>
+        {active && ui.open && <WorkoutScreen session={active} />}
+        {summary && <SummarySheet session={summary} onClose={closeSummary} />}
+      </Suspense>
     </div>
   )
 }

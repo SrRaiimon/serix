@@ -2,9 +2,9 @@ import { ArrowUpRight, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
-import { clock, editable, fromKg, increment, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
+import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
-import { lastSets, progressionHint } from '../lib/stats'
+import { e1rm, lastSets, progressionHint, records, workingSets } from '../lib/stats'
 import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { addRest, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
@@ -36,6 +36,23 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const askRpe = (setId?: string) => setRpeFor(data.settings.rpe ? setId : undefined)
   const slots = groupSlots(session.exercises)
   const catalog = useCatalog()
+  // Mejor 1RM estimado de cada ejercicio antes de este entrenamiento (para avisar de récords al momento).
+  const bestBefore = useMemo(() => new Map(records(history).map((r) => [r.exerciseId, r.e1rm])), [history])
+  const bestSoFar = (exerciseId: string) => {
+    const before = bestBefore.get(exerciseId)
+    if (before === undefined) return undefined
+    const today = session.exercises.filter((x) => x.exerciseId === exerciseId).flatMap(workingSets).map((x) => e1rm(x.weight, x.reps))
+    return Math.max(before, ...today)
+  }
+  const onSetDone = (e: SessionExercise, set: SetEntry) => {
+    const best = bestSoFar(e.exerciseId)
+    if (set.warmup || best === undefined || trackingOf(e) !== 'weight_reps') return
+    const value = e1rm(set.weight, set.reps)
+    if (value > best + 0.01) {
+      showToast(`Nuevo récord en ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`)
+      navigator.vibrate?.([60, 60, 120])
+    }
+  }
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
 
   // Dentro de una superserie o circuito no se descansa: se pasa directamente al siguiente ejercicio.
@@ -84,6 +101,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         onRoundEnd={() => roundEnd(i)}
         rpeFor={rpeFor}
         onAskRpe={askRpe}
+        onSetDone={(set) => onSetDone(e, set)}
       />
     )
   }
@@ -174,7 +192,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -192,6 +210,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   onRoundEnd: () => void
   rpeFor?: string
   onAskRpe: (setId?: string) => void
+  /** Serie recién marcada (para avisar si es récord). */
+  onSetDone: (set: SetEntry) => void
 }) {
   const [menu, setMenu] = useState(false)
   const [restMenu, setRestMenu] = useState(false)
@@ -275,6 +295,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             onAskRpe={() => onAskRpe(set.id)}
             onRpeDone={() => onAskRpe(undefined)}
             onCompleted={() => {
+              onSetDone(set)
               if (!set.warmup) onAskRpe(set.id)
               if (inGroupWithNext) return onGroupNext()
               startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest)

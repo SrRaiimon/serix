@@ -6,11 +6,11 @@ import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } f
 import { duration, fromKg, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, muscleLoad, records, sessionDuration, setsByMuscle, weekly } from '../lib/stats'
+import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
-import { SessionRow } from './Session'
+import { SessionRow } from '../components/SessionRow'
 
 type Section = 'summary' | 'history' | 'records'
 let savedSection: Section = 'summary'
@@ -74,6 +74,46 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
   )
 }
 
+/** Diferencia con el mismo tramo del mes anterior, en texto corto. */
+function Delta({ now, before, format }: { now: number; before: number; format: (v: number) => string }) {
+  if (before === 0 && now === 0) return null
+  const diff = now - before
+  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">igual que el mes pasado</span>
+  const up = diff > 0
+  const Icon = up ? ArrowUpRight : ArrowDownRight
+  return (
+    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--green)' : 'var(--text-2)' }}>
+      <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} vs. mes pasado
+    </span>
+  )
+}
+
+function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const { current, previous } = useMemo(() => monthToDate(sessions), [sessions])
+  const month = new Date().toLocaleDateString('es-ES', { month: 'long' })
+  const item = (label: string, key: keyof PeriodStats, format: (v: number) => string) => (
+    <div className="month-stat">
+      <span className="bold">{format(current[key])}</span>
+      <span className="small muted">{label}</span>
+      <Delta now={current[key]} before={previous[key]} format={format} />
+    </div>
+  )
+  return (
+    <Card title={`Este mes (${month})`} icon={Calendar}>
+      <div className="month-grid">
+        {item('Entrenos', 'sessions', (v) => String(v))}
+        {item('Volumen', 'volume', (v) => volume(v, unit))}
+        {item('Series efectivas', 'sets', (v) => String(v))}
+        {item('Tiempo', 'time', (v) => duration(v))}
+      </div>
+      <span className="small muted">
+        {current.records > 0 ? `${current.records === 1 ? '1 récord batido' : `${current.records} récords batidos`} este mes. ` : ''}
+        Se compara con el mismo número de días del mes anterior.
+      </span>
+    </Card>
+  )
+}
+
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const weeks = weekly(sessions, 12)
   const thisWeek = weeks[weeks.length - 1]
@@ -87,6 +127,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Dumbbell} value={sessions.length} label="Entrenos totales" />
         <Tile icon={Clock} value={duration(totalTime)} label="Tiempo total" />
       </div>
+      <MonthCard sessions={sessions} unit={unit} />
       <WeeklyMuscles sessions={sessions} />
       <Card title="Volumen semanal" icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />

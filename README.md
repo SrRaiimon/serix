@@ -10,15 +10,16 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 
 - **Programa generado** a partir de un cuestionario inicial (objetivo, nivel, días, minutos y
   material: gimnasio, mancuernas, kettlebell, bandas o sin material).
-- **Rutinas** editables, con **superseries y circuitos**, y **compartibles por enlace**
+- **Rutinas** editables, con **superseries y circuitos**, y **compartibles por enlace o código QR**
   (`#/import/<código>`: solo lleva los ejercicios y las cifras, no datos personales).
 - **Entrenamiento** con registro de series (peso y repeticiones, tiempo o distancia según el
   ejercicio), **series de calentamiento automáticas** hasta el peso de trabajo, **calculadora de
   discos** por lado (barra de 20, 15 o 10 kg), **RPE** opcional por serie, temporizador de descanso,
-  sugerencia de progresión y **sustituir ejercicio** por alternativas equivalentes.
+  sugerencia de progresión, **aviso de récord** al marcar la serie y **sustituir ejercicio** por
+  alternativas equivalentes.
 - **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.
-- **Progreso:** mapa de calor de los músculos trabajados en los últimos 7 días (y aviso de los
+- **Progreso:** resumen del mes comparado con el anterior, mapa de calor de los músculos trabajados en los últimos 7 días (y aviso de los
   grupos sin tocar), volumen y entrenamientos por semana, series por músculo, historial, récords y
   evolución por ejercicio (1RM estimado, peso máximo, volumen).
 - **Compartir:** al terminar, una tarjeta-imagen del entrenamiento (músculos, cifras y récords)
@@ -71,7 +72,7 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
   animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
   Las figuras cubren los 876 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
-- **Dependencias:** React (MIT) y Lucide (ISC). Sus textos completos van en `public/licenses.txt`,
+- **Dependencias:** React (MIT), Lucide (ISC) y qrcode-generator (MIT) para los códigos QR. Sus textos completos van en `public/licenses.txt`,
   que `scripts/licenses.mjs` genera en cada build y la app enlaza desde la pantalla legal.
 
 ## Desarrollo

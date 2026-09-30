@@ -1,4 +1,5 @@
-import { useEffect, useId, useState } from 'react'
+import { Play, Snail } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useCatalog } from './ui'
 import { FIGURES, FLOOR, type Figure, type Part, type Pose, type Prop } from '../lib/figures'
 import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, type Joints, type Pt } from '../lib/figureEngine'
@@ -292,18 +293,26 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
   const figure = FIGURES[exercise.id]
   const ids = useId().replace(/:/g, '')
   const [t, setT] = useState(0)
+  // Tocar la figura la pausa; el botón alterna entre velocidad normal y cámara lenta.
+  const [paused, setPaused] = useState(false)
+  const [slow, setSlow] = useState(false)
+  const control = useRef({ paused, slow })
+  control.current = { paused, slow }
   useEffect(() => {
     if (!figure) return
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       // Sin animación continua: alterna las dos posturas cada segundo y medio.
-      const timer = setInterval(() => setT((v) => (v < 0.5 ? 1 : 0)), 1500)
+      const timer = setInterval(() => !control.current.paused && setT((v) => (v < 0.5 ? 1 : 0)), 1500)
       return () => clearInterval(timer)
     }
     let frame = 0
-    const start = performance.now()
+    let last = performance.now()
+    let phase = 0
     const period = figure.period ?? 2600
     const tick = (now: number) => {
-      const phase = ((now - start) % period) / period
+      const { paused, slow } = control.current
+      if (!paused) phase = (phase + (now - last) / (period * (slow ? 2.5 : 1))) % 1
+      last = now
       // Ida y vuelta con una breve pausa en cada extremo.
       const raw = phase < 0.5 ? phase * 2 : 2 - phase * 2
       setT(ease(Math.min(1, Math.max(0, (raw - 0.08) / 0.84))))
@@ -315,10 +324,18 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
   if (!figure) return null
   return (
     <div className="move-figure">
-      <svg viewBox={fitViewBox(figure)} role="img" aria-label={`Movimiento: ${exercise.name}`}>
-        <FigureDefs id={ids} />
-        <Scene figure={figure} pose={poseAt(figure, t)} ids={ids} muscles={exercise} />
-      </svg>
+      <button className="move-figure-stage" onClick={() => setPaused((p) => !p)}
+        aria-label={paused ? 'Reanudar la animación' : 'Pausar la animación'} aria-pressed={paused}>
+        <svg viewBox={fitViewBox(figure)} role="img" aria-label={`Movimiento: ${exercise.name}`}>
+          <FigureDefs id={ids} />
+          <Scene figure={figure} pose={poseAt(figure, t)} ids={ids} muscles={exercise} />
+        </svg>
+        {paused && <span className="move-figure-paused"><Play size={22} fill="currentColor" /></span>}
+      </button>
+      <button className={`move-figure-speed ${slow ? 'active' : ''}`} onClick={() => setSlow((v) => !v)} aria-pressed={slow}
+        aria-label={slow ? 'Velocidad normal' : 'Cámara lenta'}>
+        <Snail size={16} /> {slow ? 'Lento' : '1×'}
+      </button>
     </div>
   )
 }

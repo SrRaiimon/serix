@@ -15,7 +15,8 @@ const LOOK: Record<string, { fill: string; h: number; w: number }> = {
   'lb10': { fill: '#e9eaee', h: 52, w: 9 }, 'lb5': { fill: '#d64541', h: 42, w: 8 }, 'lb2.5': { fill: '#b7bcc6', h: 34, w: 7 },
 }
 
-export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: () => void }) {
+/** Barra con los discos de cada lado para un peso (en kg), con selector de barra. */
+export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; showTotal?: boolean }) {
   const data = useData()
   const unit: Unit = data.settings.unit
   const bars = BARS[unit]
@@ -36,9 +37,8 @@ export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: 
   })
 
   return (
-    <Sheet title="Discos por lado" onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>Listo</button>}>
       <div className="plates">
-        <div className="plates-total">{weight(weightKg, unit)}</div>
+        {showTotal && <div className="plates-total">{weight(weightKg, unit)}</div>}
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
           {bars.map((b) => (
             <Chip key={b} label={`Barra de ${editable(b)} ${u}`} active={b === bar} onClick={() => updateSettings({ barKg: toKg(b, unit) })} />
@@ -67,6 +67,13 @@ export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: 
           </p>
         )}
       </div>
+  )
+}
+
+export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: () => void }) {
+  return (
+    <Sheet title="Discos por lado" onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>Listo</button>}>
+      <PlatesView weightKg={weightKg} />
     </Sheet>
   )
 }

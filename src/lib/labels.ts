@@ -70,3 +70,8 @@ export const categoryKeys = Object.keys(categories)
 
 const levels: Record<string, string> = { beginner: 'Principiante', intermediate: 'Intermedio', expert: 'Avanzado' }
 export const levelLabel = (k: string) => levels[k] ?? cap(k)
+
+/** Músculos principales de una rutina, para mostrar debajo de su nombre. */
+export function muscleSummary(r: { exercises: { muscle: string }[] }) {
+  return [...new Set(r.exercises.map((e) => e.muscle))].slice(0, 4).map(muscleLabel).join(', ')
+}

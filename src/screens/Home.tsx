@@ -8,8 +8,8 @@ import { sessionVolume, streakWeeks } from '../lib/stats'
 import { activeSession, finishedSessions, lastPerformed, routineMinutes, useData, type AppData, type Routine, type Session } from '../lib/store'
 import { openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
-import { muscleSummary } from './Routines'
-import { SessionRow } from './Session'
+import { muscleSummary } from '../lib/labels'
+import { SessionRow } from '../components/SessionRow'
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */
 function nextRoutine(d: AppData): Routine | undefined {
