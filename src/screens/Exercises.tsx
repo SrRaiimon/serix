@@ -1,7 +1,6 @@
 import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart } from '../components/charts'
-import { MoveFigure } from '../components/MoveFigure'
 import { MuscleMap } from '../components/MuscleMap'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
@@ -11,6 +10,9 @@ import { navigate } from '../lib/router'
 import { exerciseHistory } from '../lib/stats'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking } from '../lib/tracking'
+
+// Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
+const MoveFigure = lazy(() => import('../components/MoveFigure').then((m) => ({ default: m.MoveFigure })))
 
 const PAGE = 50
 
@@ -218,7 +220,9 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
   return (
     <>
-      <MoveFigure exercise={exercise} />
+      <Suspense fallback={<div className="move-figure"><div className="move-figure-placeholder" /></div>}>
+        <MoveFigure exercise={exercise} />
+      </Suspense>
       <MuscleMap exercise={exercise} />
       <div>
         <h1 style={{ margin: '0 0 10px', fontSize: 26, lineHeight: 1.15 }}>{exercise.name}</h1>

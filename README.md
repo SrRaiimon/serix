@@ -16,7 +16,7 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   ejercicio), series de calentamiento, **RPE** opcional por serie, temporizador de descanso,
   sugerencia de progresión y **sustituir ejercicio** por alternativas equivalentes.
 - **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
-  (frente y espalda). Los más habituales incluyen **figura animada** del movimiento e instrucciones.
+  (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.
 - **Progreso:** mapa de calor de los músculos trabajados en los últimos 7 días (y aviso de los
   grupos sin tocar), volumen y entrenamientos por semana, series por músculo, historial, récords y
   evolución por ejercicio (1RM estimado, peso máximo, volumen).
@@ -66,11 +66,10 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   público, las fotos proceden de webs con derechos (su propio autor lo reconoce) y los textos están
   copiados de bodybuilding.com.
 - **Instrucciones:** escritas para este proyecto (`scripts/catalog/instrucciones/`), sin partir de
-  textos de terceros. Cubren 716 de los 876 ejercicios; quedan sin texto los de material poco
-  habitual o cuyo nombre no permite describir la técnica con seguridad.
+  textos de terceros. Cubren los 876 ejercicios.
 - **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
   animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
-  Las figuras cubren 221 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
+  Las figuras cubren los 876 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
 - **Dependencias:** React (MIT) y Lucide (ISC). Sus textos completos van en `public/licenses.txt`,
   que `scripts/licenses.mjs` genera en cada build y la app enlaza desde la pantalla legal.
 

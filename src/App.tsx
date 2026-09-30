@@ -1,6 +1,5 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { FigureGallery } from './components/MoveFigure'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { CatalogContext, useTick } from './components/ui'
 import { loadCatalog, type Catalog } from './lib/catalog'
 import { migrateCatalog } from './lib/migrate'
@@ -19,6 +18,8 @@ import { ExerciseProgressScreen, ProgressScreen } from './screens/Progress'
 import { RoutineDetailScreen, RoutinesScreen } from './screens/Routines'
 import { SessionDetailScreen, SummarySheet } from './screens/Session'
 import { WorkoutScreen } from './screens/Workout'
+
+const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => ({ default: m.FigureGallery })))
 
 export default function App() {
   const [catalog, setCatalog] = useState<Catalog>()
@@ -59,7 +60,7 @@ function Main() {
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
   if (route[0] === 'import' && route[1]) return <div className="app"><ImportScreen code={route[1]} /></div>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
-  if (import.meta.env.DEV && route[0] === 'dev-figuras') return <FigureGallery />
+  if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
   if (!data.settings.onboarded) return <OnboardingScreen />
 
   const tab = currentTab(route)

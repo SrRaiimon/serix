@@ -30,6 +30,8 @@ BODY_PART = {'abs': 'core', 'abductors': 'legs', 'adductors': 'legs', 'biceps': 
 # Sin material indicado = sin material (flexiones, zancadas, estiramientos…).
 EQUIPMENT = {'body only': 'bodyweight', None: 'bodyweight', 'kettlebells': 'kettlebell', 'bands': 'band', 'e-z curl bar': 'ez-bar',
              'medicine ball': 'medicine-ball', 'exercise ball': 'exercise-ball', 'foam roll': 'foam-roll'}
+# Material mal indicado en la lista original.
+EQUIPMENT_FIX = {'Bodyweight_Flyes': 'other', 'Chair_Squat': 'bodyweight'}
 CATEGORY = {'powerlifting': 'strength', 'olympic weightlifting': 'strength', 'strongman': 'strength'}
 
 
@@ -53,7 +55,7 @@ def main(src, mapping_path):
             'nameEn': e['name'],
             'muscle': muscle,
             'bodyPart': 'cardio' if category == 'cardio' else BODY_PART[muscle],
-            'equipment': EQUIPMENT.get(e['equipment'], e['equipment']),
+            'equipment': EQUIPMENT_FIX.get(e['id'], EQUIPMENT.get(e['equipment'], e['equipment'])),
             'category': category,
             'level': e['level'],
             'secondaryMuscles': [MUSCLE[m] for m in e['secondaryMuscles'] if m in MUSCLE],

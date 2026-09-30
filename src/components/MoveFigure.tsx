@@ -23,15 +23,16 @@ function step([x, y]: Pt, angle: number, length: number): Pt {
 // de hombros (sube los hombros sin mover la cabeza).
 const torsoLen = (pose: Pose) => L.torso * (pose.torsoLen ?? 1)
 const thighLen = (pose: Pose) => L.thigh * (pose.thighLen ?? 1)
+const shinLen = (pose: Pose) => L.shin * (pose.shinLen ?? 1)
 
 function side(pose: Pose, hip: Pt): Joints {
   const neckBase = step(hip, pose.torso, torsoLen(pose))
   const shoulder = step(hip, pose.torso, torsoLen(pose) + (pose.shrug ?? 0))
   const shoulder2 = step(shoulder, pose.torso - 90, 3)
   const knee = step(hip, pose.thigh, thighLen(pose))
-  const ankle = step(knee, pose.shin, L.shin)
+  const ankle = step(knee, pose.shin, shinLen(pose))
   const knee2 = step(hip, pose.thigh2 ?? pose.thigh, thighLen(pose))
-  const ankle2 = step(knee2, pose.shin2 ?? pose.shin, L.shin)
+  const ankle2 = step(knee2, pose.shin2 ?? pose.shin, shinLen(pose))
   const elbow = step(shoulder, pose.upper, L.upper)
   const elbow2 = step(shoulder2, pose.upper2 ?? pose.upper, L.upper)
   return {
@@ -52,9 +53,9 @@ function front(pose: Pose, pelvis: Pt): Joints {
   const shoulder: Pt = [mid[0] + 19, mid[1] + 4 - lift]
   const shoulder2: Pt = [mid[0] - 19, mid[1] + 4 - lift]
   const knee = step(hip, pose.thigh, thighLen(pose))
-  const ankle = step(knee, pose.shin, L.shin)
+  const ankle = step(knee, pose.shin, shinLen(pose))
   const knee2 = step(hip2, -(pose.thigh2 ?? pose.thigh), thighLen(pose))
-  const ankle2 = step(knee2, -(pose.shin2 ?? pose.shin), L.shin)
+  const ankle2 = step(knee2, -(pose.shin2 ?? pose.shin), shinLen(pose))
   const elbow = step(shoulder, pose.upper, L.upper)
   const elbow2 = step(shoulder2, -(pose.upper2 ?? pose.upper), L.upper)
   return {
@@ -83,15 +84,30 @@ function place(figure: Figure, pose: Pose): Joints {
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
 
 /** Valor que se da por hecho si una postura no indica el campo (para poder interpolar). */
-const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1 }
+const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90 }
 
-function blend(a: Pose, b: Pose, t: number): Pose {
+const FALLBACK: Partial<Record<keyof Pose, keyof Pose>> = { thigh2: 'thigh', shin2: 'shin', upper2: 'upper', fore2: 'fore', foot2: 'foot', head: 'torso' }
+
+const ANGLES = new Set<keyof Pose>(['torso', 'head', 'thigh', 'shin', 'thigh2', 'shin2', 'upper', 'fore', 'upper2', 'fore2', 'foot', 'foot2'])
+
+/**
+ * Postura intermedia. Los ángulos van por el camino corto (de 180 a -106 son 74° hacia atrás, no
+ * 286° pasando por arriba), salvo los que la figura marca como barrido largo.
+ */
+function blend(a: Pose, b: Pose, t: number, sweep: (keyof Pose)[] = []): Pose {
   const out: Partial<Record<keyof Pose, number>> = {}
   for (const key of new Set([...Object.keys(a), ...Object.keys(b)]) as Set<keyof Pose>) {
+    // Si una postura no indica el lado lejano (o la cabeza), vale lo mismo que el cercano (o el tronco).
+    const base = FALLBACK[key]
     const zero = POSE_DEFAULTS[key]
-    const from = a[key] ?? zero
-    const to = b[key] ?? zero ?? from
-    if (from !== undefined && to !== undefined) out[key] = mix(from, to, t)
+    const from = a[key] ?? (base && a[base]) ?? zero
+    let to = b[key] ?? (base && b[base]) ?? zero ?? from
+    if (from === undefined || to === undefined) continue
+    if (ANGLES.has(key) && !sweep.includes(key)) {
+      while (to - from > 180) to -= 360
+      while (to - from < -180) to += 360
+    }
+    out[key] = mix(from, to, t)
   }
   return out as Pose
 }
@@ -175,10 +191,16 @@ function PropShape({ prop, j, pose, ids }: { prop: Prop; j: Joints; pose: Pose; 
     case 'bench': {
       const [x0, x1] = prop.span!
       const top = prop.y!
+      // Con el tablero inclinado (gira sobre su extremo derecho), cada pata llega hasta él.
+      const tilt = ((prop.tilt ?? 0) * Math.PI) / 180
+      const leg = (x: number) => {
+        const d = x - x1
+        return { x: x1 + d * Math.cos(tilt), y: top + d * Math.sin(tilt) + 6 }
+      }
+      const legs = [leg(x0 + 15), leg(x1 - 15)]
       return (
         <g>
-          <rect x={x0 + 12} y={top + 6} width={6} height={FLOOR - top - 6} fill={dark} />
-          <rect x={x1 - 18} y={top + 6} width={6} height={FLOOR - top - 6} fill={dark} />
+          {legs.map((l, i) => <rect key={i} x={l.x - 3} y={l.y} width={6} height={Math.max(0, FLOOR - l.y)} fill={dark} />)}
           <rect x={x0} y={top} width={x1 - x0} height={11} rx={5} fill={metal} transform={prop.tilt ? `rotate(${prop.tilt} ${x1} ${top})` : undefined} />
         </g>
       )
@@ -235,6 +257,14 @@ function PropShape({ prop, j, pose, ids }: { prop: Prop; j: Joints; pose: Pose; 
       const b = step(shift(j[prop.to!]), pose.torso, 12)
       return <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="fig-rest" />
     }
+    case 'ball':
+      // Fitball, balón medicinal o rodillo de espuma.
+      return (
+        <g>
+          <circle cx={x} cy={y} r={prop.size ?? 10} fill={metal} />
+          <circle cx={x} cy={y} r={(prop.size ?? 10) * 0.7} className="fig-gear-ring" />
+        </g>
+      )
     case 'grip':
       return <rect x={x - 18} y={y - 3} width={36} height={6} rx={3} fill={dark} />
     case 'barFront': {
@@ -389,7 +419,7 @@ export function fitViewBox(figure: Figure): string {
   }
   for (let i = 0; i <= 12; i++) {
     const t = i / 12
-    const pose = withArc(figure, blend(figure.frames[0], figure.frames[1], t), t)
+    const pose = poseAt(figure, t)
     const j = place(figure, pose)
     for (const [key, p] of Object.entries(j)) add(p[0], p[1], key === 'head' ? 13 : 10)
     for (const prop of figure.props) {
@@ -399,6 +429,7 @@ export function fitViewBox(figure: Figure): string {
         case 'dumbbell': add(x, y, 18); break
         case 'kettlebell': add(x, prop.up ? y - 11 : y + 13, 12); break
         case 'pad': add(x, y, prop.size ?? 8); break
+        case 'ball': add(x, y, prop.size ?? 10); break
         case 'platform': add(x, y, 34); break
         case 'grip': add(x, y, 18); break
         case 'cable': add(prop.point![0], prop.point![1], 6); add(x, y); break
@@ -425,6 +456,11 @@ export function fitViewBox(figure: Figure): string {
   const box = `${((minX + maxX) / 2 - w / 2).toFixed(1)} ${((minY + maxY) / 2 - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`
   fitCache.set(figure, box)
   return box
+}
+
+/** Postura de la animación en el instante t (0 = inicial, 1 = final). */
+export function poseAt(figure: Figure, t: number): Pose {
+  return withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep), t)
 }
 
 /** En los saltos, la figura describe un arco entre las dos posturas. */
@@ -466,7 +502,7 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
     <div className="move-figure">
       <svg viewBox={fitViewBox(figure)} role="img" aria-label={`Movimiento: ${exercise.name}`}>
         <FigureDefs id={ids} />
-        <Scene figure={figure} pose={withArc(figure, blend(figure.frames[0], figure.frames[1], t), t)} ids={ids} muscles={exercise} />
+        <Scene figure={figure} pose={poseAt(figure, t)} ids={ids} muscles={exercise} />
       </svg>
     </div>
   )

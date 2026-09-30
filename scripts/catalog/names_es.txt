@@ -275,7 +275,7 @@ Flexor Incline Dumbbell Curls|Curl inclinado con mancuernas (flexor)
 Floor Glute-Ham Raise|Curl nórdico en el suelo
 Floor Press|Press en el suelo
 Floor Press with Chains|Press en el suelo con cadenas
-Flutter Kicks|Tijeras
+Flutter Kicks|Tijeras boca abajo en banco
 Foot-SMR|Pie con rodillo
 Forward Drag with Press|Arrastre de trineo hacia delante con press
 Frankenstein Squat|Sentadilla Frankenstein

@@ -1421,6 +1421,12 @@ html.scroll-locked body {
   padding: 6px;
 }
 
+.move-figure-placeholder {
+  aspect-ratio: 260 / 280;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
 .move-figure svg {
   display: block;
   width: 100%;
