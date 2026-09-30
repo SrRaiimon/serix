@@ -78,7 +78,20 @@ function place(figure: Figure, pose: Pose): Joints {
     const lowest = Math.max(...points.map((p) => p[1] + (p === probe.ankle || p === probe.ankle2 ? 5 : 3)))
     origin = [(figure.x ?? 130) - (figure.view === 'front' ? 0 : probe.ankle[0]), FLOOR - lowest]
   }
-  return build(pose, [origin[0] + (pose.shift ?? 0), origin[1] - (pose.lift ?? 0)])
+  const joints = build(pose, [origin[0] + (pose.shift ?? 0), origin[1] - (pose.lift ?? 0)])
+  return figure.turn ? turned(joints, figure.anchor?.at ?? joints.hip, figure.turn) : joints
+}
+
+/** Gira todas las articulaciones alrededor de un punto (para figuras tumbadas de lado). */
+function turned(j: Joints, [cx, cy]: Pt, degrees: number): Joints {
+  const a = (degrees * Math.PI) / 180
+  const cos = Math.cos(a)
+  const sin = Math.sin(a)
+  const out = {} as Joints
+  for (const [key, [x, y]] of Object.entries(j) as [keyof Joints, Pt][]) {
+    out[key] = [cx + (x - cx) * cos - (y - cy) * sin, cy + (x - cx) * sin + (y - cy) * cos]
+  }
+  return out
 }
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
@@ -306,6 +319,12 @@ function zonesFor(figure: Figure, muscles?: Muscles) {
   return { primary, secondary }
 }
 
+/** Centro de la sombra en el suelo. */
+function shadowX(figure: Figure, j: Joints): number {
+  const pelvisX = figure.view === 'front' ? (j.hip[0] + j.hip2[0]) / 2 : j.hip[0]
+  return figure.anchor && figure.view !== 'front' && !figure.turn ? 130 : pelvisX
+}
+
 const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
 
 export function Scene({ figure, pose, ids, muscles }: { figure: Figure; pose: Pose; ids: string; muscles?: Muscles }) {
@@ -323,7 +342,7 @@ export function Scene({ figure, pose, ids, muscles }: { figure: Figure; pose: Po
   const torsoMid = tw[0] + (tw[1] - tw[0]) * 0.46
   const head = j.head
   const neckTop = lerp(neck, head, 0.55)
-  const shadowX = figure.anchor ? (isFront ? pelvis[0] : 130) : pelvis[0]
+  const sx = shadowX(figure, j)
 
   // Extremidad completa: silueta y dos paneles (segmento superior e inferior).
   const limb = (from: Pt, mid: Pt, to: Pt, w1: readonly number[], w2: readonly number[], z1: Zone, z2: Zone, far: boolean) => (
@@ -338,7 +357,7 @@ export function Scene({ figure, pose, ids, muscles }: { figure: Figure; pose: Po
 
   return (
     <g>
-      <ellipse cx={shadowX} cy={FLOOR + 3} rx={figure.shadow ?? 62} ry={5} className="fig-shadow" />
+      <ellipse cx={sx} cy={FLOOR + 3} rx={figure.shadow ?? 62} ry={5} className="fig-shadow" />
       {figure.props.filter((p) => !p.front).map((p, i) => <PropShape key={i} prop={p} j={j} pose={pose} ids={ids} />)}
       {/* Lado lejano */}
       {limb(j.hip2, j.knee2, j.ankle2, narrow(W.thigh, 2), narrow(W.shin, 2), 'thigh', 'shin', true)}
@@ -422,6 +441,8 @@ export function fitViewBox(figure: Figure): string {
     const pose = poseAt(figure, t)
     const j = place(figure, pose)
     for (const [key, p] of Object.entries(j)) add(p[0], p[1], key === 'head' ? 13 : 10)
+    const sx = shadowX(figure, j)
+    add(sx - (figure.shadow ?? 62), FLOOR + 9); add(sx + (figure.shadow ?? 62), FLOOR + 9)
     for (const prop of figure.props) {
       const { x, y } = propAnchor(prop, j, pose)
       switch (prop.type) {
@@ -443,9 +464,6 @@ export function fitViewBox(figure: Figure): string {
       }
     }
   }
-  // Suelo y sombra.
-  const cx = (minX + maxX) / 2
-  add(cx - (figure.shadow ?? 62), FLOOR + 9); add(cx + (figure.shadow ?? 62), FLOOR + 9)
   const pad = 12
   let w = maxX - minX + pad * 2
   let h = maxY - minY + pad * 2

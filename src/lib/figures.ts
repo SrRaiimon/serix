@@ -68,6 +68,8 @@ export interface Figure {
    * suben por delante hasta arriba en una arrancada. Los demás van siempre por el camino corto.
    */
   sweep?: (keyof Pose)[]
+  /** Gira la figura entera (grados, positivo en sentido horario) sobre el ancla: tumbado de lado = vista de frente girada -90. */
+  turn?: number
 }
 
 const FLOOR = 222
@@ -1051,8 +1053,8 @@ const chairArmsBack: Figure = {
 const figureFourChair: Figure = {
   ...seatedReachChair, work: ['glutes'],
   frames: [
-    { torso: 0, thigh: 90, shin: 180, thigh2: 70, shin2: 130, foot: 90, foot2: 60, upper: 150, fore: 100 },
-    { torso: 40, head: 55, thigh: 90, shin: 180, thigh2: 70, shin2: 130, foot: 90, foot2: 60, upper: 160, fore: 120 },
+    { torso: 0, thigh: 90, shin: 180, thigh2: 30, shin2: 148, foot: 90, foot2: 90, upper: 150, fore: 100 },
+    { torso: 40, head: 55, thigh: 90, shin: 180, thigh2: 30, shin2: 148, foot: 90, foot2: 90, upper: 160, fore: 120 },
   ],
 }
 // De frente, sentado en el suelo con las piernas abiertas (o las plantas juntas).
@@ -1092,10 +1094,10 @@ const hipCircles: Figure = {
     { torso: 6, thigh: 170, shin: 184, upper: 160, fore: -150, shift: -8 },
   ],
 }
-const knee_circles_pose = { torso: 30, head: 50, thigh: 150, shin: 200, foot: 90, upper: 150, fore: 160 }
+const knee_circles_pose = { torso: 72, head: 80, thigh: 140, shin: 205, foot: 90, upper: 202, fore: 202 }
 const kneeCircles: Figure = {
   view: 'side', work: ['legs'], props: [], period: 2000,
-  frames: [knee_circles_pose, { ...knee_circles_pose, thigh: 160, shin: 190 }],
+  frames: [knee_circles_pose, { ...knee_circles_pose, thigh: 150, shin: 196, upper: 198, fore: 198 }],
 }
 // A cuatro patas: rodillas y manos en el suelo.
 const ALL_FOURS = { torso: 80, head: 85, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 180 }
@@ -1133,7 +1135,7 @@ const childsPose: Figure = {
     { torso: 97, head: 115, thigh: 105, shin: -90, foot: -150, upper: 95, fore: 92 },
   ],
 }
-const hugBall: Figure = { ...childsPose, props: [{ type: 'ball', point: [172, 196], size: 24 }], frames: [{ ...childsPose.frames[1], torso: 60, head: 80, upper: 100, fore: 60 }, { ...childsPose.frames[1], torso: 70, head: 90, upper: 110, fore: 60 }] }
+const hugBall: Figure = { ...straddle, props: [{ type: 'ball', point: [150, 176], size: 24, front: true }], frames: [{ torso: 0, torsoLen: 0.9, thigh: 102, shin: 100, upper: 150, fore: -110 }, { torso: 0, torsoLen: 0.7, thigh: 102, shin: 100, upper: 165, fore: -100 }] }
 // Postura de pirámide (perro boca abajo): cadera arriba, manos y pies en el suelo.
 const downDogBall: Figure = {
   ...childsPose, props: [{ type: 'ball', point: [175, 196], size: 24 }],
@@ -1269,7 +1271,7 @@ const armsBackStretch: Figure = {
 }
 const elbowsBack: Figure = {
   view: 'side', work: ['chest'], props: [], period: HOLD,
-  frames: [{ ...STAND, upper: 200, fore: 100 }, { ...STAND, upper: -140, fore: 110 }],
+  frames: [{ ...STAND, upper: 205, fore: 150 }, { ...STAND, upper: 220, fore: 130 }],
 }
 const behindHead: Figure = {
   view: 'side', work: ['chest'], props: [], period: HOLD,
@@ -1343,8 +1345,8 @@ const neckIsoFront: Figure = {
 const neckIsoSide: Figure = {
   view: 'front', work: ['shoulders'], props: [], period: HOLD,
   frames: [
-    { torso: 0, thigh: 174, shin: 180, upper: 10, fore: -80 },
-    { torso: 0, head: 10, thigh: 174, shin: 180, upper: 10, fore: -80 },
+    { torso: 0, thigh: 174, shin: 180, upper: 40, fore: -30, upper2: 176, fore2: 178 },
+    { torso: 0, head: 8, thigh: 174, shin: 180, upper: 40, fore: -30, upper2: 176, fore2: 178 },
   ],
 }
 const standingTall: Figure = {
@@ -1431,8 +1433,8 @@ const smrArm: Figure = {
   ],
 }
 const smrNeck: Figure = {
-  view: 'side', work: ['shoulders'], ...onFloor, props: [{ ...roller(70), front: true }], period: 3000,
-  frames: [{ ...LYING_FLOOR, head: -75, thigh: 45, shin: 150, foot: 95, upper: 92, fore: 90 }, { ...LYING_FLOOR, head: -68, thigh: 45, shin: 150, foot: 95, upper: 92, fore: 90, shift: 8 }],
+  view: 'side', work: ['shoulders'], ...onFloor, props: [{ ...roller(54), front: true }], period: 3000,
+  frames: [{ ...LYING_FLOOR, head: -70, thigh: 45, shin: 150, foot: 95, upper: 92, fore: 90 }, { ...LYING_FLOOR, head: -62, thigh: 45, shin: 150, foot: 95, upper: 92, fore: 90, shift: 6 }],
 }
 const windmillStretch: Figure = {
   ...windmill, props: [], period: 2400,
@@ -1678,12 +1680,12 @@ const bandPullApart: Figure = {
   frames: [{ torso: 0, thigh: 174, shin: 180, upper: 115, fore: -95 }, { torso: 0, thigh: 174, shin: 180, upper: 92, fore: 94 }],
 }
 const externalRotation: Figure = {
-  view: 'front', work: ['shoulders'], props: [{ type: 'band', at: 'wrist', point: [20, 150] }],
+  view: 'front', work: ['shoulders'], props: [{ type: 'band', at: 'wrist', point: [20, 92] }],
   frames: [{ torso: 0, thigh: 174, shin: 180, upper: 176, fore: -80, upper2: 176, fore2: 178 }, { torso: 0, thigh: 174, shin: 180, upper: 176, fore: 70, upper2: 176, fore2: 178 }],
 }
-const externalRotationCable: Figure = { ...externalRotation, props: [{ type: 'cable', at: 'wrist', point: [20, 150] }] }
-const internalRotation: Figure = { ...externalRotation, props: [{ type: 'band', at: 'wrist', point: [250, 150] }], frames: [externalRotation.frames[1], externalRotation.frames[0]] }
-const internalRotationCable: Figure = { ...internalRotation, props: [{ type: 'cable', at: 'wrist', point: [250, 150] }] }
+const externalRotationCable: Figure = { ...externalRotation, props: [{ type: 'cable', at: 'wrist', point: [20, 92] }] }
+const internalRotation: Figure = { ...externalRotation, props: [{ type: 'band', at: 'wrist', point: [250, 92] }], frames: [externalRotation.frames[1], externalRotation.frames[0]] }
+const internalRotationCable: Figure = { ...internalRotation, props: [{ type: 'cable', at: 'wrist', point: [250, 92] }] }
 const cubanPress: Figure = {
   ...uprightDumbbell, sweep: ['upper', 'fore', 'upper2', 'fore2'],
   frames: [{ torso: 0, thigh: 176, shin: 180, upper: 110, fore: 200 }, { torso: 0, thigh: 176, shin: 180, upper: 30, fore: 5 }],
@@ -2320,28 +2322,11 @@ const chestSqueeze: Figure = {
 }
 
 // ---------------------------------------------------------------- correcciones de la revisión
-// Tumbado de lado en un banco: el brazo de arriba sube desde la cadera hasta la vertical.
-const sideLyingRaise: Figure = {
-  ...benchPress, work: ['shoulders'], props: [flatBench, { type: 'dumbbell', at: 'wrist', front: true }],
-  frames: [{ ...LYING, upper: 110, fore: 108 }, { ...LYING, upper: 4, fore: 2 }],
-}
-const sideLyingRotation: Figure = {
-  ...benchPress, work: ['shoulders'], props: [flatBench, { type: 'dumbbell', at: 'wrist', front: true }],
-  frames: [{ ...LYING, upper: 92, fore: 180 }, { ...LYING, upper: 92, fore: 20 }],
-}
 const machineDip: Figure = {
   ...machinePress, work: ['arms'],
   frames: [{ torso: -4, thigh: 90, shin: 180, foot: 90, upper: -150, fore: 150 }, { torso: -4, thigh: 90, shin: 180, foot: 90, upper: 178, fore: 178 }],
 }
 const machineTricepsExtension: Figure = { ...preacherMachine, work: ['arms'], frames: [preacherMachine.frames[1], preacherMachine.frames[0]] }
-const ballSideBend: Figure = {
-  view: 'front', work: ['core'], anchor: { joint: 'hip', at: [150, 172] }, shadow: 90,
-  props: [{ type: 'ball', point: [150, 198], size: 24 }],
-  frames: [
-    { torso: -80, head: -80, thigh: 118, shin: 110, thigh2: -118, shin2: -110, upper: -150, fore: -40 },
-    { torso: -40, head: -30, thigh: 118, shin: 110, thigh2: -118, shin2: -110, upper: -150, fore: -40 },
-  ],
-}
 
 const twistBody: Figure = { ...twistStanding, props: [], period: 2000 }
 const seatedTwistBall: Figure = {
@@ -2394,6 +2379,66 @@ const legUpStretch: Figure = {
     { torso: 45, head: 60, thigh: 110, shin: 110, thigh2: 180, shin2: 180, foot: 20, foot2: 90, upper: 150, fore: 140 },
   ],
 }
+
+// ---------------------------------------------------------------- 0.0.4: tumbados de lado y detalles
+// Tumbado de lado: vista de frente girada 90° (cabeza a la izquierda, lado cercano arriba).
+const SIDE_LYING = { torso: 0, thigh: 180, shin: 180, thigh2: 180, shin2: 180, upper2: 5, fore2: 5 }
+const sideLying = { view: 'front' as const, turn: -90, anchor: { joint: 'hip' as JointName, at: [160, 200] as [number, number] }, shadow: 110 }
+const sideLyingLateral: Figure = {
+  ...sideLying, work: ['shoulders'], props: [{ type: 'dumbbell', at: 'wrist', front: true }],
+  frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, upper: 92, fore: 94 }],
+}
+const sideLyingRotate: Figure = {
+  ...sideLying, work: ['shoulders'], props: [{ type: 'dumbbell', at: 'wrist', front: true }],
+  frames: [{ ...SIDE_LYING, upper: 178, fore: -95 }, { ...SIDE_LYING, upper: 178, fore: 95 }],
+}
+const sideJackknife: Figure = {
+  ...sideLying, work: ['core'], props: [],
+  frames: [
+    { ...SIDE_LYING, upper: 30, fore: -120 },
+    { ...SIDE_LYING, torso: 28, head: 28, thigh: 150, shin: 150, upper: 55, fore: -100 },
+  ],
+}
+const sideLyingReach: Figure = {
+  ...sideLying, work: ['back', 'core'], props: [], period: HOLD,
+  frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, torso: -8, upper: -8, fore: -12 }],
+}
+const sideLyingLegUp: Figure = {
+  ...sideLying, work: ['legs'], props: [], period: HOLD,
+  frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, thigh: 105, shin: 100, upper: 120, fore: 105 }],
+}
+const sideLyingBall: Figure = {
+  ...sideLying, work: ['core'], anchor: { joint: 'hip', at: [160, 176] }, shadow: 90,
+  props: [{ type: 'ball', point: [165, 200], size: 22 }],
+  frames: [
+    { ...SIDE_LYING, torso: -25, head: -25, thigh: 200, shin: 200, thigh2: 160, shin2: 160, upper: 30, fore: -120 },
+    { ...SIDE_LYING, torso: 22, head: 22, thigh: 200, shin: 200, thigh2: 160, shin2: 160, upper: 30, fore: -120 },
+  ],
+}
+// Boca abajo en banco inclinado: elevación de brazos al frente y aperturas.
+const proneFrontRaise: Figure = { ...proneRow, work: ['shoulders'], frames: [proneRow.frames[0], { ...proneRow.frames[0], upper: 55, fore: 55 }] }
+const rearFlyBench: Figure = { ...rearFly, props: [{ type: 'box', span: [104, 176], y: 132 }, ...rearFly.props] }
+// Curl de pie con el brazo apoyado en el respaldo de un banco inclinado.
+const preacherStanding: Figure = {
+  view: 'side', work: ['arms'], props: [{ type: 'bench', span: [128, 180], y: 92, tilt: 48 }, { type: 'dumbbell', at: 'wrist', front: true }],
+  frames: [{ ...STAND, torso: 20, head: 30, upper: 138, fore: 140, upper2: 180, fore2: 180 }, { ...STAND, torso: 20, head: 30, upper: 138, fore: 12, upper2: 180, fore2: 180 }],
+}
+// Crunch inverso y abdominal con press en banco declinado.
+const declineReverseCrunch: Figure = {
+  view: 'side', work: ['core'], anchor: { joint: 'shoulder', at: [72, 166] }, shadow: 100, props: [{ type: 'bench', span: [36, 150], y: 158, tilt: -14 }],
+  frames: [
+    { torso: -104, head: -104, thigh: 80, shin: 85, foot: 20, upper: -120, fore: -60 },
+    { torso: -125, head: -110, thigh: -25, shin: 60, foot: -20, upper: -120, fore: -60 },
+  ],
+}
+const declinePressSitUp: Figure = {
+  ...declineCrunch, props: [...declineBench, { type: 'plate', at: 'wrist', front: true, size: 18 }],
+  frames: [
+    { torso: -104, head: -100, thigh: 62, shin: 165, foot: 90, upper: 50, fore: -70 },
+    { torso: -40, head: -25, thigh: 62, shin: 165, foot: 90, upper: 4, fore: 2 },
+  ],
+}
+const dropPush: Figure = { ...plyoPushUp, props: [{ type: 'box', span: [150, 206], y: 196 }] }
 
 // @@PATRONES@@
 
@@ -2639,7 +2684,7 @@ export const FIGURES: Record<string, Figure> = {
   Suspended_Fallout: fallout,
   Barbell_Side_Bend: sideBendBar,
   Dumbbell_Side_Bend: sideBend,
-  Weighted_Ball_Side_Bend: ballSideBend,
+  Weighted_Ball_Side_Bend: sideLyingBall,
   'One-Arm_High-Pulley_Cable_Side_Bends': sideBendCable,
   Landmine_180s: landmineArc,
   Seated_Barbell_Twist: seatedTwistBar,
@@ -2649,7 +2694,7 @@ export const FIGURES: Record<string, Figure> = {
   Alternate_Heel_Touchers: crunchReach,
   'Bent-Knee_Hip_Raise': reverseCrunch,
   Reverse_Crunch: reverseCrunch,
-  Decline_Reverse_Crunch: reverseCrunch,
+  Decline_Reverse_Crunch: declineReverseCrunch,
   Smith_Machine_Hip_Raise: bottomsUp,
   Cable_Reverse_Crunch: reverseCrunchCable,
   Bottoms_Up: bottomsUp,
@@ -2667,7 +2712,7 @@ export const FIGURES: Record<string, Figure> = {
   Gorilla_Chin_Crunch: gorillaChin,
   Hanging_Pike: hangingPike,
   'Jackknife_Sit-Up': jackknife,
-  Side_Jackknife: jackknife,
+  Side_Jackknife: sideJackknife,
   'Janda_Sit-Up': sitUp,
   Oblique_Crunches: crunch,
   'Oblique_Crunches_-_On_The_Floor': crunch,
@@ -2702,7 +2747,7 @@ export const FIGURES: Record<string, Figure> = {
   Weighted_Crunches: crunchWeighted,
   Knee_Hip_Raise_On_Parallel_Bars: kneeRaiseBars,
   'Otis-Up': pressSitUp,
-  'Press_Sit-Up': pressSitUp,
+  'Press_Sit-Up': declinePressSitUp,
   'Weighted_Sit-Ups_-_With_Bands': sitUpBand,
   'Butt-Ups': buttUps,
   Flutter_Kicks: flutterProne,
@@ -2735,7 +2780,7 @@ export const FIGURES: Record<string, Figure> = {
   Seated_Glute: figureFourChair,
   The_Straddle: straddle,
   Adductor_Groin: lyingGroin,
-  Side_Lying_Groin_Stretch: lyingHamstring,
+  Side_Lying_Groin_Stretch: sideLyingLegUp,
   Lying_Bent_Leg_Groin: lyingGroin,
   Groin_and_Back_Stretch: butterflyFold,
   Intermediate_Groin_Stretch: lyingHamstring,
@@ -2798,7 +2843,7 @@ export const FIGURES: Record<string, Figure> = {
   Standing_Lateral_Stretch: lateralStretch,
   Side_Wrist_Pull: lateralStretch,
   Overhead_Lat: lateralStretchBoth,
-  'Side-Lying_Floor_Stretch': lateralStretchBoth,
+  'Side-Lying_Floor_Stretch': sideLyingReach,
   Chin_To_Chest_Stretch: neckForward,
   Side_Neck_Stretch: neckSide,
   'Isometric_Neck_Exercise_-_Front_And_Back': neckIsoFront,
@@ -2857,7 +2902,7 @@ export const FIGURES: Record<string, Figure> = {
   'Single-Arm_Push-Up': pushUp,
   Isometric_Wipers: pushUp,
   Bodyweight_Flyes: pushUp,
-  Drop_Push: plyoPushUp,
+  Drop_Push: dropPush,
   'Plyo_Push-up': plyoPushUp,
   Plyo_Kettlebell_Pushups: kettlebellPushUp,
   'Push-Ups_With_Feet_On_An_Exercise_Ball': pushUpBall,
@@ -2918,7 +2963,7 @@ export const FIGURES: Record<string, Figure> = {
   Preacher_Hammer_Dumbbell_Curl: preacherDumbbell,
   'Two-Arm_Dumbbell_Preacher_Curl': preacherDumbbell,
   Zottman_Preacher_Curl: preacherDumbbell,
-  'Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench': preacherDumbbell,
+  'Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench': preacherStanding,
   Machine_Preacher_Curls: preacherMachine,
   Machine_Bicep_Curl: machineCurl,
   Spider_Curl: spiderCurl,
@@ -2952,21 +2997,21 @@ export const FIGURES: Record<string, Figure> = {
   'Standing_Dumbbell_Straight-Arm_Front_Delt_Raise_Above_Head': frontRaiseOverhead,
   Standing_Front_Barbell_Raise_Over_Head: frontRaiseOverheadBar,
   Front_Incline_Dumbbell_Raise: inclineFrontRaise,
-  Straight_Raises_on_Incline_Bench: inclineFrontRaise,
+  Straight_Raises_on_Incline_Bench: proneFrontRaise,
   Barbell_Incline_Shoulder_Raise: inclineShoulderRaise,
   Smith_Incline_Shoulder_Raise: inclineShoulderRaise,
   Dumbbell_Incline_Shoulder_Raise: inclineShoulderRaiseDumbbell,
-  'One-Arm_Incline_Lateral_Raise': sideLyingRaise,
-  'Lying_One-Arm_Lateral_Raise': sideLyingRaise,
+  'One-Arm_Incline_Lateral_Raise': sideLyingLateral,
+  'Lying_One-Arm_Lateral_Raise': sideLyingLateral,
   Iron_Cross: lateralRaise,
   Side_Laterals_to_Front_Raise: lateralRaise,
   Crucifix: crucifixHold,
   Reverse_Flyes: rearFly,
   Reverse_Flyes_With_External_Rotation: rearFly,
   Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench: rearFly,
-  Dumbbell_Lying_Rear_Lateral_Raise: rearFly,
-  Lying_Rear_Delt_Raise: rearFly,
-  'Dumbbell_Lying_One-Arm_Rear_Lateral_Raise': sideLyingRaise,
+  Dumbbell_Lying_Rear_Lateral_Raise: rearFlyBench,
+  Lying_Rear_Delt_Raise: rearFlyBench,
+  'Dumbbell_Lying_One-Arm_Rear_Lateral_Raise': sideLyingLateral,
   'Seated_Bent-Over_Rear_Delt_Raise': rearFlySeated,
   Cable_Rear_Delt_Fly: rearFlyCableHigh,
   'Bent_Over_Low-Pulley_Side_Lateral': rearFlyCable,
@@ -2976,7 +3021,7 @@ export const FIGURES: Record<string, Figure> = {
   Barbell_Rear_Delt_Row: barbellRow,
   External_Rotation_with_Band: externalRotation,
   External_Rotation_with_Cable: externalRotationCable,
-  External_Rotation: sideLyingRotation,
+  External_Rotation: sideLyingRotate,
   Internal_Rotation_with_Band: internalRotation,
   Cable_Internal_Rotation: internalRotationCable,
   Cuban_Press: cubanPress,
