@@ -13,7 +13,8 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Rutinas** editables, con **superseries y circuitos**, y **compartibles por enlace**
   (`#/import/<código>`: solo lleva los ejercicios y las cifras, no datos personales).
 - **Entrenamiento** con registro de series (peso y repeticiones, tiempo o distancia según el
-  ejercicio), series de calentamiento, **RPE** opcional por serie, temporizador de descanso,
+  ejercicio), **series de calentamiento automáticas** hasta el peso de trabajo, **calculadora de
+  discos** por lado (barra de 20, 15 o 10 kg), **RPE** opcional por serie, temporizador de descanso,
   sugerencia de progresión y **sustituir ejercicio** por alternativas equivalentes.
 - **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.
@@ -101,6 +102,8 @@ git clone --depth 1 https://github.com/yuhonas/free-exercise-db.git /tmp/fedb
 python3 -c "import json;json.dump(json.load(open('public/exercise_ids_v1.json')),open('/tmp/old_to_new.json','w'))"
 python3 scripts/catalog/build_catalog.py /tmp/fedb/dist/exercises.json /tmp/old_to_new.json
 python3 scripts/catalog/check_ids.py   # los ejercicios citados en el código existen
+npm run check:figures                  # figuras: cobertura, nada atraviesa el suelo, sin vueltas raras
+                                        # (también se ejecuta en npm run build)
 ```
 
 Regla para cualquier contenido nuevo (textos, imágenes, vídeos): usarlo solo si su **procedencia**

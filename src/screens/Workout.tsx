@@ -1,6 +1,6 @@
 import { ArrowUpRight, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, Timer, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { ActionSheet, Overlay, Progress, Thumb, useScrollLock, useTick, useToast } from '../components/ui'
+import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, editable, fromKg, increment, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
@@ -11,6 +11,9 @@ import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMe
 import { addExercises, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
+import { PlatesSheet } from './Plates'
+import { BARS } from '../lib/plates'
+import { warmupSets } from '../lib/warmup'
 
 function editSession(id: string, fn: (s: Session) => void) {
   update((d) => {
@@ -32,6 +35,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const [rpeFor, setRpeFor] = useState<string>()
   const askRpe = (setId?: string) => setRpeFor(data.settings.rpe ? setId : undefined)
   const slots = groupSlots(session.exercises)
+  const catalog = useCatalog()
+  const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
 
   // Dentro de una superserie o circuito no se descansa: se pasa directamente al siguiente ejercicio.
   const goToNext = (from: number) => {
@@ -71,6 +76,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
         slot={slots[i]}
         nextName={slots[i].letter && !slots[i].last ? session.exercises[i + 1].name : undefined}
         unit={unit}
+        barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
+        barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         onInfo={() => setDetail(e.exerciseId)}
         onGroupNext={() => goToNext(i)}
@@ -164,7 +171,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
   )
 }
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, previous, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe }: {
+/** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
+const BARBELL = new Set(['barbell', 'ez-bar'])
+
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -173,6 +183,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   /** Siguiente ejercicio del grupo (si no es el último de la ronda). */
   nextName?: string
   unit: Unit
+  /** Ejercicio con barra: discos por lado y calentamiento desde la barra sola. */
+  barbell: boolean
+  barKg: number
   previous: SetEntry[]
   onInfo: () => void
   onGroupNext: () => void
@@ -184,6 +197,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const [restMenu, setRestMenu] = useState(false)
   const [trackingMenu, setTrackingMenu] = useState(false)
   const [replacing, setReplacing] = useState(false)
+  const [plates, setPlates] = useState(false)
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
@@ -205,6 +219,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const objective = tracking === 'weight_reps' ? (hasTarget ? ` · Objetivo ${target} reps` : '')
     : tracking === 'time' ? ` · Objetivo ${clock(targetSeconds)}` : ''
   let working = 0
+  // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
+  const workKg = exercise.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
+  const addWarmup = () => edit((e) => {
+    const sets = warmupSets(workKg, unit, barbell ? barKg : undefined)
+    e.sets = [
+      ...sets.map((w) => ({ id: crypto.randomUUID(), weight: w.weight, reps: w.reps, done: false, warmup: true })),
+      ...e.sets.filter((s) => !s.warmup || s.done),
+    ]
+  })
 
   return (
     <section className="card" id={`ex-${exercise.id}`}>
@@ -245,7 +268,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const prev = previous.length && !set.warmup ? previous[Math.min(working - 1, previous.length - 1)] : undefined
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking}
-            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit}
+            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) })}
             askRpe={rpeFor === set.id}
@@ -273,6 +296,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
 
       {menu && (
         <ActionSheet title={exercise.name} onClose={() => setMenu(false)} options={[
+          ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: 'Añadir series de calentamiento', onSelect: addWarmup }] : []),
+          ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: `Discos para ${weight(workKg, unit)}`, onSelect: () => setPlates(true) }] : []),
           { label: 'Sustituir ejercicio', onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext ? [{
             label: slot.letter ? `Añadir el siguiente ${kind === 'superserie' ? 'a la superserie' : 'al circuito'}` : 'Hacer superserie con el siguiente',
@@ -300,6 +325,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             }),
           }))} />
       )}
+      {plates && <PlatesSheet weightKg={workKg} onClose={() => setPlates(false)} />}
       {replacing && (
         <AlternativesSheet current={exercise} onClose={() => setReplacing(false)}
           onPick={(picked) => replaceSessionExercise(sessionId, exercise.id, picked)} />
@@ -308,7 +334,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlaceholder, unit, askRpe, onAskRpe, onRpeDone, onChange, onDelete, onCompleted }: {
+function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onChange, onDelete, onCompleted }: {
   set: SetEntry
   askRpe: boolean
   onAskRpe: () => void
@@ -319,6 +345,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   repsPlaceholder: string
   timePlaceholder: string
   unit: Unit
+  barbell: boolean
   onChange: (patch: Partial<SetEntry>) => void
   onDelete: () => void
   onCompleted: () => void
@@ -328,6 +355,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
   const [invalid, setInvalid] = useState(false)
   const [menu, setMenu] = useState(false)
+  const [plates, setPlates] = useState(false)
 
   useEffect(() => {
     setWeightText(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')
@@ -395,10 +423,12 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
       </button>
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
+          ...(barbell && tracking === 'weight_reps' && set.weight > 0 ? [{ label: `Discos para ${weight(set.weight, unit)}`, onSelect: () => setPlates(true) }] : []),
           { label: set.warmup ? 'Marcar como serie efectiva' : 'Marcar como calentamiento', onSelect: () => onChange({ warmup: !set.warmup }) },
           { label: 'Eliminar serie', destructive: true, onSelect: onDelete },
         ]} />
       )}
+      {plates && <PlatesSheet weightKg={set.weight} onClose={() => setPlates(false)} />}
     </div>
     {set.done && !set.warmup && (askRpe || set.rpe !== undefined) && (
       <RpeRow value={set.rpe} open={askRpe} onOpen={onAskRpe}

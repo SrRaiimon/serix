@@ -98,6 +98,8 @@ export interface Settings {
   equipment: EquipmentProfile
   favorites: string[]
   restSound: boolean
+  /** Barra con la que se calculan los discos (kg). Sin valor = la olímpica. */
+  barKg?: number
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */

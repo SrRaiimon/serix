@@ -213,8 +213,8 @@ const nordic: Figure = {
   props: [{ type: 'pad', at: 'ankle', angle: 0, offset: 11 }],
   // De rodillas y con los tobillos sujetos, el cuerpo entero se inclina hacia delante sobre las rodillas.
   frames: [
-    { torso: 0, head: 0, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 180 },
-    { torso: 58, head: 70, thigh: 238, shin: -90, foot: -150, upper: 150, fore: 140 },
+    { torso: 0, head: 0, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 180 },
+    { torso: 58, head: 70, thigh: 238, shin: -90, foot: -100, upper: 150, fore: 140 },
   ],
 }
 const ballLegCurl: Figure = {
@@ -490,8 +490,8 @@ const deadBug: Figure = {
 const mountainClimbers: Figure = {
   ...pushUp, work: ['core', 'legs'], period: 1200, anchor: { joint: 'wrist', at: [176, 218] },
   frames: [
-    { ...PUSH_UP, torso: 76, thigh: 125, shin: -95, thigh2: -104, shin2: -104, upper: 180, fore: 180 },
-    { ...PUSH_UP, torso: 76, thigh: -104, shin: -104, thigh2: 125, shin2: -95, upper: 180, fore: 180 },
+    { ...PUSH_UP, torso: 76, thigh: 110, shin: -40, thigh2: -104, shin2: -104, foot: 110, upper: 180, fore: 180 },
+    { ...PUSH_UP, torso: 76, thigh: -104, shin: -104, thigh2: 110, shin2: -40, foot: 110, upper: 180, fore: 180 },
   ],
 }
 const boxJump: Figure = {
@@ -578,12 +578,12 @@ const uprightCable: Figure = { ...uprightRow, props: [{ type: 'cable', at: 'wris
 const SEATED_FRONT = { torso: 0, thigh: 180, thighLen: 0.3, shin: 180 }
 const seatFront: Prop = { type: 'box', span: [96, 184], y: 158 }
 const lateralSeated: Figure = {
-  ...lateralRaise, anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront, ...lateralRaise.props],
+  ...lateralRaise, anchor: { joint: 'hip', at: [140, 146] }, props: [seatFront, ...lateralRaise.props],
   frames: [{ ...SEATED_FRONT, upper: 172, fore: 174 }, { ...SEATED_FRONT, upper: 92, fore: 96 }],
 }
 const lateralSeatedCable: Figure = { ...lateralSeated, props: [seatFront, { type: 'cable', at: 'wrist', point: [60, 214] }] }
 const pecDeckSeated: Figure = {
-  ...pecDeck, anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront],
+  ...pecDeck, anchor: { joint: 'hip', at: [140, 146] }, props: [seatFront],
   frames: [{ ...SEATED_FRONT, upper: 90, fore: 20 }, { ...SEATED_FRONT, upper: 150, fore: -30 }],
 }
 
@@ -757,13 +757,13 @@ const gorillaChin: Figure = {
 const sidePlank: Figure = {
   ...plank, anchor: { joint: 'elbow', at: [178, 216] }, shadow: 110, period: 2400,
   frames: [
-    { torso: 80, head: 82, thigh: -100, shin: -100, foot: 180, upper: 180, fore: 90, upper2: 2, fore2: 2 },
-    { torso: 76, head: 76, thigh: -104, shin: -104, foot: 180, upper: 180, fore: 90, upper2: 2, fore2: 2 },
+    { torso: 80, head: 82, thigh: -100, shin: -100, foot: 120, upper: 180, fore: 90, upper2: 2, fore2: 2 },
+    { torso: 78, head: 78, thigh: -102, shin: -102, foot: 120, upper: 180, fore: 90, upper2: 2, fore2: 2 },
   ],
 }
 const buttUps: Figure = {
   ...plank, period: 2400,
-  frames: [plank.frames[0], { torso: 122, head: 112, thigh: -128, shin: -128, foot: 180, upper: 180, fore: 90 }],
+  frames: [plank.frames[0], { torso: 122, head: 112, thigh: -128, shin: -128, foot: 130, upper: 180, fore: 90 }],
 }
 // Posición de flexión con las espinillas sobre un fitball (o en las correas): rodillas al pecho.
 const ballPullIn: Figure = {
@@ -779,8 +779,8 @@ const abRollout: Figure = {
   view: 'side', work: ['core'], anchor: { joint: 'knee', at: [100, 214] }, shadow: 110,
   props: [{ type: 'ball', at: 'wrist', angle: 180, offset: 2, size: 10, front: true }],
   frames: [
-    { torso: 76, head: 82, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 180 },
-    { torso: 88, head: 90, thigh: -112, shin: -90, foot: -150, upper: 100, fore: 100 },
+    { torso: 76, head: 82, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 180 },
+    { torso: 88, head: 90, thigh: -112, shin: -90, foot: -100, upper: 100, fore: 100 },
   ],
 }
 const abRolloutBar: Figure = { ...abRollout, props: [{ type: 'plate', at: 'wrist', angle: 180, offset: 2, size: 13, front: true }] }
@@ -797,8 +797,8 @@ const cableCrunchKneeling: Figure = {
   view: 'side', work: ['core'], anchor: { joint: 'knee', at: [110, 214] },
   props: [{ type: 'cable', at: 'wrist', point: [150, -40] }],
   frames: [
-    { torso: 22, head: 30, thigh: 175, shin: -90, foot: -150, upper: 150, fore: -20 },
-    { torso: 88, head: 125, thigh: 165, shin: -90, foot: -150, upper: 185, fore: 60 },
+    { torso: 22, head: 30, thigh: 175, shin: -90, foot: -100, upper: 150, fore: -20 },
+    { torso: 88, head: 125, thigh: 165, shin: -90, foot: -100, upper: 185, fore: 60 },
   ],
 }
 const cableCrunchStanding: Figure = {
@@ -897,7 +897,7 @@ const russianTwistPlate: Figure = { ...russianTwist, props: [{ type: 'plate', at
 const russianTwistCable: Figure = { ...russianTwist, props: [{ type: 'cable', at: 'wrist', point: [250, 200] }] }
 // Sentado en un banco, de frente, con la barra en la espalda: giros del tronco.
 const seatedTwistBar: Figure = {
-  view: 'front', work: ['core'], anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront, { type: 'barFront', front: true }],
+  view: 'front', work: ['core'], anchor: { joint: 'hip', at: [140, 146] }, props: [seatFront, { type: 'barFront', front: true }],
   frames: [
     { ...SEATED_FRONT, torso: -6, upper: 100, fore: -8 },
     { ...SEATED_FRONT, torso: 6, upper: 100, fore: -8 },
@@ -954,7 +954,7 @@ const forwardFold: Figure = {
   view: 'side', work: ['legs'], props: [], period: HOLD,
   frames: [
     { ...STAND, upper: 8, fore: 5 },
-    { torso: 138, head: 160, thigh: 178, shin: 182, foot: 90, upper: 170, fore: 170 },
+    { torso: 138, head: 160, thigh: 178, shin: 182, foot: 90, upper: 160, fore: 162 },
   ],
 }
 const forwardFoldHold: Figure = { ...forwardFold, frames: [{ torso: 120, head: 150, thigh: 176, shin: 182, foot: 90, upper: 180, fore: 175 }, forwardFold.frames[1]] }
@@ -962,8 +962,8 @@ const forwardFoldHold: Figure = { ...forwardFold, frames: [{ torso: 120, head: 1
 const kneelingLunge: Figure = {
   view: 'side', work: ['legs'], anchor: { joint: 'knee2', at: [100, 214] }, shadow: 90, props: [], period: HOLD,
   frames: [
-    { torso: 2, head: 0, thigh2: -160, shin2: -90, foot2: -150, thigh: 89.6, shin: 169.4, foot: 90, upper: 175, fore: 150 },
-    { torso: -6, head: -5, thigh2: -145, shin2: -90, foot2: -150, thigh: 82.8, shin: 168.9, foot: 90, upper: 175, fore: 150 },
+    { torso: 2, head: 0, thigh2: -160, shin2: -90, foot2: -100, thigh: 89.6, shin: 169.4, foot: 90, upper: 175, fore: 150 },
+    { torso: -6, head: -5, thigh2: -145, shin2: -90, foot2: -100, thigh: 82.8, shin: 168.9, foot: 90, upper: 175, fore: 150 },
   ],
 }
 const kneelingLungeReach: Figure = {
@@ -1033,7 +1033,7 @@ const chairFold: Figure = {
   ...seatedReachChair,
   frames: [
     { torso: 0, thigh: 90, shin: 180, foot: 90, upper: 170, fore: 110 },
-    { torso: 110, head: 140, thigh: 90, shin: 180, foot: 90, upper: 185, fore: 180 },
+    { torso: 85, head: 110, thigh: 90, shin: 180, foot: 90, upper: 160, fore: 150 },
   ],
 }
 const chairStretchUp: Figure = {
@@ -1061,18 +1061,18 @@ const figureFourChair: Figure = {
 const straddle: Figure = {
   view: 'front', work: ['legs'], anchor: { joint: 'hip', at: [150, 208] }, shadow: 100, props: [], period: HOLD,
   frames: [
-    { torso: 0, torsoLen: 0.9, thigh: 102, shin: 100, upper: 150, fore: 150 },
-    { torso: 0, torsoLen: 0.55, head: 0, thigh: 102, shin: 100, upper: 175, fore: 185 },
+    { torso: 0, torsoLen: 0.9, thigh: 92, shin: 92, upper: 150, fore: 150 },
+    { torso: 0, torsoLen: 0.55, head: 0, thigh: 92, shin: 92, upper: 130, fore: 140 },
   ],
 }
 const butterfly: Figure = {
-  view: 'front', work: ['legs'], anchor: { joint: 'hip', at: [140, 206] }, shadow: 80, props: [], period: HOLD,
+  view: 'front', work: ['legs'], anchor: { joint: 'hip', at: [140, 202] }, shadow: 80, props: [], period: HOLD,
   frames: [
     { torso: 0, torsoLen: 0.95, thigh: 58, thighLen: 0.8, shin: -128, upper: 200, fore: 210 },
     { torso: 0, torsoLen: 0.95, thigh: 74, thighLen: 0.8, shin: -118, upper: 200, fore: 205 },
   ],
 }
-const butterflyFold: Figure = { ...butterfly, frames: [butterfly.frames[0], { ...butterfly.frames[1], torsoLen: 0.6 }] }
+const butterflyFold: Figure = { ...butterfly, frames: [butterfly.frames[0], { ...butterfly.frames[1], torsoLen: 0.6, upper: 140, fore: 150 }] }
 const sideLungeStretch: Figure = {
   view: 'front', work: ['legs'], props: [], period: HOLD,
   frames: [
@@ -1100,7 +1100,7 @@ const kneeCircles: Figure = {
   frames: [knee_circles_pose, { ...knee_circles_pose, thigh: 150, shin: 196, upper: 198, fore: 198 }],
 }
 // A cuatro patas: rodillas y manos en el suelo.
-const ALL_FOURS = { torso: 80, head: 85, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 180 }
+const ALL_FOURS = { torso: 80, head: 85, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 180 }
 const allFours: Figure = { view: 'side', work: ['core'], hands: true, props: [], period: HOLD, frames: [ALL_FOURS, ALL_FOURS] }
 const catStretch: Figure = { ...allFours, frames: [{ ...ALL_FOURS, torso: 78, head: 140 }, { ...ALL_FOURS, torso: 82, head: 45 }] }
 const allFoursQuad: Figure = {
@@ -1131,17 +1131,17 @@ const forearmStretch: Figure = {
 const childsPose: Figure = {
   view: 'side', work: ['back'], anchor: { joint: 'knee', at: [120, 214] }, shadow: 90, props: [], period: HOLD,
   frames: [
-    { torso: 30, head: 40, thigh: 105, shin: -90, foot: -150, upper: 150, fore: 150 },
-    { torso: 97, head: 115, thigh: 105, shin: -90, foot: -150, upper: 95, fore: 92 },
+    { torso: 30, head: 40, thigh: 105, shin: -90, foot: -100, upper: 150, fore: 150 },
+    { torso: 97, head: 115, thigh: 105, shin: -90, foot: -100, upper: 95, fore: 92 },
   ],
 }
-const hugBall: Figure = { ...straddle, props: [{ type: 'ball', point: [150, 176], size: 24, front: true }], frames: [{ torso: 0, torsoLen: 0.9, thigh: 102, shin: 100, upper: 150, fore: -110 }, { torso: 0, torsoLen: 0.7, thigh: 102, shin: 100, upper: 165, fore: -100 }] }
+const hugBall: Figure = { ...straddle, props: [{ type: 'ball', point: [150, 176], size: 24, front: true }], frames: [{ torso: 0, torsoLen: 0.9, thigh: 92, shin: 92, upper: 150, fore: -110 }, { torso: 0, torsoLen: 0.7, thigh: 92, shin: 92, upper: 165, fore: -100 }] }
 // Postura de pirámide (perro boca abajo): cadera arriba, manos y pies en el suelo.
 const downDogBall: Figure = {
   ...childsPose, props: [{ type: 'ball', point: [175, 196], size: 24 }],
   frames: [
-    { torso: 70, head: 80, thigh: 170, shin: -90, foot: -150, upper: 100, fore: 60 },
-    { torso: 95, head: 110, thigh: -150, shin: -90, foot: -150, upper: 110, fore: 60 },
+    { torso: 70, head: 80, thigh: 170, shin: -90, foot: -100, upper: 100, fore: 60 },
+    { torso: 95, head: 110, thigh: -150, shin: -90, foot: -100, upper: 110, fore: 60 },
   ],
 }
 const inchworm: Figure = {
@@ -1152,31 +1152,31 @@ const inchworm: Figure = {
   ],
 }
 // Tumbado boca abajo: la cabeza a la derecha.
-const PRONE = { torso: 90, head: 90, thigh: -90, shin: -90, foot: 180 }
+const PRONE = { torso: 90, head: 90, thigh: -90, shin: -90, foot: 160 }
 const prone = { anchor: { joint: 'hip' as JointName, at: [120, 210] as [number, number] }, shadow: 110 }
 const superman: Figure = {
   view: 'side', work: ['back'], ...prone, props: [], period: 2400,
   frames: [
-    { ...PRONE, upper: 90, fore: 90 },
+    { ...PRONE, foot: 150, upper: 90, fore: 90 },
     { ...PRONE, torso: 76, head: 65, thigh: -76, shin: -76, upper: 70, fore: 68 },
   ],
 }
 const halfLocust: Figure = {
   ...superman,
-  frames: [{ ...PRONE, upper: 180, fore: 90 }, { ...PRONE, thigh: -74, shin: -74, thigh2: -90, shin2: -90, upper: 180, fore: 90 }],
+  frames: [{ ...PRONE, upper: -90, fore: -90 }, { ...PRONE, thigh: -74, shin: -74, thigh2: -90, shin2: -90, upper: -90, fore: -90 }],
 }
 const proneQuad: Figure = {
   ...superman, work: ['legs'], period: HOLD,
   frames: [
-    { ...PRONE, thigh2: -90, shin2: -90, shin: 0, foot: 60, upper: 180, fore: 90, upper2: -85, fore2: -60 },
-    { ...PRONE, thigh2: -90, shin2: -90, shin: 30, foot: 100, upper: 180, fore: 90, upper2: -85, fore2: -60 },
+    { ...PRONE, thigh2: -90, shin2: -90, shin: 0, foot: 60, upper: -30, fore: 150, upper2: -85, fore2: -60 },
+    { ...PRONE, thigh2: -90, shin2: -90, shin: 30, foot: 100, upper: -30, fore: 150, upper2: -85, fore2: -60 },
   ],
 }
 const cobra: Figure = {
   ...superman, work: ['core'], period: HOLD,
   frames: [
-    { ...PRONE, upper: 180, fore: 90 },
-    { ...PRONE, torso: 45, head: 25, upper: 165, fore: 165 },
+    { ...PRONE, upper: -40, fore: 160 },
+    { ...PRONE, torso: 45, head: 25, upper: 200, fore: 150 },
   ],
 }
 // Tumbado boca arriba: rodillas al pecho, figura de cuatro, pierna estirada arriba.
@@ -1249,15 +1249,15 @@ const bridgeBall: Figure = {
   view: 'side', work: ['glutes'], anchor: { joint: 'shoulder', at: [70, 176] }, shadow: 100,
   props: [{ type: 'ball', point: [62, 198], size: 24 }],
   frames: [
-    { torso: -60, head: -75, thigh: 55, shin: 175, foot: 90, upper: 150, fore: 150 },
-    { torso: -90, head: -90, thigh: 88, shin: 180, foot: 90, upper: 150, fore: 150 },
+    { torso: -60, head: -75, thigh: 55, shin: 175, foot: 90, upper: 100, fore: 100 },
+    { torso: -90, head: -90, thigh: 88, shin: 180, foot: 90, upper: 100, fore: 100 },
   ],
 }
 const camel: Figure = {
   view: 'side', work: ['legs', 'core'], anchor: { joint: 'knee', at: [120, 214] }, shadow: 90, props: [], period: HOLD,
   frames: [
-    { torso: 0, head: 0, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 175 },
-    { torso: -35, head: -80, thigh: 165, shin: -90, foot: -150, upper: -165, fore: -175 },
+    { torso: 0, head: 0, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 175 },
+    { torso: -35, head: -80, thigh: 165, shin: -90, foot: -100, upper: -165, fore: -175 },
   ],
 }
 // De pie: brazos arriba, atrás, cruzados, círculos...
@@ -1428,8 +1428,8 @@ const smrFoot: Figure = {
 const smrArm: Figure = {
   view: 'side', work: ['arms'], anchor: { joint: 'knee', at: [100, 214] }, shadow: 100, props: [roller(170)], period: 3000,
   frames: [
-    { torso: 82, head: 88, thigh: 178, shin: -90, foot: -150, upper: 158, fore: 100, upper2: 170, fore2: 170 },
-    { torso: 82, head: 88, thigh: 178, shin: -90, foot: -150, upper: 168, fore: 100, upper2: 170, fore2: 170 },
+    { torso: 82, head: 88, thigh: 178, shin: -90, foot: -100, upper: 158, fore: 100, upper2: 170, fore2: 170 },
+    { torso: 82, head: 88, thigh: 178, shin: -90, foot: -100, upper: 168, fore: 100, upper2: 170, fore2: 170 },
   ],
 }
 const smrNeck: Figure = {
@@ -1476,8 +1476,8 @@ const inclinePushUp: Figure = {
   view: 'side', work: ['chest', 'arms'], anchor: { joint: 'wrist', at: [160, 168] }, shadow: 110,
   props: [{ type: 'box', span: [146, 206], y: 172 }],
   frames: [
-    { torso: 45.8, head: 55, thigh: -134.2, shin: -134.2, foot: 150, upper: 175, fore: 175 },
-    { torso: 54.1, head: 62, thigh: -125.9, shin: -125.9, foot: 150, upper: -125, fore: 150 },
+    { torso: 45.8, head: 55, thigh: -134.2, shin: -134.2, foot: 110, upper: 175, fore: 175 },
+    { torso: 54.1, head: 62, thigh: -125.9, shin: -125.9, foot: 110, upper: -125, fore: 150 },
   ],
 }
 const pushUpBall: Figure = { ...declinePushUp, props: [{ type: 'ball', point: [36, 180], size: 38 }] }
@@ -1556,8 +1556,8 @@ const seatedOverheadTriceps: Figure = {
 const kneelingCableTriceps: Figure = {
   ...cableCrunchKneeling, work: ['arms'], props: [{ type: 'cable', at: 'wrist', point: [30, 40] }],
   frames: [
-    { torso: 60, head: 70, thigh: 170, shin: -90, foot: -150, upper: 60, fore: -110 },
-    { torso: 60, head: 70, thigh: 170, shin: -90, foot: -150, upper: 60, fore: 62 },
+    { torso: 60, head: 70, thigh: 170, shin: -90, foot: -100, upper: 60, fore: -110 },
+    { torso: 60, head: 70, thigh: 170, shin: -90, foot: -100, upper: 60, fore: 62 },
   ],
 }
 const inclineSkull: Figure = {
@@ -1666,7 +1666,7 @@ const rearFly: Figure = {
   frames: [{ ...BENT_FRONT, upper: 178, fore: 176 }, { ...BENT_FRONT, upper: 96, fore: 100 }],
 }
 const rearFlySeated: Figure = {
-  ...rearFly, anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront, ...rearFly.props],
+  ...rearFly, anchor: { joint: 'hip', at: [140, 146] }, props: [seatFront, ...rearFly.props],
   frames: [{ ...SEATED_FRONT, torsoLen: 0.5, upper: 178, fore: 176 }, { ...SEATED_FRONT, torsoLen: 0.5, upper: 96, fore: 100 }],
 }
 const rearFlyCable: Figure = { ...rearFly, props: [{ type: 'cable', at: 'wrist', point: [40, 214] }, { type: 'cable', at: 'wrist2', point: [220, 214] }] }
@@ -1787,8 +1787,8 @@ const straightArmPulldown: Figure = {
 const kneelingPulldown: Figure = {
   view: 'side', work: ['back', 'arms'], anchor: { joint: 'knee', at: [110, 214] }, props: [{ type: 'cable', at: 'wrist', point: [150, -40] }],
   frames: [
-    { torso: 2, head: 0, thigh: 178, shin: -90, foot: -150, upper: 18, fore: 12 },
-    { torso: -6, head: 0, thigh: 178, shin: -90, foot: -150, upper: 168, fore: 18 },
+    { torso: 2, head: 0, thigh: 178, shin: -90, foot: -100, upper: 18, fore: 12 },
+    { torso: -6, head: 0, thigh: 178, shin: -90, foot: -100, upper: 168, fore: 18 },
   ],
 }
 const kneelingPulldownOne = oneArm(kneelingPulldown, 170, 170)
@@ -1858,8 +1858,8 @@ const wristCurlBench: Figure = {
   view: 'side', work: ['forearms'], anchor: { joint: 'knee', at: [100, 214] }, period: 1400,
   props: [{ type: 'bench', span: [140, 200], y: 168 }, { type: 'plate', at: 'wrist', front: true, size: 16 }],
   frames: [
-    { torso: 60, head: 70, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 96 },
-    { torso: 60, head: 70, thigh: 180, shin: -90, foot: -150, upper: 180, fore: 80 },
+    { torso: 60, head: 70, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 96 },
+    { torso: 60, head: 70, thigh: 180, shin: -90, foot: -100, upper: 180, fore: 80 },
   ],
 }
 const wristCurlBenchDumbbell: Figure = { ...wristCurlBench, props: [{ type: 'bench', span: [140, 200], y: 168 }, { type: 'dumbbell', at: 'wrist', front: true }] }
@@ -1880,7 +1880,7 @@ const neckProne: Figure = {
 const neckSupine: Figure = {
   view: 'side', work: ['shoulders'], anchor: { joint: 'hip', at: [128, 160] }, shadow: 100,
   props: [{ type: 'bench', span: [60, 180], y: 168 }, { type: 'plate', at: 'head', size: 10, front: true }],
-  frames: [{ ...LYING, head: -140, upper: 170, fore: 170 }, { ...LYING, head: -40, upper: 170, fore: 170 }],
+  frames: [{ ...LYING, head: -140, upper: 150, fore: 150 }, { ...LYING, head: -40, upper: 150, fore: 150 }],
 }
 const neckHarness: Figure = {
   view: 'side', work: ['shoulders'], anchor: { joint: 'hip', at: [100, 172] },
@@ -1980,14 +1980,14 @@ const pistolBox: Figure = {
 const kneelingSquat: Figure = {
   view: 'side', work: ['glutes'], anchor: { joint: 'knee', at: [110, 214] }, props: [backBar],
   frames: [
-    { torso: 2, head: 0, thigh: 180, shin: -90, foot: -150, ...armsOnBar },
-    { torso: 40, head: 45, thigh: 112, shin: -90, foot: -150, ...armsOnBar },
+    { torso: 2, head: 0, thigh: 180, shin: -90, foot: -100, ...armsOnBar },
+    { torso: 40, head: 45, thigh: 112, shin: -90, foot: -100, ...armsOnBar },
   ],
 }
 const kneelingJump: Figure = {
   view: 'side', work: ['glutes', 'legs'], props: [backBar], period: 2000,
   frames: [
-    { torso: 30, head: 30, thigh: 170, shin: -90, foot: -150, ...armsOnBar },
+    { torso: 30, head: 30, thigh: 170, shin: -90, foot: -100, ...armsOnBar },
     { ...SQUAT, ...armsOnBar },
   ],
 }
@@ -2049,10 +2049,10 @@ const reverseHyper: Figure = {
   ],
 }
 const ballLegLift: Figure = {
-  ...reverseHyper, anchor: { joint: 'hip', at: [120, 168] }, props: [{ type: 'ball', point: [130, 196], size: 24 }],
+  ...reverseHyper, anchor: { joint: 'hip', at: [120, 150] }, props: [{ type: 'ball', point: [128, 188], size: 32 }],
   frames: [
-    { torso: 118, head: 125, thigh: -128, shin: -128, foot: 180, upper: 175, fore: 175 },
-    { torso: 118, head: 125, thigh: -90, shin: -90, foot: 180, upper: 175, fore: 175 },
+    { torso: 118, head: 125, thigh: -128, shin: -128, foot: 130, upper: 135, fore: 135 },
+    { torso: 118, head: 125, thigh: -90, shin: -90, foot: 180, upper: 135, fore: 135 },
   ],
 }
 const hyperextension: Figure = {
@@ -2066,8 +2066,8 @@ const hyperextension: Figure = {
 const ballHyper: Figure = {
   view: 'side', work: ['back'], anchor: { joint: 'hip', at: [120, 172] }, props: [{ type: 'ball', point: [125, 196], size: 24 }, { type: 'plate', at: 'wrist', front: true, size: 12 }],
   frames: [
-    { torso: 135, head: 140, thigh: -110, shin: -110, foot: 180, upper: 150, fore: 20 },
-    { torso: 72, head: 70, thigh: -110, shin: -110, foot: 180, upper: 150, fore: 20 },
+    { torso: 135, head: 140, thigh: -110, shin: -110, foot: 180, upper: 100, fore: -40 },
+    { torso: 72, head: 70, thigh: -110, shin: -110, foot: 180, upper: 40, fore: -100 },
   ],
 }
 // Aductores y abductores: de frente.
@@ -2077,7 +2077,7 @@ const adduction: Figure = {
 }
 const adductionBand: Figure = { ...adduction, props: [{ type: 'band', at: 'ankle', point: [250, 214] }] }
 const abductorMachine: Figure = {
-  view: 'front', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [140, 150] }, props: [seatFront, { type: 'pad', at: 'knee', size: 7, front: true }],
+  view: 'front', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [140, 140] }, props: [seatFront, { type: 'pad', at: 'knee', size: 7, front: true }],
   frames: [{ ...SEATED_FRONT, thighLen: 0.45, thigh: 170, upper: 190, fore: 180 }, { ...SEATED_FRONT, thighLen: 0.45, thigh: 115, shin: 165, upper: 190, fore: 180 }],
 }
 const adductorMachine: Figure = { ...abductorMachine, frames: [abductorMachine.frames[1], abductorMachine.frames[0]] }
@@ -2112,17 +2112,17 @@ const tireFlip: Figure = {
 const RUN_A = { thigh: 130, shin: 195, thigh2: -155, shin2: -110, foot: 90, foot2: 150 }
 const RUN_B = { thigh: -155, shin: -110, thigh2: 130, shin2: 195, foot: 150, foot2: 90 }
 const sledPush: Figure = {
-  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [110, 138] }, period: 1200,
+  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [110, 126] }, period: 1200,
   props: [{ type: 'box', span: [226, 290], y: 170 }, { type: 'bar', span: [222, 232], y: 120 }],
   frames: [{ torso: 60, head: 70, ...RUN_A, upper: 110, fore: 110 }, { torso: 60, head: 70, ...RUN_B, upper: 110, fore: 110 }],
 }
 const sledDrag: Figure = {
-  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [150, 124] }, period: 1300,
+  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [150, 118] }, period: 1300,
   props: [{ type: 'cable', at: 'hip', point: [30, 196] }, { type: 'box', span: [-10, 34], y: 196 }],
   frames: [{ torso: 22, head: 25, ...RUN_A, upper: 150, fore: 80 }, { torso: 22, head: 25, ...RUN_B, upper: 200, fore: 120 }],
 }
 const backwardDrag: Figure = {
-  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [120, 130] }, period: 1400,
+  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [120, 122] }, period: 1400,
   props: [{ type: 'cable', at: 'wrist', point: [250, 200] }, { type: 'box', span: [246, 290], y: 196 }],
   frames: [
     { torso: 25, head: 30, thigh: 150, shin: 195, thigh2: 190, shin2: 175, foot: 90, upper: 115, fore: 110 },
@@ -2146,10 +2146,10 @@ const sidePressBell: Figure = { ...paraPress }
 const ARMS_A = { upper: -140, fore: 150, upper2: 150, fore2: 40 }
 const ARMS_B = { upper: 150, fore: 40, upper2: -140, fore2: 150 }
 const run: Figure = {
-  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [130, 136] }, period: 900, props: [],
+  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [130, 128] }, period: 900, props: [],
   frames: [{ torso: 10, head: 10, ...RUN_A, ...ARMS_A }, { torso: 10, head: 10, ...RUN_B, ...ARMS_B }],
 }
-const sprint: Figure = { ...run, anchor: { joint: 'hip', at: [130, 140] }, frames: [{ torso: 32, head: 40, ...RUN_A, ...ARMS_A }, { torso: 32, head: 40, ...RUN_B, ...ARMS_B }] }
+const sprint: Figure = { ...run, anchor: { joint: 'hip', at: [130, 127] }, frames: [{ torso: 32, head: 40, ...RUN_A, ...ARMS_A }, { torso: 32, head: 40, ...RUN_B, ...ARMS_B }] }
 const WALK_A = { thigh: 160, shin: 185, thigh2: -165, shin2: -160, foot: 90, foot2: 120 }
 const WALK_B = { thigh: -165, shin: -160, thigh2: 160, shin2: 185, foot: 120, foot2: 90 }
 const walk: Figure = {
@@ -2158,9 +2158,9 @@ const walk: Figure = {
 }
 const treadmill: Prop[] = [{ type: 'box', span: [20, 250], y: 212 }, { type: 'bar', span: [196, 236], y: 120 }]
 const treadmillWalk: Figure = { ...walk, anchor: { joint: 'hip', at: [130, 115] }, props: treadmill }
-const treadmillRun: Figure = { ...run, anchor: { joint: 'hip', at: [130, 126] }, props: treadmill }
+const treadmillRun: Figure = { ...run, anchor: { joint: 'hip', at: [130, 118] }, props: treadmill }
 const skipping: Figure = {
-  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [130, 114] }, period: 900, props: [],
+  view: 'side', work: ['legs'], anchor: { joint: 'hip', at: [130, 108] }, period: 900, props: [],
   frames: [
     { torso: 4, thigh: 92, shin: 180, thigh2: 182, shin2: 182, foot: 90, foot2: 140, ...ARMS_A },
     { torso: 4, thigh: 182, shin: 182, thigh2: 92, shin2: 180, foot: 140, foot2: 90, ...ARMS_B },
@@ -2275,7 +2275,7 @@ const starJump: Figure = {
 }
 const LUNGE_SWAP = { torso: 4, thigh: 182, shin: -98, thigh2: 98, shin2: 182, foot: 170, foot2: 90 }
 const splitJump: Figure = {
-  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [140, 176] }, period: 1800, arc: 40, props: [],
+  view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [140, 145] }, period: 1800, arc: 40, props: [],
   frames: [{ ...LUNGE_LOW, upper: 200, fore: 150, upper2: 150, fore2: 60 }, { ...LUNGE_SWAP, upper: 150, fore: 60, upper2: 200, fore2: 150 }],
 }
 const buttKick: Figure = {
@@ -2314,7 +2314,7 @@ const supineChestThrow: Figure = {
 }
 const kneelingArms: Figure = {
   view: 'side', work: ['shoulders'], anchor: { joint: 'knee', at: [120, 214] }, period: 900, props: [],
-  frames: [{ torso: 2, thigh: 180, shin: -90, foot: -150, ...ARMS_A }, { torso: 2, thigh: 180, shin: -90, foot: -150, ...ARMS_B }],
+  frames: [{ torso: 2, thigh: 180, shin: -90, foot: -100, ...ARMS_A }, { torso: 2, thigh: 180, shin: -90, foot: -100, ...ARMS_B }],
 }
 const chestSqueeze: Figure = {
   view: 'front', work: ['chest'], period: HOLD, props: [],
@@ -2365,7 +2365,7 @@ const hopOneLeg: Figure = {
 }
 const lateralBoundBox: Figure = { ...lateralBound, props: [{ type: 'box', span: [90, 130], y: 190 }] }
 const flutterProne: Figure = {
-  view: 'side', work: ['glutes'], anchor: { joint: 'hip', at: [120, 150] }, props: [{ type: 'bench', span: [110, 240], y: 160 }], period: 1400,
+  view: 'side', work: ['glutes'], anchor: { joint: 'hip', at: [120, 122] }, props: [{ type: 'bench', span: [110, 240], y: 132 }], period: 1400,
   frames: [
     { torso: 90, head: 95, thigh: -115, shin: -115, thigh2: -140, shin2: -140, foot: 180, upper: 180, fore: 180 },
     { torso: 90, head: 95, thigh: -140, shin: -140, thigh2: -115, shin2: -115, foot: 180, upper: 180, fore: 180 },
@@ -2382,8 +2382,8 @@ const legUpStretch: Figure = {
 
 // ---------------------------------------------------------------- 0.0.4: tumbados de lado y detalles
 // Tumbado de lado: vista de frente girada 90° (cabeza a la izquierda, lado cercano arriba).
-const SIDE_LYING = { torso: 0, thigh: 180, shin: 180, thigh2: 180, shin2: 180, upper2: 5, fore2: 5 }
-const sideLying = { view: 'front' as const, turn: -90, anchor: { joint: 'hip' as JointName, at: [160, 200] as [number, number] }, shadow: 110 }
+const SIDE_LYING = { torso: 0, thigh: 180, shin: 180, thigh2: 180, shin2: 180, upper2: -8, fore2: -8 }
+const sideLying = { view: 'front' as const, turn: -90, anchor: { joint: 'hip' as JointName, at: [160, 193] as [number, number] }, shadow: 110 }
 const sideLyingLateral: Figure = {
   ...sideLying, work: ['shoulders'], props: [{ type: 'dumbbell', at: 'wrist', front: true }],
   frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, upper: 92, fore: 94 }],
@@ -2400,19 +2400,19 @@ const sideJackknife: Figure = {
   ],
 }
 const sideLyingReach: Figure = {
-  ...sideLying, work: ['back', 'core'], props: [], period: HOLD,
-  frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, torso: -8, upper: -8, fore: -12 }],
+  ...sideLying, sweep: ['upper', 'fore'], work: ['back', 'core'], props: [], period: HOLD,
+  frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, upper: -8, fore: -12 }],
 }
 const sideLyingLegUp: Figure = {
   ...sideLying, work: ['legs'], props: [], period: HOLD,
   frames: [{ ...SIDE_LYING, upper: 176, fore: 176 }, { ...SIDE_LYING, thigh: 105, shin: 100, upper: 120, fore: 105 }],
 }
 const sideLyingBall: Figure = {
-  ...sideLying, work: ['core'], anchor: { joint: 'hip', at: [160, 176] }, shadow: 90,
-  props: [{ type: 'ball', point: [165, 200], size: 22 }],
+  ...sideLying, work: ['core'], anchor: { joint: 'hip', at: [160, 166] }, shadow: 90,
+  props: [{ type: 'ball', point: [165, 196], size: 26 }],
   frames: [
-    { ...SIDE_LYING, torso: -25, head: -25, thigh: 200, shin: 200, thigh2: 160, shin2: 160, upper: 30, fore: -120 },
-    { ...SIDE_LYING, torso: 22, head: 22, thigh: 200, shin: 200, thigh2: 160, shin2: 160, upper: 30, fore: -120 },
+    { ...SIDE_LYING, torso: -25, head: -25, thigh: 190, shin: 190, thigh2: 170, shin2: 170, upper: 20, fore: -120, upper2: -30, fore2: -60 },
+    { ...SIDE_LYING, torso: 22, head: 22, thigh: 190, shin: 190, thigh2: 170, shin2: 170, upper: 20, fore: -120, upper2: -30, fore2: -60 },
   ],
 }
 // Boca abajo en banco inclinado: elevación de brazos al frente y aperturas.
