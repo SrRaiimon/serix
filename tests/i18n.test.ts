@@ -95,7 +95,7 @@ test('al cambiar de idioma, los nombres del catálogo guardados se traducen; los
       { exerciseId: 'Squat', name: 'Mi sentadilla', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, rest: 120 },
     ] }],
     sessions: [session(0, [exercise('Squat', [set(100, 5)], { name: 'Sentadilla' })])],
-    measurements: [], exerciseNotes: {}, friends: [], settings: { ...defaultSettings },
+    measurements: [], exerciseNotes: {}, friends: [], challenges: [], settings: { ...defaultSettings },
   })
   updateSettings({ language: 'en' })
   assert.equal(lang(), 'en')

@@ -7,7 +7,7 @@ import { exercise, session, set } from './helpers'
 fakeIndexedDB()
 
 const reset = () => replaceData({
-  version: 1, routines: [], measurements: [], exerciseNotes: {}, friends: [], settings: { ...defaultSettings },
+  version: 1, routines: [], measurements: [], exerciseNotes: {}, friends: [], challenges: [], settings: { ...defaultSettings },
   sessions: [session(0, [exercise('bench', [set(80, 8), set(80, 8)])], { id: 's1' })],
 })
 

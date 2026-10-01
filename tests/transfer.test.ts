@@ -19,7 +19,7 @@ function yearOfData(): AppData {
     routines: [{ id: 'r', name: 'Full body', notes: '', order: 0, createdAt: Date.UTC(2026, 0, 1), exercises: [] }],
     sessions,
     measurements: [{ id: 'm', date: Date.UTC(2026, 0, 1), weight: 80 }],
-    exerciseNotes: { Barbell_Squat: 'Barra baja' }, friends: [],
+    exerciseNotes: { Barbell_Squat: 'Barra baja' }, friends: [], challenges: [],
     settings: { ...defaultSettings, onboarded: true, name: 'Ana' },
   }
 }

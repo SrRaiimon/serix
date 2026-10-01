@@ -32,6 +32,7 @@ const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m
 const ExerciseDetailScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExerciseDetailScreen })))
 const ImportScreen = lazy(() => screens.import().then((m) => ({ default: m.ImportScreen })))
 const FriendsScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendsScreen })))
+const FriendDetailScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendDetailScreen })))
 const FriendImportScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendImportScreen })))
 const IntervalScreen = lazy(() => screens.intervals().then((m) => ({ default: m.IntervalScreen })))
 const LegalScreen = lazy(() => screens.legal().then((m) => ({ default: m.LegalScreen })))
@@ -154,7 +155,7 @@ function Screen({ route }: { route: string[] }) {
       if (a === '1rm') return <OneRepMaxScreen />
       if (a === 'plates') return <PlatesScreen />
       if (a === 'legal') return <LegalScreen />
-      if (a === 'friends') return <FriendsScreen />
+      if (a === 'friends') return b ? <FriendDetailScreen id={b} /> : <FriendsScreen />
       return <ProfileScreen />
     case 'timer':
       return <IntervalScreen />

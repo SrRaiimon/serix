@@ -142,15 +142,16 @@ export function newRoutineFromImport(r: ImportedPlan['routines'][number], order:
   return { id: uid(), name: r.name, notes: '', programName, order, createdAt: Date.now(), exercises: r.exercises }
 }
 
-export async function shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'cancelled'> {
+/** @param text mensaje que acompaña al enlace (por defecto, «… ábrela en Serix») */
+export async function shareLink(title: string, url: string, text?: string): Promise<'shared' | 'copied' | 'cancelled'> {
   if (navigator.share) {
     try {
-      await navigator.share({ title, text: t(`${title} — ábrela en Serix`, `${title} — open it in Serix`), url })
+      await navigator.share({ title, text: text ?? t(`${title} — ábrela en Serix`, `${title} — open it in Serix`), url })
       return 'shared'
     } catch {
       return 'cancelled'
     }
   }
-  await navigator.clipboard.writeText(url)
+  await navigator.clipboard.writeText(text ? `${text} ${url}` : url)
   return 'copied'
 }

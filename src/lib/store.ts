@@ -4,7 +4,7 @@ import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
 import { applyTheme, type Theme } from './theme'
-import type { FriendSnapshot } from './friends'
+import type { Challenge, FriendSnapshot } from './friends'
 import { trackingOf, type Tracking } from './tracking'
 
 // Los pesos se guardan siempre en kg; la unidad solo afecta a cómo se muestran.
@@ -135,6 +135,12 @@ export interface Settings {
   voice?: boolean
   /** Aviso del descanso con la pantalla bloqueada (Android; necesita permiso de notificaciones). */
   lockScreenAlert?: boolean
+  /** Incluir el peso corporal en el resumen para amigos (fuerza relativa). */
+  shareBodyWeight?: boolean
+  /** Última vez que compartiste tu resumen, y el recordatorio de los domingos. */
+  friendShareAt?: number
+  friendReminderOff?: boolean
+  friendReminderSnooze?: number
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */
@@ -153,6 +159,8 @@ export interface AppData {
   exerciseNotes: Record<string, string>
   /** Resúmenes que han compartido los amigos (retos). */
   friends: FriendSnapshot[]
+  /** Retos con amigos en los que participas (creados o aceptados). */
+  challenges: Challenge[]
   settings: Settings
 }
 
@@ -180,6 +188,7 @@ const emptyData = (): AppData => ({
   measurements: [],
   exerciseNotes: {},
   friends: [],
+  challenges: [],
   settings: { ...defaultSettings },
 })
 

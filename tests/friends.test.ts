@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { decodeSnapshot, encodeSnapshot, friendKey, mySnapshot, sameWeek } from '../src/lib/friends'
+import { alignWeeks, challengeProgress, challengeStatus, cleanChallenge, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
 import { toBase64Url } from '../src/lib/share'
 import { defaultSettings, type AppData } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
@@ -15,7 +15,7 @@ const sessions = [
   at(9, [exercise('Barbell_Squat', [set(120, 5)]), exercise('Wide-Grip_Barbell_Bench_Press', [set(90, 1)])]),
   at(40, [exercise('Barbell_Deadlift', [set(150, 3)])]),
 ]
-const data: AppData = { version: 1, routines: [], sessions, measurements: [], exerciseNotes: {}, friends: [], settings: { ...defaultSettings, name: '  Ana  ' } }
+const data: AppData = { version: 1, routines: [], sessions, measurements: [], exerciseNotes: {}, friends: [], challenges: [], settings: { ...defaultSettings, name: '  Ana  ' } }
 
 test('resumen propio: semana, mes, racha y mejores básicos', () => {
   const s = mySnapshot(data, sessions, now)
@@ -39,11 +39,88 @@ test('enlace: ida y vuelta, y valores manipulados acotados', async () => {
   assert.equal(d?.streak, 1000)
   assert.deepEqual(d?.lifts, { bench: undefined, squat: undefined, deadlift: undefined })
   assert.equal(await decodeSnapshot('zroto'), undefined)
-  assert.equal(await decodeSnapshot('j' + toBase64Url(new TextEncoder().encode('[2,"x"]'))), undefined)
+  assert.equal(await decodeSnapshot('j' + toBase64Url(new TextEncoder().encode('[3,"x"]'))), undefined)
 })
 
 test('amigos por nombre y semanas comparables', () => {
   assert.equal(friendKey(' Ána '), friendKey('ana'))
   assert.equal(sameWeek(now - 86400000, now), true)
   assert.equal(sameWeek(now - 5 * 86400000, now), false) // el viernes anterior
+})
+
+// MARK: Retos y comparativas
+
+const DAY_MS = 86400000
+
+test('progreso de un reto: solo cuenta lo que entra en sus fechas', () => {
+  const base = { id: 'abcd12', by: 'Ana', start: now - 10 * DAY_MS, end: now + DAY_MS }
+  assert.equal(challengeProgress({ ...base, metric: 'sessions' }, sessions), 2) // la de hace 40 días no
+  assert.equal(challengeProgress({ ...base, metric: 'volume' }, sessions), 800 + 600 + 90)
+  assert.equal(challengeProgress({ ...base, metric: 'sets' }, sessions), 4)
+  const reps = [at(2, [exercise('Pullups', [set(0, 8), set(0, 11), set(0, 15, { warmup: true })])])]
+  assert.equal(challengeProgress({ ...base, metric: 'reps', exerciseId: 'Pullups' }, reps), 11) // el calentamiento no cuenta
+})
+
+test('series de un grupo muscular', () => {
+  const s = [at(1, [exercise('a', [set(50, 10), set(50, 10)], { muscle: 'pectorals' }), exercise('b', [set(50, 10)], { muscle: 'quads' })])]
+  const c = { id: 'abcd12', by: 'Ana', start: now - DAY_MS * 5, end: now + DAY_MS, metric: 'sets' as const }
+  assert.equal(challengeProgress({ ...c, group: 0 }, s), 2) // pecho
+  assert.equal(challengeProgress(c, s), 3)
+})
+
+test('clasificación, invitaciones y estado', () => {
+  const c = { id: 'abcd12', by: 'Ana', start: now - DAY_MS, end: now + DAY_MS, metric: 'sessions' as const }
+  const friend = { ...mySnapshot(data, sessions, now), name: 'Luis', challenges: [{ challenge: c, value: 3 }] }
+  const rows = standings(c, 'Tú', 1, [friend], now)
+  assert.deepEqual(rows.map((r) => [r.name, r.value]), [['Luis', 3], ['Tú', 1]])
+  assert.deepEqual(invitations([friend], [], now).map((x) => x.id), ['abcd12'])
+  assert.deepEqual(invitations([friend], [c], now), [])
+  assert.deepEqual(invitations([friend], [], now + 2 * DAY_MS), []) // terminado: ya no se invita
+  assert.equal(challengeStatus(c, now), 'active')
+  assert.equal(challengeStatus(c, now - 2 * DAY_MS), 'upcoming')
+})
+
+test('enlace v2: semanas, grupos, récords, peso y retos van y vuelven', async () => {
+  const c = newChallenge({ metric: 'reps', exerciseId: 'Pullups', exerciseName: 'Dominadas', by: 'Ana', target: 20 }, 30, now)
+  const withChallenge: AppData = { ...data, challenges: [c], measurements: [{ id: 'm', date: now - DAY_MS, weight: 70 }], settings: { ...data.settings, shareBodyWeight: true } }
+  const s = mySnapshot(withChallenge, sessions, now)
+  assert.equal(s.weeks?.length, WEEKS)
+  assert.deepEqual(s.weeks?.at(-1), [1, 800])
+  assert.equal(s.bodyWeight, 70)
+  assert.equal(s.challenges?.[0].challenge.id, c.id)
+  assert.deepEqual(await decodeSnapshot(await encodeSnapshot(s)), s)
+  // Sin permiso, el peso no viaja.
+  assert.equal(mySnapshot({ ...withChallenge, settings: data.settings }, sessions, now).bodyWeight, undefined)
+})
+
+test('retos manipulados se descartan', () => {
+  const ok = { id: 'abcd12', metric: 'sessions', start: now, end: now + DAY_MS, by: 'x' }
+  assert.ok(cleanChallenge(ok))
+  assert.equal(cleanChallenge({ ...ok, id: '<script>' }), undefined)
+  assert.equal(cleanChallenge({ ...ok, metric: 'hack' }), undefined)
+  assert.equal(cleanChallenge({ ...ok, end: now - 1 }), undefined)
+  assert.equal(cleanChallenge({ ...ok, end: now + 400 * DAY_MS }), undefined) // más de un año
+  assert.equal(cleanChallenge({ ...ok, metric: 'reps' }), undefined) // sin ejercicio
+  assert.equal(cleanChallenge({ ...ok, group: 3 })?.group, undefined) // el grupo solo vale para series
+  assert.equal(cleanChallenge({ ...ok, metric: 'sets', group: 99 })?.group, undefined)
+})
+
+test('semanas de un amigo alineadas con las tuyas', () => {
+  const weeks: [number, number][] = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8]]
+  const f = { ...mySnapshot(data, sessions, now), weeks }
+  assert.deepEqual(alignWeeks({ ...f, at: now }, now), weeks)
+  // Resumen de hace dos semanas: sus 2 semanas más recientes no se conocen.
+  assert.deepEqual(alignWeeks({ ...f, at: now - 14 * DAY_MS }, now), [[3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], undefined, undefined])
+})
+
+test('recordatorio de compartir: domingo o lunes, con amigos y sin compartir esa semana', () => {
+  const sunday = new Date(2026, 0, 18, 11).getTime()
+  const friend = mySnapshot(data, sessions, now)
+  const d = (settings: Partial<AppData['settings']>, friends = [friend]): AppData => ({ ...data, friends, settings: { ...data.settings, ...settings } })
+  assert.equal(shareReminderDue(d({}), sunday), true)
+  assert.equal(shareReminderDue(d({}), now), false) // miércoles
+  assert.equal(shareReminderDue(d({}, []), sunday), false)
+  assert.equal(shareReminderDue(d({ friendShareAt: sunday - DAY_MS }), sunday), false)
+  assert.equal(shareReminderDue(d({ friendReminderOff: true }), sunday), false)
+  assert.equal(shareReminderDue(d({ friendReminderSnooze: sunday + DAY_MS }), sunday), false)
 })

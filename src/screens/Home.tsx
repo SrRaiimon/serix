@@ -1,17 +1,18 @@
-import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, Users, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Card, Progress, Tile, useTick } from '../components/ui'
+import { Card, Progress, Tile, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
-import { activeSession, finishedSessions, routineMinutes, useData, type Routine, type Session } from '../lib/store'
+import { activeSession, finishedSessions, routineMinutes, updateSettings, useData, type Routine, type Session } from '../lib/store'
 import { nextRoutine, openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { RECOVERING, useRecovery } from '../components/Recovery'
 import { SessionRow } from '../components/SessionRow'
 import { plural, t } from '../lib/i18n'
+import { copiedToast, shareMine, shareReminderDue } from '../lib/friends'
 
 
 export function HomeScreen() {
@@ -36,6 +37,8 @@ export function HomeScreen() {
       <InstallBanner />
 
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
+
+      {shareReminderDue(data) && <FriendReminderCard friends={data.friends.length} />}
 
       {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : (
         <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
@@ -158,6 +161,24 @@ function InstallBanner() {
       {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
       <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
+  )
+}
+
+/** Recordatorio de los domingos (y lunes): compartir el resumen semanal con los amigos. */
+function FriendReminderCard({ friends }: { friends: number }) {
+  const [toast, showToast] = useToast()
+  // Hasta el martes no vuelve a salir.
+  const snooze = () => updateSettings({ friendReminderSnooze: addDays(startOfDay(Date.now()), new Date().getDay() === 0 ? 2 : 1).getTime() })
+  return (
+    <Card title={t('Comparte tu semana', 'Share your week')} icon={Users}>
+      <span className="muted small">{t(`Manda tu resumen a tus amigos para que vean cómo vas en los retos (tienes ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`,
+        `Send your summary to your friends so they can see how you're doing in the challenges (you have ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`)}</span>
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn primary grow" onClick={() => void shareMine().then((r) => r === 'copied' && showToast(copiedToast()))}>{t('Compartir', 'Share')}</button>
+        <button className="btn secondary" onClick={snooze}>{t('Ahora no', 'Not now')}</button>
+      </div>
+      {toast}
+    </Card>
   )
 }
 

@@ -1834,3 +1834,33 @@ html.scroll-locked body {
 .rank-name.me { color: var(--accent-text); }
 .compare-table { display: grid; grid-template-columns: minmax(0, 1.6fr) 1fr 1fr; gap: 10px 8px; align-items: center; text-align: right; font-variant-numeric: tabular-nums; }
 .compare-table > :nth-child(3n + 1) { text-align: left; }
+
+/* MARK: Retos con amigos */
+
+.challenge { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--separator); }
+.challenge:first-of-type { border-top: 0; padding-top: 0; }
+.challenge.invite { background: var(--accent-soft); border: 0; border-radius: 12px; padding: 12px; }
+.challenge-head { display: flex; text-align: left; gap: 8px; padding: 0; background: none; color: inherit; font: inherit; }
+.challenge-row { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(64px, auto); gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.challenge-row .me { color: var(--accent-text); }
+.btn.btn-sm { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+.rank-link { color: var(--blue-text); text-decoration: underline; text-underline-offset: 2px; }
+.card-row { background: var(--card); border-radius: var(--radius); padding: 14px 16px; }
+.duo-bars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; height: 150px; align-items: end; }
+.duo-col { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+.duo-pair { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+.duo-bar { width: 42%; min-height: 2px; border-radius: 3px 3px 0 0; }
+.duo-bar.me, .legend-dot.me, .duo-hbar.me { background: var(--accent); }
+.duo-bar.friend, .legend-dot.friend, .duo-hbar.friend { background: var(--blue); }
+.duo-bar.none { background: transparent; border: 1px dashed var(--separator); min-height: 8px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.duo-hbars { display: flex; flex-direction: column; gap: 8px; }
+.duo-hrow { display: grid; grid-template-columns: 96px 1fr 32px; gap: 8px; align-items: center; }
+.duo-hpair { display: flex; flex-direction: column; gap: 2px; }
+.duo-hbar { height: 7px; border-radius: 4px; min-width: 2px; }
+
+/* En modo oscuro las hojas tienen fondo negro: la opción elegida necesita un gris más claro. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sheet .segmented button.active { background: #3a3a3c; }
+}
+:root[data-theme="dark"] .sheet .segmented button.active { background: #3a3a3c; }
