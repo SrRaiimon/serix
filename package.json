@@ -1,7 +1,7 @@
 {
   "name": "gymweb",
   "private": true,
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -11,6 +11,7 @@
     "test": "node scripts/test.mjs"
   },
   "dependencies": {
+    "jsqr": "1.4.0",
     "lucide-react": "^1.48.0",
     "qrcode-generator": "2.0.4",
     "react": "^19.3.0",

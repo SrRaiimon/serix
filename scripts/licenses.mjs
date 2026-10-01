@@ -3,7 +3,14 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator']
+const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr']
+
+// Autoría que el paquete no recoge en su archivo de licencia.
+const NOTES = {
+  jsqr: 'jsQR, de Cosmo Wolfe y colaboradores (https://github.com/cozmo/jsQR). Parte del código\n' +
+    '(corrección de errores Reed-Solomon) está traducido de ZXing (https://github.com/zxing/zxing),\n' +
+    'también con licencia Apache 2.0. Se distribuye sin cambios.',
+}
 
 // Texto estándar de la licencia MIT, para paquetes que la declaran solo en la cabecera del código.
 const MIT = `Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,7 +54,7 @@ const parts = [
 for (const name of packages) {
   const dir = join('node_modules', name)
   const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
-  parts.push(`--- ${name} ${pkg.version} (${pkg.license}) ---`, '', licenseText(dir, pkg), '')
+  parts.push(`--- ${name} ${pkg.version} (${pkg.license}) ---`, '', ...(NOTES[name] ? [NOTES[name], ''] : []), licenseText(dir, pkg), '')
 }
 
 parts.push(

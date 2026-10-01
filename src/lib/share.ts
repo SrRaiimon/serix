@@ -25,21 +25,21 @@ export interface ImportedPlan {
   skipped: number
 }
 
-const toBase64Url = (bytes: Uint8Array) =>
-  btoa(String.fromCharCode(...bytes)).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')
+export const toBase64Url = (bytes: Uint8Array) =>
+  btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join('')).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')
 
-function fromBase64Url(text: string): Uint8Array {
+export function fromBase64Url(text: string): Uint8Array {
   const b64 = text.replaceAll('-', '+').replaceAll('_', '/')
   const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
   return Uint8Array.from(bin, (c) => c.charCodeAt(0))
 }
 
-async function transform(bytes: Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
+export async function transform(bytes: Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
   const out = new Blob([bytes as BlobPart]).stream().pipeThrough(stream)
   return new Uint8Array(await new Response(out).arrayBuffer())
 }
 
-const canCompress = () => typeof CompressionStream !== 'undefined'
+export const canCompress = () => typeof CompressionStream !== 'undefined'
 
 /** Código: "z" + deflate comprimido, o "j" + JSON sin comprimir en navegadores antiguos. */
 export async function encodePlan(routines: Routine[], programName?: string): Promise<string> {

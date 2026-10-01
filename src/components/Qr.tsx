@@ -18,7 +18,7 @@ function modules(text: string): boolean[][] | null {
   }
 }
 
-export function QrCode({ text, label }: { text: string; label: string }) {
+export function QrCode({ text, label, className = '' }: { text: string; label: string; className?: string }) {
   const grid = useMemo(() => modules(text), [text])
   if (!grid) return null
   const n = grid.length
@@ -26,7 +26,7 @@ export function QrCode({ text, label }: { text: string; label: string }) {
   // Un solo trazado con todos los módulos oscuros (más ligero que un rectángulo por módulo).
   const path = grid.flatMap((row, r) => row.map((dark, c) => (dark ? `M${c + quiet},${r + quiet}h1v1h-1z` : ''))).join('')
   return (
-    <svg className="qr" viewBox={`0 0 ${n + quiet * 2} ${n + quiet * 2}`} role="img" aria-label={label} shapeRendering="crispEdges">
+    <svg className={`qr ${className}`} viewBox={`0 0 ${n + quiet * 2} ${n + quiet * 2}`} role="img" aria-label={label} shapeRendering="crispEdges">
       <rect width="100%" height="100%" fill="#fff" />
       <path d={path} fill="#000" />
     </svg>

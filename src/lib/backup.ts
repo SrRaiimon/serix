@@ -1,6 +1,6 @@
 import { uid } from './format'
 import type { AppData, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
-import { defaultSettings } from './store'
+import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -107,6 +107,15 @@ function settings(v: unknown): Settings {
   }
 }
 
+function exerciseNotes(v: unknown): Record<string, string> {
+  if (!isObj(v)) return {}
+  const notes: Record<string, string> = {}
+  for (const [id, text] of Object.entries(v).slice(0, 2000)) {
+    if (typeof text === 'string' && text.trim() && id.length <= 200) notes[id] = text.slice(0, MAX_EXERCISE_NOTE)
+  }
+  return notes
+}
+
 /** Convierte el contenido de un archivo en datos válidos, o lanza un error si no es una copia. */
 export function parseBackup(text: string): AppData {
   if (text.length > MAX_BACKUP_BYTES) throw new Error('El archivo es demasiado grande.')
@@ -117,6 +126,7 @@ export function parseBackup(text: string): AppData {
     routines: list(raw.routines, routine, 1000),
     sessions: list(raw.sessions, session, 20000),
     measurements: list(raw.measurements, measurement, 5000),
+    exerciseNotes: exerciseNotes(raw.exerciseNotes),
     settings: settings(raw.settings),
   }
 }

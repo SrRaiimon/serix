@@ -4,7 +4,7 @@ import { fakeIndexedDB } from './helpers'
 import { Catalog, type Exercise } from '../src/lib/catalog'
 import { CATALOG_VERSION, migrateCatalog } from '../src/lib/migrate'
 import { decodePlan, encodePlan, extractCode } from '../src/lib/share'
-import { defaultSettings, getData, replaceData } from '../src/lib/store'
+import { defaultSettings, getData, replaceData, setExerciseNote } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
 
 fakeIndexedDB()
@@ -26,6 +26,7 @@ test('migración del catálogo antiguo', () => {
     ] }],
     sessions: [session(0, [exercise('old_bench', [set(80, 8)], { name: 'Nombre del historial', muscle: 'pectorals' })])],
     measurements: [],
+    exerciseNotes: { old_bench: 'Banco en el 3', old_gone: 'Se queda' },
     settings: { ...defaultSettings, favorites: ['old_bench', 'Barbell_Bench_Press', 'old_gone'] },
   })
   migrateCatalog(catalog)
@@ -43,6 +44,7 @@ test('migración del catálogo antiguo', () => {
   assert.equal(done.name, 'Nombre del historial')
   assert.equal(done.sets[0].weight, 80)
   assert.deepEqual(d.settings.favorites, ['Barbell_Bench_Press', 'old_gone'])
+  assert.deepEqual(d.exerciseNotes, { Barbell_Bench_Press: 'Banco en el 3', old_gone: 'Se queda' })
   assert.equal(d.settings.catalogVersion, CATALOG_VERSION)
 })
 
@@ -93,4 +95,11 @@ test('enlaces dañados o ajenos dan un mensaje claro', async () => {
   await assert.rejects(decodePlan('x123', catalog), /no es de una rutina/)
   assert.equal(extractCode('https://srraiimon.github.io/serix/#/import/zAbc_-1'), 'zAbc_-1')
   assert.equal(extractCode('hola'), undefined)
+})
+
+test('notas de ejercicio: se guardan recortadas y vacías se borran', () => {
+  setExerciseNote('Plank', 'x'.repeat(400))
+  assert.equal(getData().exerciseNotes.Plank.length, 300)
+  setExerciseNote('Plank', '  ')
+  assert.equal('Plank' in getData().exerciseNotes, false)
 })

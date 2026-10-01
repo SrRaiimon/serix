@@ -22,6 +22,7 @@ const sample = (): AppData => ({
     set(60, 8, { kind: 'drop' }), set(80, 6, { kind: 'failure' }), set(80, 9, { kind: 'amrap' }),
   ], { deload: true })])],
   measurements: [{ id: 'm1', date: Date.UTC(2026, 0, 1), weight: 80, waist: 85 }],
+  exerciseNotes: { bench: 'Asiento en el 4\nagarre ancho' },
   settings: { ...allSettings },
 })
 
@@ -50,6 +51,7 @@ test('valores fuera de rango, tipos raros y campos desconocidos', () => {
   raw.settings.unit = 'stone'
   raw.settings.weeklyGoal = 50
   raw.sessions.push({ start: 'ayer' }, null, 7)
+  raw.exerciseNotes = { bench: 'n'.repeat(1000), squat: 42, deadlift: '   ' }
   const parsed = parseBackup(JSON.stringify(raw))
   const p = parsed.sessions[0].exercises[0]
   assert.equal(p.sets[0].weight, 2000)
@@ -62,6 +64,8 @@ test('valores fuera de rango, tipos raros y campos desconocidos', () => {
   assert.equal(parsed.settings.unit, 'kg')
   assert.equal(parsed.settings.weeklyGoal, 7)
   assert.equal(parsed.sessions.length, 1)
+  assert.deepEqual(Object.keys(parsed.exerciseNotes), ['bench'])
+  assert.equal(parsed.exerciseNotes.bench.length, 300)
 })
 
 test('copias antiguas sin los campos nuevos', () => {
@@ -71,7 +75,9 @@ test('copias antiguas sin los campos nuevos', () => {
     for (const s of e.sets) delete s.kind
   }
   delete raw.measurements
+  delete raw.exerciseNotes
   const parsed = parseBackup(JSON.stringify(raw))
+  assert.deepEqual(parsed.exerciseNotes, {})
   assert.equal(parsed.sessions[0].exercises[0].sets.length, 4)
   assert.deepEqual(parsed.measurements, [])
 })

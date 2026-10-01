@@ -23,6 +23,7 @@ export function migrateCatalog(catalog: Catalog): void {
     d.routines.forEach((r) => r.exercises.forEach((e) => fix(e, true)))
     d.sessions.forEach((s) => s.exercises.forEach((e) => fix(e, false)))
     d.settings.favorites = [...new Set(d.settings.favorites.map((f) => catalog.resolve(f) ?? f))]
+    d.exerciseNotes = Object.fromEntries(Object.entries(d.exerciseNotes ?? {}).map(([id, text]) => [catalog.resolve(id) ?? id, text]))
     d.settings.catalogVersion = CATALOG_VERSION
   })
 }

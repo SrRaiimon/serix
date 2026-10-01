@@ -1,8 +1,9 @@
-import { Building2, ChartBar, ChartLine, ChevronLeft, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Timer, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Timer, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Card, Chip, Segmented, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, generate, goalInfo, goals, levelInfo, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { navigate } from '../lib/router'
 import { updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
 import { ProgramPreview, saveProgram } from './Routines'
@@ -73,6 +74,9 @@ export function OnboardingScreen() {
               <HealthNotice />
               <p className="small muted" style={{ margin: 0 }}>Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.</p>
             </div>
+            <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
+              <ArrowRightLeft size={18} /> ¿Vienes de otro móvil? Pasa tus datos
+            </button>
           </>
         )}
         {step === 1 && (

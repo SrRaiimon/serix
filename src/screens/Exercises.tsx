@@ -1,7 +1,8 @@
-import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, X } from 'lucide-react'
+import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, StickyNote, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart } from '../components/charts'
 import { MuscleMap } from '../components/MuscleMap'
+import { ExerciseNoteField } from '../components/ExerciseNote'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, num, weight } from '../lib/format'
@@ -234,6 +235,9 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
           <Tag>{levelLabel(exercise.level)}</Tag>
         </div>
       </div>
+      <Card title="Tu nota" icon={StickyNote}>
+        <ExerciseNoteField exerciseId={exercise.id} />
+      </Card>
       {exercise.secondaryMuscles.length > 0 && (
         <Card title="Músculos secundarios" icon={PersonStanding}>
           <span className="muted">{exercise.secondaryMuscles.map(muscleLabel).join(', ')}</span>

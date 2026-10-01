@@ -1,4 +1,4 @@
-import { Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -125,6 +125,7 @@ export function ProfileScreen() {
       <div className="list">
         <Row icon={Download} label="Exportar copia de seguridad" detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : 'Nunca'} onClick={exportBackup} chevron={false} />
         <Row icon={Upload} label="Importar copia de seguridad" onClick={() => fileInput.current?.click()} chevron={false} />
+        <Row icon={ArrowRightLeft} label="Pasar a otro móvil" onClick={() => navigate('transfer')} />
         {storage && storage !== 'unsupported' && (
           <Row icon={HardDrive} label="Protección contra borrado" detail={storage === 'protected' ? 'Activada' : 'Activar'}
             onClick={storage === 'protected' ? undefined : () => void protect()} chevron={false} />
@@ -132,7 +133,7 @@ export function ProfileScreen() {
         <Row icon={Trash2} label="Borrar todos los datos" className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
       </div>
       <p className="list-footer">
-        Tus datos se guardan solo en este dispositivo. La protección evita que el navegador los borre para liberar espacio, pero no sustituye a una copia: si borras la app o cambias de móvil, solo podrás recuperarlos con una copia exportada.
+        Tus datos se guardan solo en este dispositivo. La protección evita que el navegador los borre para liberar espacio, pero no sustituye a una copia: si borras la app, solo podrás recuperarlos con una copia exportada. Para cambiar de móvil, usa «Pasar a otro móvil».
       </p>
 
       <div className="list">

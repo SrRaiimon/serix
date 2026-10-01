@@ -42,13 +42,14 @@ export function LegalScreen() {
           <p><strong>Cookies:</strong> no se usan cookies. Solo se guarda en el dispositivo lo imprescindible para que la app funcione (tus datos y alguna preferencia), por lo que no hace falta pedir consentimiento.</p>
           <p><strong>Compartir:</strong> cuando compartes una rutina o un entrenamiento, eres tú quien elige a quién enviarlo. Los enlaces de rutina contienen solo los ejercicios y las cifras, no tus datos personales. La imagen del entrenamiento se genera en tu propio móvil e incluye el nombre del entrenamiento, la fecha, las cifras y los ejercicios.</p>
           <p><strong>Copias y protección:</strong> puedes exportar una copia en Perfil; la app te lo recuerda cada 30 días. Con la app instalada, también le pide al navegador que no borre sus datos para liberar espacio.</p>
+          <p><strong>Pasar datos a otro móvil:</strong> los datos viajan en códigos QR de una pantalla a la cámara del otro móvil, sin internet ni servidores. La cámara solo se usa mientras está abierta la pantalla de recibir, y la imagen se analiza en el propio móvil: no se guarda ni se envía a ninguna parte.</p>
           <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos», o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
         </Section>
 
         <Section title="Contenido y licencias" icon={Scale}>
           <p><strong>Ejercicios:</strong> los nombres y su clasificación (músculos, material y nivel) son datos de hecho tomados de la lista abierta <a href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noreferrer">Free Exercise DB</a> y traducidos a mano. La app no usa sus fotos ni sus textos.</p>
           <p><strong>Instrucciones e ilustraciones:</strong> los pasos de cada ejercicio, los mapas musculares y las figuras de movimiento son contenido propio de Serix.</p>
-          <p><strong>Código de la app:</strong> licencia MIT. Usa React (MIT), los iconos de Lucide (ISC) y qrcode-generator (MIT) para los códigos QR, cuyos textos completos están en <a href="licenses.txt" target="_blank" rel="noreferrer">licenses.txt</a>.</p>
+          <p><strong>Código de la app:</strong> licencia MIT. Usa React (MIT), los iconos de Lucide (ISC), qrcode-generator (MIT) para crear códigos QR y jsQR (Apache 2.0, con partes de ZXing) para leerlos con la cámara, cuyos textos completos están en <a href="licenses.txt" target="_blank" rel="noreferrer">licenses.txt</a>.</p>
           <p>Serix es un proyecto personal, gratuito y sin ánimo de lucro, que se ofrece tal cual, sin garantías.</p>
         </Section>
 

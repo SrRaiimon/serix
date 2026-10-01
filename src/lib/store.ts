@@ -121,6 +121,8 @@ export interface AppData {
   routines: Routine[]
   sessions: Session[]
   measurements: Measurement[]
+  /** Nota fija de cada ejercicio (id del catálogo → texto), p. ej. «asiento en el 4». */
+  exerciseNotes: Record<string, string>
   settings: Settings
 }
 
@@ -146,6 +148,7 @@ const emptyData = (): AppData => ({
   routines: [],
   sessions: [],
   measurements: [],
+  exerciseNotes: {},
   settings: { ...defaultSettings },
 })
 
@@ -246,6 +249,17 @@ function subscribe(listener: () => void) {
 
 export function useData(): AppData {
   return useSyncExternalStore(subscribe, getData)
+}
+
+/** Máximo de la nota de un ejercicio (también se aplica al importar copias). */
+export const MAX_EXERCISE_NOTE = 300
+
+/** Guarda la nota de un ejercicio; vacía (o solo espacios) la borra. */
+export function setExerciseNote(exerciseId: string, text: string) {
+  update((d) => {
+    if (text.trim()) d.exerciseNotes[exerciseId] = text.slice(0, MAX_EXERCISE_NOTE)
+    else delete d.exerciseNotes[exerciseId]
+  })
 }
 
 export function updateSettings(patch: Partial<Settings>) {

@@ -1,4 +1,4 @@
-import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, Timer, Trash2, TrendingDown } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -12,6 +12,7 @@ import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn,
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { PlatesSheet } from './Plates'
+import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARS } from '../lib/plates'
 import { warmupSets } from '../lib/warmup'
 
@@ -221,6 +222,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const [trackingMenu, setTrackingMenu] = useState(false)
   const [replacing, setReplacing] = useState(false)
   const [plates, setPlates] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
+  const note = useData().exerciseNotes[exercise.exerciseId]
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
@@ -280,6 +283,12 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </button>
         <button className="icon-btn" onClick={() => setMenu(true)} aria-label="Opciones del ejercicio"><Ellipsis size={20} /></button>
       </div>
+
+      {note && (
+        <button className="exercise-note" onClick={() => setNoteOpen(true)} aria-label="Editar la nota del ejercicio">
+          <StickyNote size={15} style={{ flexShrink: 0 }} /> <span>{note}</span>
+        </button>
+      )}
 
       {exercise.deload ? (
         <span className="small row" style={{ color: 'var(--blue)', gap: 6, alignItems: 'flex-start' }}>
@@ -366,6 +375,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           ...(tracking === 'weight_reps' ? [exercise.deload
             ? { label: 'Quitar marca de descarga', onSelect: () => edit((e) => { delete e.deload }) }
             : { label: 'Hacer sesión de descarga', onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
+          { label: note ? 'Editar nota del ejercicio' : 'Añadir nota del ejercicio', onSelect: () => setNoteOpen(true) },
           { label: 'Sustituir ejercicio', onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext ? [{
             label: slot.letter ? `Añadir el siguiente ${kind === 'superserie' ? 'a la superserie' : 'al circuito'}` : 'Hacer superserie con el siguiente',
@@ -394,6 +404,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           }))} />
       )}
       {plates && <PlatesSheet weightKg={workKg} onClose={() => setPlates(false)} />}
+      {noteOpen && <ExerciseNoteSheet exerciseId={exercise.exerciseId} name={exercise.name} onClose={() => setNoteOpen(false)} />}
       {replacing && (
         <AlternativesSheet current={exercise} onClose={() => setReplacing(false)}
           onPick={(picked) => replaceSessionExercise(sessionId, exercise.id, picked)} />

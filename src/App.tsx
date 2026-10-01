@@ -21,6 +21,7 @@ const screens = {
   progress: () => import('./screens/Progress'),
   routines: () => import('./screens/Routines'),
   session: () => import('./screens/Session'),
+  transfer: () => import('./screens/Transfer'),
   workout: () => import('./screens/Workout'),
 }
 const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExercisesScreen })))
@@ -39,6 +40,7 @@ const RoutinesScreen = lazy(() => screens.routines().then((m) => ({ default: m.R
 const RoutineDetailScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutineDetailScreen })))
 const SessionDetailScreen = lazy(() => screens.session().then((m) => ({ default: m.SessionDetailScreen })))
 const SummarySheet = lazy(() => screens.session().then((m) => ({ default: m.SummarySheet })))
+const TransferScreen = lazy(() => screens.transfer().then((m) => ({ default: m.TransferScreen })))
 const WorkoutScreen = lazy(() => screens.workout().then((m) => ({ default: m.WorkoutScreen })))
 
 const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => ({ default: m.FigureGallery })))
@@ -83,6 +85,8 @@ function Main() {
   if (route[0] === 'import' && route[1]) return <div className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></div>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
+  // Pasar datos desde otro móvil también se puede hacer antes del cuestionario inicial.
+  if (route[0] === 'transfer') return <div className="app"><Suspense fallback={null}><TransferScreen mode={route[1]} /></Suspense></div>
   if (!data.settings.onboarded) return <Suspense fallback={null}><OnboardingScreen /></Suspense>
 
   const tab = currentTab(route)
