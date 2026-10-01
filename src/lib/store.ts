@@ -20,7 +20,14 @@ export interface RoutineExercise {
   targetSeconds?: number
   /** Ejercicios seguidos con el mismo groupId forman una superserie o circuito. */
   groupId?: string
+  /** Progresión automática del peso (ver lib/progression.ts); sin valor = manual. */
+  progression?: Progression
+  /** 5/3/1: máximo de entrenamiento (kg) y desde cuándo cuenta (para saber la semana del ciclo). */
+  trainingMax?: number
+  tmSince?: number
 }
+
+export type Progression = 'double' | 'linear' | 'wave531'
 
 export interface Routine {
   id: string
@@ -67,8 +74,15 @@ export interface SessionExercise {
   groupId?: string
   /** Sesión de descarga de este ejercicio: no cuenta para sugerir pesos ni para detectar estancamientos. */
   deload?: boolean
+  /** Lo que hizo la progresión automática al preparar el ejercicio (para explicarlo en pantalla). */
+  auto?: AutoProgress
   sets: SetEntry[]
 }
+
+export type AutoProgress =
+  | { kind: 'up'; from: number; to: number; mode: 'double' | 'linear' }
+  | { kind: 'hold'; mode: 'double' | 'linear' }
+  | { kind: 'wave'; week: number; tm: number }
 
 export interface Session {
   id: string
@@ -192,10 +206,13 @@ async function writeData(data: AppData): Promise<void> {
 // MARK: Store
 
 let state: AppData = emptyData()
+/** Cambia con cada modificación de los datos (para saber si un «deshacer» sigue siendo válido). */
+let version = 0
 const listeners = new Set<() => void>()
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 
 function emit() {
+  version++
   // El idioma se aplica antes de avisar a la interfaz, para que se pinte ya en el nuevo.
   setLang(state.settings.language ?? systemLang())
   listeners.forEach((l) => l())
@@ -294,3 +311,65 @@ export const routineMinutes = (r: Routine) =>
     const rest = e.groupId && r.exercises[i + 1]?.groupId === e.groupId ? 0 : e.rest
     return n + e.sets * (work + rest)
   }, 0) / 60))
+
+// MARK: Deshacer
+
+/** Segundos que se ofrece deshacer un borrado. */
+export const UNDO_SECONDS = 6
+
+export interface UndoOffer {
+  label: string
+  previous: AppData
+  /** Versión de los datos justo después del borrado: si cambia, ya no se puede deshacer. */
+  version: number
+  at: number
+}
+
+let undoOffer: UndoOffer | undefined
+const undoListeners = new Set<() => void>()
+const emitUndo = () => undoListeners.forEach((l) => l())
+
+/**
+ * Hace un cambio destructivo ofreciendo deshacerlo unos segundos. Deshacer devuelve los datos a como
+ * estaban justo antes, así que solo se permite mientras no haya habido ningún otro cambio.
+ */
+export function withUndo(label: string, change: () => void) {
+  const previous = state
+  change()
+  if (state === previous) return
+  undoOffer = { label, previous, version, at: Date.now() }
+  emitUndo()
+}
+
+/** El «deshacer» pendiente, si sigue siendo válido (el aviso lo retira pasados UNDO_SECONDS). */
+export const currentUndo = (): UndoOffer | undefined =>
+  undoOffer && undoOffer.version === version ? undoOffer : undefined
+
+export function undo(): boolean {
+  const offer = currentUndo()
+  undoOffer = undefined
+  emitUndo()
+  if (!offer) return false
+  state = offer.previous
+  emit()
+  flush()
+  return true
+}
+
+export function dismissUndo() {
+  undoOffer = undefined
+  emitUndo()
+}
+
+function subscribeUndo(listener: () => void) {
+  undoListeners.add(listener)
+  listeners.add(listener)
+  return () => {
+    undoListeners.delete(listener)
+    listeners.delete(listener)
+  }
+}
+
+export function useUndo(): UndoOffer | undefined {
+  return useSyncExternalStore(subscribeUndo, currentUndo)
+}

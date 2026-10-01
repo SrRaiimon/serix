@@ -1,5 +1,5 @@
 import { uid } from './format'
-import type { AppData, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
+import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 
@@ -24,6 +24,22 @@ const list = <T>(v: unknown, parse: (x: unknown) => T | undefined, max = 10000):
 
 const TRACKING = ['weight_reps', 'time', 'distance_time'] as const
 const SET_KINDS = ['drop', 'amrap', 'failure'] as const
+const PROGRESSIONS = ['double', 'linear', 'wave531'] as const
+
+function autoProgress(v: unknown): AutoProgress | undefined {
+  if (!isObj(v)) return undefined
+  const mode = oneOf(v.mode, ['double', 'linear'] as const)
+  if (v.kind === 'up' && mode) {
+    const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
+    return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode } : undefined
+  }
+  if (v.kind === 'hold' && mode) return { kind: 'hold', mode }
+  if (v.kind === 'wave') {
+    const week = optNum(v.week, 1, 4), tm = optNum(v.tm, 0, 2000)
+    return week !== undefined && tm !== undefined ? { kind: 'wave', week: Math.round(week), tm } : undefined
+  }
+  return undefined
+}
 const DAY = 86400000
 const EPOCH_MIN = Date.UTC(2000, 0, 1)
 const EPOCH_MAX = Date.now() + 365 * DAY
@@ -35,6 +51,9 @@ function routineExercise(v: unknown): RoutineExercise | undefined {
     sets: num(v.sets, 1, 20, 3), repsMin: num(v.repsMin, 1, 100, 8), repsMax: num(v.repsMax, 1, 100, 12), rest: num(v.rest, 0, 900, 90),
     tracking: oneOf(v.tracking, TRACKING), targetSeconds: optNum(v.targetSeconds, 1, 7200),
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
+    progression: oneOf(v.progression, PROGRESSIONS),
+    trainingMax: optNum(v.trainingMax, 1, 2000),
+    tmSince: optNum(v.tmSince, EPOCH_MIN, EPOCH_MAX),
   }
 }
 
@@ -66,6 +85,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     tracking: oneOf(v.tracking, TRACKING), targetSeconds: optNum(v.targetSeconds, 1, 7200),
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
     deload: v.deload === true ? true : undefined,
+    auto: autoProgress(v.auto),
     sets: list(v.sets, setEntry, 100),
   }
 }

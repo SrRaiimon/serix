@@ -1,4 +1,4 @@
-import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
@@ -9,6 +9,7 @@ import { activeSession, finishedSessions, lastPerformed, routineMinutes, useData
 import { openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
+import { RECOVERING, useRecovery } from '../components/Recovery'
 import { SessionRow } from '../components/SessionRow'
 import { plural, t } from '../lib/i18n'
 
@@ -53,7 +54,7 @@ export function HomeScreen() {
 
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
-      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} /> : (
+      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : (
         <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
           <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
           <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
@@ -87,7 +88,10 @@ export function HomeScreen() {
   )
 }
 
-function NextCard({ routine }: { routine: Routine }) {
+function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[] }) {
+  // Grupos de la rutina (por su músculo principal) que todavía se están recuperando.
+  const muscles = new Set(routine.exercises.map((e) => e.muscle))
+  const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
   return (
     <section className="hero">
       <div className="row between">
@@ -100,6 +104,12 @@ function NextCard({ routine }: { routine: Routine }) {
         <span className="row" style={{ gap: 5 }}><Dumbbell size={15} /> {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}</span>
         <span className="row" style={{ gap: 5 }}><Clock size={15} /> ~{routineMinutes(routine)} min</span>
       </span>
+      {tired.length > 0 && (
+        <span className="small row hero-warning">
+          <HeartPulse size={15} style={{ flexShrink: 0 }} />
+          {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}
+        </span>
+      )}
       <button className="btn start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
     </section>
   )

@@ -1,12 +1,14 @@
 import { ArrowLeftRight, ClipboardList, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
-import { clock, day, relative, rest, restOptions, uid } from '../lib/format'
+import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, uid, weight } from '../lib/format'
+import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
 import { equipmentProfiles, generate, goals, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
-import { lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, type AppData, type Routine } from '../lib/store'
+import { finishedSessions, lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine } from '../lib/store'
+import { records } from '../lib/stats'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
@@ -49,6 +51,7 @@ const timeTargets = [15, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1200, 1800
 export function RoutinesScreen() {
   const data = useData()
   const [showGenerator, setShowGenerator] = useState(false)
+  const [show531, setShow531] = useState(false)
   const [menu, setMenu] = useState(false)
   const [editing, setEditing] = useState<string>()
   const [programMenu, setProgramMenu] = useState<string>()
@@ -104,6 +107,7 @@ export function RoutinesScreen() {
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
           { label: t('Generar programa', 'Generate program'), onSelect: () => setShowGenerator(true) },
+          { label: t('Programa 5/3/1 (fuerza)', '5/3/1 program (strength)'), onSelect: () => setShow531(true) },
           { label: t('Nueva rutina vacía', 'New empty routine'), onSelect: createRoutine },
           { label: t('Importar desde enlace', 'Import from link'), onSelect: importFromLink },
           { label: t('Entrenamiento libre', 'Free workout'), onSelect: startEmpty },
@@ -116,16 +120,17 @@ export function RoutinesScreen() {
           ...(programMenu !== active ? [{ label: t('Marcar como activo', 'Set as active'), onSelect: () => updateSettings({ activeProgram: programMenu }) }] : []),
           {
             label: t('Eliminar programa', 'Delete program'), destructive: true, onSelect: () => {
-              if (!confirm(t('Se borrarán todas sus rutinas. Tu historial se conserva. ¿Continuar?', 'All its routines will be deleted. Your history is kept. Continue?'))) return
-              update((d) => {
+              // Se borran sus rutinas (el historial se conserva) y se puede deshacer unos segundos.
+              withUndo(t('Programa eliminado', 'Program deleted'), () => update((d) => {
                 d.routines = d.routines.filter((r) => r.programName !== programMenu)
                 if (d.settings.activeProgram === programMenu) d.settings.activeProgram = ''
-              })
+              }))
             },
           },
         ]} />
       )}
       {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
+      {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
       {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
       {qrSheet}
       {toast}
@@ -196,7 +201,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                     {e.name}
                   </span>
                   <span className="small muted">
-                    {targetText(e)} · {slot.letter && !slot.last ? t('sin descanso', 'no rest') : `${t('descanso', 'rest')} ${rest(e.rest)}`}
+                    {e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, data.settings.unit)}` : ''}` : targetText(e)} · {slot.letter && !slot.last ? t('sin descanso', 'no rest') : `${t('descanso', 'rest')} ${rest(e.rest)}`}
                   </span>
                 </span>
               </button>
@@ -218,7 +223,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
           { label: t('Duplicar', 'Duplicate'), onSelect: duplicate },
           {
             label: t('Eliminar', 'Delete'), destructive: true, onSelect: () => {
-              update((d) => { d.routines = d.routines.filter((r) => r.id !== id) })
+              withUndo(t('Rutina eliminada', 'Routine deleted'), () => update((d) => { d.routines = d.routines.filter((r) => r.id !== id) }))
               back()
             },
           },
@@ -257,6 +262,16 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
   const setTracking = (i: number, t: Tracking) => edit((r) => {
     r.exercises[i].tracking = t
     if (t === 'time') r.exercises[i].targetSeconds ??= defaultTargetSeconds
+  })
+  // Al elegir 5/3/1 se propone como TM el 90 % del mejor 1RM estimado del ejercicio.
+  const setProgression = (i: number, p: Progression | undefined) => edit((r) => {
+    const ex = r.exercises[i]
+    ex.progression = p
+    if (p === 'wave531' && !ex.trainingMax) {
+      const best = records(finishedSessions(data)).find((x) => x.exerciseId === ex.exerciseId)?.e1rm
+      if (best) ex.trainingMax = toKg(Math.round(fromKg(best * 0.9, data.settings.unit) / increment(data.settings.unit)) * increment(data.settings.unit), data.settings.unit)
+      ex.tmSince = Date.now()
+    }
   })
   const move = (i: number, dir: -1 | 1) => edit((r) => {
     const j = i + dir
@@ -319,6 +334,27 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                   </select>
                 </div>
               )}
+              {trackingOf(e) === 'weight_reps' && (
+                <div className="stepper">
+                  <span className="tiny muted">{t('Progresión', 'Progression')}</span>
+                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.progression ?? ''}
+                    onChange={(ev) => setProgression(i, (ev.target.value || undefined) as Progression | undefined)}>
+                    {progressionOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                  </select>
+                </div>
+              )}
+              {trackingOf(e) === 'weight_reps' && e.progression === 'wave531' && (
+                <div className="stepper">
+                  <span className="tiny muted">{t('Máx. de entreno (TM)', 'Training max (TM)')}</span>
+                  <input className="field" inputMode="decimal" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700, width: 90 }}
+                    defaultValue={e.trainingMax ? editable(fromKg(e.trainingMax, data.settings.unit)) : ''} placeholder={data.settings.unit}
+                    aria-label={t('Máximo de entrenamiento', 'Training max')}
+                    onChange={(ev) => {
+                      const v = parseDecimal(ev.target.value)
+                      edit((r) => { r.exercises[i].trainingMax = v && v > 0 ? toKg(v, data.settings.unit) : undefined; r.exercises[i].tmSince = Date.now() })
+                    }} />
+                </div>
+              )}
               <div className="stepper">
                 <span className="tiny muted">{t('Registro', 'Logging')}</span>
                 <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={trackingOf(e)}
@@ -342,7 +378,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
               <span className="grow" />
               <button className="nav-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('Subir', 'Move up')}>↑</button>
               <button className="nav-btn" disabled={i === routine.exercises.length - 1} onClick={() => move(i, 1)} aria-label={t('Bajar', 'Move down')}>↓</button>
-              <button className="nav-btn" style={{ color: 'var(--red-text)' }} onClick={() => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) })} aria-label={t('Quitar', 'Remove')}><Trash2 size={18} /></button>
+              <button className="nav-btn" style={{ color: 'var(--red-text)' }} onClick={() => withUndo(t(`Quitado: ${e.name}`, `Removed: ${e.name}`), () => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) }))} aria-label={t('Quitar', 'Remove')}><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -373,6 +409,9 @@ export function saveProgram(program: GeneratedProgram) {
             exerciseId: g.exercise.id, name: g.exercise.name, muscle: g.exercise.muscle,
             sets: g.sets, repsMin: g.repsMin, repsMax: g.repsMax, rest: g.rest, tracking,
             ...(tracking === 'time' ? { targetSeconds: 60 } : {}),
+            // Los programas generados suben el peso solos (doble progresión salvo que se indique otra).
+            ...(tracking === 'weight_reps' ? { progression: g.progression ?? 'double' } : {}),
+            ...(g.trainingMax ? { trainingMax: g.trainingMax, tmSince: Date.now() } : {}),
           }
         }),
       })
@@ -477,6 +516,75 @@ function GeneratorSheet({ onClose }: { onClose: () => void }) {
         }}><WandSparkles size={19} /> {t('Generar programa', 'Generate program')}</button>
       }>
       <GeneratorForm config={config} onChange={setConfig} />
+    </Sheet>
+  )
+}
+
+const progressionOptions = (): { id: Progression | ''; label: string }[] => [
+  { id: '', label: t('Manual', 'Manual') },
+  { id: 'double', label: t('Doble progresión', 'Double progression') },
+  { id: 'linear', label: t('Lineal', 'Linear') },
+  { id: 'wave531', label: '5/3/1' },
+]
+
+/** Crea el programa 5/3/1 (4 días) a partir del 1RM de los cuatro básicos. */
+function Program531Sheet({ onClose }: { onClose: () => void }) {
+  const catalog = useCatalog()
+  const data = useData()
+  const unit = data.settings.unit
+  const best = useMemo(() => new Map(records(finishedSessions(data)).map((r) => [r.exerciseId, r.e1rm])), [data])
+  const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(LIFTS_531.map((l) => {
+    const e = best.get(l.id)
+    return [l.id, e ? editable(Math.round(fromKg(e, unit))) : '']
+  })))
+  const oneRms = LIFTS_531.map((l) => toKg(parseDecimal(values[l.id] ?? '') ?? 0, unit))
+  const ready = oneRms.every((v) => v > 0)
+
+  const create = () => {
+    const ex = (id: string) => catalog.get(id)!
+    saveProgram({
+      name: '5/3/1',
+      summary: t('4 días · método 5/3/1 de Jim Wendler · TM al 90 % del 1RM, sube al acabar cada ciclo de 4 semanas',
+        '4 days · Jim Wendler\'s 5/3/1 · TM at 90% of 1RM, goes up after each 4-week cycle'),
+      days: LIFTS_531.map((l, i) => ({
+        name: `${t(`Día ${i + 1}`, `Day ${i + 1}`)} · ${t(l.day[0], l.day[1])}`,
+        exercises: [
+          { exercise: ex(l.id), sets: 3, repsMin: 1, repsMax: 5, rest: 180, progression: 'wave531' as const, trainingMax: trainingMaxFrom(oneRms[i], unit) },
+          ...l.accessories.map(([id, sets, repsMin, repsMax]) => ({ exercise: ex(id), sets, repsMin, repsMax, rest: 90 })),
+        ],
+      })),
+    })
+    onClose()
+    navigate('routines')
+  }
+
+  return (
+    <Sheet title={t('Programa 5/3/1', '5/3/1 program')} onClose={onClose}
+      left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" disabled={!ready} onClick={create}>{t('Crear programa', 'Create program')}</button>}>
+      <p className="muted" style={{ margin: 0 }}>
+        {t('Cuatro días por semana, uno por básico. Cada semana cambian los porcentajes (5, 3 y 5/3/1 repeticiones, y una de descarga) y la última serie es «todas las que puedas». El peso sale de tu máximo de entrenamiento (TM), el 90 % de tu 1RM, que sube solo al acabar cada ciclo.',
+          'Four days a week, one per main lift. The percentages change every week (5, 3 and 5/3/1 reps, plus a deload week) and the last set is "as many as you can". Weights come from your training max (TM), 90% of your 1RM, which goes up by itself after each cycle.')}
+      </p>
+      <div className="list-header">{t('Tu 1RM en cada básico', 'Your 1RM on each lift')}</div>
+      <div className="list">
+        {LIFTS_531.map((l, i) => (
+          <label key={l.id} className="list-row">
+            <Thumb exerciseId={l.id} size={40} />
+            <span className="grow">
+              <span className="bold" style={{ display: 'block', fontSize: 15 }}>{catalog.get(l.id)?.name}</span>
+              <span className="small muted">{oneRms[i] > 0 ? `TM ${weight(trainingMaxFrom(oneRms[i], unit), unit)}` : t('Escribe tu 1RM', 'Enter your 1RM')}</span>
+            </span>
+            <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={values[l.id] ?? ''}
+              aria-label={`1RM ${catalog.get(l.id)?.name ?? ''}`} onChange={(e) => setValues({ ...values, [l.id]: e.target.value })} />
+            <span className="muted">{unit}</span>
+          </label>
+        ))}
+      </div>
+      <p className="list-footer" style={{ margin: 0 }}>
+        {t('Si no sabes tu 1RM, usa la calculadora de 1RM de Perfil con una serie reciente. Rellenamos los que ya tienes registrados.',
+          'If you do not know your 1RM, use the 1RM calculator in Profile with a recent set. The ones you have logged are filled in for you.')}
+      </p>
     </Sheet>
   )
 }

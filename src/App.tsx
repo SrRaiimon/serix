@@ -10,6 +10,7 @@ import { currentTab, navigate, useRoute, type Tab } from './lib/router'
 import { activeSession, loadData, useData } from './lib/store'
 import { closeSummary, openWorkout, useWorkoutUI } from './lib/workout'
 import { HomeScreen } from './screens/Home'
+import { UndoToast } from './components/UndoToast'
 
 // El resto de pantallas se descargan al abrirlas (el service worker las guarda todas para usarlas sin
 // conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
@@ -113,6 +114,7 @@ function Main() {
         {active && ui.open && <WorkoutScreen session={active} />}
         {summary && <SummarySheet session={summary} onClose={closeSummary} />}
       </Suspense>
+      <UndoToast />
     </div>
   )
 }

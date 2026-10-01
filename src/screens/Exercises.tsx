@@ -289,7 +289,8 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
 }
 
 /** Selector de varios ejercicios, en el orden en que se marcan. */
-export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[]) => void; onClose: () => void }) {
+/** Selector de ejercicios del catálogo. Con `single`, al tocar uno se elige y se cierra. */
+export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (list: Exercise[]) => void; onClose: () => void; single?: boolean; title?: string }) {
   const catalog = useCatalog()
   const { settings } = useData()
   const [filter, setFilter] = useState<ExerciseFilter>(emptyFilter)
@@ -297,11 +298,16 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
   const [preview, setPreview] = useState<Exercise>()
   const results = useMemo(() => catalog.filter(filter, settings.favorites), [catalog, filter, settings.favorites])
   const { shown, sentinel } = useProgressive(results, JSON.stringify(filter))
-  const toggle = (e: Exercise) =>
+  const toggle = (e: Exercise) => {
+    if (single) {
+      onDone([e])
+      return onClose()
+    }
     setSelected((s) => (s.some((x) => x.id === e.id) ? s.filter((x) => x.id !== e.id) : [...s, e]))
+  }
 
   return (
-    <Sheet title={t('Añadir ejercicios', 'Add exercises')} onClose={onClose} scrollKey={JSON.stringify(filter)}
+    <Sheet title={title ?? t('Añadir ejercicios', 'Add exercises')} onClose={onClose} scrollKey={JSON.stringify(filter)}
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={selected.length > 0 && (
         <button className="btn primary block" onClick={() => { onDone(selected); onClose() }}>
@@ -319,7 +325,7 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
             <div key={e.id} className="list-row" style={{ gap: 8, paddingRight: 10 }}>
               <button className="row grow" style={{ textAlign: 'left', gap: 10, minWidth: 0 }} onClick={() => toggle(e)}>
                 <ExerciseRowContent exercise={e} favorite={settings.favorites.includes(e.id)} thumb={48} />
-                <span className={`pick-circle ${index >= 0 ? 'active' : ''}`}>{index >= 0 ? index + 1 : ''}</span>
+                {!single && <span className={`pick-circle ${index >= 0 ? 'active' : ''}`}>{index >= 0 ? index + 1 : ''}</span>}
               </button>
               <button className="set-check" style={{ color: 'var(--text-3)', width: 30 }} onClick={() => setPreview(e)} aria-label={t('Ver ejercicio', 'View exercise')}>
                 <Info size={20} />

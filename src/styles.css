@@ -820,6 +820,37 @@ a.list-row:active {
   font-weight: 700;
 }
 
+.undo-toast {
+  position: fixed;
+  z-index: 75;
+  left: 12px;
+  right: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  bottom: calc(var(--safe-bottom) + 96px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5f5f7;
+  background: #2c2c2e;
+  box-shadow: var(--shadow);
+  animation: fade 0.2s ease;
+}
+
+.undo-toast button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  color: #ff8a5c;
+}
+
 .toast {
   position: fixed;
   z-index: 70;
@@ -1707,3 +1738,19 @@ html.scroll-locked body {
   background: var(--fill, rgba(120, 120, 128, 0.16)); color: var(--text-2);
 }
 .move-figure-speed.active { background: var(--accent); color: var(--on-accent); }
+
+/* Recuperación muscular */
+.recovery-list { display: flex; flex-direction: column; gap: 10px; }
+.recovery-row { display: grid; grid-template-columns: 7.5em 1fr auto; align-items: center; gap: 10px; }
+.recovery-name { font-size: 15px; font-weight: 600; }
+.recovery-bar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.recovery-bar > span { display: block; height: 100%; border-radius: 999px; }
+.recovery-row.ready .recovery-bar > span { background: var(--green); }
+.recovery-row.almost .recovery-bar > span { background: #f5a300; }
+.recovery-row.recovering .recovery-bar > span { background: var(--red); }
+.recovery-row.ready .recovery-status { color: var(--green-text); }
+.recovery-row.almost .recovery-status { color: var(--amber-text); }
+.recovery-row.recovering .recovery-status { color: var(--red-text); }
+.recovery-status { text-align: right; white-space: nowrap; font-weight: 600; }
+.hero-warning { gap: 6px; align-items: flex-start; font-weight: 600; padding: 8px 10px; border-radius: 10px; background: rgba(17, 17, 20, 0.12); }
+.import-nomatch { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: var(--text-2); background: var(--fill); }

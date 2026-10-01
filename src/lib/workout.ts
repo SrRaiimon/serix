@@ -3,10 +3,11 @@ import type { Exercise } from './catalog'
 import { fromKg, increment, toKg, uid, type Unit } from './format'
 import { lastSets, workingSets } from './stats'
 import { normalizeGroups } from './groups'
-import { defaultTracking, type Tracking } from './tracking'
-import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise, type SetEntry, type SetKind } from './store'
+import { defaultTracking, trackingOf, type Tracking } from './tracking'
+import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
+import { plan } from './progression'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
 
@@ -48,11 +49,16 @@ interface PlannedExercise {
   tracking?: Tracking
   targetSeconds?: number
   groupId?: string
+  progression?: Progression
+  trainingMax?: number
+  tmSince?: number
 }
 
-function sessionExercise(ex: PlannedExercise, history: Session[]): SessionExercise {
+function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = getData().settings.unit): SessionExercise {
   const last = lastSets(ex.exerciseId, history)
   const count = Math.max(ex.sets, 1)
+  // Con progresión automática las series se calculan; si no, se copian de la última vez.
+  const auto = trackingOf(ex) === 'weight_reps' ? plan(ex, last, history, unit) : undefined
   return {
     id: uid(),
     exerciseId: ex.exerciseId,
@@ -65,7 +71,9 @@ function sessionExercise(ex: PlannedExercise, history: Session[]): SessionExerci
     targetSeconds: ex.targetSeconds,
     groupId: ex.groupId,
     // Se rellenan con lo que se hizo la última vez para marcar y listo.
-    sets: prefillSets(count, last),
+    sets: auto?.sets ?? prefillSets(count, last),
+    ...(auto?.auto ? { auto: auto.auto } : {}),
+    ...(auto?.deload ? { deload: true } : {}),
   }
 }
 
@@ -208,9 +216,9 @@ export function finishSession(id: string) {
 }
 
 export function discardSession(id: string) {
-  update((d) => {
+  withUndo(t('Entrenamiento descartado', 'Workout discarded'), () => update((d) => {
     d.sessions = d.sessions.filter((s) => s.id !== id)
-  })
+  }))
   resetRestView()
   setUI({ open: false })
 }

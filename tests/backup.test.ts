@@ -15,12 +15,12 @@ const sample = (): AppData => ({
   version: 1,
   routines: [{
     id: 'r1', name: 'Pecho', notes: 'nota', order: 0, createdAt: Date.UTC(2026, 0, 1),
-    exercises: [{ exerciseId: 'bench', name: 'Press', muscle: 'chest', sets: 3, repsMin: 8, repsMax: 12, rest: 90, groupId: 'g' }],
+    exercises: [{ exerciseId: 'bench', name: 'Press', muscle: 'chest', sets: 3, repsMin: 8, repsMax: 12, rest: 90, groupId: 'g', progression: 'wave531', trainingMax: 100, tmSince: Date.UTC(2026, 0, 1) }],
   }],
   sessions: [session(0, [exercise('bench', [
     set(80, 8, { doneAt: Date.UTC(2026, 0, 5, 10, 5), rpe: 8 }),
     set(60, 8, { kind: 'drop' }), set(80, 6, { kind: 'failure' }), set(80, 9, { kind: 'amrap' }),
-  ], { deload: true })])],
+  ], { deload: true, auto: { kind: 'wave', week: 4, tm: 100 } })])],
   measurements: [{ id: 'm1', date: Date.UTC(2026, 0, 1), weight: 80, waist: 85 }],
   exerciseNotes: { bench: 'Asiento en el 4\nagarre ancho' },
   settings: { ...allSettings },

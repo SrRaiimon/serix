@@ -85,3 +85,10 @@ export const levelLabel = (k: string) => label(levels, k)
 export function muscleSummary(r: { exercises: { muscle: string }[] }) {
   return [...new Set(r.exercises.map((e) => e.muscle))].slice(0, 4).map(muscleLabel).join(', ')
 }
+
+/** Grupos principales (nombre y músculos del catálogo que incluye) para resúmenes por grupo. */
+export const MAIN_GROUPS: [[es: string, en: string], string[]][] = [
+  [['Pecho', 'Chest'], ['pectorals']], [['Espalda', 'Back'], ['lats', 'upper-back']], [['Hombros', 'Shoulders'], ['delts']],
+  [['Bíceps', 'Biceps'], ['biceps']], [['Tríceps', 'Triceps'], ['triceps']], [['Cuádriceps', 'Quads'], ['quads']],
+  [['Isquiotibiales', 'Hamstrings'], ['hamstrings']], [['Glúteos', 'Glutes'], ['glutes']], [['Abdomen', 'Abs'], ['abs']],
+]

@@ -17,6 +17,12 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   discos** por lado (barra de 20, 15 o 10 kg), **RPE** opcional por serie, temporizador de descanso,
   sugerencia de progresión, **aviso de récord** al marcar la serie y **sustituir ejercicio** por
   alternativas equivalentes.
+- **Progresión automática:** doble progresión (por defecto en los programas generados), lineal y
+  programa **5/3/1** con su ciclo de 4 semanas; la app calcula el peso de cada serie al empezar.
+- **Recuperación muscular:** estimación por grupo (48-96 h según el volumen del último entrenamiento).
+- **Importar desde Strong y Hevy** (CSV): se empareja cada ejercicio con el catálogo y se puede corregir;
+  no duplica entrenamientos al reimportar.
+- **Deshacer** los borrados durante unos segundos (series, ejercicios, entrenamientos, rutinas…).
 - **En español e inglés:** sigue el idioma del móvil y se puede cambiar en Perfil (o al empezar).
 - **Catálogo de 876 ejercicios** con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.

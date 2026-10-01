@@ -1,4 +1,4 @@
-import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -6,7 +6,7 @@ import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restO
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
-import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
+import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
 import { addRest, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
@@ -242,8 +242,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const hasTarget = exercise.repsMax > 0
   const target = exercise.repsMin === exercise.repsMax ? `${exercise.repsMin}` : `${exercise.repsMin}-${exercise.repsMax}`
   const targetSeconds = exercise.targetSeconds ?? defaultTargetSeconds
-  const hint = tracking === 'weight_reps' ? progressionHint(previous, exercise.repsMax) : null
-  const objective = tracking === 'weight_reps' ? (hasTarget ? ` · ${t('Objetivo', 'Target')} ${target} reps` : '')
+  // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
+  const hint = tracking === 'weight_reps' && !exercise.auto ? progressionHint(previous, exercise.repsMax) : null
+  // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
+  const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? ` · ${t('Objetivo', 'Target')} ${target} reps` : '')
     : tracking === 'time' ? ` · ${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
   let working = 0
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
@@ -291,12 +293,14 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </button>
       )}
 
-      {exercise.deload ? (
+      {exercise.auto && <AutoNote auto={exercise.auto} unit={unit} />}
+
+      {exercise.deload && exercise.auto?.kind !== 'wave' ? (
         <span className="small row" style={{ color: 'var(--blue-text)', gap: 6, alignItems: 'flex-start' }}>
           <BatteryLow size={16} style={{ flexShrink: 0 }} />
           {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
-      ) : !hint && stalled && (
+      ) : !hint && stalled && exercise.auto?.kind !== 'wave' && (
         <div className="stall-box">
           <span className="small row" style={{ gap: 6, alignItems: 'flex-start' }}>
             <TrendingDown size={16} style={{ flexShrink: 0 }} />
@@ -341,7 +345,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking}
             repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
-            onDelete={() => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) })}
+            onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
             onAskRpe={() => onAskRpe(set.id)}
             onRpeDone={() => onAskRpe(undefined)}
@@ -387,7 +391,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           { label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) },
           ...(index > 0 ? [{ label: t('Subir', 'Move up'), onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
           ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
-          { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => editList((list, i) => { list.splice(i, 1) }) },
+          { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => withUndo(t(`Quitado: ${exercise.name}`, `Removed: ${exercise.name}`), () => editList((list, i) => { list.splice(i, 1) })) },
         ]} />
       )}
       {restMenu && (
@@ -554,6 +558,25 @@ const setKinds = (): { label: string; warmup: boolean; kind?: SetKind }[] => [
 const setKindLabel = (set: SetEntry) => {
   const kinds = setKinds()
   return (set.warmup ? kinds[1] : kinds.find((o) => o.kind === set.kind) ?? kinds[0]).label
+}
+
+/** Explica lo que ha hecho la progresión automática con este ejercicio. */
+function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
+  const text = auto.kind === 'up'
+    ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
+      `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
+    : auto.kind === 'hold'
+      ? t('Progresión automática: mismo peso hasta completar todas las repeticiones.', 'Automatic progression: same weight until you complete every rep.')
+      : auto.week === 4
+        ? t(`5/3/1 · semana 4 de 4 (descarga) · TM ${weight(auto.tm, unit)}`, `5/3/1 · week 4 of 4 (deload) · TM ${weight(auto.tm, unit)}`)
+        : t(`5/3/1 · semana ${auto.week} de 4 · TM ${weight(auto.tm, unit)} · en la última serie, todas las repeticiones que puedas con buena técnica.`,
+          `5/3/1 · week ${auto.week} of 4 · TM ${weight(auto.tm, unit)} · on the last set, as many good reps as you can.`)
+  return (
+    <span className="small row" style={{ color: 'var(--blue-text)', gap: 6, alignItems: 'flex-start' }}>
+      <TrendingUp size={16} style={{ flexShrink: 0 }} />
+      {text}
+    </span>
+  )
 }
 
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */

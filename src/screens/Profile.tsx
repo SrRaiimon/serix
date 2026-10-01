@@ -1,5 +1,5 @@
-import { ArrowRightLeft, Calculator, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ArrowRightLeft, Calculator, FileUp, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { day, duration, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
@@ -9,8 +9,10 @@ import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { testBeep } from '../lib/timer'
-import { finishedSessions, replaceData, resetData, update, updateSettings, useData, type Measurement } from '../lib/store'
+import { finishedSessions, replaceData, resetData, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlatesView } from './Plates'
+
+const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
 import { SessionRow } from '../components/SessionRow'
 import { plural, t, type Lang } from '../lib/i18n'
 
@@ -22,6 +24,8 @@ export function ProfileScreen() {
   const [confirmReset, setConfirmReset] = useState(false)
   const [toast, showToast] = useToast()
   const fileInput = useRef<HTMLInputElement>(null)
+  const csvInput = useRef<HTMLInputElement>(null)
+  const [csv, setCsv] = useState<string>()
   const lastWeight = [...data.measurements].sort((a, b) => b.date - a.date).find((m) => m.weight !== undefined)?.weight
   const initials = settings.name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || t('Tú', 'You')
 
@@ -134,6 +138,7 @@ export function ProfileScreen() {
       <div className="list">
         <Row icon={Download} label={t('Exportar copia de seguridad', 'Export backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={exportBackup} chevron={false} />
         <Row icon={Upload} label={t('Importar copia de seguridad', 'Import backup')} onClick={() => fileInput.current?.click()} chevron={false} />
+        <Row icon={FileUp} label={t('Importar desde Strong o Hevy', 'Import from Strong or Hevy')} onClick={() => csvInput.current?.click()} chevron={false} />
         <Row icon={ArrowRightLeft} label={t('Pasar a otro móvil', 'Move to another phone')} onClick={() => navigate('transfer')} />
         {storage && storage !== 'unsupported' && (
           <Row icon={HardDrive} label={t('Protección contra borrado', 'Protection against deletion')} detail={storage === 'protected' ? t('Activada', 'On') : t('Activar', 'Turn on')}
@@ -150,11 +155,19 @@ export function ProfileScreen() {
         <Row icon={ShieldCheck} label={t('Legal y privacidad', 'Legal and privacy')} onClick={() => navigate('profile', 'legal')} />
       </div>
       <p className="list-footer">{t('Versión', 'Version')} {__APP_VERSION__}</p>
+      <input ref={csvInput} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
+        const f = e.target.files?.[0]
+        e.target.value = ''
+        if (!f) return
+        if (f.size > MAX_BACKUP_BYTES) return showToast(t('El archivo es demasiado grande', 'The file is too large'))
+        void f.text().then(setCsv)
+      }} />
+      {csv !== undefined && <Suspense fallback={null}><ImportCsvSheet text={csv} onClose={() => setCsv(undefined)} onDone={() => {}} /></Suspense>}
       <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void importData(f); e.target.value = '' }} />
 
       {confirmReset && (
         <ActionSheet title={t('¿Borrar todos los datos?', 'Delete all data?')} message={t('Se eliminarán rutinas, historial y medidas. No se puede deshacer.', 'Routines, history and measurements will be deleted. This cannot be undone.')} onClose={() => setConfirmReset(false)}
-          options={[{ label: t('Borrar todo', 'Delete everything'), destructive: true, onSelect: () => { resetData(); showToast(t('Datos borrados', 'Data deleted')) } }]} />
+          options={[{ label: t('Borrar todo', 'Delete everything'), destructive: true, onSelect: () => withUndo(t('Datos borrados', 'Data deleted'), resetData) }]} />
       )}
       {toast}
     </div>
@@ -225,7 +238,7 @@ export function MeasurementsScreen() {
       {remove && (
         <ActionSheet onClose={() => setRemove(undefined)} options={[{
           label: t('Eliminar registro', 'Delete entry'), destructive: true,
-          onSelect: () => update((d) => { d.measurements = d.measurements.filter((m) => m.id !== remove) }),
+          onSelect: () => withUndo(t('Medida eliminada', 'Measurement deleted'), () => update((d) => { d.measurements = d.measurements.filter((m) => m.id !== remove) })),
         }]} />
       )}
     </>

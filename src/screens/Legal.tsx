@@ -71,6 +71,7 @@ function LegalEs() {
         <p><strong>Cookies:</strong> no se usan cookies. Solo se guarda en el dispositivo lo imprescindible para que la app funcione (tus datos y alguna preferencia), por lo que no hace falta pedir consentimiento.</p>
         <p><strong>Compartir:</strong> cuando compartes una rutina o un entrenamiento, eres tú quien elige a quién enviarlo. Los enlaces de rutina contienen solo los ejercicios y las cifras, no tus datos personales. La imagen del entrenamiento se genera en tu propio móvil e incluye el nombre del entrenamiento, la fecha, las cifras y los ejercicios.</p>
         <p><strong>Copias y protección:</strong> puedes exportar una copia en Perfil; la app te lo recuerda cada 30 días. Con la app instalada, también le pide al navegador que no borre sus datos para liberar espacio.</p>
+        <p><strong>Importar desde otras apps:</strong> el archivo CSV de Strong o Hevy se lee y se convierte en el propio móvil; no se envía a ninguna parte.</p>
         <p><strong>Pasar datos a otro móvil:</strong> los datos viajan en códigos QR de una pantalla a la cámara del otro móvil, sin internet ni servidores. La cámara solo se usa mientras está abierta la pantalla de recibir, y la imagen se analiza en el propio móvil: no se guarda ni se envía a ninguna parte.</p>
         <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos», o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
       </Section>
@@ -107,6 +108,7 @@ function LegalEn() {
         <p><strong>Cookies:</strong> no cookies are used. Only what the app needs to work (your data and a few preferences) is stored on the device, so no consent is required.</p>
         <p><strong>Sharing:</strong> when you share a routine or a workout, you choose who to send it to. Routine links contain only the exercises and the numbers, not your personal data. The workout image is created on your own phone and includes the workout name, date, numbers and exercises.</p>
         <p><strong>Backups and protection:</strong> you can export a backup in Profile; the app reminds you every 30 days. When installed, the app also asks the browser not to delete its data to free up space.</p>
+        <p><strong>Importing from other apps:</strong> the Strong or Hevy CSV file is read and converted on the phone itself; it is not sent anywhere.</p>
         <p><strong>Moving data to another phone:</strong> the data travels in QR codes from one screen to the other phone's camera, with no internet or servers. The camera is only used while the receive screen is open, and the image is analysed on the phone itself: it is neither stored nor sent anywhere.</p>
         <p><strong>Deleting your data:</strong> in Profile → “Delete all data”, or by removing the app. If you delete it without exporting a backup, it cannot be recovered.</p>
       </Section>

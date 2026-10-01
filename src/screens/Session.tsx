@@ -5,7 +5,7 @@ import { day, duration, time, volume, weight, type Unit } from '../lib/format'
 import { back } from '../lib/router'
 import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
 import { newRecords, sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
-import { finishedSessions, update, useData, type Session } from '../lib/store'
+import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
 import { saveAsRoutine } from '../lib/workout'
@@ -208,7 +208,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
       )}
       {confirmDelete && (
         <ActionSheet title={t('¿Eliminar este entrenamiento?', 'Delete this workout?')} message={t('Se borrará del historial y de tus estadísticas.', 'It will be removed from your history and stats.')} onClose={() => setConfirmDelete(false)}
-          options={[{ label: t('Eliminar', 'Delete'), destructive: true, onSelect: () => { update((d) => { d.sessions = d.sessions.filter((s) => s.id !== id) }); back() } }]} />
+          options={[{ label: t('Eliminar', 'Delete'), destructive: true, onSelect: () => { withUndo(t('Entrenamiento eliminado', 'Workout deleted'), () => update((d) => { d.sessions = d.sessions.filter((s) => s.id !== id) })); back() } }]} />
       )}
       {toast}
     </>

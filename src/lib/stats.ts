@@ -253,3 +253,43 @@ export function stalls(sessions: Session[], since: number): Stall[] {
   const ids = new Set(sessions.filter((s) => s.start >= since).flatMap((s) => s.exercises.map((e) => e.exerciseId)))
   return [...ids].map((id) => stall(id, sessions)).filter((x): x is Stall => x !== undefined).sort((a, b) => b.last - a.last)
 }
+
+export interface MuscleRecovery {
+  muscle: string
+  /** Cuándo terminó el último entrenamiento que lo trabajó. */
+  lastAt: number
+  /** Series efectivas de ese entrenamiento (1 si es el principal, 0,5 si es secundario). */
+  sets: number
+  /** Horas estimadas de recuperación para ese volumen. */
+  hoursNeeded: number
+  /** 0 = recién entrenado, 1 = recuperado. */
+  ready: number
+}
+
+/** Horas de recuperación orientativas según el volumen: 48 h con poco, hasta 96 h con mucho. */
+export const recoveryHours = (sets: number) => Math.min(96, Math.max(48, 36 + 4 * sets))
+
+/**
+ * Estado de recuperación de cada músculo según el último entrenamiento que lo trabajó (con al menos
+ * una serie efectiva). Es una estimación sencilla y orientativa: no conoce el sueño, la dieta ni la
+ * intensidad real.
+ */
+export function muscleRecovery(sessions: Session[], secondaryOf: (exerciseId: string) => string[], now = Date.now()): MuscleRecovery[] {
+  const result = new Map<string, MuscleRecovery>()
+  for (const s of [...sessions].sort((a, b) => b.start - a.start)) {
+    const load: Record<string, number> = {}
+    for (const e of s.exercises) {
+      const sets = workingSets(e).length
+      if (!sets) continue
+      load[e.muscle] = (load[e.muscle] ?? 0) + sets
+      for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load[m] = (load[m] ?? 0) + sets / 2
+    }
+    const at = s.end ?? s.start
+    for (const [muscle, sets] of Object.entries(load)) {
+      if (sets < 1 || result.has(muscle) || muscle === 'cardio' || !muscle) continue
+      const hoursNeeded = recoveryHours(sets)
+      result.set(muscle, { muscle, lastAt: at, sets, hoursNeeded, ready: Math.min(1, Math.max(0, (now - at) / 3600000 / hoursNeeded)) })
+    }
+  }
+  return [...result.values()]
+}

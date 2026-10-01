@@ -1,5 +1,6 @@
 import type { Catalog, Exercise } from './catalog'
 import { t } from './i18n'
+import type { Progression } from './store'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
 export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -45,6 +46,9 @@ export interface GeneratedExercise {
   repsMin: number
   repsMax: number
   rest: number
+  /** Sin valor: doble progresión (en los de peso y repeticiones). */
+  progression?: Progression
+  trainingMax?: number
 }
 
 export interface GeneratedProgram {

@@ -4,13 +4,14 @@ import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } from '../components/ui'
 import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
-import { muscleLabel } from '../lib/labels'
+import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
+import { RecoveryCard } from '../components/Recovery'
 import { locale, t } from '../lib/i18n'
 
 type Section = 'summary' | 'history' | 'records'
@@ -46,12 +47,6 @@ export function ProgressScreen() {
     </div>
   )
 }
-
-// Grupos principales que se revisan en el mapa de calor semanal.
-const MAIN_GROUPS: [[es: string, en: string], string[]][] = [
-  [['Pecho', 'Chest'], ['pectorals']], [['Espalda', 'Back'], ['lats', 'upper-back']], [['Hombros', 'Shoulders'], ['delts']], [['Bíceps', 'Biceps'], ['biceps']],
-  [['Tríceps', 'Triceps'], ['triceps']], [['Cuádriceps', 'Quads'], ['quads']], [['Isquiotibiales', 'Hamstrings'], ['hamstrings']], [['Glúteos', 'Glutes'], ['glutes']], [['Abdomen', 'Abs'], ['abs']],
-]
 
 function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
@@ -130,6 +125,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       </div>
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
+      <RecoveryCard sessions={sessions} />
       <WeeklyMuscles sessions={sessions} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />

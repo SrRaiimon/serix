@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { e1rm, lastSets, monthToDate, newRecords, progressionHint, records, sessionSets, sessionVolume, stall, stalls } from '../src/lib/stats'
+import { e1rm, lastSets, monthToDate, muscleRecovery, newRecords, progressionHint, recoveryHours, records, sessionSets, sessionVolume, stall, stalls } from '../src/lib/stats'
 import { DAY, T0, exercise, session, set } from './helpers'
 
 test('1RM estimado (Epley)', () => {
@@ -109,4 +109,28 @@ test('mes en curso frente al mismo tramo del anterior', () => {
   // Del mes anterior solo cuenta hasta el día 10 (el 20 de enero queda fuera).
   assert.equal(previous.sessions, 1)
   assert.equal(current.volume, 1000)
+})
+
+test('recuperación: más volumen, más horas; el último entrenamiento manda', () => {
+  assert.equal(recoveryHours(2), 48)
+  assert.equal(recoveryHours(8), 68)
+  assert.equal(recoveryHours(30), 96)
+  const now = T0 + 10 * DAY
+  const secondary = (id: string) => (id === 'bench' ? ['triceps'] : [])
+  const at = (daysAgo: number, ex: ReturnType<typeof exercise>[]) => {
+    const start = now - daysAgo * DAY
+    return session(0, ex, { start, end: start })
+  }
+  const list = muscleRecovery([
+    at(1, [exercise('bench', [set(80, 8), set(80, 8), set(80, 8), set(80, 8)], { muscle: 'pectorals' })]),
+    at(5, [exercise('bench', [set(80, 8)], { muscle: 'pectorals' }), exercise('squat', [set(100, 5), set(100, 5)], { muscle: 'quads' })]),
+  ], secondary, now)
+  const by = Object.fromEntries(list.map((r) => [r.muscle, r]))
+  // Pecho: el de ayer (4 series → 52 h); lleva 24 h → 46 %.
+  assert.equal(by.pectorals.sets, 4)
+  assert.ok(Math.abs(by.pectorals.ready - 24 / 52) < 1e-9)
+  // Tríceps como secundario: 4 × 0,5 = 2 series.
+  assert.equal(by.triceps.sets, 2)
+  // Piernas hace 5 días: recuperadas.
+  assert.equal(by.quads.ready, 1)
 })
