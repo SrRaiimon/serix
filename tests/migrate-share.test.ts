@@ -26,7 +26,7 @@ test('migración del catálogo antiguo', () => {
     ] }],
     sessions: [session(0, [exercise('old_bench', [set(80, 8)], { name: 'Nombre del historial', muscle: 'pectorals' })])],
     measurements: [],
-    exerciseNotes: { old_bench: 'Banco en el 3', old_gone: 'Se queda' },
+    exerciseNotes: { old_bench: 'Banco en el 3', old_gone: 'Se queda' }, friends: [],
     settings: { ...defaultSettings, favorites: ['old_bench', 'Barbell_Bench_Press', 'old_gone'] },
   })
   migrateCatalog(catalog)

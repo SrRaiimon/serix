@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, Users, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -9,7 +9,10 @@ import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
-import { testBeep } from '../lib/timer'
+import { startRest, testBeep } from '../lib/timer'
+import { lockScreenSupported, requestLockScreenPermission } from '../lib/lockScreen'
+import { speak, voiceSupported } from '../lib/voice'
+import { isIOS } from '../lib/pwa'
 import { finishedSessions, replaceData, resetData, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlateInventory, PlatesView } from './Plates'
 
@@ -73,6 +76,7 @@ export function ProfileScreen() {
       <div className="list">
         <Row icon={Scale} label={t('Medidas corporales', 'Body measurements')} detail={lastWeight !== undefined ? weight(lastWeight, settings.unit) : undefined} onClick={() => navigate('profile', 'measurements')} />
         <Row icon={CalendarDays} label={t('Calendario', 'Calendar')} onClick={() => navigate('profile', 'calendar')} />
+        <Row icon={Users} label={t('Retos con amigos', 'Friend challenges')} detail={data.friends.length || undefined} onClick={() => navigate('profile', 'friends')} />
       </div>
 
       <div className="list-header">{t('Herramientas', 'Tools')}</div>
@@ -135,6 +139,42 @@ export function ProfileScreen() {
           <input type="checkbox" className="toggle" checked={settings.restSound} onChange={(e) => updateSettings({ restSound: e.target.checked })} />
         </label>
         {settings.restSound && <Row icon={Volume2} label={t('Probar pitido', 'Test beep')} onClick={testBeep} chevron={false} />}
+        {voiceSupported() && (
+          <label className="list-row">
+            <span className="grow">
+              {t('Avisos por voz', 'Voice cues')}
+              <span className="small muted" style={{ display: 'block' }}>
+                {t('«Quedan 10 segundos», «Siguiente: press de banca, serie 3 de 4»… y los tramos de los temporizadores.', '"10 seconds left", "Next: bench press, set 3 of 4"… and the interval timer phases.')}
+              </span>
+            </span>
+            <input type="checkbox" className="toggle" checked={settings.voice === true} onChange={(e) => {
+              updateSettings({ voice: e.target.checked || undefined })
+              if (e.target.checked) speak(t('Avisos por voz activados', 'Voice cues on'), true)
+            }} />
+          </label>
+        )}
+        {lockScreenSupported() && !isIOS() && (
+          <label className="list-row">
+            <span className="grow">
+              {t('Aviso con el móvil bloqueado', 'Alert with the phone locked')}
+              <span className="small muted" style={{ display: 'block' }}>
+                {t('Durante el descanso verás la cuenta atrás en la pantalla bloqueada y al terminar te llegará una notificación. Gasta un poco más de batería.',
+                  'During rest you will see the countdown on the lock screen and get a notification when it ends. It uses a little more battery.')}
+              </span>
+            </span>
+            <input type="checkbox" className="toggle" checked={settings.lockScreenAlert === true} onChange={async (e) => {
+              if (!e.target.checked) return updateSettings({ lockScreenAlert: undefined })
+              if (await requestLockScreenPermission()) updateSettings({ lockScreenAlert: true })
+              else showToast(t('Sin permiso de notificaciones: actívalo en los ajustes del navegador para esta web', 'No notification permission: allow it in the browser settings for this site'))
+            }} />
+          </label>
+        )}
+        {settings.lockScreenAlert && lockScreenSupported() && (
+          <Row icon={BellRing} label={t('Probar: descanso de 10 s', 'Test: 10 s rest')} chevron={false} onClick={() => {
+            startRest(10)
+            showToast(t('Bloquea el móvil: en 10 segundos te llegará el aviso', 'Lock your phone: the alert will arrive in 10 seconds'))
+          }} />
+        )}
         <label className="list-row">
           <span className="grow">
             {t('Anotar esfuerzo (RPE)', 'Log effort (RPE)')}

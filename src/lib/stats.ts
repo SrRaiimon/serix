@@ -108,9 +108,9 @@ export function muscleLoad(sessions: Session[], since: number, secondaryOf: (exe
 }
 
 /** Semanas seguidas con al menos un entrenamiento; la semana actual no rompe la racha. */
-export function streakWeeks(sessions: Session[]): number {
+export function streakWeeks(sessions: Session[], now = Date.now()): number {
   const weeks = new Set(sessions.map((s) => startOfWeek(s.start).getTime()))
-  let week = startOfWeek(Date.now())
+  let week = startOfWeek(now)
   if (!weeks.has(week.getTime())) week = addDays(week, -7)
   let streak = 0
   while (weeks.has(week.getTime())) {

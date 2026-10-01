@@ -98,6 +98,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
+        upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
         stalled={trackingOf(e) === 'weight_reps' ? stall(e.exerciseId, history) : undefined}
         onInfo={() => setDetail(e.exerciseId)}
         onGroupNext={() => goToNext(i)}
@@ -195,7 +196,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -208,6 +209,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   barbell: boolean
   barKg: number
   previous: SetEntry[]
+  /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
+  upcoming?: SessionExercise
   /** Estancado en las últimas sesiones (se propone descarga o variante). */
   stalled?: Stall
   onInfo: () => void
@@ -355,7 +358,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               // Antes de un drop set no se descansa: se quita peso y se sigue.
               if (dropNext) return
               if (inGroupWithNext) return onGroupNext()
-              startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest)
+              // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
+              const later = exercise.sets.slice(i + 1).find((s) => !s.done)
+              const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined
+              startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp)
               if (slot.letter) onRoundEnd()
             }} />
         )
@@ -558,6 +564,16 @@ const setKinds = (): { label: string; warmup: boolean; kind?: SetKind }[] => [
 const setKindLabel = (set: SetEntry) => {
   const kinds = setKinds()
   return (set.warmup ? kinds[1] : kinds.find((o) => o.kind === set.kind) ?? kinds[0]).label
+}
+
+/** «Press de banca, serie 3 de 4, 80 kilos»: la siguiente serie, para decirla en voz alta. */
+function spokenSet(e: SessionExercise, set: SetEntry, unit: Unit): string {
+  if (set.warmup) return `${e.name}, ${t('calentamiento', 'warm-up')}`
+  const working = e.sets.filter((s) => !s.warmup)
+  const k = working.findIndex((s) => s.id === set.id) + 1
+  let text = `${e.name}, ${t(`serie ${k} de ${working.length}`, `set ${k} of ${working.length}`)}`
+  if (trackingOf(e) === 'weight_reps' && set.weight > 0) text += `, ${num(fromKg(set.weight, unit))} ${unit === 'kg' ? t('kilos', 'kilos') : t('libras', 'pounds')}`
+  return text
 }
 
 /** Explica lo que ha hecho la progresión automática con este ejercicio. */

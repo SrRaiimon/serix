@@ -1,4 +1,5 @@
 import { uid } from './format'
+import type { FriendSnapshot } from './friends'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
@@ -122,6 +123,8 @@ function settings(v: unknown): Settings {
     equipment: oneOf(s.equipment, ['gym', 'dumbbells', 'kettlebell', 'bands', 'bodyweight'] as const) ?? d.equipment,
     favorites: list(s.favorites, (x) => (typeof x === 'string' ? x.slice(0, 200) : undefined), 2000),
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
+    lockScreenAlert: s.lockScreenAlert === true ? true : undefined,
+    voice: s.voice === true ? true : undefined,
     barKg: optNum(s.barKg, 1, 50),
     language: oneOf(s.language, ['es', 'en'] as const),
     theme: oneOf(s.theme, ['light', 'dark'] as const),
@@ -132,6 +135,22 @@ function settings(v: unknown): Settings {
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
+  }
+}
+
+function friendStats(v: unknown): FriendSnapshot['week'] {
+  const o = isObj(v) ? v : {}
+  return { sessions: num(o.sessions, 0, 1000, 0), volume: num(o.volume, 0, 1e8, 0), sets: num(o.sets, 0, 100000, 0), minutes: num(o.minutes, 0, 1e6, 0) }
+}
+
+function friend(v: unknown): FriendSnapshot | undefined {
+  if (!isObj(v) || typeof v.name !== 'string' || typeof v.at !== 'number') return undefined
+  const lifts = isObj(v.lifts) ? v.lifts : {}
+  return {
+    name: str(v.name, '?', 40), at: num(v.at, EPOCH_MIN, EPOCH_MAX, Date.now()),
+    week: friendStats(v.week), month: friendStats(v.month),
+    streak: num(v.streak, 0, 1000, 0), total: num(v.total, 0, 100000, 0),
+    lifts: { bench: optNum(lifts.bench, 1, 2000), squat: optNum(lifts.squat, 1, 2000), deadlift: optNum(lifts.deadlift, 1, 2000) },
   }
 }
 
@@ -155,6 +174,7 @@ export function parseBackup(text: string): AppData {
     sessions: list(raw.sessions, session, 20000),
     measurements: list(raw.measurements, measurement, 5000),
     exerciseNotes: exerciseNotes(raw.exerciseNotes),
+    friends: list(raw.friends, friend, 200),
     settings: settings(raw.settings),
   }
 }

@@ -1,35 +1,18 @@
-import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
-import { activeSession, finishedSessions, lastPerformed, routineMinutes, useData, type AppData, type Routine, type Session } from '../lib/store'
-import { openWorkout, startEmpty, startRoutine } from '../lib/workout'
+import { activeSession, finishedSessions, routineMinutes, useData, type Routine, type Session } from '../lib/store'
+import { nextRoutine, openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { RECOVERING, useRecovery } from '../components/Recovery'
 import { SessionRow } from '../components/SessionRow'
 import { plural, t } from '../lib/i18n'
 
-/** Siguiente rutina del programa activo: la que va después de la última realizada. */
-function nextRoutine(d: AppData): Routine | undefined {
-  const sorted = [...d.routines].sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
-  const program = sorted.filter((r) => d.settings.activeProgram && r.programName === d.settings.activeProgram)
-  const pool = (program.length ? program : sorted).filter((r) => r.exercises.length)
-  if (!pool.length) return undefined
-  let lastIndex = -1
-  let lastTime = 0
-  pool.forEach((r, i) => {
-    const t = lastPerformed(d, r.id)
-    if (t && t > lastTime) {
-      lastTime = t
-      lastIndex = i
-    }
-  })
-  return pool[(lastIndex + 1) % pool.length]
-}
 
 export function HomeScreen() {
   const data = useData()
@@ -69,8 +52,9 @@ export function HomeScreen() {
         <Tile icon={Weight} tint="#bf5af2" value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label={t('Volumen sem.', 'Weekly volume')} />
       </div>
 
-      <div className="grid-3">
+      <div className="grid-2">
         <button className="quick" onClick={startEmpty}><Zap size={22} />{t('Entreno libre', 'Free workout')}</button>
+        <button className="quick" onClick={() => navigate('timer')}><Timer size={22} />{t('Temporizador', 'Timer')}</button>
         <button className="quick" onClick={() => navigate('exercises')}><Dumbbell size={22} />{t('Ejercicios', 'Exercises')}</button>
         <button className="quick" onClick={() => navigate('routines')}><ClipboardList size={22} />{t('Rutinas', 'Routines')}</button>
       </div>

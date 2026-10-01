@@ -4,7 +4,7 @@ import { fromKg, increment, toKg, uid, type Unit } from './format'
 import { lastSets, workingSets } from './stats'
 import { normalizeGroups } from './groups'
 import { defaultTracking, trackingOf, type Tracking } from './tracking'
-import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
+import { activeSession, finishedSessions, getData, lastPerformed, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
 import { plan } from './progression'
@@ -124,6 +124,24 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
     delete s.kind
   }
   e.deload = true
+}
+
+/** Siguiente rutina del programa activo: la que va después de la última realizada. */
+export function nextRoutine(d: AppData): Routine | undefined {
+  const sorted = [...d.routines].sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
+  const program = sorted.filter((r) => d.settings.activeProgram && r.programName === d.settings.activeProgram)
+  const pool = (program.length ? program : sorted).filter((r) => r.exercises.length)
+  if (!pool.length) return undefined
+  let lastIndex = -1
+  let lastTime = 0
+  pool.forEach((r, i) => {
+    const at = lastPerformed(d, r.id)
+    if (at && at > lastTime) {
+      lastTime = at
+      lastIndex = i
+    }
+  })
+  return pool[(lastIndex + 1) % pool.length]
 }
 
 export function startRoutine(routine: Routine) {

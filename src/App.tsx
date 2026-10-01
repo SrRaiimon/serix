@@ -7,8 +7,8 @@ import { migrateCatalog, relabelExercises } from './lib/migrate'
 import { autoProtect } from './lib/protect'
 import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
-import { activeSession, loadData, useData } from './lib/store'
-import { closeSummary, openWorkout, useWorkoutUI } from './lib/workout'
+import { activeSession, getData, loadData, useData } from './lib/store'
+import { closeSummary, nextRoutine, openWorkout, startEmpty, startRoutine, useWorkoutUI } from './lib/workout'
 import { HomeScreen } from './screens/Home'
 import { UndoToast } from './components/UndoToast'
 
@@ -16,7 +16,9 @@ import { UndoToast } from './components/UndoToast'
 // conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
 const screens = {
   exercises: () => import('./screens/Exercises'),
+  friends: () => import('./screens/Friends'),
   import: () => import('./screens/Import'),
+  intervals: () => import('./screens/Intervals'),
   legal: () => import('./screens/Legal'),
   onboarding: () => import('./screens/Onboarding'),
   profile: () => import('./screens/Profile'),
@@ -29,6 +31,9 @@ const screens = {
 const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExercisesScreen })))
 const ExerciseDetailScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExerciseDetailScreen })))
 const ImportScreen = lazy(() => screens.import().then((m) => ({ default: m.ImportScreen })))
+const FriendsScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendsScreen })))
+const FriendImportScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendImportScreen })))
+const IntervalScreen = lazy(() => screens.intervals().then((m) => ({ default: m.IntervalScreen })))
 const LegalScreen = lazy(() => screens.legal().then((m) => ({ default: m.LegalScreen })))
 const OnboardingScreen = lazy(() => screens.onboarding().then((m) => ({ default: m.OnboardingScreen })))
 const ProfileScreen = lazy(() => screens.profile().then((m) => ({ default: m.ProfileScreen })))
@@ -89,9 +94,22 @@ function Main() {
   const route = useRoute()
   const ui = useWorkoutUI()
   const active = activeSession(data)
+  // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento.
+  useEffect(() => {
+    if (route[0] !== 'go') return
+    const d = getData()
+    if (route[1] === 'free') startEmpty()
+    if (route[1] === 'next') {
+      const routine = nextRoutine(d)
+      if (routine) startRoutine(routine)
+      else return navigate('routines')
+    }
+    navigate('home')
+  }, [route])
 
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
   if (route[0] === 'import' && route[1]) return <main className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></main>
+  if (route[0] === 'friend' && route[1]) return <main className="app"><Suspense fallback={null}><FriendImportScreen code={route[1]} /></Suspense></main>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
   // Pasar datos desde otro móvil también se puede hacer antes del cuestionario inicial.
@@ -136,7 +154,10 @@ function Screen({ route }: { route: string[] }) {
       if (a === '1rm') return <OneRepMaxScreen />
       if (a === 'plates') return <PlatesScreen />
       if (a === 'legal') return <LegalScreen />
+      if (a === 'friends') return <FriendsScreen />
       return <ProfileScreen />
+    case 'timer':
+      return <IntervalScreen />
     default:
       return <HomeScreen />
   }

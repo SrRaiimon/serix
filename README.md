@@ -27,6 +27,11 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Discos de tu gimnasio:** la calculadora y todos los redondeos de peso usan los discos que elijas.
 - **Exportar a CSV** (una fila por serie) para Excel, Numbers o Google Sheets.
 - **Tema claro, oscuro o automático**, elegible en Perfil.
+- **Temporizadores de intervalos:** Tabata, EMOM y AMRAP, con pitidos, vibración y voz.
+- **Avisos por voz** opcionales (descanso y temporizadores) con la voz del propio móvil.
+- **Aviso con el móvil bloqueado (Android):** cuenta atrás en la pantalla bloqueada y notificación al terminar.
+- **Retos con amigos** sin servidor: resúmenes compartidos por enlace o QR y clasificación.
+- **Buscar ejercicios tocando el mapa muscular.** Accesos directos desde el icono (Android).
 - **En español e inglés:** sigue el idioma del móvil y se puede cambiar en Perfil (o al empezar).
 - **Catálogo de 876 ejercicios** con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.

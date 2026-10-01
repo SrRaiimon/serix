@@ -8,7 +8,7 @@ import { exercise, session, set } from './helpers'
 // prueba de ida y vuelta comprueba que la copia de seguridad también lo guarda.
 const allSettings: Required<Settings> = {
   ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
-  catalogVersion: 2, language: 'en', theme: 'dark', plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
+  catalogVersion: 2, language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
 }
 
 const sample = (): AppData => ({
@@ -23,6 +23,7 @@ const sample = (): AppData => ({
   ], { deload: true, auto: { kind: 'wave', week: 4, tm: 100 } })])],
   measurements: [{ id: 'm1', date: Date.UTC(2026, 0, 1), weight: 80, waist: 85 }],
   exerciseNotes: { bench: 'Asiento en el 4\nagarre ancho' },
+  friends: [{ name: 'Ana', at: Date.UTC(2026, 0, 4), week: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, month: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, streak: 5, total: 40, lifts: { bench: 90, squat: 120 } }],
   settings: { ...allSettings },
 })
 

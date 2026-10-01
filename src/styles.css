@@ -1816,3 +1816,21 @@ html.scroll-locked body {
 .badge-progress { position: relative; display: block; height: 18px; margin-top: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
 .badge-progress > span { display: block; height: 100%; background: var(--accent-soft); }
 .badge-progress em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-weight: 700; color: var(--text-2); }
+
+.mm-pick { cursor: pointer; }
+.mm-pick:hover, .mm-pick:focus-visible { filter: brightness(1.15); outline: none; }
+
+/* Temporizador de intervalos (usa la pantalla grande del descanso) */
+.interval-run { justify-content: center; gap: 22px; }
+.interval-phase { font-size: 28px; font-weight: 900; letter-spacing: 0.08em; }
+
+/* Retos con amigos */
+.rank-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.rank-row.me .bold { color: var(--accent-text); }
+.rank-pos { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-weight: 800; font-size: 14px; background: var(--fill); }
+.rank-row:first-child .rank-pos { color: var(--on-accent); background: var(--gold); }
+.rank-table { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr)); gap: 8px 6px; align-items: center; font-variant-numeric: tabular-nums; text-align: right; }
+.rank-table > :first-child, .rank-name { text-align: left; }
+.rank-name.me { color: var(--accent-text); }
+.compare-table { display: grid; grid-template-columns: minmax(0, 1.6fr) 1fr 1fr; gap: 10px 8px; align-items: center; text-align: right; font-variant-numeric: tabular-nums; }
+.compare-table > :nth-child(3n + 1) { text-align: left; }

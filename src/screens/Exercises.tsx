@@ -1,7 +1,7 @@
 import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, StickyNote, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart } from '../components/charts'
-import { MuscleMap } from '../components/MuscleMap'
+import { MuscleMap, MusclePicker } from '../components/MuscleMap'
 import { ExerciseNoteField } from '../components/ExerciseNote'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
@@ -80,6 +80,7 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
         <Sheet title={t('Filtros', 'Filters')} onClose={() => setOpen(false)}
           left={<button className="nav-btn" onClick={() => setFilter({ ...emptyFilter, query: filter.query, bodyPart: filter.bodyPart })}>{t('Quitar', 'Clear')}</button>}
           right={<button className="nav-btn bold" onClick={() => setOpen(false)}>{t('Listo', 'Done')}</button>}>
+          <MusclePicker value={filter.muscle} onChange={(muscle) => setFilter({ ...filter, muscle })} />
           <div className="list">
             <label className="list-row">
               <Star size={20} color="var(--gold)" />

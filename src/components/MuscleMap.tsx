@@ -1,7 +1,8 @@
-import { useId } from 'react'
+import { useId, type KeyboardEvent } from 'react'
 import type { Exercise } from '../lib/catalog'
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from './muscleShapes'
 import { t } from '../lib/i18n'
+import { muscleLabel } from '../lib/labels'
 
 // Mapa muscular propio (dibujo original, sin imágenes de terceros). Cada músculo se pinta con una
 // intensidad: principal (naranja con brillo), secundario, ligera o sin trabajar. Los colores base
@@ -62,14 +63,19 @@ function Defs({ id, glow }: { id: string; glow: boolean }) {
   )
 }
 
-function Figure({ view, paint, id, glow }: { view: View; paint: (name: string) => Paint; id: string; glow: boolean }) {
+function Figure({ view, paint, id, glow, onPick }: { view: View; paint: (name: string) => Paint; id: string; glow: boolean; onPick?: (muscle: string) => void }) {
   const regions = Object.entries(REGIONS[view]).map(([name, d]) => [name, d, DECOR.has(name) ? 'm' : paint(name)] as const)
+  // Con onPick, cada músculo se puede tocar (para buscar ejercicios que lo trabajan).
+  const pick = (name: string) => (onPick && !DECOR.has(name) ? {
+    onClick: () => onPick(alias(name)), role: 'button', tabIndex: 0, className: 'mm-pick', 'aria-label': muscleLabel(alias(name)),
+    onKeyDown: (e: KeyboardEvent<SVGPathElement>) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(alias(name)) } },
+  } : {})
   const half = (
     <>
       <path d={SILHOUETTE} className="mm-body" />
-      {regions.filter(([, , p]) => p !== 'p').map(([name, d, p]) => <path key={name} d={d} fill={`url(#${id}${p})`} />)}
+      {regions.filter(([, , p]) => p !== 'p').map(([name, d, p]) => <path key={name} d={d} fill={`url(#${id}${p})`} {...pick(name)} />)}
       {/* Los principales se dibujan al final para que su brillo quede por encima de lo demás. */}
-      {regions.filter(([, , p]) => p === 'p').map(([name, d]) => <path key={name} d={d} fill={`url(#${id}p)`} filter={glow ? `url(#${id}g)` : undefined} />)}
+      {regions.filter(([, , p]) => p === 'p').map(([name, d]) => <path key={name} d={d} fill={`url(#${id}p)`} filter={glow ? `url(#${id}g)` : undefined} {...pick(name)} />)}
     </>
   )
   return (
@@ -82,15 +88,15 @@ function Figure({ view, paint, id, glow }: { view: View; paint: (name: string) =
   )
 }
 
-function Views({ paint, label }: { paint: (name: string) => Paint; label: string }) {
+function Views({ paint, label, onPick }: { paint: (name: string) => Paint; label: string; onPick?: (muscle: string) => void }) {
   const id = useId().replace(/:/g, '')
   return (
-    <svg viewBox="0 0 420 450" role="img" aria-label={label}>
+    <svg viewBox="0 0 420 450" role={onPick ? 'group' : 'img'} aria-label={label}>
       <Defs id={id} glow />
       <ellipse cx="100" cy="430" rx="60" ry="6" className="mm-shadow" />
       <ellipse cx="320" cy="430" rx="60" ry="6" className="mm-shadow" />
-      <Figure view="front" paint={paint} id={id} glow />
-      <g transform="translate(220,0)"><Figure view="back" paint={paint} id={id} glow /></g>
+      <Figure view="front" paint={paint} id={id} glow onPick={onPick} />
+      <g transform="translate(220,0)"><Figure view="back" paint={paint} id={id} glow onPick={onPick} /></g>
     </svg>
   )
 }
@@ -141,5 +147,18 @@ export function MuscleThumb({ exercise, size }: { exercise: Muscles; size: numbe
       <Defs id={id} glow={false} />
       <Figure view={view} paint={exercisePaint(exercise)} id={id} glow={false} />
     </svg>
+  )
+}
+
+/** Mapa para elegir músculo tocándolo; el elegido se resalta y tocarlo otra vez lo quita. */
+export function MusclePicker({ value, onChange }: { value?: string; onChange: (muscle: string | undefined) => void }) {
+  return (
+    <div className="muscle-map">
+      <Views paint={(name) => (alias(name) === value ? 'p' : 'm')} label={t('Elige un músculo', 'Choose a muscle')}
+        onPick={(m) => onChange(m === value ? undefined : m)} />
+      <div className="mm-legend">
+        <span>{value ? muscleLabel(value) : t('Toca un músculo para ver sus ejercicios', 'Tap a muscle to see its exercises')}</span>
+      </div>
+    </div>
   )
 }

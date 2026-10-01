@@ -43,3 +43,14 @@ self.addEventListener('fetch', (event) => {
     caches.match(request, MATCH).then((hit) => hit || fetch(request)),
   )
 })
+
+// Al tocar el aviso del descanso se vuelve a la app (o se abre si estaba cerrada).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const client = list.find((c) => 'focus' in c)
+      return client ? client.focus() : self.clients.openWindow('./')
+    }),
+  )
+})
