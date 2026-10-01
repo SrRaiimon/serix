@@ -28,6 +28,14 @@ export interface Challenge {
   end: number
   /** Quién lo creó. */
   by: string
+  /** Clasificación final, guardada al terminar (solo en este móvil; no viaja en los enlaces). */
+  final?: FinalRow[]
+}
+
+export interface FinalRow {
+  name: string
+  value: number
+  me?: boolean
 }
 
 export interface ChallengeEntry {
@@ -72,7 +80,11 @@ export interface FriendSnapshot {
   bodyWeight?: number
   /** Retos en los que participa, con su progreso. */
   challenges?: ChallengeEntry[]
+  /** Trofeos de retos: oros, platas, bronces y objetivos cumplidos. */
+  trophies?: Trophies
 }
+
+export type Trophies = [gold: number, silver: number, bronze: number, completed: number]
 
 export const WEEKS = 8
 const MUSCLE_DAYS = 28
@@ -136,6 +148,73 @@ export function invitations(friends: FriendSnapshot[], joined: Challenge[], now 
   }
   return [...found.values()]
 }
+
+// MARK: Trofeos
+
+/**
+ * Guarda la clasificación de los retos terminados. Durante las dos semanas siguientes se completa con
+ * los resúmenes que lleguen tarde (nunca baja un valor ya guardado). Devuelve la lista nueva, o
+ * `undefined` si no cambia nada.
+ */
+export function settleChallenges(d: AppData, sessions: Session[], now = Date.now()): Challenge[] | undefined {
+  let changed = false
+  const next = d.challenges.map((c) => {
+    if (challengeStatus(c, now) !== 'finished' || (c.final && now > c.end + CHALLENGE_GRACE)) return c
+    const live = standings(c, d.settings.name.trim() || t('Sin nombre', 'No name'), challengeProgress(c, sessions), d.friends, now)
+    const rows = new Map<string, FinalRow>()
+    const key = (r: { name: string; me?: boolean }) => (r.me ? '\u0000me' : friendKey(r.name))
+    for (const r of c.final ?? []) rows.set(key(r), r)
+    for (const r of live) {
+      const prev = rows.get(key(r))
+      // Lo propio se recalcula (por si se editó un entrenamiento); lo de los amigos solo sube.
+      const value = r.me ? r.value : Math.max(prev?.value ?? 0, r.value)
+      rows.set(key(r), { name: r.me ? r.name : prev?.name ?? r.name, value, ...(r.me ? { me: true } : {}) })
+    }
+    const final = [...rows.values()].sort((a, b) => b.value - a.value || (a.me ? -1 : b.me ? 1 : 0))
+    if (JSON.stringify(final) === JSON.stringify(c.final)) return c
+    changed = true
+    return { ...c, final }
+  })
+  return changed ? next : undefined
+}
+
+export type Medal = 'gold' | 'silver' | 'bronze'
+
+export interface ChallengeResult {
+  /** Puesto (empates comparten puesto) y participantes. */
+  place: number
+  of: number
+  value: number
+  /** Medalla: solo con rivales y habiendo sumado algo. */
+  medal?: Medal
+  completed: boolean
+}
+
+export function challengeResult(c: Challenge): ChallengeResult | undefined {
+  const me = c.final?.find((r) => r.me)
+  if (!c.final || !me) return undefined
+  const place = 1 + c.final.filter((r) => r.value > me.value).length
+  const of = c.final.length
+  const medal = of >= 2 && me.value > 0 && place <= 3 ? (['gold', 'silver', 'bronze'] as const)[place - 1] : undefined
+  return { place, of, value: me.value, medal, completed: !!c.target && me.value >= c.target }
+}
+
+export function trophyCounts(challenges: Challenge[]): Trophies {
+  const counts: Trophies = [0, 0, 0, 0]
+  for (const c of challenges) {
+    const r = challengeResult(c)
+    if (!r) continue
+    if (r.medal) counts[r.medal === 'gold' ? 0 : r.medal === 'silver' ? 1 : 2]++
+    if (r.completed) counts[3]++
+  }
+  return counts
+}
+
+export const MEDAL_EMOJI: Record<Medal, string> = { gold: '🥇', silver: '🥈', bronze: '🥉' }
+
+/** «🥇2 🥈1 🎯3» (vacío si no hay ninguno). */
+export const trophyText = (t: Trophies | undefined) =>
+  t ? [['🥇', t[0]], ['🥈', t[1]], ['🥉', t[2]], ['🎯', t[3]]].filter(([, n]) => n).map(([e, n]) => `${e}${n}`).join(' ') : ''
 
 /** Retos que aún se comparten: en curso, por empezar o terminados hace poco. */
 export const liveChallenges = (list: Challenge[], now = Date.now()) =>
@@ -214,6 +293,8 @@ export function mySnapshot(data: AppData, sessions: Session[], now = Date.now())
     prs: recentRecords(sessions, now),
     challenges: liveChallenges(data.challenges, now).map((c) => ({ challenge: c, value: challengeProgress(c, sessions) })),
   }
+  const trophies = trophyCounts(settleChallenges(data, sessions, now) ?? data.challenges)
+  if (trophies.some((n) => n > 0)) snapshot.trophies = trophies
   const bodyWeight = data.settings.shareBodyWeight ? latestBodyWeight(data) : undefined
   if (bodyWeight) snapshot.bodyWeight = bodyWeight
   return snapshot
@@ -231,7 +312,7 @@ export async function encodeSnapshot(s: FriendSnapshot): Promise<string> {
   const packed = [2, s.name, s.at, [s.week.sessions, s.week.volume, s.week.sets, s.week.minutes], [s.month.sessions, s.month.volume, s.month.sets, s.month.minutes],
     s.streak, s.total, [s.lifts.bench ?? null, s.lifts.squat ?? null, s.lifts.deadlift ?? null],
     s.weeks ?? [], s.muscles ?? [], (s.prs ?? []).map((r) => [r.exerciseId, r.name, r.weight, r.reps, r.at]), s.bodyWeight ?? null,
-    (s.challenges ?? []).map((e) => [packChallenge(e.challenge), e.value])]
+    (s.challenges ?? []).map((e) => [packChallenge(e.challenge), e.value]), s.trophies ?? null]
   const json = new TextEncoder().encode(JSON.stringify(packed))
   return canCompress() ? 'z' + toBase64Url(await transform(json, new CompressionStream('deflate-raw'))) : 'j' + toBase64Url(json)
 }
@@ -253,7 +334,7 @@ const METRICS: ChallengeMetric[] = ['sessions', 'volume', 'sets', 'reps']
 
 /** Reto válido (o `undefined`): fechas razonables, como mucho 1 año, y campos acotados. */
 export function cleanChallenge(v: unknown): Challenge | undefined {
-  const o = Array.isArray(v)
+  const o: Record<string, unknown> | undefined = Array.isArray(v)
     ? { id: v[0], metric: v[1], start: v[2], end: v[3], by: v[4], target: v[5], group: v[6], exerciseId: v[7], exerciseName: v[8] }
     : isObj(v) ? v : undefined
   if (!o) return undefined
@@ -269,6 +350,9 @@ export function cleanChallenge(v: unknown): Challenge | undefined {
     ...(target > 0 ? { target } : {}),
     ...(metric === 'sets' && group !== undefined ? { group } : {}),
     ...(metric === 'reps' ? { exerciseId, exerciseName: text(o.exerciseName, 80) || exerciseId } : {}),
+    ...(Array.isArray(o.final) ? {
+      final: o.final.slice(0, 100).filter(isObj).map((r) => ({ name: text(r.name, 40) || '?', value: int(r.value, 1e8), ...(r.me === true ? { me: true } : {}) })),
+    } : {}),
   }
 }
 
@@ -285,6 +369,7 @@ export function cleanSnapshot(v: unknown): FriendSnapshot | undefined {
       prs: Array.isArray(v[10]) ? v[10].map((r) => (Array.isArray(r) ? { exerciseId: r[0], name: r[1], weight: r[2], reps: r[3], at: r[4] } : r)) : undefined,
       bodyWeight: v[11],
       challenges: Array.isArray(v[12]) ? v[12].map((e) => (Array.isArray(e) ? { challenge: e[0], value: e[1] } : e)) : undefined,
+      trophies: v[13],
     }
   } else if (isObj(v) && typeof v.name === 'string') o = v
   else return undefined
@@ -313,6 +398,10 @@ export function cleanSnapshot(v: unknown): FriendSnapshot | undefined {
       const challenge = cleanChallenge(e.challenge)
       return challenge ? [{ challenge, value: int(e.value, 1e8) }] : []
     })
+  }
+  if (Array.isArray(o.trophies)) {
+    const trophies: Trophies = [int(o.trophies[0], 10000), int(o.trophies[1], 10000), int(o.trophies[2], 10000), int(o.trophies[3], 10000)]
+    if (trophies.some((n) => n > 0)) snapshot.trophies = trophies
   }
   return snapshot
 }

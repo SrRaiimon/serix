@@ -1,11 +1,11 @@
-import { BellRing, ChartColumn, Flag, MessageCircle, Plus, QrCode as QrIcon, Share2, Trophy, UserMinus, UserPlus, Users } from 'lucide-react'
+import { BellRing, ChartColumn, Flag, Medal, MessageCircle, Plus, QrCode as QrIcon, Share2, Trophy, UserMinus, UserPlus, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { QrSheet } from '../components/Qr'
 import { ActionSheet, Card, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { addDays, int, relative, shortDay, startOfWeek, toKg, volume, weight, type Unit } from '../lib/format'
 import {
-  alignWeeks, challengeProgress, copiedToast, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
-  mySnapshot, newChallenge, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
+  alignWeeks, challengeProgress, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
+  mySnapshot, newChallenge, trophyCounts, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
 } from '../lib/friends'
 import { plural, t } from '../lib/i18n'
 import { MAIN_GROUPS } from '../lib/labels'
@@ -115,7 +115,10 @@ function ChallengeCard({ c, data, myValue, onMenu }: { c: Challenge; data: AppDa
   const exercise = useExerciseName()
   const now = Date.now()
   const status = challengeStatus(c, now)
-  const rows = standings(c, t('Tú', 'You'), myValue, data.friends, now)
+  // Terminado: la clasificación guardada (los resúmenes de los amigos dejan de traerlo).
+  const rows = status === 'finished' && c.final
+    ? c.final.map((r) => ({ ...r, name: r.me ? t('Tú', 'You') : r.name, at: now }))
+    : standings(c, t('Tú', 'You'), myValue, data.friends, now)
   const top = Math.max(c.target ?? 0, ...rows.map((r) => r.value), 1)
   const winners = c.target ? rows.filter((r) => r.value >= c.target!) : rows[0].value > 0 ? rows.filter((r) => r.value === rows[0].value) : []
   return (
@@ -277,6 +280,37 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
   )
 }
 
+/** Retos terminados: medallas y puesto en cada uno. */
+function TrophyCase({ data }: { data: AppData }) {
+  const unit = data.settings.unit
+  const exercise = useExerciseName()
+  const done = data.challenges.filter((c) => challengeResult(c)).sort((a, b) => b.end - a.end)
+  if (!done.length) return null
+  const mine = trophyText(trophyCounts(data.challenges))
+  return (
+    <Card title={t('Tus trofeos', 'Your trophies')} icon={Medal}>
+      {mine && <span className="trophy-total" aria-label={t('Total de trofeos', 'Trophy total')}>{mine}</span>}
+      {done.map((c) => {
+        const r = challengeResult(c)!
+        return (
+          <div key={c.id} className="row" style={{ gap: 10 }}>
+            <span className="trophy-icon" aria-hidden="true">{r.medal ? MEDAL_EMOJI[r.medal] : r.completed ? '🎯' : '🏁'}</span>
+            <span className="grow">
+              <span className="clamp-1 bold">{challengeTitle(c, unit, exercise)}</span>
+              <span className="tiny muted" style={{ display: 'block' }}>
+                {shortDay(c.start)} – {shortDay(c.end - 1)} · {r.of > 1 ? t(`${r.place}.º de ${r.of}`, `#${r.place} of ${r.of}`) : t('en solitario', 'solo')}
+                {r.completed ? t(' · objetivo cumplido', ' · goal reached') : ''}
+              </span>
+            </span>
+            <span className="small bold">{challengeValue(c, r.value, unit)}</span>
+          </div>
+        )
+      })}
+      <span className="tiny muted">{t('🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido', '🥇🥈🥉 place with at least one rival · 🎯 goal reached')}</span>
+    </Card>
+  )
+}
+
 /** Amigos con resumen de hace más de una semana: pedirles uno nuevo. */
 function StaleFriends({ friends }: { friends: FriendSnapshot[] }) {
   const [toast, showToast] = useToast()
@@ -304,7 +338,10 @@ function Ranking({ title, rows, unit, pick }: { title: string; rows: Row[]; unit
       {sorted.map((r, i) => (
         <div key={r.me ? '__me' : friendKey(r.name)} className={`rank-row ${r.me ? 'me' : ''}`}>
           <span className="rank-pos">{i + 1}</span>
-          <span className="grow clamp-1 bold">{r.me ? `${r.name} (${t('tú', 'you')})` : r.name}</span>
+          <span className="grow clamp-1">
+            <span className="bold">{r.me ? `${r.name} (${t('tú', 'you')})` : r.name}</span>
+            {r.trophies && <span className="tiny" style={{ display: 'block' }}>{trophyText(r.trophies)}</span>}
+          </span>
           <span className="small" style={{ textAlign: 'right' }}>
             <strong>{plural(pick(r).sessions, ['entreno', 'entrenos'], ['workout', 'workouts'])}</strong>
             <span className="muted" style={{ display: 'block' }}>{volume(pick(r).volume, unit)} · {plural(pick(r).sets, ['serie', 'series'], ['set', 'sets'])}</span>
@@ -325,6 +362,13 @@ export function FriendsScreen() {
   const week = everyone.filter((r) => r.me || sameWeek(r.at, now))
   const month = everyone.filter((r) => r.me || sameMonth(r.at, now))
   const stale = data.friends.filter((f) => isStale(f, now))
+  const sessions = useMemo(() => finishedSessions(data), [data])
+
+  // Al terminar un reto se guarda su clasificación (y se completa con resúmenes que lleguen tarde).
+  useEffect(() => {
+    const next = settleChallenges(data, sessions)
+    if (next) update((d) => { d.challenges = next })
+  }, [data, sessions])
 
   return (
     <>
@@ -332,6 +376,7 @@ export function FriendsScreen() {
       <div className="screen with-nav">
         <ShareMine mine={mine} />
         <Challenges data={data} onNew={() => setCreating(true)} />
+        <TrophyCase data={data} />
         {data.friends.length === 0 ? (
           <Empty icon={Users} title={t('Aún no hay amigos', 'No friends yet')}
             message={t('Comparte tu resumen y pide a tus amigos que te manden el suyo: al abrir su enlace se añaden aquí y podréis compararos cada semana.',
@@ -444,6 +489,9 @@ export function FriendDetailScreen({ id }: { id: string }) {
       <NavBar showBack title={friend.name} />
       <div className="screen with-nav">
         <Card>
+          {(friend.trophies || mine.trophies) && (
+            <span className="small">{t('Trofeos', 'Trophies')}: <strong>{trophyText(mine.trophies) || '—'}</strong> {t('tú', 'you')} · <strong>{trophyText(friend.trophies) || '—'}</strong> {friend.name}</span>
+          )}
           <span className="small muted">{t(`Resumen de ${relative(friend.at).toLowerCase()}`, `Summary from ${relative(friend.at).toLowerCase()}`)}{isStale(friend, now) ? t(': ya tiene más de una semana.', ': it is more than a week old.') : '.'}</span>
           <button className={`btn ${isStale(friend, now) ? 'primary' : 'secondary'}`} onClick={ask}><MessageCircle size={18} /> {t('Pedir actualización', 'Ask for an update')}</button>
         </Card>
@@ -580,6 +628,7 @@ export function FriendImportScreen({ code }: { code: string }) {
                 <span className="small">{t('Este mes', 'This month')}</span><span className="bold">{sameMonth(friend.at) ? friend.month.sessions : '—'}</span><span className="bold">{mine.month.sessions}</span>
                 <span className="small">{t('Racha (semanas)', 'Streak (weeks)')}</span><span className="bold">{friend.streak}</span><span className="bold">{mine.streak}</span>
                 <span className="small">{t('Entrenamientos en total', 'Total workouts')}</span><span className="bold">{friend.total}</span><span className="bold">{mine.total}</span>
+                {(friend.trophies || mine.trophies) && <><span className="small">{t('Trofeos de retos', 'Challenge trophies')}</span><span className="bold">{trophyText(friend.trophies) || '—'}</span><span className="bold">{trophyText(mine.trophies) || '—'}</span></>}
               </div>
             </Card>
             <button className="btn primary block" onClick={save}><UserPlus size={19} /> {known ? t(`Actualizar a ${friend.name}`, `Update ${friend.name}`) : t(`Añadir a ${friend.name} a mis retos`, `Add ${friend.name} to my challenges`)}</button>

@@ -21,6 +21,7 @@ const screens = {
   intervals: () => import('./screens/Intervals'),
   legal: () => import('./screens/Legal'),
   onboarding: () => import('./screens/Onboarding'),
+  photos: () => import('./screens/Photos'),
   profile: () => import('./screens/Profile'),
   progress: () => import('./screens/Progress'),
   routines: () => import('./screens/Routines'),
@@ -37,6 +38,7 @@ const FriendImportScreen = lazy(() => screens.friends().then((m) => ({ default: 
 const IntervalScreen = lazy(() => screens.intervals().then((m) => ({ default: m.IntervalScreen })))
 const LegalScreen = lazy(() => screens.legal().then((m) => ({ default: m.LegalScreen })))
 const OnboardingScreen = lazy(() => screens.onboarding().then((m) => ({ default: m.OnboardingScreen })))
+const PhotosScreen = lazy(() => screens.photos().then((m) => ({ default: m.PhotosScreen })))
 const ProfileScreen = lazy(() => screens.profile().then((m) => ({ default: m.ProfileScreen })))
 const MeasurementsScreen = lazy(() => screens.profile().then((m) => ({ default: m.MeasurementsScreen })))
 const CalendarScreen = lazy(() => screens.profile().then((m) => ({ default: m.CalendarScreen })))
@@ -151,6 +153,7 @@ function Screen({ route }: { route: string[] }) {
       return <ProgressScreen />
     case 'profile':
       if (a === 'measurements') return <MeasurementsScreen />
+      if (a === 'photos') return <PhotosScreen />
       if (a === 'calendar') return <CalendarScreen />
       if (a === '1rm') return <OneRepMaxScreen />
       if (a === 'plates') return <PlatesScreen />

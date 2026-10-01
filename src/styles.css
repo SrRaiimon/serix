@@ -1859,8 +1859,39 @@ html.scroll-locked body {
 .duo-hpair { display: flex; flex-direction: column; gap: 2px; }
 .duo-hbar { height: 7px; border-radius: 4px; min-width: 2px; }
 
-/* En modo oscuro las hojas tienen fondo negro: la opción elegida necesita un gris más claro. */
+/* En modo oscuro la opción elegida necesita un gris claro: sobre el fondo negro (pantallas y hojas)
+   el color de las tarjetas no se distingue. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sheet .segmented button.active { background: #3a3a3c; }
+  :root:not([data-theme="light"]) .segmented button.active { background: #545458; }
 }
-:root[data-theme="dark"] .sheet .segmented button.active { background: #3a3a3c; }
+:root[data-theme="dark"] .segmented button.active { background: #545458; }
+
+/* MARK: Fotos de progreso */
+
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.photo-thumb { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: var(--fill); padding: 0; }
+.photo-thumb img, .compare-photos img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #fff; background: rgba(0, 0, 0, 0.6); pointer-events: none; }
+.photo-tag.left { left: 8px; top: 8px; bottom: auto; }
+.photo-tag.right { left: auto; right: 8px; top: 8px; bottom: auto; }
+.compare-photos { position: relative; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: var(--fill); touch-action: pan-y; }
+.compare-line { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 6px rgba(0, 0, 0, 0.5); pointer-events: none; }
+.compare-photos input[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.photo-viewer { position: fixed; inset: 0; z-index: 60; background: #000; display: flex; flex-direction: column; }
+.photo-viewer-img { flex: 1; min-height: 0; display: grid; place-items: center; }
+.photo-viewer-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.photo-viewer-bar { padding: 12px 16px calc(12px + var(--safe-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; background: var(--bg); }
+.photo-preview { width: 100%; max-height: 46vh; object-fit: contain; border-radius: 12px; background: var(--fill); }
+.trophy-total { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+.trophy-icon { font-size: 24px; width: 30px; text-align: center; flex-shrink: 0; }
+
+/* MARK: Primeros pasos */
+
+.guide { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.guide li { display: flex; align-items: center; gap: 12px; }
+.guide li.done .bold { color: var(--text-2); text-decoration: line-through; text-decoration-color: var(--separator); }
+.guide-mark { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-weight: 800; font-size: 13px; background: var(--fill); }
+.guide li.done .guide-mark { background: var(--green); color: #fff; }
+.guide li.current .guide-mark { background: var(--accent); color: var(--on-accent); }
+.link-btn { background: none; border: 0; padding: 4px 0; align-self: flex-start; text-decoration: underline; text-underline-offset: 2px; color: var(--text-2); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, Users, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, Camera, Users, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -75,6 +75,7 @@ export function ProfileScreen() {
       <div className="list-header">{t('Cuerpo y actividad', 'Body and activity')}</div>
       <div className="list">
         <Row icon={Scale} label={t('Medidas corporales', 'Body measurements')} detail={lastWeight !== undefined ? weight(lastWeight, settings.unit) : undefined} onClick={() => navigate('profile', 'measurements')} />
+        <Row icon={Camera} label={t('Fotos de progreso', 'Progress photos')} onClick={() => navigate('profile', 'photos')} />
         <Row icon={CalendarDays} label={t('Calendario', 'Calendar')} onClick={() => navigate('profile', 'calendar')} />
         <Row icon={Users} label={t('Retos con amigos', 'Friend challenges')} detail={data.friends.length || undefined} onClick={() => navigate('profile', 'friends')} />
       </div>
@@ -224,7 +225,7 @@ export function ProfileScreen() {
       <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void importData(f); e.target.value = '' }} />
 
       {confirmReset && (
-        <ActionSheet title={t('¿Borrar todos los datos?', 'Delete all data?')} message={t('Se eliminarán rutinas, historial y medidas. No se puede deshacer.', 'Routines, history and measurements will be deleted. This cannot be undone.')} onClose={() => setConfirmReset(false)}
+        <ActionSheet title={t('¿Borrar todos los datos?', 'Delete all data?')} message={t('Se eliminarán rutinas, historial y medidas. Las fotos de progreso se conservan (se borran desde su pantalla).', 'Routines, history and measurements will be deleted. Progress photos are kept (delete them from their own screen).')} onClose={() => setConfirmReset(false)}
           options={[{ label: t('Borrar todo', 'Delete everything'), destructive: true, onSelect: () => withUndo(t('Datos borrados', 'Data deleted'), resetData) }]} />
       )}
       {toast}

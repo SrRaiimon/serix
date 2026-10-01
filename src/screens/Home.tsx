@@ -1,4 +1,4 @@
-import { Calendar, Users, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, Check, Compass, Users, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
@@ -40,7 +40,9 @@ export function HomeScreen() {
 
       {shareReminderDue(data) && <FriendReminderCard friends={data.friends.length} />}
 
-      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : (
+      {!active && guideVisible(data, sessions.length) && <GuideCard next={next} />}
+
+      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : guideVisible(data, sessions.length) ? null : (
         <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
           <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
           <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
@@ -161,6 +163,56 @@ function InstallBanner() {
       {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
       <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
+  )
+}
+
+/** Guía de primeros pasos: solo para quien empieza (menos de 3 entrenamientos) y hasta completarla. */
+function guideVisible(d: ReturnType<typeof useData>, finished: number) {
+  if (d.settings.guideHidden || finished >= 3) return false
+  return !(d.routines.length > 0 && finished > 0 && d.settings.guideProgressSeen)
+}
+
+function GuideCard({ next }: { next?: Routine }) {
+  const data = useData()
+  const finished = finishedSessions(data).length
+  const steps = [
+    {
+      done: data.routines.length > 0,
+      title: t('Elige tu rutina', 'Pick your routine'),
+      detail: t('Genera un programa con tus respuestas o crea el tuyo.', 'Generate a program from your answers or build your own.'),
+      action: () => navigate('routines'),
+    },
+    {
+      done: finished > 0,
+      title: t('Haz tu primer entrenamiento', 'Do your first workout'),
+      detail: t('Marca cada serie al terminarla: el descanso empieza solo y la próxima vez te propone el peso.', 'Tick each set when you finish it: the rest starts by itself and next time it suggests the weight.'),
+      action: () => (next ? startRoutine(next) : startEmpty()),
+    },
+    {
+      done: data.settings.guideProgressSeen === true,
+      title: t('Mira tu progreso', 'Check your progress'),
+      detail: t('Récords, volumen por músculo, logros y gráficas de cada ejercicio.', 'Records, volume per muscle, achievements and charts for each exercise.'),
+      action: () => navigate('progress'),
+    },
+  ]
+  const current = steps.findIndex((s) => !s.done)
+  return (
+    <Card title={t('Primeros pasos', 'Getting started')} icon={Compass}>
+      <ol className="guide">
+        {steps.map((s, i) => (
+          <li key={i} className={s.done ? 'done' : i === current ? 'current' : ''}>
+            <span className="guide-mark" aria-hidden="true">{s.done ? <Check size={15} strokeWidth={3} /> : i + 1}</span>
+            <span className="grow">
+              <span className="bold">{s.title}</span>
+              {i === current && <span className="small muted" style={{ display: 'block' }}>{s.detail}</span>}
+            </span>
+            {i === current && <button className="btn primary btn-sm" onClick={s.action}>{t('Ir', 'Go')}</button>}
+            <span className="sr-only">{s.done ? t('Hecho', 'Done') : t('Pendiente', 'Pending')}</span>
+          </li>
+        ))}
+      </ol>
+      <button className="link-btn small muted" onClick={() => updateSettings({ guideHidden: true })}>{t('Ocultar la guía', 'Hide the guide')}</button>
+    </Card>
   )
 }
 

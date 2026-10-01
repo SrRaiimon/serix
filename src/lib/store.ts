@@ -141,6 +141,9 @@ export interface Settings {
   friendShareAt?: number
   friendReminderOff?: boolean
   friendReminderSnooze?: number
+  /** Guía de primeros pasos en Inicio: oculta, y si ya visitó Progreso. */
+  guideHidden?: boolean
+  guideProgressSeen?: boolean
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */

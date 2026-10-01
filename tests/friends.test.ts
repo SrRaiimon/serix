@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { alignWeeks, challengeProgress, challengeStatus, cleanChallenge, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
+import { alignWeeks, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
 import { toBase64Url } from '../src/lib/share'
 import { defaultSettings, type AppData } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
@@ -123,4 +123,41 @@ test('recordatorio de compartir: domingo o lunes, con amigos y sin compartir esa
   assert.equal(shareReminderDue(d({ friendShareAt: sunday - DAY_MS }), sunday), false)
   assert.equal(shareReminderDue(d({ friendReminderOff: true }), sunday), false)
   assert.equal(shareReminderDue(d({ friendReminderSnooze: sunday + DAY_MS }), sunday), false)
+})
+
+// MARK: Trofeos
+
+test('al terminar un reto se guarda la clasificación y da medallas', () => {
+  const c = { id: 'trofeo1', by: 'Ana', start: now - 20 * DAY_MS, end: now - 3600000, metric: 'sessions' as const, target: 2 }
+  const luis = { ...mySnapshot(data, sessions, now), name: 'Luis', challenges: [{ challenge: c, value: 1 }] }
+  const d: AppData = { ...data, friends: [luis], challenges: [c] }
+  const settled = settleChallenges(d, sessions, now)!
+  assert.deepEqual(settled[0].final, [{ name: 'Ana', value: 2, me: true }, { name: 'Luis', value: 1 }])
+  assert.equal(settleChallenges({ ...d, challenges: settled }, sessions, now), undefined) // ya guardado: no cambia
+  assert.deepEqual(challengeResult(settled[0]), { place: 1, of: 2, value: 2, medal: 'gold', completed: true })
+  assert.deepEqual(trophyCounts(settled), [1, 0, 0, 1])
+  assert.equal(trophyText([1, 0, 0, 1]), '🥇1 🎯1')
+  // Un resumen tardío de Luis sube su valor; luego su resumen ya no trae el reto y no se pierde.
+  const later = settleChallenges({ ...d, challenges: settled, friends: [{ ...luis, challenges: [{ challenge: c, value: 3 }] }] }, sessions, now)!
+  assert.equal(challengeResult(later[0])?.medal, 'silver')
+  assert.equal(settleChallenges({ ...d, challenges: later, friends: [{ ...luis, challenges: [] }] }, sessions, now), undefined)
+})
+
+test('en solitario no hay medalla, pero sí objetivo cumplido', () => {
+  const c = { id: 'solo123', by: 'Ana', start: now - 20 * DAY_MS, end: now - 3600000, metric: 'sessions' as const, target: 1 }
+  const settled = settleChallenges({ ...data, challenges: [c] }, sessions, now)!
+  assert.deepEqual(challengeResult(settled[0]), { place: 1, of: 1, value: 2, medal: undefined, completed: true })
+  // Un reto en curso no se cierra.
+  assert.equal(settleChallenges({ ...data, challenges: [{ ...c, end: now + DAY_MS }] }, sessions, now), undefined)
+})
+
+test('los trofeos viajan en el resumen y se acotan; la clasificación final no viaja', async () => {
+  const c = { id: 'trofeo1', by: 'Ana', start: now - 20 * DAY_MS, end: now - 3600000, metric: 'sessions' as const, final: [{ name: 'Ana', value: 2, me: true }, { name: 'Luis', value: 1 }] }
+  const s = mySnapshot({ ...data, challenges: [c] }, sessions, now)
+  assert.deepEqual(s.trophies, [1, 0, 0, 0])
+  const back = await decodeSnapshot(await encodeSnapshot(s))
+  assert.deepEqual(back?.trophies, [1, 0, 0, 0])
+  assert.equal(back?.challenges?.[0].challenge.final, undefined)
+  assert.deepEqual(cleanSnapshot({ ...s, trophies: [-1, 1e9, 'x', 2] })?.trophies, [0, 10000, 0, 2])
+  assert.deepEqual(cleanChallenge(c)?.final, c.final) // en la copia de seguridad sí se guarda
 })

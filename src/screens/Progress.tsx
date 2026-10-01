@@ -1,5 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, TrendingDown, Trophy, Weight } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } from '../components/ui'
@@ -7,7 +7,7 @@ import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weight
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
-import { finishedSessions, useData, type Session } from '../lib/store'
+import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
@@ -20,6 +20,10 @@ let savedSection: Section = 'summary'
 
 export function ProgressScreen() {
   const data = useData()
+  // Paso 3 de la guía de primeros pasos.
+  useEffect(() => {
+    if (!data.settings.guideProgressSeen) updateSettings({ guideProgressSeen: true })
+  }, [data.settings.guideProgressSeen])
   const sessions = useMemo(() => finishedSessions(data), [data])
   const [section, setSectionState] = useState<Section>(savedSection)
   const setSection = (s: Section) => {

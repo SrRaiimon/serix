@@ -132,6 +132,8 @@ function settings(v: unknown): Settings {
       kg: list(s.plates.kg, (x) => (typeof x === 'number' && PLATE_OPTIONS.kg.includes(x) ? x : undefined), 20),
       lb: list(s.plates.lb, (x) => (typeof x === 'number' && PLATE_OPTIONS.lb.includes(x) ? x : undefined), 20),
     } : undefined,
+    guideHidden: s.guideHidden === true ? true : undefined,
+    guideProgressSeen: s.guideProgressSeen === true ? true : undefined,
     shareBodyWeight: s.shareBodyWeight === true ? true : undefined,
     friendShareAt: optNum(s.friendShareAt, EPOCH_MIN, EPOCH_MAX),
     friendReminderOff: s.friendReminderOff === true ? true : undefined,
