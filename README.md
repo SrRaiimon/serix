@@ -65,7 +65,10 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 
 ## Licencias
 
-- **Código:** MIT (ver [`LICENSE`](LICENSE)).
+- **Serix (código y contenido propios):** [PolyForm Noncommercial 1.0.0](LICENSE). Se puede usar,
+  estudiar, modificar y compartir gratis con fines no comerciales; **cualquier uso comercial está
+  prohibido** sin permiso escrito del autor. Alcance, ejemplos y consecuencias del incumplimiento en
+  [`AVISO-LEGAL.md`](AVISO-LEGAL.md). Las versiones hasta la 0.0.10 se publicaron con licencia MIT.
 - **Ejercicios:** nombres y clasificación (músculos, material, nivel) tomados de la lista de
   [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) y traducidos a mano. Son datos de
   hecho. **No se usan sus fotos ni sus instrucciones**: aunque el repositorio se declara de dominio

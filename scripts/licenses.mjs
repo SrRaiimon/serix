@@ -44,10 +44,18 @@ function licenseText(dir, pkg) {
 }
 
 const parts = [
-  'Serix — licencias de terceros',
-  '==============================',
+  'Serix — licencias',
+  '=================',
   '',
-  'Este archivo recoge las licencias del software y los contenidos que se distribuyen con la app.',
+  'Serix (su código y su contenido propios) se distribuye con la licencia PolyForm Noncommercial 1.0.0:',
+  'https://polyformproject.org/licenses/noncommercial/1.0.0',
+  'Required Notice: Copyright 2026 SrRaiimon (https://github.com/SrRaiimon/serix)',
+  'Required Notice: Commercial use of Serix is not permitted. To request a commercial license, open an issue at https://github.com/SrRaiimon/serix/issues',
+  'Prohibido cualquier uso comercial sin permiso escrito del autor. Detalles en',
+  'https://github.com/SrRaiimon/serix/blob/main/AVISO-LEGAL.md',
+  '',
+  'A continuación, las licencias del software y los datos de terceros que se distribuyen con la app,',
+  'que conservan sus propios términos:',
   '',
 ]
 
