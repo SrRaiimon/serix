@@ -1,4 +1,5 @@
 import { uid } from './format'
+import { t } from './i18n'
 
 // Superseries y circuitos: ejercicios consecutivos con el mismo groupId. Dos forman una superserie y
 // tres o más un circuito. Dentro del grupo no se descansa; el descanso va tras el último de la ronda.
@@ -17,7 +18,7 @@ export interface GroupSlot {
   last: boolean
 }
 
-export const groupKind = (size: number) => (size >= 3 ? 'Circuito' : 'Superserie')
+export const groupKind = (size: number) => (size >= 3 ? t('Circuito', 'Circuit') : t('Superserie', 'Superset'))
 
 /** Deja solo grupos válidos: un único tramo seguido y de al menos dos ejercicios. */
 export function normalizeGroups(list: Groupable[]): void {

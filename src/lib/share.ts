@@ -3,6 +3,7 @@ import { uid } from './format'
 import { normalizeGroups } from './groups'
 import type { Routine, RoutineExercise } from './store'
 import { defaultTracking, type Tracking } from './tracking'
+import { t } from './i18n'
 
 // Rutinas compartidas por enlace, sin servidor: la rutina va comprimida dentro del propio enlace
 // (#/import/<código>). Solo viajan los identificadores del catálogo y las cifras; los nombres se
@@ -77,7 +78,7 @@ export async function decodePlan(code: string, catalog: Catalog): Promise<Import
   } catch (e) {
     if (e instanceof ShareError) throw e
     // Base64 o compresión rotos: casi siempre un enlace cortado al copiarlo.
-    throw new ShareError('El enlace está incompleto o dañado. Pide que te lo vuelvan a enviar.')
+    throw new ShareError(t('El enlace está incompleto o dañado. Pide que te lo vuelvan a enviar.', 'The link is incomplete or damaged. Ask for it to be sent again.'))
   }
 }
 
@@ -86,15 +87,15 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
   const bytes = fromBase64Url(code.slice(1))
   let json: Uint8Array
   if (kind === 'z') {
-    if (typeof DecompressionStream === 'undefined') throw new ShareError('Este navegador no puede abrir enlaces comprimidos. Actualízalo o prueba con otro.')
+    if (typeof DecompressionStream === 'undefined') throw new ShareError(t('Este navegador no puede abrir enlaces comprimidos. Actualízalo o prueba con otro.', 'This browser cannot open compressed links. Update it or try another one.'))
     json = await transform(bytes, new DecompressionStream('deflate-raw'))
   } else if (kind === 'j') {
     json = bytes
   } else {
-    throw new ShareError('El enlace no es de una rutina.')
+    throw new ShareError(t('El enlace no es de una rutina.', 'This link is not a routine.'))
   }
   const payload = JSON.parse(new TextDecoder().decode(json)) as Payload
-  if (payload.v !== 1 || !Array.isArray(payload.r)) throw new ShareError('Este enlace es de una versión más nueva de la app. Recarga la app e inténtalo de nuevo.')
+  if (payload.v !== 1 || !Array.isArray(payload.r)) throw new ShareError(t('Este enlace es de una versión más nueva de la app. Recarga la app e inténtalo de nuevo.', 'This link is from a newer version of the app. Reload the app and try again.'))
 
   let skipped = 0
   const routines = payload.r.map((r) => {
@@ -115,7 +116,7 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
       }]
     })
     normalizeGroups(exercises)
-    return { name: String(r.n || 'Rutina'), exercises }
+    return { name: String(r.n || t('Rutina', 'Routine')), exercises }
   })
   return { programName: payload.p, routines, skipped }
 }
@@ -144,7 +145,7 @@ export function newRoutineFromImport(r: ImportedPlan['routines'][number], order:
 export async function shareLink(title: string, url: string): Promise<'shared' | 'copied' | 'cancelled'> {
   if (navigator.share) {
     try {
-      await navigator.share({ title, text: `${title} — ábrela en Serix`, url })
+      await navigator.share({ title, text: t(`${title} — ábrela en Serix`, `${title} — open it in Serix`), url })
       return 'shared'
     } catch {
       return 'cancelled'

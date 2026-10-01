@@ -1,0 +1,562 @@
+{
+  "Alternate_Incline_Dumbbell_Curl": [
+    "Sit on an incline bench with a dumbbell in each hand, arms hanging and palms facing forward.",
+    "Curl one dumbbell towards your shoulder without moving the elbow and lower it with control.",
+    "Repeat with the other arm. The incline stretches the biceps more."
+  ],
+  "Barbell_Curls_Lying_Against_An_Incline": [
+    "Lie on your back on an incline bench with a barbell in your hands and your arms hanging behind your torso.",
+    "Bend your elbows to raise the bar without moving your arms.",
+    "Lower with control until your arms are straight."
+  ],
+  "Cable_Preacher_Curl": [
+    "Place a preacher bench in front of a low pulley and rest your arms on the pad, holding the bar.",
+    "Curl the bar up by bending your elbows.",
+    "Lower with control until your arms are almost straight."
+  ],
+  "Close-Grip_EZ_Bar_Curl": [
+    "Stand and grab the EZ bar on the inner grips, hands close together.",
+    "With your elbows at your sides, curl the bar towards your shoulders.",
+    "Lower with control."
+  ],
+  "Close-Grip_Standing_Barbell_Curl": [
+    "Stand and grab the bar with your palms facing forward and your hands closer than shoulder width.",
+    "With your elbows at your sides, curl the bar towards your shoulders.",
+    "Lower with control."
+  ],
+  "Concentration_Curls": [
+    "Sit on a bench with your legs apart and rest the back of your arm against your inner thigh, dumbbell in hand.",
+    "Curl the dumbbell towards your shoulder without moving your arm.",
+    "Lower with control and switch sides."
+  ],
+  "Cross_Body_Hammer_Curl": [
+    "Stand with a dumbbell in each hand, palms facing each other.",
+    "Curl one dumbbell across the front of your body towards the opposite shoulder.",
+    "Lower with control and alternate."
+  ],
+  "Drag_Curl": [
+    "Stand with the bar in front of your thighs and your palms facing forward.",
+    "Raise the bar close to your body, pulling your elbows back as if dragging it up your torso.",
+    "Lower along the same path."
+  ],
+  "Dumbbell_Alternate_Bicep_Curl": [
+    "Stand with a dumbbell in each hand at your sides.",
+    "Curl one dumbbell up, turning the palm upwards, with the elbow at your side.",
+    "Lower with control and alternate."
+  ],
+  "Dumbbell_Prone_Incline_Curl": [
+    "Lie face down on an incline bench with a dumbbell hanging in each hand.",
+    "Curl the dumbbells by bending your elbows without moving them.",
+    "Lower with control."
+  ],
+  "High_Cable_Curls": [
+    "Stand between two high pulleys with a handle in each hand and your arms out to the sides at shoulder height.",
+    "Bend your elbows, bringing your hands towards your head as if flexing your biceps.",
+    "Return with control."
+  ],
+  "Incline_Dumbbell_Curl": [
+    "Sit on an incline bench with a dumbbell in each hand and your arms hanging.",
+    "Curl the dumbbells towards your shoulders without bringing your elbows forward.",
+    "Lower with control until your arms are straight."
+  ],
+  "Incline_Hammer_Curls": [
+    "Sit on an incline bench with a dumbbell in each hand, palms facing each other.",
+    "Curl the dumbbells without turning your wrists.",
+    "Lower with control."
+  ],
+  "Incline_Inner_Biceps_Curl": [
+    "Sit on an incline bench with the dumbbells hanging and your arms angled slightly outwards.",
+    "Curl the dumbbells keeping your elbows out.",
+    "Lower with control."
+  ],
+  "Lying_Cable_Curl": [
+    "Lie on your back on the floor facing a low pulley, holding the bar with your arms by your body.",
+    "Bend your elbows, bringing the bar towards your chest.",
+    "Return with control."
+  ],
+  "Lying_Close-Grip_Bar_Curl_On_High_Pulley": [
+    "Lie on your back on a bench with your head towards a high pulley and grab the bar with your arms vertical.",
+    "Bend your elbows, bringing the bar towards your forehead without moving your arms.",
+    "Return with control."
+  ],
+  "Lying_High_Bench_Barbell_Curl": [
+    "Lie face down on a high bench with your arms hanging over the end, holding the bar.",
+    "Curl the bar up by bending your elbows.",
+    "Lower with control."
+  ],
+  "Lying_Supine_Dumbbell_Curl": [
+    "Lie on your back on a flat bench with a dumbbell in each hand and your arms hanging at your sides.",
+    "Curl the dumbbells towards your shoulders.",
+    "Lower with control until your arms are straight."
+  ],
+  "Machine_Bicep_Curl": [
+    "Sit in the machine with your arms on the pad.",
+    "Curl the handles up by bending your elbows.",
+    "Lower with control."
+  ],
+  "Machine_Preacher_Curls": [
+    "Sit in the preacher curl machine with your arms supported.",
+    "Curl the handles up by bending your elbows.",
+    "Lower with control until your arms are almost straight."
+  ],
+  "One_Arm_Dumbbell_Preacher_Curl": [
+    "Rest one arm on a preacher bench with the dumbbell in your hand.",
+    "Curl it up by bending your elbow.",
+    "Lower with control until almost straight and switch sides."
+  ],
+  "Overhead_Cable_Curl": [
+    "Stand side-on to a high pulley with the handle in your hand and your arm at shoulder height.",
+    "Bend your elbow, bringing your hand towards your head.",
+    "Return with control and switch sides."
+  ],
+  "Preacher_Curl": [
+    "Sit at the preacher bench with your arms on the pad and the bar in your hands.",
+    "Curl the bar up by bending your elbows.",
+    "Lower with control until almost straight, without bouncing at the bottom."
+  ],
+  "Preacher_Hammer_Dumbbell_Curl": [
+    "Rest your arms on a preacher bench with a dumbbell in each hand, palms facing each other.",
+    "Curl the dumbbells without turning your wrists.",
+    "Lower with control."
+  ],
+  "Reverse_Barbell_Curl": [
+    "Stand and grab the bar with your palms facing down, shoulder-width apart.",
+    "With your elbows at your sides, curl the bar towards your shoulders.",
+    "Lower with control. It works the forearms a lot."
+  ],
+  "Reverse_Barbell_Preacher_Curls": [
+    "Rest your arms on a preacher bench and grab the EZ bar with your palms facing down.",
+    "Curl it up by bending your elbows.",
+    "Lower with control."
+  ],
+  "Reverse_Cable_Curl": [
+    "Stand facing a low pulley and grab the bar with your palms facing down.",
+    "With your elbows at your sides, curl it towards your shoulders.",
+    "Lower with control."
+  ],
+  "Seated_Close-Grip_Concentration_Barbell_Curl": [
+    "Sit on a bench, lean forward and rest your elbows against your inner thighs, holding a barbell.",
+    "Curl the bar towards your chest.",
+    "Lower with control."
+  ],
+  "Seated_Dumbbell_Curl": [
+    "Sit on a bench with a dumbbell in each hand at your sides.",
+    "Curl the dumbbells up, turning your palms upwards.",
+    "Lower with control."
+  ],
+  "Seated_Dumbbell_Inner_Biceps_Curl": [
+    "Sit with a dumbbell in each hand and your arms angled slightly outwards.",
+    "Curl the dumbbells keeping your elbows out.",
+    "Lower with control."
+  ],
+  "Spider_Curl": [
+    "Lie face down on the vertical side of a preacher bench, arms hanging, holding the EZ bar.",
+    "Curl the bar up by bending your elbows.",
+    "Lower with control."
+  ],
+  "Standing_Concentration_Curl": [
+    "Stand, lean your torso forward and let the arm with the dumbbell hang.",
+    "Curl it towards your shoulder without moving your arm.",
+    "Lower with control and switch sides."
+  ],
+  "Standing_Dumbbell_Reverse_Curl": [
+    "Stand with a dumbbell in each hand, palms facing back.",
+    "Curl the dumbbells with your elbows at your sides.",
+    "Lower with control."
+  ],
+  "Standing_Inner-Biceps_Curl": [
+    "Stand with a dumbbell in each hand and your arms angled slightly outwards.",
+    "Curl the dumbbells keeping your elbows out.",
+    "Lower with control."
+  ],
+  "Standing_One-Arm_Cable_Curl": [
+    "Stand facing a low pulley with a handle in one hand.",
+    "Curl the handle towards your shoulder with your elbow at your side.",
+    "Lower with control and switch sides."
+  ],
+  "Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench": [
+    "Stand behind an incline bench and rest your arm over the backrest, dumbbell in hand.",
+    "Curl it up by bending your elbow.",
+    "Lower with control and switch sides."
+  ],
+  "Two-Arm_Dumbbell_Preacher_Curl": [
+    "Rest your arms on a preacher bench with a dumbbell in each hand.",
+    "Curl the dumbbells by bending your elbows.",
+    "Lower with control."
+  ],
+  "Wide-Grip_Standing_Barbell_Curl": [
+    "Stand and grab the bar with your palms facing forward and your hands wider than your shoulders.",
+    "With your elbows at your sides, curl the bar up.",
+    "Lower with control."
+  ],
+  "Zottman_Curl": [
+    "Stand with a dumbbell in each hand, palms facing forward.",
+    "Curl the dumbbells up and, at the top, turn your palms down.",
+    "Lower slowly like that, then turn your palms back up at the bottom."
+  ],
+  "Zottman_Preacher_Curl": [
+    "Rest your arms on a preacher bench with a dumbbell in each hand, palms facing up.",
+    "Curl the dumbbells up and, at the top, turn your palms down.",
+    "Lower slowly and turn your palms back again."
+  ],
+  "Bench_Press_-_Powerlifting": [
+    "Lie on the bench with your eyes under the bar, squeeze your shoulder blades together, arch your back slightly and plant your feet firmly.",
+    "Unrack the bar and lower it under control to your lower chest.",
+    "Press hard until your arms are straight without lifting your glutes. Use a spotter."
+  ],
+  "Board_Press": [
+    "Lie on the bench and have someone place a few boards on your chest.",
+    "Lower the bar until it touches the boards.",
+    "Press until your arms are straight. It trains the top part of the press."
+  ],
+  "Body-Up": [
+    "Get into a forearm plank.",
+    "Push through your hands, straightening your elbows until you are on your palms, without moving your feet.",
+    "Lower back to your forearms with control."
+  ],
+  "Cable_Incline_Triceps_Extension": [
+    "Lie on an incline bench with your back to a low pulley, holding the bar overhead with your elbows bent.",
+    "Straighten your arms without moving your elbows.",
+    "Return with control."
+  ],
+  "Cable_Lying_Triceps_Extension": [
+    "Lie on a bench with your head towards a low pulley and grab the bar with your arms vertical.",
+    "Bend your elbows, bringing the bar towards your forehead, then straighten them again.",
+    "Keep your elbows still."
+  ],
+  "Cable_One_Arm_Tricep_Extension": [
+    "Stand facing a high pulley, grab the handle with one hand and keep your elbow at your side.",
+    "Straighten your arm downwards without moving your elbow.",
+    "Return with control and switch sides."
+  ],
+  "Cable_Rope_Overhead_Triceps_Extension": [
+    "With your back to a pulley, hold the rope behind your head with your elbows pointing forward.",
+    "Straighten your arms forwards and upwards.",
+    "Return with control."
+  ],
+  "Close-Grip_Barbell_Bench_Press": [
+    "Lie on the bench and grab the bar at shoulder width or slightly narrower.",
+    "Lower it to your lower chest with your elbows close to your body.",
+    "Press until your arms are straight."
+  ],
+  "Close-Grip_Dumbbell_Press": [
+    "Lie on a bench with the dumbbells together over your chest, palms facing each other.",
+    "Lower them together to your chest with your elbows close to your body.",
+    "Press until your arms are straight."
+  ],
+  "Close-Grip_EZ-Bar_Press": [
+    "Lie on a bench holding an EZ bar on the inner grips.",
+    "Lower it to your chest with your elbows close to your body.",
+    "Press until your arms are straight."
+  ],
+  "Close-Grip_Push-Up_off_of_a_Dumbbell": [
+    "Get into a push-up position with your hands on a dumbbell lying on its side.",
+    "Lower with your elbows close to your body until your chest brushes the dumbbell.",
+    "Push until your arms are straight."
+  ],
+  "Decline_Close-Grip_Bench_To_Skull_Crusher": [
+    "Lie on a decline bench with a close grip.",
+    "Lower the bar to your chest and press; on the next rep, bend only your elbows to bring it to your forehead.",
+    "Alternate both movements with control."
+  ],
+  "Decline_Dumbbell_Triceps_Extension": [
+    "Lie on a decline bench with a dumbbell in each hand and your arms vertical.",
+    "Bend your elbows, lowering the dumbbells beside your head.",
+    "Straighten your arms to return."
+  ],
+  "Decline_EZ_Bar_Triceps_Extension": [
+    "Lie on a decline bench with the EZ bar and your arms vertical.",
+    "Bend your elbows, bringing the bar towards your forehead.",
+    "Straighten your arms to return."
+  ],
+  "Dip_Machine": [
+    "Sit in the dip machine and grab the handles with your elbows bent.",
+    "Push down until your arms are straight.",
+    "Return with control."
+  ],
+  "Dumbbell_Floor_Press": [
+    "Lie on your back on the floor with a dumbbell in each hand and your elbows resting on the floor.",
+    "Press until your arms are straight.",
+    "Lower until your elbows touch the floor."
+  ],
+  "Dumbbell_One-Arm_Triceps_Extension": [
+    "Sitting or standing, hold a dumbbell overhead with one hand.",
+    "Bend your elbow, lowering it behind your head.",
+    "Straighten your arm to return and switch sides."
+  ],
+  "Dumbbell_Tricep_Extension_-Pronated_Grip": [
+    "Lie on a bench with a dumbbell in each hand, arms vertical and palms facing your feet.",
+    "Bend your elbows, lowering the dumbbells towards your head.",
+    "Straighten your arms to return."
+  ],
+  "EZ-Bar_Skullcrusher": [
+    "Lie on a bench with the EZ bar over your chest and your arms straight.",
+    "Bend your elbows, lowering the bar towards your forehead without moving your arms.",
+    "Straighten your arms to return."
+  ],
+  "Floor_Press": [
+    "Lie on your back on the floor inside the rack with the bar over your chest.",
+    "Lower the bar until your elbows touch the floor.",
+    "Press until your arms are straight."
+  ],
+  "Floor_Press_with_Chains": [
+    "Lie on the floor with chains hanging from the ends of the bar.",
+    "Lower the bar until your elbows touch the floor.",
+    "Press until your arms are straight: the load increases as you go up."
+  ],
+  "Incline_Barbell_Triceps_Extension": [
+    "Lie on an incline bench with the bar overhead and your arms straight.",
+    "Bend your elbows, lowering the bar behind your head.",
+    "Straighten your arms to return."
+  ],
+  "Incline_Push-Up_Close-Grip": [
+    "Place your hands close together on a bench, body straight.",
+    "Lower with your elbows close to your body.",
+    "Push until your arms are straight."
+  ],
+  "JM_Press": [
+    "Lie on the bench with a close grip.",
+    "Lower the bar towards your upper chest by bending your elbows, which travel forward towards your feet.",
+    "Press until your arms are straight. A mix of close-grip press and extension: use a light weight."
+  ],
+  "Kettlebell_Overhead_Triceps_Extension": [
+    "Hold a kettlebell by the handle with both hands overhead.",
+    "Bend your elbows, lowering it behind your head.",
+    "Straighten your arms to return."
+  ],
+  "Kneeling_Cable_Triceps_Extension": [
+    "Kneel with your back to a high pulley, holding the rope behind your head.",
+    "Straighten your arms forwards.",
+    "Return with control."
+  ],
+  "Low_Cable_Triceps_Extension": [
+    "With your back to a low pulley, hold the rope or bar behind your head.",
+    "Straighten your arms upwards.",
+    "Return with control."
+  ],
+  "Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head": [
+    "Lie on a bench with the bar over your chest and a close grip.",
+    "Bend your elbows, taking the bar behind your head.",
+    "Straighten your arms to return."
+  ],
+  "Lying_Close-Grip_Barbell_Triceps_Press_To_Chin": [
+    "Lie on a bench with the EZ bar over your chest and a close grip.",
+    "Lower the bar towards your chin by bending your elbows.",
+    "Press until your arms are straight."
+  ],
+  "Lying_Dumbbell_Tricep_Extension": [
+    "Lie on a bench with a dumbbell in each hand and your arms vertical.",
+    "Bend your elbows, lowering the dumbbells beside your ears.",
+    "Straighten your arms to return."
+  ],
+  "Machine_Triceps_Extension": [
+    "Sit in the machine with your arms on the pad.",
+    "Straighten your arms, pushing the handles.",
+    "Return with control."
+  ],
+  "One_Arm_Floor_Press": [
+    "Lie on the floor holding a barbell by the middle with one hand.",
+    "Lower it until your elbow touches the floor.",
+    "Press until your arm is straight and switch sides. Control the balance of the bar."
+  ],
+  "One_Arm_Pronated_Dumbbell_Triceps_Extension": [
+    "Lie on a bench with a dumbbell in one hand, arm vertical and palm facing your feet.",
+    "Bend your elbow, lowering the dumbbell towards the opposite side of your chest.",
+    "Straighten your arm to return and switch sides."
+  ],
+  "One_Arm_Supinated_Dumbbell_Triceps_Extension": [
+    "Lie on a bench with a dumbbell in one hand, arm vertical and palm facing your head.",
+    "Bend your elbow, lowering the dumbbell towards your shoulder.",
+    "Straighten your arm to return and switch sides."
+  ],
+  "Pin_Presses": [
+    "Lie on a bench inside the rack with the bar resting on the safety pins a few centimetres above your chest.",
+    "Press the bar off the pins until your arms are straight.",
+    "Set it back down on the pins."
+  ],
+  "Reverse_Band_Bench_Press": [
+    "Hang bands from the top of the rack and hook them to the bar; they will help you at the bottom.",
+    "Do a normal bench press.",
+    "Press hard until your arms are straight. For advanced lifters."
+  ],
+  "Reverse_Grip_Triceps_Pushdown": [
+    "Grab the high pulley bar with your palms facing up.",
+    "Straighten your arms downwards with your elbows at your sides.",
+    "Return with control."
+  ],
+  "Reverse_Triceps_Bench_Press": [
+    "Lie on the bench and grab the bar with your palms facing you.",
+    "Lower it to your lower chest with your elbows tucked.",
+    "Press until your arms are straight. Use a light weight and a spotter."
+  ],
+  "Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension": [
+    "Sitting on the edge of a bench, lean forward with the dumbbell in one hand and your upper arm against your body.",
+    "Straighten your elbow, taking the dumbbell backwards.",
+    "Return with control and switch sides."
+  ],
+  "Seated_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension": [
+    "Sitting on the edge of a bench, lean forward with a dumbbell in each hand.",
+    "Straighten your elbows, taking the dumbbells backwards.",
+    "Return with control."
+  ],
+  "Seated_Triceps_Press": [
+    "Sitting, hold a dumbbell with both hands overhead.",
+    "Bend your elbows, lowering it behind your head.",
+    "Straighten your arms to return."
+  ],
+  "Smith_Machine_Close-Grip_Bench_Press": [
+    "Place a bench under the Smith machine bar and take a close grip.",
+    "Lower it to your chest with your elbows close to your body.",
+    "Press until your arms are straight."
+  ],
+  "Speed_Band_Overhead_Triceps": [
+    "With your back to a band's anchor point, hold it behind your head with your elbows bent.",
+    "Straighten your arms quickly forwards and upwards.",
+    "Return with control and repeat at a steady pace."
+  ],
+  "Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension": [
+    "Lean forward with one hand on a bench and the dumbbell in the other, upper arm against your body.",
+    "Straighten your elbow, taking the dumbbell backwards.",
+    "Return with control and switch sides."
+  ],
+  "Standing_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension": [
+    "Stand and lean your torso forward with a dumbbell in each hand and your upper arms against your body.",
+    "Straighten your elbows, taking the dumbbells backwards.",
+    "Return with control."
+  ],
+  "Standing_Low-Pulley_One-Arm_Triceps_Extension": [
+    "With your back to a low pulley, hold the handle behind your head with one hand.",
+    "Straighten your arm upwards.",
+    "Return with control and switch sides."
+  ],
+  "Standing_One-Arm_Dumbbell_Triceps_Extension": [
+    "Standing, hold a dumbbell overhead with one hand.",
+    "Bend your elbow, lowering it behind your head.",
+    "Straighten your arm to return and switch sides."
+  ],
+  "Standing_Overhead_Barbell_Triceps_Extension": [
+    "Standing, hold a barbell or EZ bar overhead with a close grip.",
+    "Bend your elbows, lowering it behind your head.",
+    "Straighten your arms to return."
+  ],
+  "Standing_Towel_Triceps_Extension": [
+    "Standing, hold a towel behind your head with one hand and the other end with the other hand at your lower back.",
+    "Straighten the top arm while the other hand resists by pulling down.",
+    "Return with control and switch sides."
+  ],
+  "Tate_Press": [
+    "Lie on a bench with a dumbbell in each hand, arms straight and palms facing your feet.",
+    "Bend your elbows outwards, lowering the dumbbells until they touch over your chest.",
+    "Straighten your arms to return."
+  ],
+  "Tricep_Dumbbell_Kickback": [
+    "Rest one knee and one hand on a bench, with the dumbbell in the other hand and your upper arm against your body, parallel to the floor.",
+    "Straighten your elbow, taking the dumbbell backwards.",
+    "Return with control and switch sides."
+  ],
+  "Triceps_Overhead_Extension_with_Rope": [
+    "With your back to a low pulley, hold the rope behind your head.",
+    "Straighten your arms upwards, spreading your hands slightly at the end.",
+    "Return with control."
+  ],
+  "Triceps_Pushdown_-_Rope_Attachment": [
+    "Attach the rope to the high pulley and grab it with your elbows at your sides.",
+    "Straighten your arms downwards, pulling the rope ends apart at the end.",
+    "Return with control."
+  ],
+  "Triceps_Pushdown_-_V-Bar_Attachment": [
+    "Attach the V-bar to the high pulley and grab it with your elbows at your sides.",
+    "Straighten your arms downwards.",
+    "Return with control."
+  ],
+  "Bottoms-Up_Clean_From_The_Hang_Position": [
+    "Hold a kettlebell hanging between your legs.",
+    "With a hip drive, bring it up to shoulder height with the bell facing up, squeezing the handle hard.",
+    "Lower it with control. It demands a strong grip."
+  ],
+  "Cable_Wrist_Curl": [
+    "Sit facing a low pulley with your forearms on your thighs and the bar in your hands, palms up.",
+    "Curl your wrists, raising the bar.",
+    "Lower with control."
+  ],
+  "Dumbbell_Lying_Pronation": [
+    "Lie down with your forearm supported, holding a light dumbbell by one end, palm facing up.",
+    "Rotate your wrist until your palm faces down.",
+    "Return with control and switch sides."
+  ],
+  "Dumbbell_Lying_Supination": [
+    "Lie down with your forearm supported, holding a light dumbbell by one end, palm facing down.",
+    "Rotate your wrist until your palm faces up.",
+    "Return with control and switch sides."
+  ],
+  "Finger_Curls": [
+    "Sitting, with your forearms on your thighs and the bar in your hands, palms up.",
+    "Let the bar roll down to your fingertips.",
+    "Close your fingers to roll it back up and curl your wrists."
+  ],
+  "Palms-Down_Dumbbell_Wrist_Curl_Over_A_Bench": [
+    "Kneel beside a bench with your forearms on it and your hands over the edge, a dumbbell in each, palms down.",
+    "Raise the backs of your hands by bending your wrists upwards.",
+    "Lower with control."
+  ],
+  "Palms-Down_Wrist_Curl_Over_A_Bench": [
+    "Kneel beside a bench with your forearms on it and the bar in your hands, palms down.",
+    "Raise the bar by bending your wrists upwards.",
+    "Lower with control."
+  ],
+  "Palms-Up_Barbell_Wrist_Curl_Over_A_Bench": [
+    "Kneel beside a bench with your forearms on it and the bar in your hands, palms up.",
+    "Raise the bar by curling your wrists.",
+    "Lower with control."
+  ],
+  "Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench": [
+    "Kneel beside a bench with your forearms on it and a dumbbell in each hand, palms up.",
+    "Raise the dumbbells by curling your wrists.",
+    "Lower with control."
+  ],
+  "Seated_Dumbbell_Palms-Down_Wrist_Curl": [
+    "Sitting, with your forearms on your thighs and a dumbbell in each hand, palms down.",
+    "Raise the backs of your hands by bending your wrists.",
+    "Lower with control."
+  ],
+  "Seated_Dumbbell_Palms-Up_Wrist_Curl": [
+    "Sitting, with your forearms on your thighs and a dumbbell in each hand, palms up.",
+    "Raise the dumbbells by curling your wrists.",
+    "Lower with control."
+  ],
+  "Seated_One-Arm_Dumbbell_Palms-Down_Wrist_Curl": [
+    "Sitting, with one forearm on your thigh and the dumbbell in your hand, palm down.",
+    "Raise the back of your hand by bending your wrist.",
+    "Lower with control and switch sides."
+  ],
+  "Seated_One-Arm_Dumbbell_Palms-Up_Wrist_Curl": [
+    "Sitting, with one forearm on your thigh and the dumbbell in your hand, palm up.",
+    "Raise the dumbbell by curling your wrist.",
+    "Lower with control and switch sides."
+  ],
+  "Seated_Palm-Up_Barbell_Wrist_Curl": [
+    "Sitting, with your forearms on your thighs and the bar in your hands, palms up.",
+    "Raise the bar by curling your wrists.",
+    "Lower with control."
+  ],
+  "Seated_Palms-Down_Barbell_Wrist_Curl": [
+    "Sitting, with your forearms on your thighs and the bar in your hands, palms down.",
+    "Raise the bar by bending your wrists upwards.",
+    "Lower with control."
+  ],
+  "Seated_Two-Arm_Palms-Up_Low-Pulley_Wrist_Curl": [
+    "Sit facing a low pulley with your forearms on your thighs and the bar in your hands, palms up.",
+    "Raise the bar by curling your wrists.",
+    "Lower with control."
+  ],
+  "Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl": [
+    "Standing, hold the bar behind your thighs with your palms facing back.",
+    "Curl your wrists, raising the bar.",
+    "Lower with control."
+  ],
+  "Wrist_Rotations_with_Straight_Bar": [
+    "Standing, hold a bar in front of your body with your arms straight.",
+    "Rotate your wrists alternately, as if winding up a rope.",
+    "Keep the rhythm for the set time."
+  ]
+}

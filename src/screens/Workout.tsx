@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
+import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
@@ -50,7 +51,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     if (set.warmup || best === undefined || trackingOf(e) !== 'weight_reps') return
     const value = e1rm(set.weight, set.reps)
     if (value > best + 0.01) {
-      showToast(`Nuevo récord en ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`)
+      showToast(t(`Nuevo récord en ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`))
       navigator.vibrate?.([60, 60, 120])
     }
   }
@@ -60,7 +61,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const goToNext = (from: number) => {
     const next = session.exercises[from + 1]
     const slot = slots[from + 1]
-    showToast(`Ahora: ${slot.letter}${slot.position} ${next.name}`)
+    showToast(`${t('Ahora', 'Now')}: ${slot.letter}${slot.position} ${next.name}`)
     navigator.vibrate?.(30)
     const pending = next.sets.find((s) => !s.done)
     requestAnimationFrame(() => {
@@ -72,7 +73,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const roundEnd = (last: number) => {
     const firstIndex = last - (slots[last].position - 1)
     const first = session.exercises[firstIndex]
-    if (first.sets.some((s) => !s.done)) showToast(`Ronda completada · después: ${slots[firstIndex].letter}1 ${first.name}`)
+    if (first.sets.some((s) => !s.done)) showToast(t(`Ronda completada · después: ${slots[firstIndex].letter}1 ${first.name}`, `Round done · next: ${slots[firstIndex].letter}1 ${first.name}`))
   }
 
   // Tramos para dibujar: ejercicios sueltos o grupos seguidos.
@@ -128,11 +129,11 @@ export function WorkoutScreen({ session }: { session: Session }) {
       <div className="fullscreen-inner">
         <div className="nav-bar">
           <div className="left">
-            <button className="icon-btn" onClick={minimizeWorkout} aria-label="Minimizar"><ChevronDown size={22} /></button>
+            <button className="icon-btn" onClick={minimizeWorkout} aria-label={t('Minimizar', 'Minimize')}><ChevronDown size={22} /></button>
           </div>
           <div className="title" style={{ fontVariantNumeric: 'tabular-nums' }}>{clock((now - session.start) / 1000)}</div>
           <div className="right">
-            <button className="btn small" style={{ background: 'var(--green)', color: '#fff' }} onClick={() => setConfirm('finish')}>Terminar</button>
+            <button className="btn small" style={{ background: 'var(--green)', color: '#fff' }} onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
           </div>
         </div>
 
@@ -141,7 +142,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
             <input className="bold" style={{ fontSize: 24 }} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
             {allSets.length > 0 && (
               <>
-                <span className="small muted">{done} de {allSets.length} series</span>
+                <span className="small muted">{t(`${done} de ${allSets.length} series`, `${done} of ${allSets.length} sets`)}</span>
                 <Progress value={done} total={allSets.length} green />
               </>
             )}
@@ -154,15 +155,15 @@ export function WorkoutScreen({ session }: { session: Session }) {
             return (
               <div key={session.exercises[run[0]].id} className="group-box">
                 <div className="group-head">
-                  <Link2 size={15} /> {groupKind(first.size)} {first.letter} · descanso {rest(lastEx.rest)} tras cada ronda
+                  <Link2 size={15} /> {groupKind(first.size)} {first.letter} · {t(`descanso ${rest(lastEx.rest)} tras cada ronda`, `${rest(lastEx.rest)} rest after each round`)}
                 </div>
                 {run.map(block)}
               </div>
             )
           })}
 
-          <button className="btn secondary block" onClick={() => setPicker(true)}><Plus size={20} /> Añadir ejercicio</button>
-          <button className="btn danger block" onClick={() => setConfirm('discard')}><Trash2 size={18} /> Descartar entrenamiento</button>
+          <button className="btn secondary block" onClick={() => setPicker(true)}><Plus size={20} /> {t('Añadir ejercicio', 'Add exercise')}</button>
+          <button className="btn danger block" onClick={() => setConfirm('discard')}><Trash2 size={18} /> {t('Descartar entrenamiento', 'Discard workout')}</button>
         </div>
       </div>
 
@@ -170,19 +171,19 @@ export function WorkoutScreen({ session }: { session: Session }) {
 
       {confirm === 'finish' && (
         <ActionSheet
-          title={done > 0 ? '¿Terminar el entrenamiento?' : 'No has completado ninguna serie'}
-          message={done === 0 ? 'Marca las series con ✓ a medida que las hagas.'
-            : pending === 1 ? 'La serie sin marcar no se guardará.'
-            : pending > 1 ? `Las ${pending} series sin marcar no se guardarán.` : '¡Buen trabajo!'}
+          title={done > 0 ? t('¿Terminar el entrenamiento?', 'Finish the workout?') : t('No has completado ninguna serie', 'You have not completed any set')}
+          message={done === 0 ? t('Marca las series con ✓ a medida que las hagas.', 'Tick each set with ✓ as you do it.')
+            : pending === 1 ? t('La serie sin marcar no se guardará.', 'The unticked set will not be saved.')
+            : pending > 1 ? t(`Las ${pending} series sin marcar no se guardarán.`, `The ${pending} unticked sets will not be saved.`) : t('¡Buen trabajo!', 'Great job!')}
           onClose={() => setConfirm(undefined)}
           options={done > 0
-            ? [{ label: 'Terminar y guardar', onSelect: () => finishSession(session.id) }]
-            : [{ label: 'Descartar entrenamiento', destructive: true, onSelect: () => discardSession(session.id) }]}
+            ? [{ label: t('Terminar y guardar', 'Finish and save'), onSelect: () => finishSession(session.id) }]
+            : [{ label: t('Descartar entrenamiento', 'Discard workout'), destructive: true, onSelect: () => discardSession(session.id) }]}
         />
       )}
       {confirm === 'discard' && (
-        <ActionSheet title="¿Descartar este entrenamiento?" message="Se perderán todas las series registradas." onClose={() => setConfirm(undefined)}
-          options={[{ label: 'Descartar', destructive: true, onSelect: () => discardSession(session.id) }]} />
+        <ActionSheet title={t('¿Descartar este entrenamiento?', 'Discard this workout?')} message={t('Se perderán todas las series registradas.', 'All logged sets will be lost.')} onClose={() => setConfirm(undefined)}
+          options={[{ label: t('Descartar', 'Discard'), destructive: true, onSelect: () => discardSession(session.id) }]} />
       )}
       {picker && <ExercisePicker onDone={(list) => addExercises(session.id, list)} onClose={() => setPicker(false)} />}
       {detail && <ExerciseSheet exerciseId={detail} onClose={() => setDetail(undefined)} />}
@@ -235,15 +236,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
     fn(s.exercises, i, s)
     normalizeGroups(s.exercises)
   })
-  const kind = groupKind(slot.size).toLowerCase()
+  const isSuperset = slot.size < 3
   const inGroupWithNext = nextName !== undefined
   const tracking = trackingOf(exercise)
   const hasTarget = exercise.repsMax > 0
   const target = exercise.repsMin === exercise.repsMax ? `${exercise.repsMin}` : `${exercise.repsMin}-${exercise.repsMax}`
   const targetSeconds = exercise.targetSeconds ?? defaultTargetSeconds
   const hint = tracking === 'weight_reps' ? progressionHint(previous, exercise.repsMax) : null
-  const objective = tracking === 'weight_reps' ? (hasTarget ? ` · Objetivo ${target} reps` : '')
-    : tracking === 'time' ? ` · Objetivo ${clock(targetSeconds)}` : ''
+  const objective = tracking === 'weight_reps' ? (hasTarget ? ` · ${t('Objetivo', 'Target')} ${target} reps` : '')
+    : tracking === 'time' ? ` · ${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
   let working = 0
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
   const workKg = exercise.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
@@ -277,15 +278,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               {exercise.name}
             </span>
             <span className="small muted">
-              {muscleLabel(exercise.muscle)}{objective} · {inGroupWithNext ? `Sin descanso, sigue con ${nextName}` : `Descanso ${rest(exercise.rest)}`}
+              {muscleLabel(exercise.muscle)}{objective} · {inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('Descanso', 'Rest')} ${rest(exercise.rest)}`}
             </span>
           </span>
         </button>
-        <button className="icon-btn" onClick={() => setMenu(true)} aria-label="Opciones del ejercicio"><Ellipsis size={20} /></button>
+        <button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones del ejercicio', 'Exercise options')}><Ellipsis size={20} /></button>
       </div>
 
       {note && (
-        <button className="exercise-note" onClick={() => setNoteOpen(true)} aria-label="Editar la nota del ejercicio">
+        <button className="exercise-note" onClick={() => setNoteOpen(true)} aria-label={t('Editar la nota del ejercicio', 'Edit the exercise note')}>
           <StickyNote size={15} style={{ flexShrink: 0 }} /> <span>{note}</span>
         </button>
       )}
@@ -293,20 +294,20 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       {exercise.deload ? (
         <span className="small row" style={{ color: 'var(--blue)', gap: 6, alignItems: 'flex-start' }}>
           <BatteryLow size={16} style={{ flexShrink: 0 }} />
-          Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.
+          {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
       ) : !hint && stalled && (
         <div className="stall-box">
           <span className="small row" style={{ gap: 6, alignItems: 'flex-start' }}>
             <TrendingDown size={16} style={{ flexShrink: 0 }} />
             <span>
-              Llevas {STALL_SESSIONS} sesiones sin superar tu mejor marca (1RM est. ~{int(fromKg(stalled.best, unit))} {unit}).
-              Una sesión de descarga o cambiar a una variante suele ayudar a desatascarse.
+              {t(`Llevas ${STALL_SESSIONS} sesiones sin superar tu mejor marca (1RM est. ~${int(fromKg(stalled.best, unit))} ${unit}). Una sesión de descarga o cambiar a una variante suele ayudar a desatascarse.`,
+                `${STALL_SESSIONS} sessions without beating your best (est. 1RM ~${int(fromKg(stalled.best, unit))} ${unit}). A deload session or switching to a variation usually helps you move forward.`)}
             </span>
           </span>
           <div className="row" style={{ gap: 8 }}>
-            <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>Hacer descarga</button>
-            <button className="btn small plain" onClick={() => setReplacing(true)}>Ver variantes</button>
+            <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>{t('Hacer descarga', 'Deload')}</button>
+            <button className="btn small plain" onClick={() => setReplacing(true)}>{t('Ver variantes', 'Variations')}</button>
           </div>
         </div>
       )}
@@ -314,23 +315,23 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       {hint && !exercise.deload && (
         <span className="small row" style={{ color: 'var(--green)', gap: 6, alignItems: 'flex-start' }}>
           <ArrowUpRight size={16} style={{ flexShrink: 0 }} />
-          {hint === 'reps' ? 'La última vez llegaste al máximo de repeticiones.' : 'La última vez te sobró margen (RPE 7 o menos).'}
-          {' '}Prueba con {weight(Math.max(...previous.map((p) => p.weight)) + toKg(increment(unit), unit), unit)}.
+          {hint === 'reps' ? t('La última vez llegaste al máximo de repeticiones.', 'Last time you reached the top of the rep range.') : t('La última vez te sobró margen (RPE 7 o menos).', 'Last time you had reps to spare (RPE 7 or less).')}
+          {' '}{t('Prueba con', 'Try')} {weight(Math.max(...previous.map((p) => p.weight)) + toKg(increment(unit), unit), unit)}.
         </span>
       )}
 
       <div className={`set-grid set-head ${tracking}`}>
-        <span>SERIE</span><span>ANTERIOR</span>
+        <span>{t('SERIE', 'SET')}</span><span>{t('ANTERIOR', 'PREVIOUS')}</span>
         {tracking === 'weight_reps' && <><span>{unit.toUpperCase()}</span><span>REPS</span></>}
-        {tracking === 'time' && <span>TIEMPO</span>}
-        {tracking === 'distance_time' && <><span>KM</span><span>TIEMPO</span></>}
+        {tracking === 'time' && <span>{t('TIEMPO', 'TIME')}</span>}
+        {tracking === 'distance_time' && <><span>KM</span><span>{t('TIEMPO', 'TIME')}</span></>}
         <span><Check size={14} /></span>
       </div>
 
       {exercise.sets.map((set, i) => {
         // Los drop sets no suman al número de serie: van pegados a la anterior.
         const drop = !set.warmup && set.kind === 'drop'
-        const label = set.warmup ? 'C' : drop ? 'D' : String(++working)
+        const label = set.warmup ? t('C', 'W') : drop ? 'D' : String(++working)
         const prev = set.warmup ? undefined
           : drop ? prevDrops[drops++]
           : prevMain.length ? prevMain[Math.min(working - 1, prevMain.length - 1)] : undefined
@@ -364,38 +365,38 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           ...(last?.distance ? { distance: last.distance } : {}),
         })
       })}>
-        <Plus size={18} /> Añadir serie
+        <Plus size={18} /> {t('Añadir serie', 'Add set')}
       </button>
 
       {menu && (
         <ActionSheet title={exercise.name} onClose={() => setMenu(false)} options={[
-          ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: 'Añadir series de calentamiento', onSelect: addWarmup }] : []),
-          ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: `Discos para ${weight(workKg, unit)}`, onSelect: () => setPlates(true) }] : []),
-          ...(tracking === 'weight_reps' && lastWorking ? [{ label: 'Añadir drop set', onSelect: addDropSet }] : []),
+          ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: t('Añadir series de calentamiento', 'Add warm-up sets'), onSelect: addWarmup }] : []),
+          ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: t(`Discos para ${weight(workKg, unit)}`, `Plates for ${weight(workKg, unit)}`), onSelect: () => setPlates(true) }] : []),
+          ...(tracking === 'weight_reps' && lastWorking ? [{ label: t('Añadir drop set', 'Add drop set'), onSelect: addDropSet }] : []),
           ...(tracking === 'weight_reps' ? [exercise.deload
-            ? { label: 'Quitar marca de descarga', onSelect: () => edit((e) => { delete e.deload }) }
-            : { label: 'Hacer sesión de descarga', onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
-          { label: note ? 'Editar nota del ejercicio' : 'Añadir nota del ejercicio', onSelect: () => setNoteOpen(true) },
-          { label: 'Sustituir ejercicio', onSelect: () => setReplacing(true) },
+            ? { label: t('Quitar marca de descarga', 'Remove deload mark'), onSelect: () => edit((e) => { delete e.deload }) }
+            : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
+          { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
+          { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext ? [{
-            label: slot.letter ? `Añadir el siguiente ${kind === 'superserie' ? 'a la superserie' : 'al circuito'}` : 'Hacer superserie con el siguiente',
+            label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
             onSelect: () => editList((list, i) => linkWithNext(list, i)),
           }] : []),
-          ...(slot.letter ? [{ label: kind === 'superserie' ? 'Sacar de la superserie' : 'Sacar del circuito', onSelect: () => editList((list, i) => unlink(list, i)) }] : []),
-          { label: `Descanso: ${rest(exercise.rest)}`, onSelect: () => setRestMenu(true) },
-          { label: `Registrar por: ${trackingOptions.find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) },
-          ...(index > 0 ? [{ label: 'Subir', onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
-          ...(index < total - 1 ? [{ label: 'Bajar', onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
-          { label: 'Quitar ejercicio', destructive: true, onSelect: () => editList((list, i) => { list.splice(i, 1) }) },
+          ...(slot.letter ? [{ label: isSuperset ? t('Sacar de la superserie', 'Remove from superset') : t('Sacar del circuito', 'Remove from circuit'), onSelect: () => editList((list, i) => unlink(list, i)) }] : []),
+          { label: `${t('Descanso', 'Rest')}: ${rest(exercise.rest)}`, onSelect: () => setRestMenu(true) },
+          { label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) },
+          ...(index > 0 ? [{ label: t('Subir', 'Move up'), onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
+          ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
+          { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => editList((list, i) => { list.splice(i, 1) }) },
         ]} />
       )}
       {restMenu && (
-        <ActionSheet title="Descanso entre series" onClose={() => setRestMenu(false)}
+        <ActionSheet title={t('Descanso entre series', 'Rest between sets')} onClose={() => setRestMenu(false)}
           options={restOptions.map((o) => ({ label: rest(o), onSelect: () => edit((e) => { e.rest = o }) }))} />
       )}
       {trackingMenu && (
-        <ActionSheet title="¿Cómo registras este ejercicio?" onClose={() => setTrackingMenu(false)}
-          options={trackingOptions.map((o) => ({
+        <ActionSheet title={t('¿Cómo registras este ejercicio?', 'How do you log this exercise?')} onClose={() => setTrackingMenu(false)}
+          options={trackingOptions().map((o) => ({
             label: o.id === tracking ? `${o.label} ✓` : o.label,
             onSelect: () => edit((e) => {
               e.tracking = o.id
@@ -477,18 +478,18 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
     <>
     <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''}`}>
       <button className={`set-label ${set.warmup ? 'warmup' : set.kind ?? ''}`} onClick={() => setMenu(true)}
-        aria-label={`Opciones de la serie (${setKindLabel(set).toLowerCase()})`}>
+        aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
       <span className="set-prev">{previous ? setShortText(previous, tracking, unit) : '—'}</span>
       {tracking === 'weight_reps' && (
         <>
-          <input className="set-input" inputMode="decimal" placeholder="0" aria-label="Peso" value={weightText}
+          <input className="set-input" inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
             onChange={(e) => {
               setWeightText(e.target.value)
               change({ weight: toKg(parseDecimal(e.target.value) ?? 0, unit) })
             }} />
-          <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label="Repeticiones" value={repsText}
+          <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label={t('Repeticiones', 'Reps')} value={repsText}
             onChange={(e) => {
               const clean = e.target.value.replace(/\D/g, '')
               setRepsText(clean)
@@ -497,7 +498,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
         </>
       )}
       {tracking === 'distance_time' && (
-        <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label="Kilómetros" value={distanceText}
+        <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Kilómetros', 'Kilometres')} value={distanceText}
           onChange={(e) => {
             setDistanceText(e.target.value)
             change({ distance: parseDecimal(e.target.value) ?? 0 })
@@ -507,23 +508,23 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
         <DurationInput seconds={set.duration ?? 0} placeholder={tracking === 'time' ? timePlaceholder : '0:00'} invalid={invalid}
           onChange={(duration) => change({ duration })} />
       )}
-      <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? 'Desmarcar serie' : 'Marcar serie'}>
+      <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? t('Desmarcar serie', 'Untick set') : t('Marcar serie', 'Tick set')}>
         {set.done
           ? <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor" /><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
           : <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" stroke="currentColor" strokeWidth="1.8" fill="none" /></svg>}
       </button>
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
-          ...(barbell && tracking === 'weight_reps' && set.weight > 0 ? [{ label: `Discos para ${weight(set.weight, unit)}`, onSelect: () => setPlates(true) }] : []),
+          ...(barbell && tracking === 'weight_reps' && set.weight > 0 ? [{ label: t(`Discos para ${weight(set.weight, unit)}`, `Plates for ${weight(set.weight, unit)}`), onSelect: () => setPlates(true) }] : []),
           ...(tracking === 'weight_reps'
-            ? [{ label: `Tipo: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }]
-            : [{ label: set.warmup ? 'Marcar como serie efectiva' : 'Marcar como calentamiento', onSelect: () => onChange({ warmup: !set.warmup }) }]),
-          { label: 'Eliminar serie', destructive: true, onSelect: onDelete },
+            ? [{ label: `${t('Tipo', 'Type')}: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }]
+            : [{ label: set.warmup ? t('Marcar como serie efectiva', 'Mark as working set') : t('Marcar como calentamiento', 'Mark as warm-up'), onSelect: () => onChange({ warmup: !set.warmup }) }]),
+          { label: t('Eliminar serie', 'Delete set'), destructive: true, onSelect: onDelete },
         ]} />
       )}
       {kindMenu && (
-        <ActionSheet title="Tipo de serie" onClose={() => setKindMenu(false)}
-          options={SET_KINDS.map((o) => ({
+        <ActionSheet title={t('Tipo de serie', 'Set type')} onClose={() => setKindMenu(false)}
+          options={setKinds().map((o) => ({
             label: o.label === setKindLabel(set) ? `${o.label} ✓` : o.label,
             onSelect: () => onChange({
               warmup: o.warmup, kind: o.kind,
@@ -542,16 +543,18 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   )
 }
 
-const SET_KINDS: { label: string; warmup: boolean; kind?: SetKind }[] = [
-  { label: 'Normal', warmup: false },
-  { label: 'Calentamiento', warmup: true },
-  { label: 'Drop set (bajar peso y seguir)', warmup: false, kind: 'drop' },
-  { label: 'AMRAP (máximas repeticiones)', warmup: false, kind: 'amrap' },
-  { label: 'Al fallo', warmup: false, kind: 'failure' },
+const setKinds = (): { label: string; warmup: boolean; kind?: SetKind }[] => [
+  { label: t('Normal', 'Normal'), warmup: false },
+  { label: t('Calentamiento', 'Warm-up'), warmup: true },
+  { label: t('Drop set (bajar peso y seguir)', 'Drop set (lower the weight and keep going)'), warmup: false, kind: 'drop' },
+  { label: t('AMRAP (máximas repeticiones)', 'AMRAP (as many reps as possible)'), warmup: false, kind: 'amrap' },
+  { label: t('Al fallo', 'To failure'), warmup: false, kind: 'failure' },
 ]
 
-const setKindLabel = (set: SetEntry) =>
-  (set.warmup ? SET_KINDS[1] : SET_KINDS.find((o) => o.kind === set.kind) ?? SET_KINDS[0]).label
+const setKindLabel = (set: SetEntry) => {
+  const kinds = setKinds()
+  return (set.warmup ? kinds[1] : kinds.find((o) => o.kind === set.kind) ?? kinds[0]).label
+}
 
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */
 function RpeRow({ value, open, onOpen, onPick }: {
@@ -569,8 +572,8 @@ function RpeRow({ value, open, onOpen, onPick }: {
   return (
     <div className="rpe-row">
       <div className="row between">
-        <span className="small bold">¿Cuánto te costó? <span className="muted">(RPE)</span></span>
-        <button className="rpe-help" onClick={() => setHelp(!help)} aria-label="Qué es el RPE">?</button>
+        <span className="small bold">{t('¿Cuánto te costó?', 'How hard was it?')} <span className="muted">(RPE)</span></span>
+        <button className="rpe-help" onClick={() => setHelp(!help)} aria-label={t('Qué es el RPE', 'What is RPE')}>?</button>
       </div>
       <div className="rpe-chips">
         {rpeValues.map((v) => (
@@ -580,8 +583,8 @@ function RpeRow({ value, open, onOpen, onPick }: {
       </div>
       {help && (
         <span className="small muted">
-          Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3.
-          Es opcional; sirve para saber cuándo subir peso.
+          {t('Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3. Es opcional; sirve para saber cuándo subir peso.',
+            'Rate of perceived exertion: 10 = you could not do one more, 9 = 1 rep left, 8 = 2 left, 7 = 3 left. It is optional; it helps decide when to add weight.')}
         </span>
       )}
     </div>
@@ -597,7 +600,7 @@ function DurationInput({ seconds, placeholder, invalid, onChange }: {
 }) {
   const [digits, setDigits] = useState(secondsToDigits(seconds))
   return (
-    <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={placeholder} aria-label="Tiempo"
+    <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={placeholder} aria-label={t('Tiempo', 'Time')}
       value={formatDigits(digits)}
       // Al salir del campo, "0:90" pasa a verse como "1:30".
       onBlur={() => setDigits(secondsToDigits(digitsToSeconds(digits)))}
@@ -620,14 +623,14 @@ function RestBar() {
         {timer.big ? (
           <button className="rest-full rest-full-done" onClick={() => { dismissRestDone(); setRestBig(true) }}>
             <Timer size={64} />
-            <strong className="rest-full-message">¡Descanso terminado!</strong>
-            <span>A por la siguiente serie</span>
+            <strong className="rest-full-message">{t('¡Descanso terminado!', 'Rest is over!')}</strong>
+            <span>{t('A por la siguiente serie', 'On to the next set')}</span>
           </button>
         ) : (
           <button className="rest-bar rest-done" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }} onClick={dismissRestDone}>
             <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <Timer size={22} />
-              <strong>¡Descanso terminado! A por la siguiente serie</strong>
+              <strong>{t('¡Descanso terminado! A por la siguiente serie', 'Rest is over! On to the next set')}</strong>
             </div>
           </button>
         )}
@@ -644,20 +647,20 @@ function RestBar() {
     <Overlay>
     <div className="rest-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }}>
       <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button className="rest-expand" onClick={() => setRestBig(true)} aria-label="Ver la cuenta atrás en grande">
+        <button className="rest-expand" onClick={() => setRestBig(true)} aria-label={t('Ver la cuenta atrás en grande', 'Show the countdown full screen')}>
           <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
             <circle cx="21" cy="21" r={r} stroke="var(--fill)" strokeWidth="5" fill="none" />
             <circle cx="21" cy="21" r={r} stroke="var(--accent)" strokeWidth="5" fill="none" strokeLinecap="round"
               strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 21 21)" />
           </svg>
           <div className="grow" style={{ textAlign: 'left' }}>
-            <div className="tiny muted row" style={{ gap: 4 }}><Timer size={12} /> Descanso <Maximize2 size={11} /></div>
+            <div className="tiny muted row" style={{ gap: 4 }}><Timer size={12} /> {t('Descanso', 'Rest')} <Maximize2 size={11} /></div>
             <div className="rest-time">{clock(Math.ceil(remaining))}</div>
           </div>
         </button>
         <button className="btn small plain" onClick={() => addRest(-15)}>−15</button>
         <button className="btn small plain" onClick={() => addRest(15)}>+15</button>
-        <button className="btn small primary" onClick={stopRest}>Saltar</button>
+        <button className="btn small primary" onClick={stopRest}>{t('Saltar', 'Skip')}</button>
       </div>
     </div>
     </Overlay>
@@ -673,8 +676,8 @@ function RestFullScreen({ remaining, progress }: { remaining: number; progress: 
   const last = remaining <= 5
   return (
     <Overlay>
-      <div className="rest-full" role="timer" aria-label={`Descanso: quedan ${Math.ceil(remaining)} segundos`}>
-        <button className="rest-full-min" onClick={() => setRestBig(false)} aria-label="Reducir"><Minimize2 size={22} /></button>
+      <div className="rest-full" role="timer" aria-label={t(`Descanso: quedan ${Math.ceil(remaining)} segundos`, `Rest: ${Math.ceil(remaining)} seconds left`)}>
+        <button className="rest-full-min" onClick={() => setRestBig(false)} aria-label={t('Reducir', 'Shrink')}><Minimize2 size={22} /></button>
         <div className="rest-full-ring">
           <svg viewBox="0 0 100 100" aria-hidden="true">
             <circle cx="50" cy="50" r={r} stroke="#1f2126" strokeWidth="4" fill="none" />
@@ -685,14 +688,14 @@ function RestFullScreen({ remaining, progress }: { remaining: number; progress: 
               strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 50 50)" />
           </svg>
           <div className="rest-full-center">
-            <span className="rest-full-label">Descanso</span>
+            <span className="rest-full-label">{t('Descanso', 'Rest')}</span>
             <span className={`rest-full-time ${last ? 'last' : ''}`}>{clock(Math.ceil(remaining))}</span>
           </div>
         </div>
         <div className="rest-full-actions">
           <button className="btn plain" onClick={() => addRest(-15)}>−15 s</button>
           <button className="btn plain" onClick={() => addRest(15)}>+15 s</button>
-          <button className="btn primary" onClick={stopRest}>Saltar</button>
+          <button className="btn primary" onClick={stopRest}>{t('Saltar', 'Skip')}</button>
         </div>
       </div>
     </Overlay>

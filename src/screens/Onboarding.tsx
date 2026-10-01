@@ -7,6 +7,7 @@ import { navigate } from '../lib/router'
 import { updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
 import { ProgramPreview, saveProgram } from './Routines'
+import { lang, t } from '../lib/i18n'
 
 const goalIcons: Record<string, LucideIcon> = { hypertrophy: Dumbbell, strength: Weight, fatLoss: Flame, general: Heart }
 const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
@@ -31,16 +32,16 @@ export function OnboardingScreen() {
     return (
       <div className="app">
         <div className="nav-bar">
-          <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> Atrás</button></div>
-          <div className="title">Vista previa</div>
+          <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
+          <div className="title">{t('Vista previa', 'Preview')}</div>
           <div className="right">
-            <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> Otra</button>
+            <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra', 'Another')}</button>
           </div>
         </div>
         <div className="screen with-nav" style={{ paddingBottom: 120 }}>
           <ProgramPreview program={program} />
         </div>
-        <Footer><button className="btn primary block" onClick={() => finish(program)}>Guardar programa</button></Footer>
+        <Footer><button className="btn primary block" onClick={() => finish(program)}>{t('Guardar programa', 'Save program')}</button></Footer>
       </div>
     )
   }
@@ -49,10 +50,10 @@ export function OnboardingScreen() {
     <div className="app">
       <div className="nav-bar" style={{ background: 'transparent', borderBottom: 0, backdropFilter: 'none' }}>
         <div className="left">
-          {step > 0 && <button className="nav-btn" onClick={() => setStep(step - 1)}><ChevronLeft size={24} /> Atrás</button>}
+          {step > 0 && <button className="nav-btn" onClick={() => setStep(step - 1)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button>}
         </div>
         <div />
-        <div className="right"><button className="nav-btn" style={{ color: 'var(--text-2)' }} onClick={() => finish()}>Saltar</button></div>
+        <div className="right"><button className="nav-btn" style={{ color: 'var(--text-2)' }} onClick={() => finish()}>{t('Saltar', 'Skip')}</button></div>
       </div>
       {step > 0 && (
         <div className="progress" style={{ margin: '0 16px' }}><div style={{ width: `${(step / LAST) * 100}%` }} /></div>
@@ -60,28 +61,32 @@ export function OnboardingScreen() {
       <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
         {step === 0 && (
           <>
-            <Dumbbell size={64} color="var(--accent)" style={{ marginTop: 24 }} />
-            <h1 style={{ fontSize: 34, margin: 0, lineHeight: 1.1 }}>Tu entrenador de bolsillo</h1>
+            <div className="row" style={{ justifyContent: 'flex-end', gap: 6 }}>
+              <Chip label="Español" active={lang() === 'es'} onClick={() => updateSettings({ language: 'es' })} />
+              <Chip label="English" active={lang() === 'en'} onClick={() => updateSettings({ language: 'en' })} />
+            </div>
+            <Dumbbell size={64} color="var(--accent)" style={{ marginTop: 8 }} />
+            <h1 style={{ fontSize: 34, margin: 0, lineHeight: 1.1 }}>{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
             <p className="muted" style={{ fontSize: 19, margin: 0 }}>
-              Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.
+              {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
             </p>
-            <Feature icon={WandSparkles} text="Programa generado según tu objetivo y tu material" />
-            <Feature icon={Timer} text="Temporizador de descanso y registro rápido de series" />
-            <Feature icon={ChartLine} text="Récords, volumen y progreso por ejercicio" />
-            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder="¿Cómo te llamas?" autoComplete="given-name"
+            <Feature icon={WandSparkles} text={t('Programa generado según tu objetivo y tu material', 'A program generated for your goal and equipment')} />
+            <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
+            <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
+            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} autoComplete="given-name"
               value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
             <div className="card" style={{ gap: 6 }}>
               <HealthNotice />
-              <p className="small muted" style={{ margin: 0 }}>Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.</p>
+              <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
             </div>
             <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
-              <ArrowRightLeft size={18} /> ¿Vienes de otro móvil? Pasa tus datos
+              <ArrowRightLeft size={18} /> {t('¿Vienes de otro móvil? Pasa tus datos', 'Coming from another phone? Move your data')}
             </button>
           </>
         )}
         {step === 1 && (
           <>
-            <Header title="¿Cuál es tu objetivo?" subtitle="Ajustaremos series, repeticiones y descansos." />
+            <Header title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
             {goals.map((g) => (
               <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} active={settings.goal === g.id} onClick={() => updateSettings({ goal: g.id })} />
             ))}
@@ -89,7 +94,7 @@ export function OnboardingScreen() {
         )}
         {step === 2 && (
           <>
-            <Header title="¿Qué experiencia tienes?" subtitle="Así calibramos el volumen de trabajo." />
+            <Header title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
             {levels.map((l) => (
               <Option key={l.id} icon={ChartBar} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => updateSettings({ level: l.id })} />
             ))}
@@ -97,13 +102,13 @@ export function OnboardingScreen() {
         )}
         {step === 3 && (
           <>
-            <Header title="¿Cuánto tiempo tienes?" subtitle="Elegiremos la división semanal que mejor encaje." />
-            <Card title="Días por semana">
+            <Header title={t('¿Cuánto tiempo tienes?', 'How much time do you have?')} subtitle={t('Elegiremos la división semanal que mejor encaje.', 'We will pick the weekly split that fits best.')} />
+            <Card title={t('Días por semana', 'Days per week')}>
               <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
                 {[2, 3, 4, 5, 6].map((n) => <Chip key={n} label={String(n)} active={settings.days === n} onClick={() => updateSettings({ days: n })} />)}
               </div>
             </Card>
-            <Card title="Minutos por sesión">
+            <Card title={t('Minutos por sesión', 'Minutes per session')}>
               <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
                 {[30, 45, 60, 75, 90].map((n) => <Chip key={n} label={String(n)} active={settings.minutes === n} onClick={() => updateSettings({ minutes: n })} />)}
               </div>
@@ -112,7 +117,7 @@ export function OnboardingScreen() {
         )}
         {step === 4 && (
           <>
-            <Header title="¿Con qué material cuentas?" subtitle="Solo usaremos ejercicios que puedas hacer." />
+            <Header title={t('¿Con qué material cuentas?', 'What equipment do you have?')} subtitle={t('Solo usaremos ejercicios que puedas hacer.', 'We will only use exercises you can do.')} />
             {equipmentProfiles.map((p) => (
               <Option key={p.id} icon={equipmentIcons[p.id]} title={p.label} active={settings.equipment === p.id} onClick={() => updateSettings({ equipment: p.id })} />
             ))}
@@ -120,15 +125,15 @@ export function OnboardingScreen() {
         )}
         {step === 5 && (
           <>
-            <Header title="Último detalle" subtitle="Puedes cambiarlo más adelante en Perfil." />
-            <Card title="Unidad de peso">
+            <Header title={t('Último detalle', 'One last thing')} subtitle={t('Puedes cambiarlo más adelante en Perfil.', 'You can change it later in Profile.')} />
+            <Card title={t('Unidad de peso', 'Weight unit')}>
               <Segmented value={settings.unit} onChange={(u: Unit) => updateSettings({ unit: u })}
-                options={[{ value: 'kg', label: 'Kilogramos (kg)' }, { value: 'lb', label: 'Libras (lb)' }]} />
+                options={[{ value: 'kg', label: t('Kilogramos (kg)', 'Kilograms (kg)') }, { value: 'lb', label: t('Libras (lb)', 'Pounds (lb)') }]} />
             </Card>
-            <Card title="Tu plan">
+            <Card title={t('Tu plan', 'Your plan')}>
               <span className="muted">
                 {goalInfo(settings.goal).label} · {levelInfo(settings.level).label}<br />
-                {settings.days} días por semana de {settings.minutes} min<br />
+                {t(`${settings.days} días por semana de ${settings.minutes} min`, `${settings.days} days a week, ${settings.minutes} min each`)}<br />
                 {equipmentInfo(settings.equipment).label}
               </span>
             </Card>
@@ -142,7 +147,7 @@ export function OnboardingScreen() {
           setVariation(0)
           setProgram(generate(config, catalog, 0))
         }}>
-          {step === 0 ? 'Empezar' : step === LAST ? 'Crear mi programa' : 'Continuar'}
+          {step === 0 ? t('Empezar', 'Start') : step === LAST ? t('Crear mi programa', 'Create my program') : t('Continuar', 'Continue')}
         </button>
       </Footer>
     </div>

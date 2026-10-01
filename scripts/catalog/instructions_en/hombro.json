@@ -1,0 +1,402 @@
+{
+  "Alternating_Cable_Shoulder_Press": [
+    "Stand between two low pulleys with a handle in each hand at shoulder height.",
+    "Press one arm up until straight and lower it with control.",
+    "Repeat with the other and keep alternating."
+  ],
+  "Alternating_Kettlebell_Press": [
+    "Hold a kettlebell in each hand in the rack position, at shoulder height.",
+    "Press one until your arm is straight and lower it with control.",
+    "Repeat with the other and keep alternating, without arching your back."
+  ],
+  "Arnold_Dumbbell_Press": [
+    "Seated or standing, hold the dumbbells in front of your shoulders with your palms facing you.",
+    "Press up while rotating your wrists to finish with your palms facing forward and your arms straight.",
+    "Lower, undoing the rotation."
+  ],
+  "Barbell_Incline_Shoulder_Raise": [
+    "Lie on an incline bench holding a barbell over your chest with your arms straight.",
+    "Without bending your elbows, push the bar up, lifting your shoulder blades off the bench.",
+    "Return with control. It is a short range."
+  ],
+  "Barbell_Rear_Delt_Row": [
+    "Stand with the bar in your hands, leaning forward with a straight back.",
+    "Pull the bar to your upper chest with your elbows very wide, in line with your shoulders.",
+    "Lower with control."
+  ],
+  "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench": [
+    "Standing, lean forward until your forehead rests on a bench, a dumbbell hanging in each hand.",
+    "Open your arms out to the sides with your elbows slightly bent.",
+    "Lower with control. Resting your head stops you from swinging."
+  ],
+  "Bent_Over_Low-Pulley_Side_Lateral": [
+    "Stand side-on to a low pulley and grab the handle with the far hand. Lean your torso forward.",
+    "Raise your arm out to the side to shoulder height.",
+    "Return with control and switch sides."
+  ],
+  "Bradford_Rocky_Presses": [
+    "Seated or standing, with the bar on the front of your shoulders.",
+    "Press it just over your head and lower it behind to the back of your neck.",
+    "Bring it back over the front and keep alternating. Use a light weight: the behind-the-neck part demands a lot of mobility."
+  ],
+  "Cable_Internal_Rotation": [
+    "Stand side-on to a pulley at elbow height, handle in the nearer hand, elbow at your side bent at 90 degrees.",
+    "Rotate your forearm towards your stomach without moving your elbow away from your body.",
+    "Return with control and switch sides."
+  ],
+  "Cable_Rear_Delt_Fly": [
+    "Stand between two pulleys at shoulder height and cross the cables: your right hand holds the left one and vice versa.",
+    "With your arms almost straight, open them backwards until they are out to the sides.",
+    "Return with control."
+  ],
+  "Cable_Rope_Rear-Delt_Rows": [
+    "Attach a rope to a pulley at chest height.",
+    "Pull towards your face, separating your hands, with your elbows high and wide.",
+    "Return with control."
+  ],
+  "Cable_Shoulder_Press": [
+    "Sit or stand between two low pulleys with a handle in each hand at shoulder height.",
+    "Press up until your arms are straight.",
+    "Lower with control."
+  ],
+  "Car_Drivers": [
+    "Stand holding a plate with both hands in front of your chest, arms straight.",
+    "Turn it from side to side like a steering wheel, without lowering your arms.",
+    "Hold the position for the set time or reps."
+  ],
+  "Clean_and_Press": [
+    "Set up as for a deadlift, with the bar in front of your legs.",
+    "Pull the bar up explosively until it rests on your shoulders (the clean).",
+    "Press it overhead until your arms are straight and lower it in two stages. Technical: start with a light weight."
+  ],
+  "Cuban_Press": [
+    "Stand with light dumbbells in front of your thighs.",
+    "Raise your elbows to shoulder height, rotate your forearms up until vertical and press overhead.",
+    "Lower by reversing the steps. It is a shoulder-health exercise: use very little weight."
+  ],
+  "Double_Kettlebell_Jerk": [
+    "Hold two kettlebells in the rack position on your shoulders.",
+    "Dip your knees slightly, drive up and drop under them while your arms lock out overhead.",
+    "Stand up with the kettlebells overhead and lower them with control."
+  ],
+  "Double_Kettlebell_Push_Press": [
+    "Hold two kettlebells in the rack position on your shoulders.",
+    "Dip your knees slightly and use the drive from your legs to press them overhead.",
+    "Lower them to your shoulders with control."
+  ],
+  "Dumbbell_Incline_Shoulder_Raise": [
+    "Lie on an incline bench with a dumbbell in each hand over your chest and your arms straight.",
+    "Without bending your elbows, push the dumbbells up, lifting your shoulder blades off the bench.",
+    "Return with control."
+  ],
+  "Dumbbell_Lying_One-Arm_Rear_Lateral_Raise": [
+    "Lie on your side on a bench with a dumbbell in your top hand, hanging in front of your body.",
+    "Raise your arm towards the ceiling with your elbow slightly bent.",
+    "Lower with control and switch sides."
+  ],
+  "Dumbbell_Lying_Rear_Lateral_Raise": [
+    "Lie face down on an incline bench with a dumbbell hanging in each hand.",
+    "Open your arms out to the sides to shoulder height.",
+    "Lower with control."
+  ],
+  "Dumbbell_One-Arm_Shoulder_Press": [
+    "Standing or seated, with a dumbbell in one hand at shoulder height.",
+    "Press it until your arm is straight without leaning your body.",
+    "Lower with control and switch sides."
+  ],
+  "Dumbbell_One-Arm_Upright_Row": [
+    "Stand with a dumbbell in one hand in front of your thigh.",
+    "Pull up, leading with a high elbow, until your hand reaches your chest.",
+    "Lower with control and switch sides."
+  ],
+  "Dumbbell_Scaption": [
+    "Stand with a dumbbell in each hand at your sides, thumbs up.",
+    "Raise your straight arms diagonally, halfway between the front and the side, to shoulder height.",
+    "Lower with control."
+  ],
+  "External_Rotation": [
+    "Lie on your side with a dumbbell in your top hand and your elbow at your side, bent at 90 degrees.",
+    "Rotate your forearm upwards without moving your elbow away from your body.",
+    "Lower with control and switch sides. Use very little weight."
+  ],
+  "External_Rotation_with_Band": [
+    "Hold a band anchored to one side at elbow height, with your elbow at your side bent at 90 degrees.",
+    "Rotate your forearm outwards without moving your elbow.",
+    "Return with control and switch sides."
+  ],
+  "External_Rotation_with_Cable": [
+    "Stand side-on to a pulley at elbow height, handle in the far hand and elbow at your side.",
+    "Rotate your forearm outwards without moving your elbow.",
+    "Return with control and switch sides."
+  ],
+  "Front_Cable_Raise": [
+    "With your back to a low pulley, hold the handle in one hand between your legs.",
+    "Raise your straight arm in front to shoulder height.",
+    "Lower with control and switch sides."
+  ],
+  "Front_Dumbbell_Raise": [
+    "Stand with a dumbbell in each hand in front of your thighs.",
+    "Raise one straight arm in front to shoulder height and lower it with control.",
+    "Repeat with the other or raise both at once."
+  ],
+  "Front_Incline_Dumbbell_Raise": [
+    "Sit on an incline bench with your back supported and a dumbbell in each hand.",
+    "Raise your straight arms in front to shoulder height.",
+    "Lower with control."
+  ],
+  "Front_Two-Dumbbell_Raise": [
+    "Stand with a dumbbell in each hand in front of your thighs.",
+    "Raise both straight arms in front to shoulder height.",
+    "Lower with control without swinging your body."
+  ],
+  "Internal_Rotation_with_Band": [
+    "Hold a band anchored to one side at elbow height, with your elbow at your side bent at 90 degrees.",
+    "Rotate your forearm towards your stomach without moving your elbow.",
+    "Return with control and switch sides."
+  ],
+  "Jerk_Balance": [
+    "With the bar on the front of your shoulders and your feet in a short split stance.",
+    "Drive the bar up while stepping forward with your front foot, finishing with your arms locked out.",
+    "Recover the position with control. Technical: use a light weight."
+  ],
+  "Kettlebell_Halo": [
+    "Hold a kettlebell upside down by the handle in front of your chest.",
+    "Circle it around your head, passing behind your neck, without moving your torso.",
+    "Do the set number of circles one way and then the other."
+  ],
+  "Kettlebell_Halo_With_Overhead_Extension": [
+    "Circle the kettlebell around your head once as a halo.",
+    "When it comes back to the front, press it overhead until your arms are straight.",
+    "Lower it and repeat in the other direction."
+  ],
+  "Kettlebell_Pirate_Ships": [
+    "Stand with your feet apart holding a kettlebell with both hands, arms straight out in front.",
+    "Rotate your torso, swinging the kettlebell in an arc to one side and then the other.",
+    "Keep your abs tight and your arms straight."
+  ],
+  "Kettlebell_Seesaw_Press": [
+    "Hold a kettlebell in each hand in the rack position.",
+    "Press one up while the other comes down, like a seesaw.",
+    "Keep the rhythm without arching your back."
+  ],
+  "Kettlebell_Thruster": [
+    "Hold one or two kettlebells in the rack position on your shoulders.",
+    "Squat down and, as you stand, use the momentum to press the kettlebells overhead.",
+    "Lower them to your shoulders and go straight into the next rep."
+  ],
+  "Kettlebell_Turkish_Get-Up_Lunge_style": [
+    "Lie on your back with the kettlebell in one hand, arm straight towards the ceiling and the knee on that side bent.",
+    "Keeping your eyes on the kettlebell, sit up onto the other elbow and then the hand, lift your hips and sweep the straight leg behind you until you are kneeling.",
+    "Stand up as if from a lunge and reverse the steps to get back to the floor. Learn it without weight first."
+  ],
+  "Kettlebell_Turkish_Get-Up_Squat_style": [
+    "Lie on your back with the kettlebell in one hand and your arm straight towards the ceiling.",
+    "Sit up onto the other elbow and hand, lift your hips and bring your legs under your body into a squat.",
+    "Stand up and reverse the steps. Learn it without weight first."
+  ],
+  "Landmine_Linear_Jammer": [
+    "Set one end of the bar in a corner or holder and hold the other with both hands in front of your chest.",
+    "Drop into a half squat and, as you stand, press the bar up and forward until your arms are straight.",
+    "Return with control."
+  ],
+  "Leverage_Shoulder_Press": [
+    "Sit in the machine with your back supported and the handles at shoulder height.",
+    "Press until your arms are straight.",
+    "Lower with control."
+  ],
+  "Low_Pulley_Row_To_Neck": [
+    "Stand facing a low pulley with a rope or bar.",
+    "Pull towards your neck with your elbows high and wide.",
+    "Lower with control."
+  ],
+  "Lying_One-Arm_Lateral_Raise": [
+    "Lie on your side on a bench with a dumbbell in your top hand.",
+    "Raise your straight arm until it is vertical.",
+    "Lower with control and switch sides."
+  ],
+  "Lying_Rear_Delt_Raise": [
+    "Lie face down on a flat or incline bench with the dumbbells hanging.",
+    "Open your arms out to the sides to shoulder height.",
+    "Lower with control."
+  ],
+  "Machine_Shoulder_Military_Press": [
+    "Sit in the machine with your back supported and the handles at shoulder height.",
+    "Press until your arms are straight.",
+    "Lower with control."
+  ],
+  "One-Arm_Incline_Lateral_Raise": [
+    "Lie on your side on an incline bench with a dumbbell in your top hand.",
+    "Raise your arm until it is vertical.",
+    "Lower with control and switch sides."
+  ],
+  "One-Arm_Kettlebell_Clean_and_Jerk": [
+    "With the kettlebell between your legs, bring it up to the rack position with a hip drive.",
+    "Dip your knees slightly and drive it overhead, dropping your body under it.",
+    "Stand up, lower it and repeat. Switch hands."
+  ],
+  "One-Arm_Kettlebell_Jerk": [
+    "Hold the kettlebell in the rack position on your shoulder.",
+    "Dip your knees slightly, drive up and drop under it with your arm locked out.",
+    "Stand up and lower it with control. Switch hands."
+  ],
+  "One-Arm_Kettlebell_Military_Press_To_The_Side": [
+    "Hold the kettlebell in the rack position on your shoulder.",
+    "Lean slightly to the opposite side as you press it up.",
+    "Lower it with control and switch sides."
+  ],
+  "One-Arm_Kettlebell_Push_Press": [
+    "Hold the kettlebell in the rack position on your shoulder.",
+    "Dip your knees slightly and use the drive from your legs to press it overhead.",
+    "Lower it with control and switch hands."
+  ],
+  "One-Arm_Kettlebell_Split_Jerk": [
+    "Hold the kettlebell in the rack position on your shoulder.",
+    "Drive with your legs and press it up while splitting your legs.",
+    "Bring your feet together with your arm straight and lower it with control."
+  ],
+  "One-Arm_Side_Laterals": [
+    "Stand holding on to something stable with one hand and a dumbbell in the other.",
+    "Raise your arm out to the side to shoulder height.",
+    "Lower with control and switch sides."
+  ],
+  "Power_Partials": [
+    "Stand with a dumbbell in each hand at your sides.",
+    "Do short, fast lateral raises in the bottom part of the range.",
+    "Keep the pace throughout the set without swinging your body."
+  ],
+  "Push_Press_-_Behind_the_Neck": [
+    "With the bar on your upper back and a grip slightly wider than your shoulders.",
+    "Dip your knees slightly and use the drive from your legs to press the bar overhead.",
+    "Lower it with control. It demands good shoulder mobility: use a light weight."
+  ],
+  "Reverse_Flyes_With_External_Rotation": [
+    "Lean forward with a straight back and a light dumbbell in each hand.",
+    "Open your arms out to the sides and, at the top, rotate your forearms upwards.",
+    "Undo the rotation and lower with control."
+  ],
+  "Reverse_Machine_Flyes": [
+    "Sit in the fly machine facing the backrest, chest against the pad.",
+    "Grab the handles and open your arms backwards until they are out to the sides.",
+    "Return with control."
+  ],
+  "Seated_Barbell_Military_Press": [
+    "Sit on a bench with an upright backrest and the bar at shoulder height.",
+    "Press it until your arms are straight overhead.",
+    "Lower with control to your chin."
+  ],
+  "Seated_Cable_Shoulder_Press": [
+    "Sit on a bench between two low pulleys with a handle in each hand at shoulder height.",
+    "Press until your arms are straight.",
+    "Lower with control."
+  ],
+  "See-Saw_Press_Alternating_Side_Press": [
+    "Stand with a dumbbell in each hand at shoulder height.",
+    "Press one up while leaning slightly to the opposite side.",
+    "Lower it while pressing the other up, like a seesaw."
+  ],
+  "Side_Laterals_to_Front_Raise": [
+    "Stand with a dumbbell in each hand.",
+    "Raise your arms out to the sides to shoulder height, bring them to the front and lower them.",
+    "On the next rep, do the path in reverse."
+  ],
+  "Single-Arm_Linear_Jammer": [
+    "Set one end of the bar in a corner and hold the other with one hand at shoulder height.",
+    "Drop into a half squat and, as you stand, press the bar up and forward until your arm is straight.",
+    "Return with control and switch sides."
+  ],
+  "Single_Dumbbell_Raise": [
+    "Stand holding one dumbbell with both hands in front of your thighs.",
+    "Raise it with your arms straight to shoulder height.",
+    "Lower with control."
+  ],
+  "Smith_Incline_Shoulder_Raise": [
+    "Lie on an incline bench under the Smith machine bar with your arms straight.",
+    "Without bending your elbows, push the bar up, lifting your shoulder blades off the bench.",
+    "Return with control."
+  ],
+  "Smith_Machine_One-Arm_Upright_Row": [
+    "Standing side-on to the Smith machine, grab the bar with one hand in front of your thigh.",
+    "Pull up with a high elbow to chest height.",
+    "Lower with control and switch sides."
+  ],
+  "Smith_Machine_Overhead_Shoulder_Press": [
+    "Sit on a bench under the Smith machine bar, set at shoulder height.",
+    "Press until your arms are straight.",
+    "Lower with control to your chin."
+  ],
+  "Standing_Alternating_Dumbbell_Press": [
+    "Stand with a dumbbell in each hand at shoulder height.",
+    "Press one up and lower it with control.",
+    "Repeat with the other without arching your back."
+  ],
+  "Standing_Barbell_Press_Behind_Neck": [
+    "Stand with the bar on your upper back and a grip slightly wider than your shoulders.",
+    "Press it until your arms are straight overhead.",
+    "Lower with control only as far as is comfortable. If you feel discomfort, press from the front instead."
+  ],
+  "Standing_Bradford_Press": [
+    "Stand with the bar on the front of your shoulders.",
+    "Press it just over your head and lower it behind to the back of your neck.",
+    "Bring it back over the front and keep alternating. Light weight."
+  ],
+  "Standing_Dumbbell_Press": [
+    "Stand with a dumbbell in each hand at shoulder height.",
+    "Press until your arms are straight overhead.",
+    "Lower with control."
+  ],
+  "Standing_Dumbbell_Straight-Arm_Front_Delt_Raise_Above_Head": [
+    "Stand with a dumbbell in each hand in front of your thighs.",
+    "Raise your straight arms in front until they are overhead.",
+    "Lower with control. Use a light weight."
+  ],
+  "Standing_Front_Barbell_Raise_Over_Head": [
+    "Stand holding a barbell or plate in front of your thighs with your arms straight.",
+    "Raise it in front until it is overhead.",
+    "Lower with control."
+  ],
+  "Standing_Low-Pulley_Deltoid_Raise": [
+    "Standing side-on to a low pulley, with the handle in the far hand.",
+    "Raise your arm out to the side to shoulder height.",
+    "Lower with control and switch sides."
+  ],
+  "Standing_Military_Press": [
+    "Stand with the bar resting in front of your shoulders and your hands slightly wider than them.",
+    "Squeeze your abs and glutes and press the bar straight up until your arms are straight.",
+    "Lower with control to your chin."
+  ],
+  "Standing_Palm-In_One-Arm_Dumbbell_Press": [
+    "Stand with a dumbbell in one hand at shoulder height, palm facing in.",
+    "Press it until your arm is straight.",
+    "Lower with control and switch sides."
+  ],
+  "Standing_Palms-In_Dumbbell_Press": [
+    "Stand with a dumbbell in each hand at shoulder height, palms facing each other.",
+    "Press until your arms are straight.",
+    "Lower with control."
+  ],
+  "Straight_Raises_on_Incline_Bench": [
+    "Lie face down on an incline bench with a light bar hanging in your hands.",
+    "Raise the bar in front with straight arms to head height.",
+    "Lower with control."
+  ],
+  "Two-Arm_Kettlebell_Clean": [
+    "Place two kettlebells between your feet.",
+    "With a straight back, bring them up with a hip drive to the rack position on your shoulders.",
+    "Lower them with control and repeat."
+  ],
+  "Two-Arm_Kettlebell_Jerk": [
+    "Hold two kettlebells in the rack position on your shoulders.",
+    "Dip your knees slightly, drive up and drop under them with your arms locked out.",
+    "Stand up and lower them with control."
+  ],
+  "Two-Arm_Kettlebell_Military_Press": [
+    "Hold two kettlebells in the rack position on your shoulders.",
+    "Press them until your arms are straight without arching your back.",
+    "Lower them with control."
+  ],
+  "Upright_Barbell_Row": [
+    "Stand with the bar in front of your thighs and a grip slightly narrower than your shoulders.",
+    "Pull up with your elbows high until the bar reaches your chest.",
+    "Lower with control. Do not go higher if your shoulders bother you."
+  ]
+}

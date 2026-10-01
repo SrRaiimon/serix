@@ -1,6 +1,7 @@
 import { uid } from './format'
 import type { AppData, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
+import { t } from './i18n'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -101,6 +102,7 @@ function settings(v: unknown): Settings {
     favorites: list(s.favorites, (x) => (typeof x === 'string' ? x.slice(0, 200) : undefined), 2000),
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
     barKg: optNum(s.barKg, 1, 50),
+    language: oneOf(s.language, ['es', 'en'] as const),
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
@@ -118,9 +120,9 @@ function exerciseNotes(v: unknown): Record<string, string> {
 
 /** Convierte el contenido de un archivo en datos válidos, o lanza un error si no es una copia. */
 export function parseBackup(text: string): AppData {
-  if (text.length > MAX_BACKUP_BYTES) throw new Error('El archivo es demasiado grande.')
+  if (text.length > MAX_BACKUP_BYTES) throw new Error(t('El archivo es demasiado grande.', 'The file is too large.'))
   const raw: unknown = JSON.parse(text)
-  if (!isObj(raw) || !Array.isArray(raw.sessions) || !Array.isArray(raw.routines)) throw new Error('No es una copia de Serix.')
+  if (!isObj(raw) || !Array.isArray(raw.sessions) || !Array.isArray(raw.routines)) throw new Error(t('No es una copia de Serix.', 'This is not a Serix backup.'))
   return {
     version: 1,
     routines: list(raw.routines, routine, 1000),

@@ -6,6 +6,7 @@ import { normalizeGroups } from './groups'
 import { defaultTracking, type Tracking } from './tracking'
 import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise, type SetEntry, type SetKind } from './store'
 import { resetRestView } from './timer'
+import { t } from './i18n'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
 
@@ -136,7 +137,7 @@ export function startRoutine(routine: Routine) {
 export function startEmpty() {
   if (activeSession(getData())) return openWorkout()
   update((d) => {
-    d.sessions.push({ id: uid(), name: 'Entrenamiento libre', start: Date.now(), notes: '', exercises: [] })
+    d.sessions.push({ id: uid(), name: t('Entrenamiento libre', 'Free workout'), start: Date.now(), notes: '', exercises: [] })
   })
   openWorkout()
 }

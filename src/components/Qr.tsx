@@ -1,6 +1,7 @@
 import qrcode from 'qrcode-generator'
 import { useMemo } from 'react'
 import { Sheet } from './ui'
+import { t } from '../lib/i18n'
 
 // Código QR dibujado en SVG en el propio móvil (sin servicios externos). Al escanearlo con la
 // cámara se abre el enlace, así que no hace falta un lector dentro de la app.
@@ -37,19 +38,19 @@ export function QrCode({ text, label, className = '' }: { text: string; label: s
 export function QrSheet({ title, url, onShare, onClose }: { title: string; url: string; onShare: () => void; onClose: () => void }) {
   const fits = useMemo(() => modules(url) !== null, [url])
   return (
-    <Sheet title={title} onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>Listo</button>}>
+    <Sheet title={title} onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
       <div className="qr-sheet">
         {fits ? (
           <>
-            <QrCode text={url} label={`Código QR de ${title}`} />
+            <QrCode text={url} label={`${t('Código QR de', 'QR code for')} ${title}`} />
             <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
-              Escanéalo con la cámara de otro móvil: se abrirá Serix con la rutina lista para importar.
+              {t('Escanéalo con la cámara de otro móvil: se abrirá Serix con la rutina lista para importar.', 'Scan it with another phone\'s camera: Serix will open with the routine ready to import.')}
             </p>
           </>
         ) : (
-          <p className="muted" style={{ textAlign: 'center' }}>Es demasiado larga para un código QR. Compártela con el enlace.</p>
+          <p className="muted" style={{ textAlign: 'center' }}>{t('Es demasiado larga para un código QR. Compártela con el enlace.', 'It is too long for a QR code. Share it with the link.')}</p>
         )}
-        <button className="btn primary" onClick={onShare}>Compartir enlace</button>
+        <button className="btn primary" onClick={onShare}>{t('Compartir enlace', 'Share link')}</button>
       </div>
     </Sheet>
   )

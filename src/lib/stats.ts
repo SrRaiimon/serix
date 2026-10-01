@@ -1,4 +1,5 @@
 import { addDays, startOfWeek } from './format'
+import { locale } from './i18n'
 import type { Session, SessionExercise, SetEntry } from './store'
 
 // Todas las funciones reciben sesiones terminadas.
@@ -43,7 +44,7 @@ export function records(sessions: Session[]): PersonalRecord[] {
       }
     }
   }
-  return [...best.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  return [...best.values()].sort((a, b) => a.name.localeCompare(b.name, locale()))
 }
 
 /** Récords batidos en `session` respecto a las sesiones anteriores. */

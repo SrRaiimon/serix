@@ -14,6 +14,10 @@ if (!files.length) {
   process.exit(1)
 }
 
+// Node trae un navigator con el idioma del sistema; los tests se escriben en español, así que se fija
+// (los de inglés cambian el idioma explícitamente).
+Object.defineProperty(globalThis, 'navigator', { value: { language: 'es-ES', languages: ['es-ES'] }, configurable: true, writable: true })
+
 const server = await createServer({ configFile: false, logLevel: 'error', server: { middlewareMode: true }, appType: 'custom', optimizeDeps: { noDiscovery: true, include: [] } })
 // Al cargar cada archivo se registran sus tests; node:test los ejecuta y fija el código de salida.
 for (const f of files) await server.ssrLoadModule(`/tests/${f}`)

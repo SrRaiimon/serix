@@ -1,0 +1,136 @@
+{
+  "Pullups": [
+    "Hang from the bar with your hands slightly wider than your shoulders and your palms facing forward.",
+    "Pull your shoulders down and drive your elbows down until your chin clears the bar.",
+    "Lower with control until your arms are almost straight.",
+    "If you cannot do them yet, use a resistance band or the assisted machine."
+  ],
+  "Wide-Grip_Lat_Pulldown": [
+    "Sit in the machine with your thighs under the pads and grab the bar much wider than your shoulders.",
+    "With your chest up, pull the bar to your upper chest, driving your elbows down and back.",
+    "Squeeze for a second and come up with control until your arms are straight.",
+    "Do not pull the bar behind your neck or lean back."
+  ],
+  "Full_Range-Of-Motion_Lat_Pulldown": [
+    "Sit in the machine with your thighs secured and grab the bar shoulder-width apart.",
+    "At the top, let your shoulders rise to stretch your back fully.",
+    "Pull by first lowering your shoulders and then your elbows until the bar reaches your chest.",
+    "Return to the top with control, stretching fully."
+  ],
+  "Close-Grip_Front_Lat_Pulldown": [
+    "Attach a close-grip handle (V-handle or short bar) to the high pulley and sit with your thighs secured.",
+    "Pull towards your upper chest with your elbows close to your body.",
+    "Squeeze for a second and come up with control until your arms are straight."
+  ],
+  "Chin-Up": [
+    "Hang from the bar with your palms facing you, shoulder-width apart.",
+    "Drive your elbows down until your chin clears the bar.",
+    "Lower with control until your arms are almost straight. It works the biceps a lot as well as the back."
+  ],
+  "Band_Assisted_Pull-Up": [
+    "Hook a resistance band over the bar and rest one knee or foot in it.",
+    "Grab the bar slightly wider than your shoulders and pull until your chin clears it.",
+    "Lower with control. Use thinner bands as you get stronger."
+  ],
+  "Bent_Over_Barbell_Row": [
+    "Standing with the bar in your hands, bend your knees slightly and lean your torso forward with a straight back, almost parallel to the floor.",
+    "Pull the bar to your lower chest, driving your elbows back.",
+    "Squeeze your shoulder blades together for a second and lower with control until your arms are straight.",
+    "Do not jerk with your back: if you need it to lift the weight, reduce the load."
+  ],
+  "Seated_Cable_Rows": [
+    "Sit in the machine with your feet on the footrests, knees slightly bent and the handle in your hands.",
+    "With a straight back, pull the handle to your stomach, driving your elbows back.",
+    "Squeeze your shoulder blades together for a second and return with control until your arms are straight, without rocking your torso back and forth."
+  ],
+  "Bent_Over_Two-Dumbbell_Row": [
+    "With a dumbbell in each hand, bend your knees slightly and lean your torso forward with a straight back.",
+    "Row the dumbbells towards your hips, driving your elbows back.",
+    "Squeeze your shoulder blades together and lower with control."
+  ],
+  "One-Arm_Dumbbell_Row": [
+    "Rest one knee and the hand on the same side on a bench, with your back straight and parallel to the floor.",
+    "With the other hand, row the dumbbell towards your hip, driving your elbow back and close to your body.",
+    "Lower with control until your arm is straight. Do all the reps and switch sides."
+  ],
+  "Two-Arm_Kettlebell_Row": [
+    "With a kettlebell in each hand, bend your knees slightly and lean your torso forward with a straight back.",
+    "Row the kettlebells towards your hips, driving your elbows back.",
+    "Squeeze your shoulder blades together and lower with control."
+  ],
+  "Inverted_Row": [
+    "Get under a bar at hip height (in the rack or a Smith machine) and grab it slightly wider than your shoulders.",
+    "With your body straight and your heels on the floor, pull until your chest touches the bar.",
+    "Lower with control. The more horizontal your body, the harder it is."
+  ],
+  "Barbell_Shrug": [
+    "Stand with the bar in your hands in front of your thighs and your arms straight.",
+    "Raise your shoulders towards your ears as high as you can, without bending your elbows.",
+    "Hold for a second and lower with control. Do not roll your shoulders."
+  ],
+  "Dumbbell_Shrug": [
+    "Stand with a dumbbell in each hand at your sides.",
+    "Raise your shoulders towards your ears as high as you can.",
+    "Hold for a second and lower with control."
+  ],
+  "Kettlebell_Sumo_High_Pull": [
+    "Take a wide stance with the kettlebell on the floor between your feet. Grab it with both hands.",
+    "With a straight back, stand up by extending your legs and hips and, at the end, pull the kettlebell to your chest with your elbows high.",
+    "Lower it with control along the same path."
+  ],
+  "Upright_Row_-_With_Bands": [
+    "Stand on the middle of the band and hold the ends in front of your thighs.",
+    "Pull up with your elbows high until your hands reach chest height.",
+    "Lower with control. Do not go higher if your shoulders bother you."
+  ],
+  "Scapular_Pull-Up": [
+    "Hang from the bar with your arms straight.",
+    "Without bending your elbows, pull your shoulders down away from your ears so your body rises a few centimetres.",
+    "Return to the hang with control. It helps prepare for pull-ups and look after your shoulders."
+  ],
+  "Barbell_Curl": [
+    "Stand holding the bar shoulder-width apart with your palms facing forward.",
+    "With your elbows at your sides, bend them to curl the bar towards your shoulders.",
+    "Squeeze for a second and lower with control until your arms are straight. Do not swing."
+  ],
+  "Dumbbell_Bicep_Curl": [
+    "Stand with a dumbbell in each hand at your sides, palms facing forward.",
+    "With your elbows at your sides, curl the dumbbells towards your shoulders.",
+    "Squeeze for a second and lower with control."
+  ],
+  "EZ-Bar_Curl": [
+    "Stand and grab the EZ bar on the angled grips, shoulder-width apart.",
+    "With your elbows at your sides, curl the bar towards your shoulders.",
+    "Lower with control. The angled grip is usually more comfortable for the wrists."
+  ],
+  "Standing_Biceps_Cable_Curl": [
+    "Stand facing a low pulley with a short bar held with your palms up.",
+    "With your elbows at your sides, curl the bar towards your shoulders.",
+    "Squeeze for a second and lower with control. The cable keeps tension throughout the range."
+  ],
+  "Close-Grip_EZ-Bar_Curl_with_Band": [
+    "Pass a band under your feet and hook it to the ends of an EZ bar. Grab it with your hands close together.",
+    "With your elbows at your sides, curl the bar towards your shoulders; the band adds resistance at the top.",
+    "Lower with control."
+  ],
+  "Hammer_Curls": [
+    "Stand with a dumbbell in each hand at your sides, palms facing each other.",
+    "Without turning your wrists, curl the dumbbells towards your shoulders with your elbows at your sides.",
+    "Lower with control. It also works the forearm."
+  ],
+  "Cable_Hammer_Curls_-_Rope_Attachment": [
+    "Attach a rope to the low pulley and grab it with your palms facing each other.",
+    "With your elbows at your sides, curl the rope towards your shoulders.",
+    "Lower with control."
+  ],
+  "Alternate_Hammer_Curl": [
+    "Stand with a dumbbell in each hand, palms facing each other.",
+    "Curl one dumbbell towards your shoulder without turning your wrist and lower it with control.",
+    "Repeat with the other arm and keep alternating."
+  ],
+  "Farmers_Walk": [
+    "Pick up a heavy weight in each hand (dumbbells, kettlebells or farmer's handles), squatting down with a straight back.",
+    "Stand up and walk with short steps, chest up and shoulders back.",
+    "Cover the set distance or time and put the weights down with a straight back."
+  ]
+}

@@ -12,7 +12,7 @@ const ignored = new Set([
 ])
 
 function movementWords(e: Exercise): Set<string> {
-  const words = normalize(`${e.name} ${e.nameEn}`).split(/[^a-zñ0-9]+/)
+  const words = normalize(`${e.nameEs} ${e.nameEn}`).split(/[^a-zñ0-9]+/)
   return new Set(words.filter((w) => w.length > 1 && !ignored.has(w)))
 }
 

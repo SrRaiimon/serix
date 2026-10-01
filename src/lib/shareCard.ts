@@ -3,6 +3,7 @@ import { day, duration, volume, weight, type Unit } from './format'
 import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from './stats'
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
+import { plural, t } from './i18n'
 
 // Tarjeta del entrenamiento para compartir como imagen (1080 × 1350, formato 4:5). Se dibuja como SVG
 // con colores fijos y se convierte a PNG en el propio dispositivo: no se envía nada a ningún servidor.
@@ -56,10 +57,10 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
   const paint = (name: string): Paint => (primary.has(name) ? 'p' : secondary.has(name) ? 's' : 'm')
 
   const stats: [string, string][] = [
-    [duration(sessionDuration(session)), 'Duración'],
-    [volume(sessionVolume(session), unit), 'Volumen'],
-    [String(sessionSets(session)), 'Series'],
-    records.length ? [String(records.length), records.length === 1 ? 'Récord' : 'Récords'] : [String(sessionReps(session)), 'Repeticiones'],
+    [duration(sessionDuration(session)), t('Duración', 'Duration')],
+    [volume(sessionVolume(session), unit), t('Volumen', 'Volume')],
+    [String(sessionSets(session)), t('Series', 'Sets')],
+    records.length ? [String(records.length), records.length === 1 ? t('Récord', 'Record') : t('Récords', 'Records')] : [String(sessionReps(session)), t('Repeticiones', 'Reps')],
   ]
   const done = session.exercises.filter((e) => workingSets(e).length)
   const shown = done.slice(0, 5)
@@ -69,7 +70,7 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
     const tracking = trackingOf(e)
     const bestText = tracking !== 'weight_reps' ? setShortText(best, tracking, unit)
       : best.weight > 0 ? `${weight(best.weight, unit)} × ${best.reps}` : `${best.reps} rep.`
-    return [cut(e.name, 34), `${sets.length} ${sets.length === 1 ? 'serie' : 'series'} · ${bestText}`]
+    return [cut(e.name, 34), `${plural(sets.length, ['serie', 'series'], ['set', 'sets'])} · ${bestText}`]
   })
   const record = records[0]
 
@@ -85,12 +86,13 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
     return `<text x="80" y="${y}" font-size="28" fill="#e8e9ec">${esc(name)}</text>
       <text x="1000" y="${y}" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(detail)}</text>`
   }).join('')
-  const more = done.length > shown.length
-    ? `<text x="80" y="${1080 + shown.length * 46}" font-size="24" fill="#6b7280">y ${done.length - shown.length} ejercicio${done.length - shown.length === 1 ? '' : 's'} más</text>`
+  const extra = done.length - shown.length
+  const more = extra > 0
+    ? `<text x="80" y="${1080 + shown.length * 46}" font-size="24" fill="#6b7280">${extra === 1 ? t('y 1 ejercicio más', 'and 1 more exercise') : t(`y ${extra} ejercicios más`, `and ${extra} more exercises`)}</text>`
     : ''
   const recordBadge = record
     ? `<rect x="60" y="480" width="960" height="70" rx="35" fill="#ff6a3d" fill-opacity="0.14"/>
-      <text x="540" y="526" font-size="30" font-weight="600" fill="#ff8a5c" text-anchor="middle">Nuevo récord · ${esc(cut(record.name, 28))} · ${esc(weight(record.weight, unit))} × ${record.reps}</text>`
+      <text x="540" y="526" font-size="30" font-weight="600" fill="#ff8a5c" text-anchor="middle">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 28))} · ${esc(weight(record.weight, unit))} × ${record.reps}</text>`
     : ''
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">
@@ -110,7 +112,7 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
   ${recordBadge}
   <g transform="translate(${(W - 420 * MAP_SCALE) / 2}, ${record ? 578 : 510}) scale(${MAP_SCALE})">${muscleMap(paint)}</g>
   ${exerciseRows}${more}
-  <text x="540" y="1322" font-size="24" fill="#5b616d" text-anchor="middle">Entrenado con Serix · srraiimon.github.io/serix</text>
+  <text x="540" y="1322" font-size="24" fill="#5b616d" text-anchor="middle">${t('Entrenado con Serix', 'Trained with Serix')} · srraiimon.github.io/serix</text>
 </svg>`
 }
 
@@ -125,7 +127,7 @@ export async function svgToPng(svg: string): Promise<Blob> {
     canvas.width = W
     canvas.height = H
     canvas.getContext('2d')!.drawImage(img, 0, 0, W, H)
-    return await new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('No se pudo crear la imagen'))), 'image/png'))
+    return await new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error(t('No se pudo crear la imagen', 'Could not create the image')))), 'image/png'))
   } finally {
     URL.revokeObjectURL(url)
   }

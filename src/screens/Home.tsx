@@ -1,7 +1,7 @@
 import { Calendar, ClipboardList, Clock, Download, Dumbbell, Flame, Play, Share, Smartphone, Star, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick } from '../components/ui'
-import { addDays, clock, count, day, startOfDay, startOfWeek, volume } from '../lib/format'
+import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -10,6 +10,7 @@ import { openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { SessionRow } from '../components/SessionRow'
+import { plural, t } from '../lib/i18n'
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */
 function nextRoutine(d: AppData): Routine | undefined {
@@ -44,7 +45,7 @@ export function HomeScreen() {
       <header className="large-title">
         <div className="grow">
           <p className="subtitle">{day(Date.now())}</p>
-          <h1>{name ? `Hola, ${name}` : '¡Hola!'}</h1>
+          <h1>{name ? `${t('Hola', 'Hi')}, ${name}` : t('¡Hola!', 'Hi!')}</h1>
         </div>
       </header>
 
@@ -53,33 +54,33 @@ export function HomeScreen() {
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
       {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} /> : (
-        <Card title="Crea tu primer programa" icon={WandSparkles}>
-          <span className="muted small">Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.</span>
-          <button className="btn primary" onClick={() => navigate('routines')}>Ir a Rutinas</button>
+        <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
+          <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
+          <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
         </Card>
       )}
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
       <div className="grid-3">
-        <Tile icon={Flame} tint="#ff9500" value={streakWeeks(sessions)} label="Racha (sem.)" />
-        <Tile icon={Calendar} tint="var(--blue)" value={thisMonth.length} label="Este mes" />
-        <Tile icon={Weight} tint="#bf5af2" value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label="Volumen sem." />
+        <Tile icon={Flame} tint="#ff9500" value={streakWeeks(sessions)} label={t('Racha (sem.)', 'Streak (wks)')} />
+        <Tile icon={Calendar} tint="var(--blue)" value={thisMonth.length} label={t('Este mes', 'This month')} />
+        <Tile icon={Weight} tint="#bf5af2" value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label={t('Volumen sem.', 'Weekly volume')} />
       </div>
 
       <div className="grid-3">
-        <button className="quick" onClick={startEmpty}><Zap size={22} />Entreno libre</button>
-        <button className="quick" onClick={() => navigate('exercises')}><Dumbbell size={22} />Ejercicios</button>
-        <button className="quick" onClick={() => navigate('routines')}><ClipboardList size={22} />Rutinas</button>
+        <button className="quick" onClick={startEmpty}><Zap size={22} />{t('Entreno libre', 'Free workout')}</button>
+        <button className="quick" onClick={() => navigate('exercises')}><Dumbbell size={22} />{t('Ejercicios', 'Exercises')}</button>
+        <button className="quick" onClick={() => navigate('routines')}><ClipboardList size={22} />{t('Rutinas', 'Routines')}</button>
       </div>
 
       {sessions.length > 0 && (
         <>
-          <h2 className="section-title">Últimos entrenamientos</h2>
+          <h2 className="section-title">{t('Últimos entrenamientos', 'Recent workouts')}</h2>
           <div className="list">
             {sessions.slice(0, 3).map((s) => <SessionRow key={s.id} session={s} unit={unit} onClick={() => navigate('progress', 'session', s.id)} />)}
           </div>
-          <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => navigate('progress')}>Ver todo el historial</button>
+          <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => navigate('progress')}>{t('Ver todo el historial', 'See full history')}</button>
         </>
       )}
     </div>
@@ -90,16 +91,16 @@ function NextCard({ routine }: { routine: Routine }) {
   return (
     <section className="hero">
       <div className="row between">
-        <span className="kicker">SIGUIENTE ENTRENAMIENTO</span>
+        <span className="kicker">{t('SIGUIENTE ENTRENAMIENTO', 'NEXT WORKOUT')}</span>
         {routine.programName && <span className="small clamp-1" style={{ opacity: 0.9, maxWidth: '55%' }}>{routine.programName}</span>}
       </div>
       <h2>{routine.name}</h2>
       <span style={{ opacity: 0.92 }}>{muscleSummary(routine)}</span>
       <span className="small row" style={{ gap: 14, fontWeight: 600 }}>
-        <span className="row" style={{ gap: 5 }}><Dumbbell size={15} /> {count(routine.exercises.length, 'ejercicio', 'ejercicios')}</span>
+        <span className="row" style={{ gap: 5 }}><Dumbbell size={15} /> {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}</span>
         <span className="row" style={{ gap: 5 }}><Clock size={15} /> ~{routineMinutes(routine)} min</span>
       </span>
-      <button className="btn start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> Empezar</button>
+      <button className="btn start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
     </section>
   )
 }
@@ -107,10 +108,10 @@ function NextCard({ routine }: { routine: Routine }) {
 function ContinueCard({ session }: { session: Session }) {
   const now = useTick()
   return (
-    <Card title="Entrenamiento en curso" icon={Dumbbell}>
+    <Card title={t('Entrenamiento en curso', 'Workout in progress')} icon={Dumbbell}>
       <strong style={{ fontSize: 20 }}>{session.name}</strong>
-      <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>Llevas {clock((now - session.start) / 1000)}</span>
-      <button className="btn primary" onClick={openWorkout}>Continuar</button>
+      <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>{t('Llevas', 'Elapsed')} {clock((now - session.start) / 1000)}</span>
+      <button className="btn primary" onClick={openWorkout}>{t('Continuar', 'Resume')}</button>
     </Card>
   )
 }
@@ -123,22 +124,22 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
   return (
     <Card>
       <div className="row between">
-        <h3>Esta semana</h3>
-        <strong style={{ color: reached ? 'var(--green)' : 'var(--accent)' }}>{sessions.length} de {goal}</strong>
+        <h3>{t('Esta semana', 'This week')}</h3>
+        <strong style={{ color: reached ? 'var(--green)' : 'var(--accent)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
       </div>
       <Progress value={Math.min(sessions.length, goal)} total={goal} green={reached} />
       <div className="week">
         {days.map((d, i) => {
-          const t = d.getTime()
+          const time = d.getTime()
           return (
-            <div key={t}>
-              <span className="tiny muted bold">{'LMXJVSD'[i]}</span>
-              <div className={`dot ${trained.has(t) ? 'done' : ''} ${t === today ? 'today' : ''}`}>{trained.has(t) ? '✓' : d.getDate()}</div>
+            <div key={time}>
+              <span className="tiny muted bold">{t('LMXJVSD', 'MTWTFSS')[i]}</span>
+              <div className={`dot ${trained.has(time) ? 'done' : ''} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
             </div>
           )
         })}
       </div>
-      {reached && <span className="small bold row" style={{ color: 'var(--green)', gap: 6 }}><Star size={15} fill="currentColor" /> ¡Objetivo semanal cumplido!</span>}
+      {reached && <span className="small bold row" style={{ color: 'var(--green)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
     </Card>
   )
 }
@@ -155,13 +156,13 @@ function InstallBanner() {
     <div className="install-banner">
       <Smartphone size={26} color="var(--accent)" />
       <span className="grow small">
-        <strong style={{ display: 'block' }}>Instálala en tu móvil</strong>
-        {canPrompt ? 'Se abrirá como una app, a pantalla completa y sin conexión.' : (
-          <>Pulsa <Share size={13} style={{ verticalAlign: -2 }} /> <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>.</>
+        <strong style={{ display: 'block' }}>{t('Instálala en tu móvil', 'Install it on your phone')}</strong>
+        {canPrompt ? t('Se abrirá como una app, a pantalla completa y sin conexión.', 'It opens like an app, full screen and offline.') : (
+          <>{t('Pulsa', 'Tap')} <Share size={13} style={{ verticalAlign: -2 }} /> <b>{t('Compartir', 'Share')}</b> {t('y luego', 'and then')} <b>{t('Añadir a pantalla de inicio', 'Add to Home Screen')}</b>.</>
         )}
       </span>
-      {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>Instalar</button>}
-      <button onClick={dismiss} aria-label="Cerrar" style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
+      <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
   )
 }
@@ -169,14 +170,14 @@ function InstallBanner() {
 /** Recordatorio de copia: los datos solo están en este móvil. */
 function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {
   return (
-    <Card title="Guarda una copia de tus datos" icon={Download}>
+    <Card title={t('Guarda una copia de tus datos', 'Back up your data')} icon={Download}>
       <span className="muted small">
-        Tus entrenamientos solo están en este móvil{lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}.
-        Exporta una copia y guárdala (en la nube, en tu correo…) por si cambias de móvil o se borra la app.
+        {t(`Tus entrenamientos solo están en este móvil${lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}. Exporta una copia y guárdala (en la nube, en tu correo…) por si cambias de móvil o se borra la app.`,
+          `Your workouts are only on this phone${lastBackupAt ? ` and your last backup is from ${day(lastBackupAt)}` : ''}. Export a backup and keep it (in the cloud, in your email…) in case you switch phones or the app gets deleted.`)}
       </span>
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={exportBackup}>Exportar copia</button>
-        <button className="btn secondary" onClick={snoozeBackup}>Más tarde</button>
+        <button className="btn primary grow" onClick={exportBackup}>{t('Exportar copia', 'Export backup')}</button>
+        <button className="btn secondary" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
       </div>
     </Card>
   )

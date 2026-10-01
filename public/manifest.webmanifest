@@ -1,7 +1,7 @@
 {
-  "name": "Serix · Tu entrenador de bolsillo",
+  "name": "Serix",
   "short_name": "Serix",
-  "description": "Rutinas, registro de series y progreso en el gimnasio.",
+  "description": "Rutinas, registro de series y progreso en el gimnasio · Gym routines, set logging and progress.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
@@ -10,8 +10,21 @@
   "background_color": "#F2F2F7",
   "theme_color": "#FF6133",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

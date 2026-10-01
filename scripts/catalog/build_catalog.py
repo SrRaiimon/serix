@@ -12,6 +12,7 @@ Entradas:
   - old_to_new.json: equivalencias del catálogo anterior (map_old_ids.py)
   - instrucciones/*.json: pasos de ejecución escritos para este proyecto (texto original, sin
     partir de ninguna fuente de terceros), por identificador de ejercicio
+  - instructions_en/*.json: su traducción al inglés (mismos archivos, ejercicios y número de pasos)
 
 Uso: python3 build_catalog.py <fedb>/dist/exercises.json old_to_new.json
 """
@@ -38,13 +39,20 @@ CATEGORY = {'powerlifting': 'strength', 'olympic weightlifting': 'strength', 'st
 def main(src, mapping_path):
     data = json.load(open(src))
     names = dict(l.rstrip('\n').split('|', 1) for l in open(os.path.join(HERE, 'names_es.txt'), encoding='utf-8') if l.strip())
-    steps = {}
-    for path in sorted(glob.glob(os.path.join(HERE, 'instrucciones', '*.json'))):
-        for key, value in json.load(open(path, encoding='utf-8')).items():
-            assert key not in steps, f'{key} repetido'
-            assert value and all(isinstance(v, str) and v.strip() for v in value), key
-            steps[key] = value
-    assert not set(steps) - {e['id'] for e in data}, sorted(set(steps) - {e['id'] for e in data})
+    def load_steps(folder):
+        steps = {}
+        for path in sorted(glob.glob(os.path.join(HERE, folder, '*.json'))):
+            for key, value in json.load(open(path, encoding='utf-8')).items():
+                assert key not in steps, f'{key} repetido'
+                assert value and all(isinstance(v, str) and v.strip() for v in value), key
+                steps[key] = value
+        assert not set(steps) - {e['id'] for e in data}, sorted(set(steps) - {e['id'] for e in data})
+        return steps
+    steps = load_steps('instrucciones')
+    steps_en = load_steps('instructions_en')
+    # La traducción tiene que ir a la par: mismos ejercicios y mismo número de pasos.
+    assert set(steps_en) == set(steps), sorted(set(steps_en) ^ set(steps))
+    assert all(len(steps_en[k]) == len(v) for k, v in steps.items()), [k for k, v in steps.items() if len(steps_en[k]) != len(v)]
     out = []
     for e in data:
         muscle = MUSCLE[e['primaryMuscles'][0]]
@@ -60,6 +68,7 @@ def main(src, mapping_path):
             'level': e['level'],
             'secondaryMuscles': [MUSCLE[m] for m in e['secondaryMuscles'] if m in MUSCLE],
             'instructions': steps.get(e['id'], []),
+            'instructionsEn': steps_en.get(e['id'], []),
         })
     catalog = {'version': 2, 'source': 'Datos de ejercicios: lista de Free Exercise DB (solo nombres y clasificación)',
                'count': len(out), 'exercises': out}

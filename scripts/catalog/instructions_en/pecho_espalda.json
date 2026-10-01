@@ -1,0 +1,457 @@
+{
+  "Around_The_Worlds": [
+    "Lie on a flat bench with a light dumbbell in each hand resting on your thighs, palms facing up.",
+    "With your arms almost straight, sweep a wide arc out to the sides until the dumbbells are overhead.",
+    "Return along the same path. Use a light weight: the shoulder works in demanding positions."
+  ],
+  "Barbell_Guillotine_Bench_Press": [
+    "Lie on the bench and grab the bar slightly wider than usual.",
+    "Lower the bar towards your upper chest, close to your neck, with your elbows flared.",
+    "Press until your arms are straight. It is risky: use a light weight and always have a spotter."
+  ],
+  "Bent-Arm_Dumbbell_Pullover": [
+    "Lie on a bench holding a dumbbell with both hands over your chest, elbows bent.",
+    "Take it behind your head until you feel the stretch, without changing the angle of your elbows.",
+    "Return to the top along the same arc."
+  ],
+  "Cable_Chest_Press": [
+    "Stand with your back between two pulleys at chest height, a handle in each hand and one foot forward.",
+    "Press the handles forward until your arms are straight.",
+    "Return with control until your hands are at chest height."
+  ],
+  "Cable_Iron_Cross": [
+    "Stand between two high pulleys with a handle in each hand and your arms out to the sides.",
+    "With your elbows slightly bent, bring your hands down until they meet in front of your hips.",
+    "Return with control to the cross position."
+  ],
+  "Clock_Push-Up": [
+    "Get into a push-up position.",
+    "Do a push-up and, as you come up, move your hands one step to the side while your feet pivot.",
+    "Keep going round like the hands of a clock until you complete the circle, then change direction."
+  ],
+  "Decline_Barbell_Bench_Press": [
+    "Lie on the decline bench with your feet secured.",
+    "Unrack the bar with a grip slightly wider than your shoulders and lower it to your lower chest.",
+    "Press until your arms are straight. Ask for help to unrack and rack the bar."
+  ],
+  "Decline_Dumbbell_Bench_Press": [
+    "Lie on the decline bench with your feet secured and a dumbbell in each hand over your chest.",
+    "Lower the dumbbells to the sides of your lower chest.",
+    "Press until your arms are straight."
+  ],
+  "Decline_Dumbbell_Flyes": [
+    "Lie on the decline bench with the dumbbells over your chest, palms facing each other.",
+    "With your elbows slightly bent, open your arms out to the sides until you feel the stretch.",
+    "Close them again in an arc."
+  ],
+  "Decline_Smith_Press": [
+    "Place a decline bench under the Smith machine bar and lie down with your feet secured.",
+    "Release the safety hooks and lower the bar to your lower chest.",
+    "Press until your arms are straight and hook the bar again."
+  ],
+  "Dumbbell_Bench_Press_with_Neutral_Grip": [
+    "Lie on a flat bench with the dumbbells over your chest, palms facing each other.",
+    "Lower them to the sides of your chest with your elbows close to your body.",
+    "Press until your arms are straight. The neutral grip is usually comfortable for the shoulders."
+  ],
+  "Flat_Bench_Cable_Flyes": [
+    "Place a flat bench between two low pulleys and lie down with a handle in each hand over your chest.",
+    "With your elbows slightly bent, open your arms out to the sides until you feel the stretch.",
+    "Close them again in an arc."
+  ],
+  "Front_Raise_And_Pullover": [
+    "Lie on a bench holding a light bar on your thighs with your arms straight.",
+    "Raise the bar in an arc over your chest until it is behind your head.",
+    "Return along the same path to your thighs."
+  ],
+  "Hammer_Grip_Incline_DB_Bench_Press": [
+    "Set the bench to about 30 degrees and lie down with the dumbbells over your chest, palms facing each other.",
+    "Lower them to the sides of your chest with your elbows close to your body.",
+    "Press until your arms are straight."
+  ],
+  "Incline_Cable_Chest_Press": [
+    "Place an incline bench between two low pulleys and lie down with a handle in each hand at chest height.",
+    "Press up until your arms are straight.",
+    "Return with control."
+  ],
+  "Incline_Cable_Flye": [
+    "Place an incline bench between two low pulleys and lie down with a handle in each hand over your chest.",
+    "With your elbows slightly bent, open your arms until you feel the stretch.",
+    "Close them again in an arc."
+  ],
+  "Incline_Dumbbell_Bench_With_Palms_Facing_In": [
+    "Set the bench to about 30 degrees and lie down with the dumbbells over your chest, palms facing each other.",
+    "Lower them to the sides of your chest and press until your arms are straight.",
+    "Keep your elbows close to your body."
+  ],
+  "Incline_Dumbbell_Flyes_-_With_A_Twist": [
+    "Lie on an incline bench with the dumbbells over your chest, palms facing each other.",
+    "Open your arms out to the sides with your elbows slightly bent.",
+    "As you close them, rotate your wrists to finish with your little fingers together at the top and squeeze your chest."
+  ],
+  "Incline_Push-Up": [
+    "Place your hands on a bench or raised surface, slightly wider than your shoulders, with your body straight.",
+    "Lower your chest towards the bench by bending your elbows.",
+    "Push until your arms are straight. It is easier than a floor push-up."
+  ],
+  "Incline_Push-Up_Medium": [
+    "Place your hands on a bench shoulder-width apart, with your body straight.",
+    "Lower your chest towards the bench with your elbows at about 45 degrees from your body.",
+    "Push until your arms are straight."
+  ],
+  "Incline_Push-Up_Reverse_Grip": [
+    "Place your hands on a bench with your palms facing you, shoulder-width apart.",
+    "Lower your chest towards the bench with your elbows close to your body.",
+    "Push until your arms are straight."
+  ],
+  "Incline_Push-Up_Wide": [
+    "Place your hands on a bench much wider than your shoulders, with your body straight.",
+    "Lower your chest towards the bench.",
+    "Push until your arms are straight."
+  ],
+  "Isometric_Wipers": [
+    "Get into a push-up position with your hands wider than your shoulders.",
+    "Shift your weight towards one arm, bending it while the other stays almost straight.",
+    "Return to the centre and move to the other side, keeping your body straight throughout."
+  ],
+  "Leverage_Chest_Press": [
+    "Sit in the machine with your back supported and the handles at chest height.",
+    "Press until your arms are straight.",
+    "Return with control without letting the weight touch the stack."
+  ],
+  "Leverage_Decline_Chest_Press": [
+    "Sit in the decline press machine with your back supported.",
+    "Press the handles forward and down until your arms are straight.",
+    "Return with control."
+  ],
+  "Leverage_Incline_Chest_Press": [
+    "Sit in the incline press machine with your back supported.",
+    "Press the handles up and forward until your arms are straight.",
+    "Return with control."
+  ],
+  "Low_Cable_Crossover": [
+    "Set the pulleys low and grab a handle in each hand. Step forward.",
+    "With your elbows slightly bent, raise your hands until they meet in front of your chest.",
+    "Return with control. It works the upper chest more."
+  ],
+  "Machine_Bench_Press": [
+    "Lie or sit in the machine with the handles at chest height.",
+    "Press until your arms are straight.",
+    "Return with control."
+  ],
+  "Neck_Press": [
+    "Lie on the bench and grab the bar slightly wider than your shoulders.",
+    "Lower the bar towards the base of your neck with your elbows flared.",
+    "Press until your arms are straight. Use a light weight and always have a spotter."
+  ],
+  "One-Arm_Flat_Bench_Dumbbell_Flye": [
+    "Lie on a flat bench with a dumbbell in one hand over your chest and the other hand holding the bench.",
+    "With your elbow slightly bent, open your arm out to the side until you feel the stretch.",
+    "Close it again. Do all the reps and switch arms."
+  ],
+  "One_Arm_Dumbbell_Bench_Press": [
+    "Lie on a flat bench with a dumbbell in one hand over your chest.",
+    "Lower it to the side of your chest without letting your body rotate.",
+    "Press until your arm is straight. Switch sides. It demands core stability."
+  ],
+  "Push-Ups_With_Feet_Elevated": [
+    "Put your feet on a bench and your hands on the floor, slightly wider than your shoulders.",
+    "With your body straight, lower until your face is close to the floor.",
+    "Push until your arms are straight."
+  ],
+  "Push_Up_to_Side_Plank": [
+    "Do a normal push-up.",
+    "As you come up, turn your body to one side and raise one arm towards the ceiling into a side plank.",
+    "Return to the push-up position and repeat to the other side."
+  ],
+  "Pushups_Close_and_Wide_Hand_Positions": [
+    "Do a push-up with your hands together under your chest.",
+    "Spread your hands much wider than your shoulders and do another push-up.",
+    "Alternate the two positions throughout the set."
+  ],
+  "Single-Arm_Cable_Crossover": [
+    "Set a pulley high and grab the handle with one hand; stand side-on to the machine.",
+    "With your elbow slightly bent, bring your hand towards the opposite hip in an arc.",
+    "Return with control and switch sides."
+  ],
+  "Single-Arm_Push-Up": [
+    "Get into a push-up position with your feet wide apart and one hand behind your back.",
+    "Lower with your body straight, without rotating your hips.",
+    "Push until your arm is straight. It is an advanced exercise."
+  ],
+  "Smith_Machine_Bench_Press": [
+    "Place a flat bench under the Smith machine bar and lie down.",
+    "Release the safety hooks and lower the bar to your chest.",
+    "Press until your arms are straight and hook the bar again."
+  ],
+  "Smith_Machine_Decline_Press": [
+    "Place a decline bench under the Smith machine bar and lie down with your feet secured.",
+    "Lower the bar to your lower chest.",
+    "Press until your arms are straight."
+  ],
+  "Smith_Machine_Incline_Bench_Press": [
+    "Place an incline bench under the Smith machine bar and lie down.",
+    "Lower the bar to your upper chest.",
+    "Press until your arms are straight."
+  ],
+  "Standing_Cable_Chest_Press": [
+    "With your back to a pulley at chest height, hold the handle in one or both hands with one foot forward.",
+    "Press forward until your arms are straight, without arching your back.",
+    "Return with control."
+  ],
+  "Straight-Arm_Dumbbell_Pullover": [
+    "Lie on a bench holding a dumbbell with both hands over your chest, arms almost straight.",
+    "Take it behind your head in an arc until you feel the stretch.",
+    "Return to the top along the same path."
+  ],
+  "Wide-Grip_Barbell_Bench_Press": [
+    "Lie on the bench and grab the bar much wider than your shoulders.",
+    "Lower it to your chest with control.",
+    "Press until your arms are straight. If your shoulders bother you, narrow your grip."
+  ],
+  "Wide-Grip_Decline_Barbell_Bench_Press": [
+    "Lie on the decline bench with your feet secured and grab the bar much wider than your shoulders.",
+    "Lower it to your lower chest.",
+    "Press until your arms are straight. Ask for help to unrack and rack the bar."
+  ],
+  "Wide-Grip_Decline_Barbell_Pullover": [
+    "Lie on a decline bench with your feet secured and a bar over your chest, using a wide grip.",
+    "With your arms almost straight, take it behind your head.",
+    "Return along the same path."
+  ],
+  "Bent-Arm_Barbell_Pullover": [
+    "Lie on a bench with an EZ or straight bar over your chest, elbows bent.",
+    "Take it behind your head without changing the angle of your elbows.",
+    "Return to the top, squeezing your back and chest."
+  ],
+  "Cable_Incline_Pushdown": [
+    "Place an incline bench facing a high pulley and lie on your back holding the bar overhead.",
+    "With your arms straight, bring the bar down to your thighs.",
+    "Return with control."
+  ],
+  "Elevated_Cable_Rows": [
+    "Sit on a raised platform facing the low pulley, with your legs braced.",
+    "Pull the handle to your stomach with a straight back.",
+    "Return by straightening your arms; the height allows a greater stretch."
+  ],
+  "Kneeling_High_Pulley_Row": [
+    "Kneel facing a high pulley with a bar or rope, arms stretched up.",
+    "Pull towards your chest, driving your elbows down and back.",
+    "Return with control."
+  ],
+  "Kneeling_Single-Arm_High_Pulley_Row": [
+    "Kneel facing a high pulley with a handle in one hand.",
+    "Pull towards your side, driving your elbow down and back.",
+    "Return with control and switch arms."
+  ],
+  "Leverage_Iso_Row": [
+    "Sit in the machine with your chest against the pad.",
+    "Pull the handles, driving your elbows back and squeezing your shoulder blades together; you can work one arm or both.",
+    "Return with control."
+  ],
+  "One_Arm_Lat_Pulldown": [
+    "Sit at the pulldown machine with a handle in one hand.",
+    "Pull down, bringing your elbow to your side.",
+    "Come up with control, straightening your arm, and switch sides."
+  ],
+  "Rope_Straight-Arm_Pulldown": [
+    "Attach a rope to the high pulley and grab it with your arms straight.",
+    "Lean your torso forward slightly and, without bending your elbows, bring the rope down to your thighs.",
+    "Return with control."
+  ],
+  "Shotgun_Row": [
+    "Stand facing a low pulley with one foot forward and the handle in one hand.",
+    "Pull the handle towards your hip, driving your elbow back and rotating your torso slightly.",
+    "Return by straightening your arm and switch sides."
+  ],
+  "Straight-Arm_Pulldown": [
+    "Attach a bar to the high pulley and grab it with your arms straight, shoulder-width apart.",
+    "Lean your torso forward slightly and, without bending your elbows, bring the bar down to your thighs.",
+    "Return with control to head height."
+  ],
+  "Underhand_Cable_Pulldowns": [
+    "Sit at the pulldown machine and grab the bar with your palms facing you, shoulder-width apart.",
+    "Pull towards your upper chest, driving your elbows down.",
+    "Come up with control."
+  ],
+  "V-Bar_Pulldown": [
+    "Attach the V-handle to the high pulley and sit with your thighs secured.",
+    "Pull towards your upper chest with your elbows close to your body.",
+    "Come up with control, straightening your arms."
+  ],
+  "V-Bar_Pullup": [
+    "Place a V-handle over the pull-up bar and grab it with both hands.",
+    "Pull until your chest nears the handle, elbows pointing down.",
+    "Lower with control."
+  ],
+  "Wide-Grip_Pulldown_Behind_The_Neck": [
+    "Sit at the pulldown machine and grab the bar very wide.",
+    "Tilt your head slightly forward and bring the bar down behind your neck only as far as is comfortable.",
+    "Come up with control. If your shoulders bother you, pull to the front instead."
+  ],
+  "Wide-Grip_Rear_Pull-Up": [
+    "Hang from the bar with a very wide grip.",
+    "Pull, bringing the back of your neck towards the bar, only as far as is comfortable for your shoulders.",
+    "Lower with control. If you feel discomfort, do the pull-up to the front."
+  ],
+  "Alternating_Kettlebell_Row": [
+    "With a kettlebell in each hand, lean your torso forward with a straight back.",
+    "Row one kettlebell towards your hip and lower it.",
+    "Repeat with the other and keep alternating."
+  ],
+  "Bent_Over_One-Arm_Long_Bar_Row": [
+    "Set one end of the bar in a corner or holder and load the other. Stand to one side.",
+    "With your torso bent forward and your back straight, grab the bar with one hand near the plates.",
+    "Row towards your hip, driving your elbow back, and lower with control. Switch sides."
+  ],
+  "Bent_Over_Two-Arm_Long_Bar_Row": [
+    "Set one end of the bar in a corner or holder and load the other. Straddle the bar.",
+    "With your torso bent forward, grab it with both hands just behind the plates.",
+    "Row towards your chest, squeezing your shoulder blades together, and lower with control."
+  ],
+  "Bent_Over_Two-Dumbbell_Row_With_Palms_In": [
+    "With a dumbbell in each hand and your palms facing each other, lean your torso forward with a straight back.",
+    "Row the dumbbells towards your hips with your elbows close to your body.",
+    "Lower with control."
+  ],
+  "Dumbbell_Incline_Row": [
+    "Lie face down on an incline bench with a dumbbell hanging in each hand.",
+    "Row the dumbbells towards your hips, squeezing your shoulder blades together.",
+    "Lower with control. The bench stops you from swinging."
+  ],
+  "Incline_Bench_Pull": [
+    "Lie face down on an incline bench with a barbell hanging in your hands.",
+    "Pull the bar towards the bench, driving your elbows back.",
+    "Lower with control."
+  ],
+  "Leverage_High_Row": [
+    "Sit in the machine with your thighs secured and grab the handles overhead.",
+    "Pull down and back, bringing your elbows to your sides.",
+    "Return with control."
+  ],
+  "Lying_Cambered_Barbell_Row": [
+    "Lie face down on a high bench with a cambered bar hanging in your hands.",
+    "Pull towards the bench, driving your elbows back; the bend in the bar allows a longer range.",
+    "Lower with control."
+  ],
+  "Lying_T-Bar_Row": [
+    "Lie face down on the T-bar row machine with your chest supported.",
+    "Grab the handles and pull towards your chest, squeezing your shoulder blades together.",
+    "Lower with control."
+  ],
+  "Middle_Back_Shrug": [
+    "Lie face down on an incline bench with a dumbbell in each hand, arms hanging.",
+    "Without bending your elbows, squeeze your shoulder blades together, pulling your shoulders back.",
+    "Hold for a second and return with control."
+  ],
+  "One-Arm_Kettlebell_Row": [
+    "Rest one hand and one knee on a bench, or lean forward with a straight back, with a kettlebell in the other hand.",
+    "Row the kettlebell towards your hip with your elbow close to your body.",
+    "Lower with control and switch sides."
+  ],
+  "One-Arm_Long_Bar_Row": [
+    "Set one end of the bar in a corner and load the other.",
+    "With your torso bent forward and one hand on your knee, grab the bar with the other.",
+    "Row towards your hip and lower with control. Switch sides."
+  ],
+  "Reverse_Grip_Bent-Over_Rows": [
+    "Grab the bar with your palms facing forward, shoulder-width apart, and lean your torso forward with a straight back.",
+    "Row the bar to your lower stomach with your elbows close to your body.",
+    "Lower with control."
+  ],
+  "Seated_One-arm_Cable_Pulley_Rows": [
+    "Sit at the row machine with a handle in one hand.",
+    "Row towards your hip, driving your elbow back, with a straight back.",
+    "Return by straightening your arm and switch sides."
+  ],
+  "Smith_Machine_Bent_Over_Row": [
+    "Stand in the Smith machine with the bar at knee height and lean your torso forward with a straight back.",
+    "Grab the bar and row it to your lower chest.",
+    "Lower with control."
+  ],
+  "T-Bar_Row_with_Handle": [
+    "Set one end of the bar in a corner and load the other. Slide a V-handle under it, next to the plates.",
+    "With your torso bent forward and your back straight, row the handle towards your chest.",
+    "Lower with control."
+  ],
+  "Barbell_Shrug_Behind_The_Back": [
+    "Stand holding the bar behind your thighs, palms facing back.",
+    "Raise your shoulders towards your ears as high as you can.",
+    "Hold for a second and lower with control."
+  ],
+  "Cable_Shrugs": [
+    "Stand facing a low pulley with a bar in your hands.",
+    "Raise your shoulders towards your ears without bending your elbows.",
+    "Hold for a second and lower with control."
+  ],
+  "Calf-Machine_Shoulder_Shrug": [
+    "Stand in the standing calf machine with your shoulders under the pads but your feet flat.",
+    "Raise your shoulders as high as you can.",
+    "Hold for a second and lower with control."
+  ],
+  "Clean_Shrug": [
+    "Stand with the bar in front of your thighs and a clean grip.",
+    "Bend your knees slightly and extend your hips and legs explosively while shrugging your shoulders.",
+    "Do not bend your elbows. Lower with control."
+  ],
+  "Leverage_Shrug": [
+    "Stand in the shrug machine with the handles at your sides.",
+    "Raise your shoulders towards your ears.",
+    "Hold for a second and lower with control."
+  ],
+  "Smith_Machine_Behind_the_Back_Shrug": [
+    "With your back to the Smith machine bar, hold it behind your thighs.",
+    "Raise your shoulders as high as you can.",
+    "Hold for a second and lower with control."
+  ],
+  "Smith_Machine_Upright_Row": [
+    "Stand facing the Smith machine bar and hold it at thigh height with a close grip.",
+    "Pull up with your elbows high until your hands reach your chest.",
+    "Lower with control. Do not go higher if your shoulders bother you."
+  ],
+  "Snatch_Shrug": [
+    "Stand with the bar in front of your thighs and a very wide grip.",
+    "Bend your knees slightly and extend explosively while shrugging your shoulders.",
+    "Lower with control."
+  ],
+  "Standing_Dumbbell_Upright_Row": [
+    "Stand with a dumbbell in each hand in front of your thighs.",
+    "Pull up with your elbows high until your hands reach chest height.",
+    "Lower with control."
+  ],
+  "Upright_Cable_Row": [
+    "Stand facing a low pulley with a short bar in your hands.",
+    "Pull up with your elbows high until the bar reaches your chest.",
+    "Lower with control."
+  ],
+  "Deficit_Deadlift": [
+    "Stand on a plate or low platform with the bar over the middle of your feet.",
+    "Bend your hips and knees with a straight back and grab the bar.",
+    "Stand up by pushing the floor away. The deficit lengthens the range: use less weight."
+  ],
+  "Hyperextensions_With_No_Hyperextension_Bench": [
+    "Lie face down on a bench with your hips at the edge and have someone hold your ankles.",
+    "Lower your torso by bending at the hips with a straight back.",
+    "Come up until your torso is in line with your legs, without over-arching."
+  ],
+  "Rack_Pull_with_Bands": [
+    "Set the bar on the rack pins at knee height and hook bands to the ends.",
+    "With a straight back, stand up: the resistance increases at the top.",
+    "Lower with control to the pins."
+  ],
+  "Rack_Pulls": [
+    "Set the bar on the rack pins at knee height.",
+    "Grab it with a straight back and your chest up and stand up.",
+    "Lower with control to the pins."
+  ],
+  "Seated_Good_Mornings": [
+    "Sit on a bench with the bar on your upper back.",
+    "With a straight back, lean your torso forward.",
+    "Come back up. Use a light weight."
+  ],
+  "Stiff_Leg_Barbell_Good_Morning": [
+    "With the bar on your upper back and your legs almost straight.",
+    "Lean your torso forward, pushing your hips back, with a straight back.",
+    "Come back up by extending your hips. Use a moderate weight."
+  ]
+}

@@ -1,6 +1,7 @@
 import { parseBackup } from './backup'
 import { canCompress, fromBase64Url, toBase64Url, transform } from './share'
 import type { AppData } from './store'
+import { t } from './i18n'
 
 // Pasar todos los datos a otro móvil sin servidor: se comprimen y se trocean en varios códigos QR que
 // el móvil viejo muestra en bucle; el nuevo los lee con la cámara en cualquier orden hasta tenerlos
@@ -74,11 +75,11 @@ export const isComplete = (s: Received) => s.total > 0 && s.parts.size === s.tot
 
 /** Une los trozos y los valida como una copia de seguridad (mismas comprobaciones). */
 export async function assemble(s: Received): Promise<AppData> {
-  if (!isComplete(s)) throw new Error('Faltan códigos por leer.')
+  if (!isComplete(s)) throw new Error(t('Faltan códigos por leer.', 'Some codes are still missing.'))
   const text = Array.from({ length: s.total }, (_, i) => s.parts.get(i)!).join('')
   let bytes = fromBase64Url(text)
   if (s.format === 'z') {
-    if (typeof DecompressionStream === 'undefined') throw new Error('Este navegador no puede descomprimir los datos. Actualízalo.')
+    if (typeof DecompressionStream === 'undefined') throw new Error(t('Este navegador no puede descomprimir los datos. Actualízalo.', 'This browser cannot decompress the data. Please update it.'))
     bytes = await transform(bytes, new DecompressionStream('deflate-raw'))
   }
   return parseBackup(new TextDecoder().decode(bytes))

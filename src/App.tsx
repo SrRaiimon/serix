@@ -1,8 +1,9 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { CatalogContext, useTick } from './components/ui'
-import { loadCatalog, type Catalog } from './lib/catalog'
-import { migrateCatalog } from './lib/migrate'
+import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
+import { lang, t } from './lib/i18n'
+import { migrateCatalog, relabelExercises } from './lib/migrate'
 import { autoProtect } from './lib/protect'
 import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
@@ -46,31 +47,38 @@ const WorkoutScreen = lazy(() => screens.workout().then((m) => ({ default: m.Wor
 const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => ({ default: m.FigureGallery })))
 
 export default function App() {
-  const [catalog, setCatalog] = useState<Catalog>()
+  const [raw, setRaw] = useState<CatalogData>()
   const [error, setError] = useState<string>()
+  // Se lee para volver a pintar al cambiar de idioma (el idioma sale de los ajustes).
+  useData()
+  const language = lang()
+  const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy) : undefined), [raw, language])
 
   useEffect(() => {
     Promise.all([loadCatalog(), loadData()])
       .then(([c]) => {
-        migrateCatalog(c)
-        setCatalog(c)
+        migrateCatalog(new Catalog(c.exercises, c.legacy))
+        setRaw(c)
         void autoProtect()
       })
-      .catch((e: unknown) => setError(`No se pudo cargar la app: ${String(e)}`))
+      .catch((e: unknown) => setError(t(`No se pudo cargar la app: ${String(e)}`, `The app could not load: ${String(e)}`)))
   }, [])
+  // Nombres de ejercicios guardados al idioma actual.
+  useEffect(() => { if (catalog) relabelExercises(catalog) }, [catalog])
 
   if (!catalog) {
     return (
       <div className="empty" style={{ minHeight: '100dvh', justifyContent: 'center' }}>
         <Dumbbell size={56} />
-        <p className="muted">{error ?? 'Cargando ejercicios…'}</p>
+        <p className="muted">{error ?? t('Cargando ejercicios…', 'Loading exercises…')}</p>
       </div>
     )
   }
 
   return (
     <CatalogContext.Provider value={catalog}>
-      <Main />
+      {/* Con otro idioma se vuelve a montar todo, así ningún texto se queda en el anterior. */}
+      <Main key={language} />
     </CatalogContext.Provider>
   )
 }
@@ -130,12 +138,12 @@ function Screen({ route }: { route: string[] }) {
   }
 }
 
-const tabItems: { id: Tab; label: string; icon: typeof House }[] = [
-  { id: 'home', label: 'Inicio', icon: House },
-  { id: 'routines', label: 'Rutinas', icon: ClipboardList },
-  { id: 'exercises', label: 'Ejercicios', icon: Dumbbell },
-  { id: 'progress', label: 'Progreso', icon: ChartLine },
-  { id: 'profile', label: 'Perfil', icon: User },
+const tabItems: { id: Tab; label: () => string; icon: typeof House }[] = [
+  { id: 'home', label: () => t('Inicio', 'Home'), icon: House },
+  { id: 'routines', label: () => t('Rutinas', 'Routines'), icon: ClipboardList },
+  { id: 'exercises', label: () => t('Ejercicios', 'Exercises'), icon: Dumbbell },
+  { id: 'progress', label: () => t('Progreso', 'Progress'), icon: ChartLine },
+  { id: 'profile', label: () => t('Perfil', 'Profile'), icon: User },
 ]
 
 function TabBar({ tab }: { tab: Tab }) {
@@ -144,7 +152,7 @@ function TabBar({ tab }: { tab: Tab }) {
       {tabItems.map(({ id, label, icon: Icon }) => (
         <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)}>
           <Icon size={24} strokeWidth={tab === id ? 2.4 : 2} />
-          {label}
+          {label()}
         </button>
       ))}
     </nav>
@@ -159,10 +167,10 @@ function ActiveBar({ name, start }: { name: string; start: number }) {
       <span className="grow">
         <strong className="clamp-1" style={{ display: 'block' }}>{name}</strong>
         <span className="small" style={{ opacity: 0.85, fontVariantNumeric: 'tabular-nums' }}>
-          En curso · {clock((now - start) / 1000)}
+          {t('En curso', 'In progress')} · {clock((now - start) / 1000)}
         </span>
       </span>
-      <strong>Continuar</strong>
+      <strong>{t('Continuar', 'Resume')}</strong>
       <ChevronUp size={20} />
     </button>
   )

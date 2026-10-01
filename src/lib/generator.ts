@@ -1,28 +1,30 @@
 import type { Catalog, Exercise } from './catalog'
+import { t } from './i18n'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
 export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced'
 export type EquipmentProfile = 'gym' | 'dumbbells' | 'kettlebell' | 'bands' | 'bodyweight'
 
+// Los textos son getters para que salgan en el idioma actual cada vez que se leen.
 export const goals: { id: TrainingGoal; label: string; short: string; detail: string }[] = [
-  { id: 'hypertrophy', label: 'Ganar músculo', short: 'Hipertrofia', detail: 'Series de 6-15 repeticiones y volumen moderado-alto.' },
-  { id: 'strength', label: 'Ganar fuerza', short: 'Fuerza', detail: 'Básicos pesados a pocas repeticiones y descansos largos.' },
-  { id: 'fatLoss', label: 'Perder grasa', short: 'Definición', detail: 'Circuitos con más repeticiones, descansos cortos y cardio.' },
-  { id: 'general', label: 'Estar en forma', short: 'Salud', detail: 'Un poco de todo para moverte mejor y sentirte bien.' },
+  { id: 'hypertrophy', get label() { return t('Ganar músculo', 'Build muscle') }, get short() { return t('Hipertrofia', 'Hypertrophy') }, get detail() { return t('Series de 6-15 repeticiones y volumen moderado-alto.', 'Sets of 6-15 reps and moderate-to-high volume.') } },
+  { id: 'strength', get label() { return t('Ganar fuerza', 'Get stronger') }, get short() { return t('Fuerza', 'Strength') }, get detail() { return t('Básicos pesados a pocas repeticiones y descansos largos.', 'Heavy compound lifts, low reps and long rests.') } },
+  { id: 'fatLoss', get label() { return t('Perder grasa', 'Lose fat') }, get short() { return t('Definición', 'Fat loss') }, get detail() { return t('Circuitos con más repeticiones, descansos cortos y cardio.', 'Circuits with higher reps, short rests and cardio.') } },
+  { id: 'general', get label() { return t('Estar en forma', 'Get fit') }, get short() { return t('Salud', 'Fitness') }, get detail() { return t('Un poco de todo para moverte mejor y sentirte bien.', 'A bit of everything to move better and feel good.') } },
 ]
 
 export const levels: { id: TrainingLevel; label: string; detail: string }[] = [
-  { id: 'beginner', label: 'Principiante', detail: 'Menos de 6 meses entrenando con regularidad.' },
-  { id: 'intermediate', label: 'Intermedio', detail: 'Entre 6 meses y 2 años entrenando.' },
-  { id: 'advanced', label: 'Avanzado', detail: 'Más de 2 años y dominas la técnica de los básicos.' },
+  { id: 'beginner', get label() { return t('Principiante', 'Beginner') }, get detail() { return t('Menos de 6 meses entrenando con regularidad.', 'Less than 6 months of regular training.') } },
+  { id: 'intermediate', get label() { return t('Intermedio', 'Intermediate') }, get detail() { return t('Entre 6 meses y 2 años entrenando.', 'Between 6 months and 2 years of training.') } },
+  { id: 'advanced', get label() { return t('Avanzado', 'Advanced') }, get detail() { return t('Más de 2 años y dominas la técnica de los básicos.', 'Over 2 years and solid technique on the main lifts.') } },
 ]
 
 export const equipmentProfiles: { id: EquipmentProfile; label: string; allowed: string[] }[] = [
-  { id: 'gym', label: 'Gimnasio completo', allowed: ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'band', 'kettlebell', 'ez-bar', 'medicine-ball', 'exercise-ball'] },
-  { id: 'dumbbells', label: 'Mancuernas y banco', allowed: ['dumbbell', 'bodyweight'] },
-  { id: 'kettlebell', label: 'Kettlebells', allowed: ['kettlebell', 'bodyweight'] },
-  { id: 'bands', label: 'Bandas elásticas', allowed: ['band', 'bodyweight'] },
-  { id: 'bodyweight', label: 'Solo peso corporal', allowed: ['bodyweight'] },
+  { id: 'gym', get label() { return t('Gimnasio completo', 'Full gym') }, allowed: ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'band', 'kettlebell', 'ez-bar', 'medicine-ball', 'exercise-ball'] },
+  { id: 'dumbbells', get label() { return t('Mancuernas y banco', 'Dumbbells and bench') }, allowed: ['dumbbell', 'bodyweight'] },
+  { id: 'kettlebell', get label() { return t('Kettlebells', 'Kettlebells') }, allowed: ['kettlebell', 'bodyweight'] },
+  { id: 'bands', get label() { return t('Bandas elásticas', 'Resistance bands') }, allowed: ['band', 'bodyweight'] },
+  { id: 'bodyweight', get label() { return t('Solo peso corporal', 'Bodyweight only') }, allowed: ['bodyweight'] },
 ]
 
 export const goalInfo = (g: TrainingGoal) => goals.find((x) => x.id === g)!
@@ -90,34 +92,34 @@ const slots = {
 } satisfies Record<string, Slot>
 
 type SlotName = keyof typeof slots
-type Template = { name: string; slots: [SlotName, number][] }
+type Template = { name: [es: string, en: string]; slots: [SlotName, number][] }
 
-const T = (name: string, list: [SlotName, number][]): Template => ({ name, slots: list })
+const T = (name: [string, string], list: [SlotName, number][]): Template => ({ name, slots: list })
 
-const fullBodyA = T('Cuerpo completo A', [['squat', 0], ['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['legCurl', 0], ['biceps', 0], ['core', 0], ['calves', 0]])
-const fullBodyB = T('Cuerpo completo B', [['hinge', 1], ['inclinePress', 0], ['verticalPull', 0], ['lateralRaise', 0], ['lunge', 0], ['triceps', 0], ['core', 1], ['rearDelt', 0]])
-const fullBodyC = T('Cuerpo completo C', [['legPress', 0], ['chestPress', 1], ['horizontalPull', 1], ['shoulderPress', 1], ['legExtension', 0], ['hammer', 0], ['conditioning', 0], ['calves', 1]])
-const pushA = T('Empuje', [['chestPress', 0], ['shoulderPress', 0], ['inclinePress', 0], ['lateralRaise', 0], ['chestFly', 0], ['triceps', 0], ['triceps', 1], ['core', 0]])
-const pullA = T('Tirón', [['verticalPull', 0], ['horizontalPull', 0], ['horizontalPull', 1], ['rearDelt', 0], ['biceps', 0], ['hammer', 0], ['shrug', 0], ['core', 1]])
-const legsA = T('Pierna', [['squat', 0], ['hinge', 1], ['legPress', 0], ['legCurl', 0], ['legExtension', 0], ['calves', 0], ['core', 0], ['lunge', 0]])
-const pushB = T('Empuje B', [['inclinePress', 1], ['shoulderPress', 1], ['chestPress', 1], ['lateralRaise', 1], ['chestFly', 1], ['triceps', 2], ['triceps', 3], ['core', 2]])
-const pullB = T('Tirón B', [['horizontalPull', 2], ['verticalPull', 1], ['horizontalPull', 3], ['rearDelt', 1], ['biceps', 1], ['hammer', 1], ['shrug', 1], ['core', 3]])
-const legsB = T('Pierna B', [['hinge', 0], ['squat', 1], ['lunge', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['legPress', 1]])
-const upperA = T('Torso A', [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['lateralRaise', 0], ['biceps', 0], ['triceps', 0], ['rearDelt', 0]])
-const upperB = T('Torso B', [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['chestFly', 0], ['hammer', 0], ['triceps', 1], ['lateralRaise', 1]])
-const lowerA = T('Pierna A', [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
-const lowerB = T('Pierna B', [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
+const fullBodyA = T(['Cuerpo completo A', 'Full body A'], [['squat', 0], ['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['legCurl', 0], ['biceps', 0], ['core', 0], ['calves', 0]])
+const fullBodyB = T(['Cuerpo completo B', 'Full body B'], [['hinge', 1], ['inclinePress', 0], ['verticalPull', 0], ['lateralRaise', 0], ['lunge', 0], ['triceps', 0], ['core', 1], ['rearDelt', 0]])
+const fullBodyC = T(['Cuerpo completo C', 'Full body C'], [['legPress', 0], ['chestPress', 1], ['horizontalPull', 1], ['shoulderPress', 1], ['legExtension', 0], ['hammer', 0], ['conditioning', 0], ['calves', 1]])
+const pushA = T(['Empuje', 'Push'], [['chestPress', 0], ['shoulderPress', 0], ['inclinePress', 0], ['lateralRaise', 0], ['chestFly', 0], ['triceps', 0], ['triceps', 1], ['core', 0]])
+const pullA = T(['Tirón', 'Pull'], [['verticalPull', 0], ['horizontalPull', 0], ['horizontalPull', 1], ['rearDelt', 0], ['biceps', 0], ['hammer', 0], ['shrug', 0], ['core', 1]])
+const legsA = T(['Pierna', 'Legs'], [['squat', 0], ['hinge', 1], ['legPress', 0], ['legCurl', 0], ['legExtension', 0], ['calves', 0], ['core', 0], ['lunge', 0]])
+const pushB = T(['Empuje B', 'Push B'], [['inclinePress', 1], ['shoulderPress', 1], ['chestPress', 1], ['lateralRaise', 1], ['chestFly', 1], ['triceps', 2], ['triceps', 3], ['core', 2]])
+const pullB = T(['Tirón B', 'Pull B'], [['horizontalPull', 2], ['verticalPull', 1], ['horizontalPull', 3], ['rearDelt', 1], ['biceps', 1], ['hammer', 1], ['shrug', 1], ['core', 3]])
+const legsB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['lunge', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['legPress', 1]])
+const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['lateralRaise', 0], ['biceps', 0], ['triceps', 0], ['rearDelt', 0]])
+const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['chestFly', 0], ['hammer', 0], ['triceps', 1], ['lateralRaise', 1]])
+const lowerA = T(['Pierna A', 'Legs A'], [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
+const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
 
 function split(c: GeneratorConfig): [string, Template[]] {
-  if (c.days <= 2) return ['Cuerpo completo', [fullBodyA, fullBodyB]]
+  if (c.days <= 2) return [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB]]
   if (c.days === 3) {
     return c.level === 'beginner' || c.goal === 'fatLoss'
-      ? ['Cuerpo completo', [fullBodyA, fullBodyB, fullBodyC]]
-      : ['Empuje / Tirón / Pierna', [pushA, pullA, legsA]]
+      ? [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB, fullBodyC]]
+      : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
-  if (c.days === 4) return ['Torso / Pierna', [upperA, lowerA, upperB, lowerB]]
-  if (c.days === 5) return ['Híbrido PPL + Torso / Pierna', [pushA, pullA, legsA, upperB, lowerB]]
-  return ['Empuje / Tirón / Pierna ×2', [pushA, pullA, legsA, pushB, pullB, legsB]]
+  if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), [upperA, lowerA, upperB, lowerB]]
+  if (c.days === 5) return [t('Híbrido PPL + Torso / Pierna', 'PPL + Upper / Lower hybrid'), [pushA, pullA, legsA, upperB, lowerB]]
+  return [t('Empuje / Tirón / Pierna ×2', 'Push / Pull / Legs ×2'), [pushA, pullA, legsA, pushB, pullB, legsB]]
 }
 
 function exerciseCount(minutes: number) {
@@ -164,9 +166,9 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
   const n = exerciseCount(c.minutes)
   const allowed = new Set(equipmentInfo(c.equipment).allowed)
 
-  const days = templates.map((t, index) => {
+  const days = templates.map((template, index) => {
     const used = new Set<string>()
-    const list: [SlotName, number][] = t.slots.slice(0, n)
+    const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
     const exercises: GeneratedExercise[] = []
     for (const [name, variant] of list) {
@@ -176,12 +178,12 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
       used.add(exercise.id)
       exercises.push({ exercise, ...scheme(slot.kind, c) })
     }
-    return { name: `Día ${index + 1} · ${t.name}`, exercises }
+    return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
 
   return {
     name: `${splitName} · ${goalInfo(c.goal).short}`,
-    summary: `${c.days} días por semana · ${c.minutes} min · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
+    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${c.minutes} min · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
     days,
   }
 }

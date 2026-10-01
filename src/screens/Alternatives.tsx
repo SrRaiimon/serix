@@ -6,6 +6,7 @@ import type { Exercise } from '../lib/catalog'
 import { equipmentInfo } from '../lib/generator'
 import { equipmentLabel, muscleLabel } from '../lib/labels'
 import { useData } from '../lib/store'
+import { t } from '../lib/i18n'
 
 const LIMIT = 40
 
@@ -30,27 +31,27 @@ export function AlternativesSheet({ current, onPick, onClose }: {
   }, [catalog, current, onlyMine, query, settings.equipment])
 
   return (
-    <Sheet title="Sustituir ejercicio" onClose={onClose} left={<button className="nav-btn" onClick={onClose}>Cancelar</button>}>
+    <Sheet title={t('Sustituir ejercicio', 'Replace exercise')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}>
       <p className="small muted" style={{ margin: 0 }}>
-        Alternativas para <strong style={{ color: 'var(--text)' }}>{current.name}</strong> que trabajan {muscleLabel(current.muscle).toLowerCase()}.
-        Si buscas, verás ejercicios de cualquier músculo.
+        {t('Alternativas para', 'Alternatives to')} <strong style={{ color: 'var(--text)' }}>{current.name}</strong> {t('que trabajan', 'that work')} {muscleLabel(current.muscle).toLowerCase()}.
+        {' '}{t('Si buscas, verás ejercicios de cualquier músculo.', 'If you search, you will see exercises for any muscle.')}
       </p>
       <label className="search">
         <Search size={18} />
-        <input type="search" placeholder="Buscar otro ejercicio" value={query} onChange={(e) => setQuery(e.target.value)} />
-        {query && <button onClick={() => setQuery('')} aria-label="Borrar"><X size={18} /></button>}
+        <input type="search" placeholder={t('Buscar otro ejercicio', 'Search another exercise')} value={query} onChange={(e) => setQuery(e.target.value)} />
+        {query && <button onClick={() => setQuery('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
       </label>
       <div className="list">
         <label className="list-row">
           <span className="grow">
-            Solo con mi material
+            {t('Solo con mi material', 'Only my equipment')}
             <span className="small muted" style={{ display: 'block' }}>{equipmentInfo(settings.equipment).label}</span>
           </span>
           <input type="checkbox" className="toggle" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
         </label>
       </div>
       {list.length === 0 ? (
-        <p className="muted" style={{ textAlign: 'center' }}>No hay alternativas con estos filtros.</p>
+        <p className="muted" style={{ textAlign: 'center' }}>{t('No hay alternativas con estos filtros.', 'No alternatives with these filters.')}</p>
       ) : (
         <div className="list">
           {list.slice(0, LIMIT).map((e) => (
@@ -64,7 +65,7 @@ export function AlternativesSheet({ current, onPick, onClose }: {
           ))}
         </div>
       )}
-      {list.length > LIMIT && <p className="list-footer">Mostrando {LIMIT} de {list.length}. Busca para afinar.</p>}
+      {list.length > LIMIT && <p className="list-footer">{t(`Mostrando ${LIMIT} de ${list.length}. Busca para afinar.`, `Showing ${LIMIT} of ${list.length}. Search to narrow it down.`)}</p>}
     </Sheet>
   )
 }

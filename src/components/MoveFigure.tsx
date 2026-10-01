@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useCatalog } from './ui'
 import { FIGURES, FLOOR, type Figure, type Part, type Pose, type Prop } from '../lib/figures'
 import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, type Joints, type Pt } from '../lib/figureEngine'
+import { t as tr } from '../lib/i18n'
 
 // Figura de movimiento propia (dibujo original generado con código): un maniquí de perfil o de
 // frente que pasa de la posición inicial a la final. Cada postura son ángulos de articulación y la
@@ -325,7 +326,7 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
   return (
     <div className="move-figure">
       <button className="move-figure-stage" onClick={() => setPaused((p) => !p)}
-        aria-label={paused ? 'Reanudar la animación' : 'Pausar la animación'} aria-pressed={paused}>
+        aria-label={paused ? tr('Reanudar la animación', 'Resume the animation') : tr('Pausar la animación', 'Pause the animation')} aria-pressed={paused}>
         <svg viewBox={fitViewBox(figure)} role="img" aria-label={`Movimiento: ${exercise.name}`}>
           <FigureDefs id={ids} />
           <Scene figure={figure} pose={poseAt(figure, t)} ids={ids} muscles={exercise} />
@@ -333,8 +334,8 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
         {paused && <span className="move-figure-paused"><Play size={22} fill="currentColor" /></span>}
       </button>
       <button className={`move-figure-speed ${slow ? 'active' : ''}`} onClick={() => setSlow((v) => !v)} aria-pressed={slow}
-        aria-label={slow ? 'Velocidad normal' : 'Cámara lenta'}>
-        <Snail size={16} /> {slow ? 'Lento' : '1×'}
+        aria-label={slow ? tr('Velocidad normal', 'Normal speed') : tr('Cámara lenta', 'Slow motion')}>
+        <Snail size={16} /> {slow ? tr('Lento', 'Slow') : '1×'}
       </button>
     </div>
   )

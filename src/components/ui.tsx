@@ -4,6 +4,7 @@ import type { Catalog } from '../lib/catalog'
 import { createPortal } from 'react-dom'
 import { back } from '../lib/router'
 import { MuscleThumb } from './MuscleMap'
+import { t } from '../lib/i18n'
 
 // Bloqueo de desplazamiento compartido por hojas y entrenamiento, con contador para que cerrar una
 // hoja dentro del entrenamiento no lo libere. Solo overflow:hidden en html y body: fijar el body con
@@ -32,7 +33,7 @@ export const CatalogContext = createContext<Catalog | null>(null)
 
 export function useCatalog(): Catalog {
   const catalog = useContext(CatalogContext)
-  if (!catalog) throw new Error('Catálogo no cargado')
+  if (!catalog) throw new Error(t('Catálogo no cargado', 'Catalog not loaded'))
   return catalog
 }
 
@@ -55,7 +56,7 @@ export function NavBar({ title, left, right, showBack }: { title?: string; left?
       <div className="left">
         {showBack && (
           <button className="nav-btn" onClick={back}>
-            <ChevronLeft size={24} strokeWidth={2.4} /> Atrás
+            <ChevronLeft size={24} strokeWidth={2.4} /> {t('Atrás', 'Back')}
           </button>
         )}
         {left}
@@ -153,9 +154,9 @@ export function Stepper({ label, value, min, max, onChange }: { label: string; v
     <div className="stepper">
       <span className="tiny muted">{label}</span>
       <div className="control">
-        <button disabled={value <= min} onClick={() => onChange(value - 1)} aria-label={`Menos ${label}`}><Minus size={15} strokeWidth={3} /></button>
+        <button disabled={value <= min} onClick={() => onChange(value - 1)} aria-label={`${t('Menos', 'Less')} ${label}`}><Minus size={15} strokeWidth={3} /></button>
         <span>{value}</span>
-        <button disabled={value >= max} onClick={() => onChange(value + 1)} aria-label={`Más ${label}`}><Plus size={15} strokeWidth={3} /></button>
+        <button disabled={value >= max} onClick={() => onChange(value + 1)} aria-label={`${t('Más', 'More')} ${label}`}><Plus size={15} strokeWidth={3} /></button>
       </div>
     </div>
   )
@@ -223,7 +224,7 @@ export function ActionSheet({ title, message, options, onClose }: { title?: stri
           ))}
         </div>
         <div className="group">
-          <button className="option cancel" onClick={onClose}>Cancelar</button>
+          <button className="option cancel" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>
         </div>
       </div>
     </div>

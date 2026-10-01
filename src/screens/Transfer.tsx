@@ -2,12 +2,12 @@ import { Camera, QrCode as QrIcon, Send, Smartphone } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { QrCode } from '../components/Qr'
 import { Card, NavBar, useCatalog } from '../components/ui'
-import { count } from '../lib/format'
 import { migrateCatalog } from '../lib/migrate'
 import { navigate } from '../lib/router'
 import { finishedSessions, getData, replaceData, useData, type AppData } from '../lib/store'
 import { addFrame, assemble, emptyReceived, encodeTransfer, isComplete, parseFrame, type Received } from '../lib/transfer'
 import { keepScreenOn } from '../lib/workout'
+import { plural, t } from '../lib/i18n'
 
 // Pasar los datos a otro móvil con códigos QR (ver lib/transfer.ts): uno muestra, el otro lee.
 
@@ -15,20 +15,20 @@ export function TransferScreen({ mode }: { mode?: string }) {
   const onboarded = useData().settings.onboarded
   return (
     <div className="screen with-nav">
-      <NavBar title="Pasar a otro móvil" showBack={onboarded || mode !== undefined} />
+      <NavBar title={t('Pasar a otro móvil', 'Move to another phone')} showBack={onboarded || mode !== undefined} />
       {mode === 'send' ? <Sender /> : mode === 'receive' ? <Receiver /> : (
         <>
           <p className="muted" style={{ margin: 0 }}>
-            Pasa rutinas, historial, medidas y ajustes de un móvil a otro sin internet ni cuentas: este móvil muestra
-            unos códigos QR y el otro los lee con la cámara.
+            {t('Pasa rutinas, historial, medidas y ajustes de un móvil a otro sin internet ni cuentas: este móvil muestra unos códigos QR y el otro los lee con la cámara.',
+              'Move routines, history, measurements and settings from one phone to another without internet or accounts: this phone shows QR codes and the other reads them with its camera.')}
           </p>
           <button className="option-card" onClick={() => navigate('transfer', 'send')}>
             <span className="icon"><Send size={22} /></span>
-            <span className="grow"><strong style={{ display: 'block' }}>Enviar desde este móvil</strong><span className="small muted">Es el móvil que tiene los datos</span></span>
+            <span className="grow"><strong style={{ display: 'block' }}>{t('Enviar desde este móvil', 'Send from this phone')}</strong><span className="small muted">{t('Es el móvil que tiene los datos', 'The phone that has the data')}</span></span>
           </button>
           <button className="option-card" onClick={() => navigate('transfer', 'receive')}>
             <span className="icon"><Camera size={22} /></span>
-            <span className="grow"><strong style={{ display: 'block' }}>Recibir en este móvil</strong><span className="small muted">Sus datos actuales se sustituirán</span></span>
+            <span className="grow"><strong style={{ display: 'block' }}>{t('Recibir en este móvil', 'Receive on this phone')}</strong><span className="small muted">{t('Sus datos actuales se sustituirán', 'Its current data will be replaced')}</span></span>
           </button>
         </>
       )}
@@ -58,24 +58,24 @@ function Sender() {
     return () => clearInterval(t)
   }, [frames, slow])
 
-  if (!frames) return <p className="muted">Preparando los datos…</p>
+  if (!frames) return <p className="muted">{t('Preparando los datos…', 'Preparing the data…')}</p>
   if (frames.length > TOO_MANY) {
     return (
       <Card>
-        <p style={{ margin: 0 }}>Hay demasiados datos para pasarlos por QR ({frames.length} códigos). Usa mejor Perfil → «Exportar copia de seguridad» y abre el archivo en el otro móvil.</p>
+        <p style={{ margin: 0 }}>{t(`Hay demasiados datos para pasarlos por QR (${frames.length} códigos). Usa mejor Perfil → «Exportar copia de seguridad» y abre el archivo en el otro móvil.`, `There is too much data to move by QR (${frames.length} codes). Use Profile → “Export backup” instead and open the file on the other phone.`)}</p>
       </Card>
     )
   }
   return (
     <div className="transfer">
-      <QrCode text={frames[index]} label={`Código ${index + 1} de ${frames.length}`} className="transfer-qr" />
-      <span className="bold" style={{ fontVariantNumeric: 'tabular-nums' }}>Código {index + 1} de {frames.length}</span>
+      <QrCode text={frames[index]} label={t(`Código ${index + 1} de ${frames.length}`, `Code ${index + 1} of ${frames.length}`)} className="transfer-qr" />
+      <span className="bold" style={{ fontVariantNumeric: 'tabular-nums' }}>{t(`Código ${index + 1} de ${frames.length}`, `Code ${index + 1} of ${frames.length}`)}</span>
       <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>
-        En el otro móvil abre Serix → Perfil → «Pasar a otro móvil» → «Recibir» (o, si es nuevo, «¿Vienes de otro móvil?» al empezar)
-        y apunta la cámara aquí. Los códigos van pasando solos; da igual el orden. {count(sessions, 'entrenamiento', 'entrenamientos')} en total.
+        {t(`En el otro móvil abre Serix → Perfil → «Pasar a otro móvil» → «Recibir» (o, si es nuevo, «¿Vienes de otro móvil?» al empezar) y apunta la cámara aquí. Los códigos van pasando solos; da igual el orden. ${plural(sessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} en total.`,
+          `On the other phone open Serix → Profile → “Move to another phone” → “Receive” (or, if it is new, “Coming from another phone?” at the start) and point the camera here. The codes change on their own; the order does not matter. ${plural(sessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} in total.`)}
       </p>
       <label className="row small" style={{ gap: 8 }}>
-        <input type="checkbox" checked={slow} onChange={(e) => setSlow(e.target.checked)} /> Más despacio (si al otro le cuesta leerlos)
+        <input type="checkbox" checked={slow} onChange={(e) => setSlow(e.target.checked)} /> {t('Más despacio (si al otro le cuesta leerlos)', 'Slower (if the other phone struggles to read them)')}
       </label>
     </div>
   )
@@ -107,7 +107,7 @@ function Receiver() {
     setError(undefined)
     if (!navigator.mediaDevices?.getUserMedia) {
       setPhase('error')
-      return setError('Este navegador no permite usar la cámara. Prueba a abrir Serix en Safari (iPhone) o Chrome (Android).')
+      return setError(t('Este navegador no permite usar la cámara. Prueba a abrir Serix en Safari (iPhone) o Chrome (Android).', 'This browser does not allow camera access. Try opening Serix in Safari (iPhone) or Chrome (Android).'))
     }
     try {
       const [{ default: jsQR }, media] = await Promise.all([
@@ -147,7 +147,7 @@ function Receiver() {
                 stop()
                 void assemble(next).then((data) => { setResult(data); setPhase('done') }).catch((e: unknown) => {
                   setPhase('error')
-                  setError(e instanceof Error && e.message ? e.message : 'Los datos recibidos no son válidos. Vuelve a intentarlo.')
+                  setError(e instanceof Error && e.message ? e.message : t('Los datos recibidos no son válidos. Vuelve a intentarlo.', 'The received data is not valid. Please try again.'))
                 })
                 return
               }
@@ -161,8 +161,8 @@ function Receiver() {
       stop()
       setPhase('error')
       setError(e instanceof DOMException && e.name === 'NotAllowedError'
-        ? 'No hay permiso para usar la cámara. Actívalo en los ajustes del navegador para esta web y vuelve a intentarlo.'
-        : 'No se ha podido abrir la cámara.')
+        ? t('No hay permiso para usar la cámara. Actívalo en los ajustes del navegador para esta web y vuelve a intentarlo.', 'There is no permission to use the camera. Allow it in the browser settings for this site and try again.')
+        : t('No se ha podido abrir la cámara.', 'The camera could not be opened.'))
     }
   }
 
@@ -178,16 +178,16 @@ function Receiver() {
     const sessions = finishedSessions(result).length
     return (
       <>
-        <Card title="Datos recibidos" icon={Smartphone}>
-          <span>{result.settings.name ? `De ${result.settings.name}: ` : ''}{count(sessions, 'entrenamiento', 'entrenamientos')}, {count(result.routines.length, 'rutina', 'rutinas')} y {count(result.measurements.length, 'medida', 'medidas')}.</span>
+        <Card title={t('Datos recibidos', 'Data received')} icon={Smartphone}>
+          <span>{result.settings.name ? `${t('De', 'From')} ${result.settings.name}: ` : ''}{plural(sessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}, {plural(result.routines.length, ['rutina', 'rutinas'], ['routine', 'routines'])} {t('y', 'and')} {plural(result.measurements.length, ['medida', 'medidas'], ['measurement', 'measurements'])}.</span>
           {currentSessions > 0 && (
             <span className="small" style={{ color: 'var(--red)' }}>
-              Se sustituirán los datos actuales de este móvil ({count(currentSessions, 'entrenamiento', 'entrenamientos')}).
+              {t(`Se sustituirán los datos actuales de este móvil (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}).`, `This phone's current data will be replaced (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}).`)}
             </span>
           )}
         </Card>
-        <button className="btn primary block" onClick={apply}>Usar estos datos</button>
-        <button className="btn plain block" onClick={() => { setResult(undefined); setReceived(emptyReceived()); setPhase('idle') }}>Cancelar</button>
+        <button className="btn primary block" onClick={apply}>{t('Usar estos datos', 'Use this data')}</button>
+        <button className="btn plain block" onClick={() => { setResult(undefined); setReceived(emptyReceived()); setPhase('idle') }}>{t('Cancelar', 'Cancel')}</button>
       </>
     )
   }
@@ -205,10 +205,10 @@ function Receiver() {
             <div style={{ width: `${received.total ? (received.parts.size / received.total) * 100 : 0}%` }} />
           </div>
           <span className="bold" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {received.total ? `${received.parts.size} de ${received.total} códigos` : 'Apunta al código del otro móvil'}
+            {received.total ? t(`${received.parts.size} de ${received.total} códigos`, `${received.parts.size} of ${received.total} codes`) : t('Apunta al código del otro móvil', 'Point at the code on the other phone')}
           </span>
           <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>
-            Mantén el código dentro del recuadro, a unos 20-30 cm. No hace falta que esté quieto: los que falten se leen en la siguiente vuelta.
+            {t('Mantén el código dentro del recuadro, a unos 20-30 cm. No hace falta que esté quieto: los que falten se leen en la siguiente vuelta.', 'Keep the code inside the frame, about 20-30 cm away. It does not need to be still: any missing ones are read on the next loop.')}
           </p>
         </>
       )}
@@ -216,10 +216,10 @@ function Receiver() {
       {phase !== 'scanning' && (
         <>
           <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>
-            En el móvil que tiene los datos abre Serix → Perfil → «Pasar a otro móvil» → «Enviar».
-            {currentSessions > 0 && ` Los datos de este móvil (${count(currentSessions, 'entrenamiento', 'entrenamientos')}) se sustituirán; antes de hacerlo te lo confirmaremos.`}
+            {t('En el móvil que tiene los datos abre Serix → Perfil → «Pasar a otro móvil» → «Enviar».', 'On the phone that has the data open Serix → Profile → “Move to another phone” → “Send”.')}
+            {currentSessions > 0 && t(` Los datos de este móvil (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}) se sustituirán; antes de hacerlo te lo confirmaremos.`, ` This phone's data (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}) will be replaced; we will ask you to confirm first.`)}
           </p>
-          <button className="btn primary block" onClick={() => void start()}><Camera size={20} /> Abrir la cámara</button>
+          <button className="btn primary block" onClick={() => void start()}><Camera size={20} /> {t('Abrir la cámara', 'Open camera')}</button>
         </>
       )}
     </div>

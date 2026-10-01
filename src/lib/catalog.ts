@@ -1,3 +1,4 @@
+import { lang, locale } from './i18n'
 import { bodyPartLabel, equipmentLabel, muscleLabel } from './labels'
 
 /**
@@ -7,8 +8,10 @@ import { bodyPartLabel, equipmentLabel, muscleLabel } from './labels'
  */
 export interface Exercise {
   id: string
+  /** Nombre en el idioma de la app. */
   name: string
-  /** Nombre original en inglés (también se puede buscar por él). */
+  nameEs: string
+  /** Nombre original en inglés (también se puede buscar por él en español). */
   nameEn: string
   muscle: string
   bodyPart: string
@@ -16,8 +19,19 @@ export interface Exercise {
   category: string
   level: string
   secondaryMuscles: string[]
-  /** Pasos de ejecución, solo de fuentes con licencia verificada (vacío si no hay). */
+  /** Pasos de ejecución en el idioma de la app (texto propio; vacío si no hay). */
   instructions: string[]
+}
+
+/** Ejercicio tal como viene en exercises_es.json (los dos idiomas). */
+export interface RawExercise extends Omit<Exercise, 'nameEs' | 'instructions'> {
+  instructions: string[]
+  instructionsEn?: string[]
+}
+
+export interface CatalogData {
+  exercises: RawExercise[]
+  legacy: Record<string, string>
 }
 
 export const normalize = (s: string) =>
@@ -28,12 +42,17 @@ export class Catalog {
   private byId = new Map<string, Exercise>()
   private keys = new Map<string, string>()
 
-  constructor(list: Exercise[], private legacy: Record<string, string> = {}) {
-    this.exercises = [...list].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  constructor(raw: RawExercise[], private legacy: Record<string, string> = {}) {
+    const en = lang() === 'en'
+    const list: Exercise[] = raw.map(({ instructionsEn, ...e }) => ({
+      ...e, nameEs: e.name, name: en ? e.nameEn : e.name,
+      instructions: en ? (instructionsEn?.length ? instructionsEn : e.instructions) : e.instructions,
+    }))
+    this.exercises = [...list].sort((a, b) => a.name.localeCompare(b.name, locale()))
     for (const e of list) {
       this.byId.set(e.id, e)
       this.keys.set(e.id, normalize(
-        `${e.name} ${muscleLabel(e.muscle)} ${equipmentLabel(e.equipment)} ${bodyPartLabel(e.bodyPart)} ${e.nameEn}`,
+        `${e.nameEs} ${muscleLabel(e.muscle)} ${equipmentLabel(e.equipment)} ${bodyPartLabel(e.bodyPart)} ${e.nameEn}`,
       ))
     }
   }
@@ -68,11 +87,11 @@ export class Catalog {
   }
 
   get muscles() {
-    return [...new Set(this.exercises.map((e) => e.muscle))].sort((a, b) => muscleLabel(a).localeCompare(muscleLabel(b), 'es'))
+    return [...new Set(this.exercises.map((e) => e.muscle))].sort((a, b) => muscleLabel(a).localeCompare(muscleLabel(b), locale()))
   }
 
   get equipments() {
-    return [...new Set(this.exercises.map((e) => e.equipment))].sort((a, b) => equipmentLabel(a).localeCompare(equipmentLabel(b), 'es'))
+    return [...new Set(this.exercises.map((e) => e.equipment))].sort((a, b) => equipmentLabel(a).localeCompare(equipmentLabel(b), locale()))
   }
 }
 
@@ -87,10 +106,10 @@ export interface ExerciseFilter {
 
 export const emptyFilter: ExerciseFilter = { query: '', favoritesOnly: false }
 
-export async function loadCatalog(): Promise<Catalog> {
+export async function loadCatalog(): Promise<CatalogData> {
   const [res, legacyRes] = await Promise.all([fetch('exercises_es.json'), fetch('exercise_ids_v1.json')])
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = (await res.json()) as { exercises: Exercise[] }
+  const data = (await res.json()) as { exercises: RawExercise[] }
   const legacy = legacyRes.ok ? ((await legacyRes.json()) as Record<string, string>) : {}
-  return new Catalog(data.exercises, legacy)
+  return { exercises: data.exercises, legacy }
 }

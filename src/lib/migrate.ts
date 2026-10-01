@@ -27,3 +27,23 @@ export function migrateCatalog(catalog: Catalog): void {
     d.settings.catalogVersion = CATALOG_VERSION
   })
 }
+
+/**
+ * Al cambiar de idioma: los ejercicios de rutinas e historial que llevan el nombre del catálogo (en
+ * cualquiera de los dos idiomas) pasan al nombre del idioma actual. Los renombrados a mano se respetan.
+ */
+export function relabelExercises(catalog: Catalog): void {
+  const pending = (e: { exerciseId: string; name: string }) => {
+    const x = catalog.get(e.exerciseId)
+    return x && e.name !== x.name && (e.name === x.nameEs || e.name === x.nameEn) ? x.name : undefined
+  }
+  const d = getData()
+  const any = [...d.routines.flatMap((r) => r.exercises), ...d.sessions.flatMap((s) => s.exercises)].some((e) => pending(e))
+  if (!any) return
+  update((draft) => {
+    for (const e of [...draft.routines.flatMap((r) => r.exercises), ...draft.sessions.flatMap((s) => s.exercises)]) {
+      const name = pending(e)
+      if (name) e.name = name
+    }
+  })
+}

@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { Exercise } from '../lib/catalog'
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from './muscleShapes'
+import { t } from '../lib/i18n'
 
 // Mapa muscular propio (dibujo original, sin imágenes de terceros). Cada músculo se pinta con una
 // intensidad: principal (naranja con brillo), secundario, ligera o sin trabajar. Los colores base
@@ -98,10 +99,10 @@ function Views({ paint, label }: { paint: (name: string) => Paint; label: string
 export function MuscleMap({ exercise }: { exercise: Muscles & Pick<Exercise, 'name'> }) {
   return (
     <div className="muscle-map">
-      <Views paint={exercisePaint(exercise)} label={`Músculos que trabaja: ${exercise.name}`} />
+      <Views paint={exercisePaint(exercise)} label={`${t('Músculos que trabaja', 'Muscles worked')}: ${exercise.name}`} />
       <div className="mm-legend">
-        <span><i className="mm-key-primary" /> Principal</span>
-        {exercise.secondaryMuscles.length > 0 && <span><i className="mm-key-secondary" /> Secundarios</span>}
+        <span><i className="mm-key-primary" /> {t('Principal', 'Primary')}</span>
+        {exercise.secondaryMuscles.length > 0 && <span><i className="mm-key-secondary" /> {t('Secundarios', 'Secondary')}</span>}
       </div>
     </div>
   )
@@ -121,11 +122,11 @@ export function heatPaint(load: Record<string, number>): (name: string) => Paint
 export function MuscleHeatMap({ load }: { load: Record<string, number> }) {
   return (
     <div className="muscle-map">
-      <Views paint={heatPaint(load)} label="Músculos trabajados en los últimos 7 días" />
+      <Views paint={heatPaint(load)} label={t('Músculos trabajados en los últimos 7 días', 'Muscles worked in the last 7 days')} />
       <div className="mm-legend">
         <span><i className="mm-key-light" /> 1-3</span>
         <span><i className="mm-key-secondary" /> 4-9</span>
-        <span><i className="mm-key-primary" /> 10+ series</span>
+        <span><i className="mm-key-primary" /> {t('10+ series', '10+ sets')}</span>
       </div>
     </div>
   )

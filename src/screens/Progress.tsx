@@ -11,6 +11,7 @@ import { finishedSessions, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
+import { locale, t } from '../lib/i18n'
 
 type Section = 'summary' | 'history' | 'records'
 let savedSection: Section = 'summary'
@@ -27,15 +28,15 @@ export function ProgressScreen() {
 
   return (
     <div className="screen">
-      <LargeTitle title="Progreso" />
+      <LargeTitle title={t('Progreso', 'Progress')} />
       {sessions.length === 0 ? (
-        <Empty icon={ChartLine} title="Sin datos todavía" message="Completa tu primer entrenamiento y aquí verás tu volumen, récords y progreso por ejercicio." />
+        <Empty icon={ChartLine} title={t('Sin datos todavía', 'No data yet')} message={t('Completa tu primer entrenamiento y aquí verás tu volumen, récords y progreso por ejercicio.', 'Finish your first workout and you will see your volume, records and progress per exercise here.')} />
       ) : (
         <>
           <Segmented value={section} onChange={setSection} options={[
-            { value: 'summary', label: 'Resumen' },
-            { value: 'history', label: 'Historial' },
-            { value: 'records', label: 'Récords' },
+            { value: 'summary', label: t('Resumen', 'Summary') },
+            { value: 'history', label: t('Historial', 'History') },
+            { value: 'records', label: t('Récords', 'Records') },
           ]} />
           {section === 'summary' && <Summary sessions={sessions} unit={unit} />}
           {section === 'history' && <History sessions={sessions} unit={unit} />}
@@ -47,9 +48,9 @@ export function ProgressScreen() {
 }
 
 // Grupos principales que se revisan en el mapa de calor semanal.
-const MAIN_GROUPS: [string, string[]][] = [
-  ['Pecho', ['pectorals']], ['Espalda', ['lats', 'upper-back']], ['Hombros', ['delts']], ['Bíceps', ['biceps']],
-  ['Tríceps', ['triceps']], ['Cuádriceps', ['quads']], ['Isquiotibiales', ['hamstrings']], ['Glúteos', ['glutes']], ['Abdomen', ['abs']],
+const MAIN_GROUPS: [[es: string, en: string], string[]][] = [
+  [['Pecho', 'Chest'], ['pectorals']], [['Espalda', 'Back'], ['lats', 'upper-back']], [['Hombros', 'Shoulders'], ['delts']], [['Bíceps', 'Biceps'], ['biceps']],
+  [['Tríceps', 'Triceps'], ['triceps']], [['Cuádriceps', 'Quads'], ['quads']], [['Isquiotibiales', 'Hamstrings'], ['hamstrings']], [['Glúteos', 'Glutes'], ['glutes']], [['Abdomen', 'Abs'], ['abs']],
 ]
 
 function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
@@ -59,16 +60,16 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
     [sessions, catalog],
   )
   const trained = Object.values(load).some((v) => v > 0)
-  const missing = MAIN_GROUPS.filter(([, keys]) => keys.every((k) => (load[k] ?? 0) < 1)).map(([label]) => label)
+  const missing = MAIN_GROUPS.filter(([, keys]) => keys.every((k) => (load[k] ?? 0) < 1)).map(([label]) => t(...label))
   return (
-    <Card title="Músculos esta semana" icon={PersonStanding}>
+    <Card title={t('Músculos esta semana', 'Muscles this week')} icon={PersonStanding}>
       <MuscleHeatMap load={load} />
       <span className="small muted">
         {!trained
-          ? 'No has entrenado en los últimos 7 días.'
+          ? t('No has entrenado en los últimos 7 días.', 'You have not trained in the last 7 days.')
           : missing.length
-            ? `Sin trabajar en los últimos 7 días: ${missing.join(', ')}.`
-            : 'Has trabajado todos los grupos principales en los últimos 7 días.'}
+            ? t(`Sin trabajar en los últimos 7 días: ${missing.join(', ')}.`, `Not trained in the last 7 days: ${missing.join(', ')}.`)
+            : t('Has trabajado todos los grupos principales en los últimos 7 días.', 'You have trained every main group in the last 7 days.')}
       </span>
     </Card>
   )
@@ -78,19 +79,19 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
 function Delta({ now, before, format }: { now: number; before: number; format: (v: number) => string }) {
   if (before === 0 && now === 0) return null
   const diff = now - before
-  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">igual que el mes pasado</span>
+  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">{t('igual que el mes pasado', 'same as last month')}</span>
   const up = diff > 0
   const Icon = up ? ArrowUpRight : ArrowDownRight
   return (
     <span className="tiny row" style={{ gap: 2, color: up ? 'var(--green)' : 'var(--text-2)' }}>
-      <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} vs. mes pasado
+      <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} {t('vs. mes pasado', 'vs. last month')}
     </span>
   )
 }
 
 function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const { current, previous } = useMemo(() => monthToDate(sessions), [sessions])
-  const month = new Date().toLocaleDateString('es-ES', { month: 'long' })
+  const month = new Date().toLocaleDateString(locale(), { month: 'long' })
   const item = (label: string, key: keyof PeriodStats, format: (v: number) => string) => (
     <div className="month-stat">
       <span className="bold">{format(current[key])}</span>
@@ -99,16 +100,16 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     </div>
   )
   return (
-    <Card title={`Este mes (${month})`} icon={Calendar}>
+    <Card title={`${t('Este mes', 'This month')} (${month})`} icon={Calendar}>
       <div className="month-grid">
-        {item('Entrenos', 'sessions', (v) => String(v))}
-        {item('Volumen', 'volume', (v) => volume(v, unit))}
-        {item('Series efectivas', 'sets', (v) => String(v))}
-        {item('Tiempo', 'time', (v) => duration(v))}
+        {item(t('Entrenos', 'Workouts'), 'sessions', (v) => String(v))}
+        {item(t('Volumen', 'Volume'), 'volume', (v) => volume(v, unit))}
+        {item(t('Series efectivas', 'Working sets'), 'sets', (v) => String(v))}
+        {item(t('Tiempo', 'Time'), 'time', (v) => duration(v))}
       </div>
       <span className="small muted">
-        {current.records > 0 ? `${current.records === 1 ? '1 récord batido' : `${current.records} récords batidos`} este mes. ` : ''}
-        Se compara con el mismo número de días del mes anterior.
+        {current.records > 0 ? (current.records === 1 ? t('1 récord batido este mes. ', '1 record broken this month. ') : t(`${current.records} récords batidos este mes. `, `${current.records} records broken this month. `)) : ''}
+        {t('Se compara con el mismo número de días del mes anterior.', 'Compared with the same number of days last month.')}
       </span>
     </Card>
   )
@@ -122,25 +123,25 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   return (
     <>
       <div className="grid-2">
-        <Tile icon={Calendar} value={thisWeek.sessions} label="Entrenos esta semana" />
-        <Tile icon={Weight} value={volume(thisWeek.volume, unit)} label="Volumen esta semana" />
-        <Tile icon={Dumbbell} value={sessions.length} label="Entrenos totales" />
-        <Tile icon={Clock} value={duration(totalTime)} label="Tiempo total" />
+        <Tile icon={Calendar} value={thisWeek.sessions} label={t('Entrenos esta semana', 'Workouts this week')} />
+        <Tile icon={Weight} value={volume(thisWeek.volume, unit)} label={t('Volumen esta semana', 'Volume this week')} />
+        <Tile icon={Dumbbell} value={sessions.length} label={t('Entrenos totales', 'Total workouts')} />
+        <Tile icon={Clock} value={duration(totalTime)} label={t('Tiempo total', 'Total time')} />
       </div>
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
       <WeeklyMuscles sessions={sessions} />
-      <Card title="Volumen semanal" icon={ChartColumn}>
+      <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
-        <span className="small muted">Últimas 12 semanas · {unit} levantados (peso × repeticiones)</span>
+        <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
       </Card>
-      <Card title="Entrenamientos por semana" icon={Calendar}>
+      <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue)" />
       </Card>
       {muscles.length > 0 && (
-        <Card title="Series por músculo (30 días)" icon={PersonStanding}>
+        <Card title={t('Series por músculo (30 días)', 'Sets per muscle (30 days)')} icon={PersonStanding}>
           <HBarChart items={muscles.map((m) => ({ label: muscleLabel(m.muscle), value: m.sets }))} />
-          <span className="small muted">Para ganar músculo se suelen recomendar 10-20 series semanales por grupo.</span>
+          <span className="small muted">{t('Para ganar músculo se suelen recomendar 10-20 series semanales por grupo.', 'For muscle gain, 10-20 weekly sets per group are usually recommended.')}</span>
         </Card>
       )}
     </>
@@ -152,19 +153,19 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const list = useMemo(() => stalls(sessions, Date.now() - 30 * 86400000), [sessions])
   if (!list.length) return null
   return (
-    <Card title="Estancados" icon={TrendingDown}>
+    <Card title={t('Estancados', 'Stalled')} icon={TrendingDown}>
       {list.map((x) => (
         <button key={x.exerciseId} className="row" style={{ textAlign: 'left' }} onClick={() => navigate('progress', 'exercise', x.exerciseId)}>
           <Thumb exerciseId={x.exerciseId} size={36} />
           <span className="grow">
             <span className="bold clamp-2" style={{ fontSize: 15 }}>{x.name}</span>
-            <span className="small muted">Mejor 1RM est.: ~{int(fromKg(x.best, unit))} {unit}</span>
+            <span className="small muted">{t('Mejor 1RM est.', 'Best est. 1RM')}: ~{int(fromKg(x.best, unit))} {unit}</span>
           </span>
         </button>
       ))}
       <span className="small muted">
-        {STALL_SESSIONS} sesiones o más sin superar su mejor marca. Al empezarlos en el entrenamiento te propondremos una
-        sesión de descarga (menos series y −10 % de peso) o cambiar a una variante.
+        {t(`${STALL_SESSIONS} sesiones o más sin superar su mejor marca. Al empezarlos en el entrenamiento te propondremos una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante.`,
+          `${STALL_SESSIONS} or more sessions without beating their best. When you start them in a workout we will suggest a deload session (fewer sets and −10% weight) or switching to a variation.`)}
       </span>
     </Card>
   )
@@ -192,7 +193,7 @@ function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
 
 function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const list = records(sessions)
-  if (!list.length) return <Empty icon={Trophy} title="Sin récords" message="Los récords aparecen al registrar series con peso." />
+  if (!list.length) return <Empty icon={Trophy} title={t('Sin récords', 'No records')} message={t('Los récords aparecen al registrar series con peso.', 'Records appear when you log sets with weight.')} />
   return (
     <>
       <div className="list">
@@ -205,12 +206,12 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             </span>
             <span style={{ textAlign: 'right' }}>
               <span className="bold" style={{ display: 'block' }}>{weightValue(r.e1rm, unit)}</span>
-              <span className="tiny muted">1RM est.</span>
+              <span className="tiny muted">{t('1RM est.', 'est. 1RM')}</span>
             </span>
           </button>
         ))}
       </div>
-      <p className="list-footer">Mejor serie de cada ejercicio según el 1RM estimado (fórmula de Epley). Toca uno para ver su evolución.</p>
+      <p className="list-footer">{t('Mejor serie de cada ejercicio según el 1RM estimado (fórmula de Epley). Toca uno para ver su evolución.', 'Best set of each exercise by estimated 1RM (Epley formula). Tap one to see its progress.')}</p>
     </>
   )
 }
@@ -222,7 +223,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
   const unit = data.settings.unit
   const sessions = useMemo(() => finishedSessions(data), [data])
   const points = useMemo(() => exerciseHistory(id, sessions), [id, sessions])
-  const name = sessions.flatMap((s) => s.exercises).find((e) => e.exerciseId === id)?.name ?? 'Ejercicio'
+  const name = sessions.flatMap((s) => s.exercises).find((e) => e.exerciseId === id)?.name ?? t('Ejercicio', 'Exercise')
   const [metric, setMetric] = useState<Metric>('e1rm')
   const [detail, setDetail] = useState(false)
   const value = (p: (typeof points)[number]) => fromKg(metric === 'e1rm' ? p.e1rm : metric === 'weight' ? p.maxWeight : p.volume, unit)
@@ -232,12 +233,12 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
 
   return (
     <>
-      <NavBar showBack title={name} right={<button className="icon-btn" onClick={() => setDetail(true)} aria-label="Técnica"><Info size={19} /></button>} />
+      <NavBar showBack title={name} right={<button className="icon-btn" onClick={() => setDetail(true)} aria-label={t('Técnica', 'Technique')}><Info size={19} /></button>} />
       <div className="screen with-nav">
         <Segmented value={metric} onChange={setMetric} options={[
-          { value: 'e1rm', label: '1RM est.' },
-          { value: 'weight', label: 'Peso máx.' },
-          { value: 'volume', label: 'Volumen' },
+          { value: 'e1rm', label: t('1RM est.', 'Est. 1RM') },
+          { value: 'weight', label: t('Peso máx.', 'Max weight') },
+          { value: 'volume', label: t('Volumen', 'Volume') },
         ]} />
         <Card>
           {points.length >= 2 ? (
@@ -245,19 +246,19 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
               <LineChart points={points.map((p) => ({ x: p.date, y: value(p) }))} />
               <span className="bold row" style={{ gap: 6, color: change >= 0 ? 'var(--green)' : 'var(--red)' }}>
                 {change >= 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
-                {change >= 0 ? '+' : ''}{num(change)} {unit} desde el {shortDay(first.date)}
+                {change >= 0 ? '+' : ''}{num(change)} {unit} {t('desde el', 'since')} {shortDay(first.date)}
               </span>
             </>
           ) : (
-            <span className="muted">Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.</span>
+            <span className="muted">{t('Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.', 'You need at least two sessions of this exercise to see the chart.')}</span>
           )}
         </Card>
-        <div className="list-header">Sesiones</div>
+        <div className="list-header">{t('Sesiones', 'Sessions')}</div>
         <div className="list">
           {[...points].reverse().map((p) => (
             <div key={p.date} className="list-row">
               <span className="grow">{shortDay(p.date)}</span>
-              <span className="small muted">máx. {weight(p.maxWeight, unit)}</span>
+              <span className="small muted">{t('máx.', 'max')} {weight(p.maxWeight, unit)}</span>
               <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{weightValue(p.e1rm, unit)} <span className="tiny muted">1RM</span></span>
             </div>
           ))}

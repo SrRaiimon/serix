@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { fakeIndexedDB } from './helpers'
-import { Catalog, type Exercise } from '../src/lib/catalog'
+import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { CATALOG_VERSION, migrateCatalog } from '../src/lib/migrate'
 import { decodePlan, encodePlan, extractCode } from '../src/lib/share'
 import { defaultSettings, getData, replaceData, setExerciseNote } from '../src/lib/store'
@@ -9,7 +9,7 @@ import { exercise, session, set } from './helpers'
 
 fakeIndexedDB()
 
-const ex = (id: string, name: string, muscle = 'chest', category = 'strength'): Exercise =>
+const ex = (id: string, name: string, muscle = 'chest', category = 'strength'): RawExercise =>
   ({ id, name, nameEn: name, muscle, bodyPart: 'chest', equipment: 'barbell', category, level: 'beginner', secondaryMuscles: [], instructions: [] })
 
 const catalog = new Catalog(

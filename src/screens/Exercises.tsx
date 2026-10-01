@@ -11,6 +11,7 @@ import { navigate } from '../lib/router'
 import { exerciseHistory } from '../lib/stats'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking } from '../lib/tracking'
+import { plural, t } from '../lib/i18n'
 
 // Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
 const MoveFigure = lazy(() => import('../components/MoveFigure').then((m) => ({ default: m.MoveFigure })))
@@ -52,20 +53,20 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
           <Search size={18} />
           <input
             type="search"
-            placeholder="Buscar: press, sentadilla, polea…"
+            placeholder={t('Buscar: press, sentadilla, polea…', 'Search: press, squat, cable…')}
             value={filter.query}
             onChange={(e) => setFilter({ ...filter, query: e.target.value })}
           />
           {filter.query && (
-            <button onClick={() => setFilter({ ...filter, query: '' })} aria-label="Borrar"><X size={18} /></button>
+            <button onClick={() => setFilter({ ...filter, query: '' })} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>
           )}
         </label>
-        <button className="icon-btn" onClick={() => setOpen(true)} aria-label="Filtros" style={active ? { background: 'var(--accent)', color: '#fff' } : undefined}>
+        <button className="icon-btn" onClick={() => setOpen(true)} aria-label={t('Filtros', 'Filters')} style={active ? { background: 'var(--accent)', color: '#fff' } : undefined}>
           <SlidersHorizontal size={19} />
         </button>
       </div>
       <div className="chips">
-        <Chip label="Todos" active={!filter.bodyPart} onClick={() => setFilter({ ...filter, bodyPart: undefined })} />
+        <Chip label={t('Todos', 'All')} active={!filter.bodyPart} onClick={() => setFilter({ ...filter, bodyPart: undefined })} />
         {bodyPartOrder.map((p) => (
           <Chip key={p} label={bodyPartLabel(p)} active={filter.bodyPart === p}
             onClick={(e) => {
@@ -76,34 +77,34 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
         ))}
       </div>
       {open && (
-        <Sheet title="Filtros" onClose={() => setOpen(false)}
-          left={<button className="nav-btn" onClick={() => setFilter({ ...emptyFilter, query: filter.query, bodyPart: filter.bodyPart })}>Quitar</button>}
-          right={<button className="nav-btn bold" onClick={() => setOpen(false)}>Listo</button>}>
+        <Sheet title={t('Filtros', 'Filters')} onClose={() => setOpen(false)}
+          left={<button className="nav-btn" onClick={() => setFilter({ ...emptyFilter, query: filter.query, bodyPart: filter.bodyPart })}>{t('Quitar', 'Clear')}</button>}
+          right={<button className="nav-btn bold" onClick={() => setOpen(false)}>{t('Listo', 'Done')}</button>}>
           <div className="list">
             <label className="list-row">
               <Star size={20} color="var(--gold)" />
-              <span className="grow">Solo favoritos</span>
+              <span className="grow">{t('Solo favoritos', 'Favourites only')}</span>
               <input type="checkbox" className="toggle" checked={filter.favoritesOnly}
                 onChange={(e) => setFilter({ ...filter, favoritesOnly: e.target.checked })} />
             </label>
             <label className="list-row">
-              <span className="grow">Músculo</span>
+              <span className="grow">{t('Músculo', 'Muscle')}</span>
               <select className="select" value={filter.muscle ?? ''} onChange={(e) => setFilter({ ...filter, muscle: e.target.value || undefined })}>
-                <option value="">Todos</option>
+                <option value="">{t('Todos', 'All')}</option>
                 {catalog.muscles.map((m) => <option key={m} value={m}>{muscleLabel(m)}</option>)}
               </select>
             </label>
             <label className="list-row">
-              <span className="grow">Equipamiento</span>
+              <span className="grow">{t('Equipamiento', 'Equipment')}</span>
               <select className="select" value={filter.equipment ?? ''} onChange={(e) => setFilter({ ...filter, equipment: e.target.value || undefined })}>
-                <option value="">Todo</option>
+                <option value="">{t('Todo', 'All')}</option>
                 {catalog.equipments.map((m) => <option key={m} value={m}>{equipmentLabel(m)}</option>)}
               </select>
             </label>
             <label className="list-row">
-              <span className="grow">Tipo</span>
+              <span className="grow">{t('Tipo', 'Type')}</span>
               <select className="select" value={filter.category ?? ''} onChange={(e) => setFilter({ ...filter, category: e.target.value || undefined })}>
-                <option value="">Todos</option>
+                <option value="">{t('Todos', 'All')}</option>
                 {categoryKeys.map((m) => <option key={m} value={m}>{categoryLabel(m)}</option>)}
               </select>
             </label>
@@ -143,11 +144,11 @@ export function ExercisesScreen() {
 
   return (
     <div className="screen">
-      <LargeTitle title="Ejercicios" />
+      <LargeTitle title={t('Ejercicios', 'Exercises')} />
       <FilterBar filter={filter} setFilter={setFilter} />
-      <div className="list-header">{results.length === 1 ? '1 ejercicio' : `${results.length} ejercicios`}</div>
+      <div className="list-header">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}</div>
       {results.length === 0 ? (
-        <Empty icon={Search} title="Sin resultados" message="Prueba con otra palabra o quita algún filtro." />
+        <Empty icon={Search} title={t('Sin resultados', 'No results')} message={t('Prueba con otra palabra o quita algún filtro.', 'Try another word or remove a filter.')} />
       ) : (
         <div className="list">
           {shown.map((e) => (
@@ -168,22 +169,22 @@ export function ExerciseDetailScreen({ id }: { id: string }) {
   const { settings } = useData()
   const [addTo, setAddTo] = useState(false)
   const [toast, showToast] = useToast()
-  if (!exercise) return <div className="screen"><NavBar showBack /><Empty icon={Info} title="Ejercicio no encontrado" message="" /></div>
+  if (!exercise) return <div className="screen"><NavBar showBack /><Empty icon={Info} title={t('Ejercicio no encontrado', 'Exercise not found')} message="" /></div>
   const fav = settings.favorites.includes(id)
   return (
     <>
       <NavBar showBack right={
         <>
-          <button className="icon-btn" onClick={() => toggleFavorite(id)} aria-label="Favorito">
+          <button className="icon-btn" onClick={() => toggleFavorite(id)} aria-label={t('Favorito', 'Favourite')}>
             <Star size={19} fill={fav ? 'var(--gold)' : 'none'} color={fav ? 'var(--gold)' : 'var(--accent)'} />
           </button>
-          <button className="icon-btn" onClick={() => setAddTo(true)} aria-label="Añadir a rutina"><Plus size={20} /></button>
+          <button className="icon-btn" onClick={() => setAddTo(true)} aria-label={t('Añadir a rutina', 'Add to routine')}><Plus size={20} /></button>
         </>
       } />
       <div className="screen with-nav">
         <ExerciseDetailContent exercise={exercise} />
       </div>
-      {addTo && <AddToRoutine exercise={exercise} onClose={() => setAddTo(false)} onAdded={(name) => showToast(`Añadido a ${name}`)} />}
+      {addTo && <AddToRoutine exercise={exercise} onClose={() => setAddTo(false)} onAdded={(name) => showToast(t(`Añadido a ${name}`, `Added to ${name}`))} />}
       {toast}
     </>
   )
@@ -192,10 +193,10 @@ export function ExerciseDetailScreen({ id }: { id: string }) {
 function AddToRoutine({ exercise, onClose, onAdded }: { exercise: Exercise; onClose: () => void; onAdded: (name: string) => void }) {
   const { routines } = useData()
   if (!routines.length) {
-    return <ActionSheet title="Aún no tienes rutinas" message="Crea una en la pestaña Rutinas." options={[{ label: 'Ir a Rutinas', onSelect: () => navigate('routines') }]} onClose={onClose} />
+    return <ActionSheet title={t('Aún no tienes rutinas', 'No routines yet')} message={t('Crea una en la pestaña Rutinas.', 'Create one in the Routines tab.')} options={[{ label: t('Ir a Rutinas', 'Go to Routines'), onSelect: () => navigate('routines') }]} onClose={onClose} />
   }
   return (
-    <ActionSheet title="Añadir a rutina" onClose={onClose} options={routines.map((r) => ({
+    <ActionSheet title={t('Añadir a rutina', 'Add to routine')} onClose={onClose} options={routines.map((r) => ({
       label: r.name,
       onSelect: () => {
         update((d) => {
@@ -235,16 +236,16 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
           <Tag>{levelLabel(exercise.level)}</Tag>
         </div>
       </div>
-      <Card title="Tu nota" icon={StickyNote}>
+      <Card title={t('Tu nota', 'Your note')} icon={StickyNote}>
         <ExerciseNoteField exerciseId={exercise.id} />
       </Card>
       {exercise.secondaryMuscles.length > 0 && (
-        <Card title="Músculos secundarios" icon={PersonStanding}>
+        <Card title={t('Músculos secundarios', 'Secondary muscles')} icon={PersonStanding}>
           <span className="muted">{exercise.secondaryMuscles.map(muscleLabel).join(', ')}</span>
         </Card>
       )}
       {exercise.instructions.length > 0 && (
-        <Card title="Cómo se hace" icon={ListOrdered}>
+        <Card title={t('Cómo se hace', 'How to do it')} icon={ListOrdered}>
           {exercise.instructions.map((step, i) => (
             <div key={i} className="row" style={{ alignItems: 'flex-start' }}>
               <span className="numbered">{i + 1}</span>
@@ -254,31 +255,31 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
         </Card>
       )}
       {points.length > 0 && tracking === 'weight_reps' && (
-        <Card title="Tu historial" icon={ChartLine}>
+        <Card title={t('Tu historial', 'Your history')} icon={ChartLine}>
           <div className="grid-3">
-            <Tile alt value={weight(Math.max(...points.map((p) => p.maxWeight)), unit)} label="Peso máximo" />
-            <Tile alt value={weight(Math.max(...points.map((p) => p.e1rm)), unit)} label="1RM est." />
-            <Tile alt value={points.length} label="Sesiones" />
+            <Tile alt value={weight(Math.max(...points.map((p) => p.maxWeight)), unit)} label={t('Peso máximo', 'Max weight')} />
+            <Tile alt value={weight(Math.max(...points.map((p) => p.e1rm)), unit)} label={t('1RM est.', 'Est. 1RM')} />
+            <Tile alt value={points.length} label={t('Sesiones', 'Sessions')} />
           </div>
           {points.length >= 2 && (
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: fromKg(p.e1rm, unit) }))} />
-              <span className="small muted">1RM estimado (fórmula de Epley) en {unit}</span>
+              <span className="small muted">{t(`1RM estimado (fórmula de Epley) en ${unit}`, `Estimated 1RM (Epley formula) in ${unit}`)}</span>
             </>
           )}
         </Card>
       )}
       {points.length > 0 && tracking !== 'weight_reps' && (
-        <Card title="Tu historial" icon={ChartLine}>
+        <Card title={t('Tu historial', 'Your history')} icon={ChartLine}>
           <div className="grid-3">
-            <Tile alt value={clock(Math.max(...points.map((p) => p.maxDuration)))} label="Mejor tiempo" />
-            {tracking === 'distance_time' && <Tile alt value={`${num(Math.max(...points.map((p) => p.maxDistance)))} km`} label="Más distancia" />}
-            <Tile alt value={points.length} label="Sesiones" />
+            <Tile alt value={clock(Math.max(...points.map((p) => p.maxDuration)))} label={t('Mejor tiempo', 'Best time')} />
+            {tracking === 'distance_time' && <Tile alt value={`${num(Math.max(...points.map((p) => p.maxDistance)))} km`} label={t('Más distancia', 'Longest distance')} />}
+            <Tile alt value={points.length} label={t('Sesiones', 'Sessions')} />
           </div>
           {points.length >= 2 && (
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: tracking === 'distance_time' ? p.maxDistance : p.maxDuration / 60 }))} />
-              <span className="small muted">{tracking === 'distance_time' ? 'Kilómetros por sesión' : 'Minutos de la serie más larga'}</span>
+              <span className="small muted">{tracking === 'distance_time' ? t('Kilómetros por sesión', 'Kilometres per session') : t('Minutos de la serie más larga', 'Minutes of the longest set')}</span>
             </>
           )}
         </Card>
@@ -300,16 +301,16 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
     setSelected((s) => (s.some((x) => x.id === e.id) ? s.filter((x) => x.id !== e.id) : [...s, e]))
 
   return (
-    <Sheet title="Añadir ejercicios" onClose={onClose} scrollKey={JSON.stringify(filter)}
-      left={<button className="nav-btn" onClick={onClose}>Cancelar</button>}
+    <Sheet title={t('Añadir ejercicios', 'Add exercises')} onClose={onClose} scrollKey={JSON.stringify(filter)}
+      left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={selected.length > 0 && (
         <button className="btn primary block" onClick={() => { onDone(selected); onClose() }}>
-          {selected.length === 1 ? 'Añadir 1 ejercicio' : `Añadir ${selected.length} ejercicios`}
+          {selected.length === 1 ? t('Añadir 1 ejercicio', 'Add 1 exercise') : t(`Añadir ${selected.length} ejercicios`, `Add ${selected.length} exercises`)}
         </button>
       )}>
       <div className="sheet-sticky">
         <FilterBar filter={filter} setFilter={setFilter} />
-        <span className="small muted">{results.length === 1 ? '1 ejercicio' : `${results.length} ejercicios`} · <Info size={12} style={{ verticalAlign: -1 }} /> para ver cómo se hace</span>
+        <span className="small muted">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · <Info size={12} style={{ verticalAlign: -1 }} /> {t('para ver cómo se hace', 'to see how it is done')}</span>
       </div>
       <div className="list">
         {shown.map((e) => {
@@ -320,7 +321,7 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
                 <ExerciseRowContent exercise={e} favorite={settings.favorites.includes(e.id)} thumb={48} />
                 <span className={`pick-circle ${index >= 0 ? 'active' : ''}`}>{index >= 0 ? index + 1 : ''}</span>
               </button>
-              <button className="set-check" style={{ color: 'var(--text-3)', width: 30 }} onClick={() => setPreview(e)} aria-label="Ver ejercicio">
+              <button className="set-check" style={{ color: 'var(--text-3)', width: 30 }} onClick={() => setPreview(e)} aria-label={t('Ver ejercicio', 'View exercise')}>
                 <Info size={20} />
               </button>
             </div>
@@ -329,7 +330,7 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
       </div>
       {sentinel}
       {preview && (
-        <Sheet title="" onClose={() => setPreview(undefined)} right={<button className="nav-btn bold" onClick={() => setPreview(undefined)}>Cerrar</button>}>
+        <Sheet title="" onClose={() => setPreview(undefined)} right={<button className="nav-btn bold" onClick={() => setPreview(undefined)}>{t('Cerrar', 'Close')}</button>}>
           <ExerciseDetailContent exercise={preview} />
         </Sheet>
       )}
@@ -340,8 +341,8 @@ export function ExercisePicker({ onDone, onClose }: { onDone: (list: Exercise[])
 export function ExerciseSheet({ exerciseId, onClose }: { exerciseId: string; onClose: () => void }) {
   const exercise = useCatalog().get(exerciseId)
   return (
-    <Sheet title="" onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>Cerrar</button>}>
-      {exercise ? <ExerciseDetailContent exercise={exercise} /> : <p className="muted">Ejercicio no disponible.</p>}
+    <Sheet title="" onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
+      {exercise ? <ExerciseDetailContent exercise={exercise} /> : <p className="muted">{t('Ejercicio no disponible.', 'Exercise not available.')}</p>}
     </Sheet>
   )
 }

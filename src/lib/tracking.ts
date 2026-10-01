@@ -1,14 +1,15 @@
 import type { Exercise } from './catalog'
 import { clock, num, weight, weightValue, type Unit } from './format'
+import { t as tr } from './i18n'
 import type { SetEntry } from './store'
 
 /** Cómo se registra cada serie de un ejercicio. */
 export type Tracking = 'weight_reps' | 'time' | 'distance_time'
 
-export const trackingOptions: { id: Tracking; label: string }[] = [
-  { id: 'weight_reps', label: 'Peso y repeticiones' },
-  { id: 'time', label: 'Tiempo' },
-  { id: 'distance_time', label: 'Distancia y tiempo' },
+export const trackingOptions = (): { id: Tracking; label: string }[] => [
+  { id: 'weight_reps', label: tr('Peso y repeticiones', 'Weight and reps') },
+  { id: 'time', label: tr('Tiempo', 'Time') },
+  { id: 'distance_time', label: tr('Distancia y tiempo', 'Distance and time') },
 ]
 
 // El nombre no basta para deducirlo ("hanging" aparece en elevaciones por repeticiones), así que
@@ -87,7 +88,7 @@ export function setShortText(set: SetEntry, t: Tracking, unit: Unit): string {
 export function targetText(e: { tracking?: Tracking; sets: number; repsMin: number; repsMax: number; targetSeconds?: number }): string {
   const t = trackingOf(e)
   if (t === 'time') return `${e.sets} × ${clock(e.targetSeconds ?? defaultTargetSeconds)}`
-  if (t === 'distance_time') return e.sets === 1 ? '1 serie' : `${e.sets} series`
+  if (t === 'distance_time') return e.sets === 1 ? tr('1 serie', '1 set') : tr(`${e.sets} series`, `${e.sets} sets`)
   return `${e.sets} × ${e.repsMin === e.repsMax ? e.repsMin : `${e.repsMin}-${e.repsMax}`} reps`
 }
 
@@ -98,9 +99,9 @@ export const rpeValues = [6, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 /** "al fallo", "te quedaba 1 rep", "te quedaban 1-2 reps"… (RIR = 10 − RPE). */
 export function rpeMeaning(rpe: number): string {
   const rir = 10 - rpe
-  if (rir <= 0) return 'al fallo'
-  if (rir >= 4) return 'te quedaban 4 o más'
-  if (rir === 1) return 'te quedaba 1 rep'
-  if (!Number.isInteger(rir)) return `te quedaban ${Math.floor(rir)}-${Math.ceil(rir)} reps`
-  return `te quedaban ${rir} reps`
+  if (rir <= 0) return tr('al fallo', 'to failure')
+  if (rir >= 4) return tr('te quedaban 4 o más', '4 or more left')
+  if (rir === 1) return tr('te quedaba 1 rep', '1 rep left')
+  if (!Number.isInteger(rir)) return tr(`te quedaban ${Math.floor(rir)}-${Math.ceil(rir)} reps`, `${Math.floor(rir)}-${Math.ceil(rir)} reps left`)
+  return tr(`te quedaban ${rir} reps`, `${rir} reps left`)
 }

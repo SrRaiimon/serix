@@ -9,6 +9,7 @@ import { finishedSessions, update, useData, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
 import { saveAsRoutine } from '../lib/workout'
+import { plural, t } from '../lib/i18n'
 
 function setNotes(id: string, notes: string) {
   update((d) => {
@@ -20,7 +21,7 @@ function setNotes(id: string, notes: string) {
 export function shareText(s: Session, unit: Unit): string {
   const lines = [
     `${s.name} — ${day(s.start)}`,
-    `${duration(sessionDuration(s))} · ${volume(sessionVolume(s), unit)} · ${sessionSets(s)} series`,
+    `${duration(sessionDuration(s))} · ${volume(sessionVolume(s), unit)} · ${plural(sessionSets(s), ['serie', 'series'], ['set', 'sets'])}`,
     '',
   ]
   const slots = groupSlots(s.exercises)
@@ -76,18 +77,18 @@ function useShareImage(session: Session | undefined, unit: Unit, records: Person
 }
 
 async function shareSessionImage(file: File | undefined, title: string, showToast: (text: string) => void) {
-  if (!file) return showToast('La imagen aún se está preparando')
+  if (!file) return showToast(t('La imagen aún se está preparando', 'The image is still being prepared'))
   const result = await shareImage(file, title)
-  if (result === 'downloaded') showToast('Imagen descargada')
+  if (result === 'downloaded') showToast(t('Imagen descargada', 'Image downloaded'))
 }
 
 export function SessionStats({ session, unit }: { session: Session; unit: Unit }) {
   return (
     <div className="grid-2">
-      <Tile icon={Clock} value={duration(sessionDuration(session))} label="Duración" />
-      <Tile icon={Weight} value={volume(sessionVolume(session), unit)} label="Volumen total" />
-      <Tile icon={Layers} value={sessionSets(session)} label="Series efectivas" />
-      <Tile icon={Repeat} value={sessionReps(session)} label="Repeticiones" />
+      <Tile icon={Clock} value={duration(sessionDuration(session))} label={t('Duración', 'Duration')} />
+      <Tile icon={Weight} value={volume(sessionVolume(session), unit)} label={t('Volumen total', 'Total volume')} />
+      <Tile icon={Layers} value={sessionSets(session)} label={t('Series efectivas', 'Working sets')} />
+      <Tile icon={Repeat} value={sessionReps(session)} label={t('Repeticiones', 'Reps')} />
     </div>
   )
 }
@@ -95,7 +96,7 @@ export function SessionStats({ session, unit }: { session: Session; unit: Unit }
 export function SessionExercises({ session, unit }: { session: Session; unit: Unit }) {
   const slots = groupSlots(session.exercises)
   return (
-    <Card title="Ejercicios" icon={Dumbbell}>
+    <Card title={t('Ejercicios', 'Exercises')} icon={Dumbbell}>
       {session.exercises.map((e, i) => {
         const slot = slots[i]
         let n = 0
@@ -106,13 +107,13 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
               <span className="bold clamp-2" style={{ fontSize: 15 }}>
                 {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
                 {e.name}
-                {e.deload && <span className="tiny muted" style={{ fontWeight: 400 }}> · descarga</span>}
+                {e.deload && <span className="tiny muted" style={{ fontWeight: 400 }}> · {t('descarga', 'deload')}</span>}
               </span>
             </div>
             {e.sets.filter((s) => s.done).map((s) => (
               <div key={s.id} className="row between small" style={{ paddingLeft: 48 }}>
                 <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: '#f08c00' } : undefined}>
-                  {s.warmup ? 'Calentamiento' : s.kind === 'drop' ? '↳ Drop set' : `Serie ${++n}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ' · al fallo' : ''}`}
+                  {s.warmup ? t('Calentamiento', 'Warm-up') : s.kind === 'drop' ? '↳ Drop set' : `${t('Serie', 'Set')} ${++n}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ` · ${t('al fallo', 'to failure')}` : ''}`}
                 </span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{setText(s, trackingOf(e), unit)}</span>
               </div>
@@ -134,22 +135,22 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
 
   return (
     <Sheet title="" onClose={onClose}
-      left={<button className="icon-btn" onClick={() => share(session, unit, () => showToast('Copiado al portapapeles'))} aria-label="Compartir"><Share2 size={18} /></button>}
-      right={<button className="nav-btn bold" onClick={onClose}>Listo</button>}>
+      left={<button className="icon-btn" onClick={() => share(session, unit, () => showToast(t('Copiado al portapapeles', 'Copied to clipboard')))} aria-label={t('Compartir', 'Share')}><Share2 size={18} /></button>}
+      right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
         {records.length ? <Trophy size={56} color="var(--gold)" /> : <BadgeCheck size={56} color="var(--accent)" />}
-        <h2 style={{ margin: 0 }}>¡Entrenamiento completado!</h2>
+        <h2 style={{ margin: 0 }}>{t('¡Entrenamiento completado!', 'Workout complete!')}</h2>
         <span className="muted small">{session.name} · {day(session.start)}</span>
       </div>
       <SessionStats session={session} unit={unit} />
-      <Card title="Compártelo" icon={ImageIcon}>
-        {image ? <img className="share-preview" src={image.url} alt="Imagen del entrenamiento para compartir" /> : <div className="share-preview" />}
+      <Card title={t('Compártelo', 'Share it')} icon={ImageIcon}>
+        {image ? <img className="share-preview" src={image.url} alt={t('Imagen del entrenamiento para compartir', 'Workout image to share')} /> : <div className="share-preview" />}
         <button className="btn primary" disabled={!image} onClick={() => void shareSessionImage(image?.file, session.name, showToast)}>
-          <ImageIcon size={18} /> Compartir imagen
+          <ImageIcon size={18} /> {t('Compartir imagen', 'Share image')}
         </button>
       </Card>
       {records.length > 0 && (
-        <Card title={records.length === 1 ? 'Nuevo récord personal' : `${records.length} récords personales`} icon={Trophy}>
+        <Card title={records.length === 1 ? t('Nuevo récord personal', 'New personal record') : t(`${records.length} récords personales`, `${records.length} personal records`)} icon={Trophy}>
           {records.map((r) => (
             <div key={r.exerciseId} className="row between">
               <span className="clamp-1 small">{r.name}</span>
@@ -159,12 +160,12 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
         </Card>
       )}
       <SessionExercises session={session} unit={unit} />
-      <Card title="Notas" icon={StickyNote}>
-        <textarea rows={3} placeholder="¿Cómo te has sentido?" value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
+      <Card title={t('Notas', 'Notes')} icon={StickyNote}>
+        <textarea rows={3} placeholder={t('¿Cómo te has sentido?', 'How did it feel?')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
       </Card>
       {!saved && (
-        <button className="btn secondary" onClick={() => { saveAsRoutine(session); setSaved(true); showToast('Guardada como rutina') }}>
-          Guardar como rutina
+        <button className="btn secondary" onClick={() => { saveAsRoutine(session); setSaved(true); showToast(t('Guardada como rutina', 'Saved as routine')) }}>
+          {t('Guardar como rutina', 'Save as routine')}
         </button>
       )}
       {toast}
@@ -180,12 +181,12 @@ export function SessionDetailScreen({ id }: { id: string }) {
   const [toast, showToast] = useToast()
   const records = useMemo(() => (session ? newRecords(session, finishedSessions(data)) : []), [session, data])
   const image = useShareImage(session, data.settings.unit, records)
-  if (!session) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={Dumbbell} title="Entrenamiento eliminado" message="" /></div></>
+  if (!session) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={Dumbbell} title={t('Entrenamiento eliminado', 'Workout deleted')} message="" /></div></>
   const unit = data.settings.unit
 
   return (
     <>
-      <NavBar showBack title={session.name} right={<button className="icon-btn" onClick={() => setMenu(true)} aria-label="Opciones"><Share2 size={18} /></button>} />
+      <NavBar showBack title={session.name} right={<button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones', 'Options')}><Share2 size={18} /></button>} />
       <div className="screen with-nav">
         <div>
           <div className="bold">{day(session.start)}</div>
@@ -193,21 +194,21 @@ export function SessionDetailScreen({ id }: { id: string }) {
         </div>
         <SessionStats session={session} unit={unit} />
         <SessionExercises session={session} unit={unit} />
-        <Card title="Notas" icon={StickyNote}>
-          <textarea rows={2} placeholder="Añade una nota" value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
+        <Card title={t('Notas', 'Notes')} icon={StickyNote}>
+          <textarea rows={2} placeholder={t('Añade una nota', 'Add a note')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
         </Card>
-        <button className="btn danger" onClick={() => setConfirmDelete(true)}><Trash2 size={18} /> Eliminar entrenamiento</button>
+        <button className="btn danger" onClick={() => setConfirmDelete(true)}><Trash2 size={18} /> {t('Eliminar entrenamiento', 'Delete workout')}</button>
       </div>
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
-          { label: 'Compartir imagen', onSelect: () => void shareSessionImage(image?.file, session.name, showToast) },
-          { label: 'Compartir como texto', onSelect: () => void share(session, unit, () => showToast('Copiado al portapapeles')) },
-          ...(!session.routineId ? [{ label: 'Guardar como rutina', onSelect: () => { saveAsRoutine(session); showToast('Guardada como rutina') } }] : []),
+          { label: t('Compartir imagen', 'Share image'), onSelect: () => void shareSessionImage(image?.file, session.name, showToast) },
+          { label: t('Compartir como texto', 'Share as text'), onSelect: () => void share(session, unit, () => showToast(t('Copiado al portapapeles', 'Copied to clipboard'))) },
+          ...(!session.routineId ? [{ label: t('Guardar como rutina', 'Save as routine'), onSelect: () => { saveAsRoutine(session); showToast(t('Guardada como rutina', 'Saved as routine')) } }] : []),
         ]} />
       )}
       {confirmDelete && (
-        <ActionSheet title="¿Eliminar este entrenamiento?" message="Se borrará del historial y de tus estadísticas." onClose={() => setConfirmDelete(false)}
-          options={[{ label: 'Eliminar', destructive: true, onSelect: () => { update((d) => { d.sessions = d.sessions.filter((s) => s.id !== id) }); back() } }]} />
+        <ActionSheet title={t('¿Eliminar este entrenamiento?', 'Delete this workout?')} message={t('Se borrará del historial y de tus estadísticas.', 'It will be removed from your history and stats.')} onClose={() => setConfirmDelete(false)}
+          options={[{ label: t('Eliminar', 'Delete'), destructive: true, onSelect: () => { update((d) => { d.sessions = d.sessions.filter((s) => s.id !== id) }); back() } }]} />
       )}
       {toast}
     </>

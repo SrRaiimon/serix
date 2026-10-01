@@ -1,0 +1,198 @@
+{
+  "Barbell_Full_Squat": [
+    "Set the bar in the rack at upper-chest height. Step under it and rest it on your upper back, not on your neck.",
+    "Grip it slightly wider than your shoulders, unrack the bar and take two steps back. Feet shoulder-width apart, toes turned out slightly.",
+    "Breathe in, brace your abs and lower by pushing your hips back and down, knees tracking over your toes.",
+    "Go as low as you can keep your back neutral (ideally with your thighs at least parallel to the floor) and stand up by pushing the floor away with your whole foot.",
+    "Tip: do not let your knees cave in or your heels lift. Use the rack's safety bars."
+  ],
+  "Front_Barbell_Squat": [
+    "Rest the bar on the front of your shoulders, close to your neck, with your elbows high and pointing forward.",
+    "Hold it with your fingers (clean grip) or with your arms crossed over it; what matters is that it rests on your shoulders, not your wrists.",
+    "With your feet shoulder-width apart, lower with your torso as upright as possible and your elbows up.",
+    "Stand up by pushing through your whole foot without letting your elbows drop or your chest tip forward."
+  ],
+  "Dumbbell_Squat": [
+    "Stand with a dumbbell in each hand at your sides and your feet shoulder-width apart.",
+    "Lower by pushing your hips back and down, chest up and knees following your feet.",
+    "Go down until your thighs are parallel to the floor or as far as you can keep your back straight.",
+    "Stand up by pushing the floor away with your whole foot until your legs are straight."
+  ],
+  "Goblet_Squat": [
+    "Hold a kettlebell or dumbbell with both hands in front of your chest, elbows pointing down.",
+    "Set your feet slightly wider than your shoulders, toes turned out a little.",
+    "Sink down between your legs, keeping your chest up and the weight close to your body; your elbows can brush the inside of your knees.",
+    "Stand up by pushing through your whole foot. It is a great variation to learn to squat with a straight back."
+  ],
+  "Squats_-_With_Bands": [
+    "Stand on the band with both feet, shoulder-width apart, and pass the other end behind your neck or hold it at shoulder height.",
+    "Lower by pushing your hips back, chest up and knees in line with your feet.",
+    "Stand up by pushing the floor away: the band resists more as your legs straighten, so finish the movement with control."
+  ],
+  "Bodyweight_Squat": [
+    "Stand with your feet shoulder-width apart and your arms out in front or crossed over your chest.",
+    "Lower by pushing your hips back and down as if sitting on a chair, with your heels down.",
+    "Go down until your thighs are parallel to the floor or as far as you can keep your back straight.",
+    "Stand up by pushing through your whole foot."
+  ],
+  "Split_Squats": [
+    "Take a long step forward so that both feet point ahead; your back heel is lifted.",
+    "Lower straight down by bending both knees until the back one almost touches the floor.",
+    "Stand up by pushing through the front leg. Do all the reps and switch sides.",
+    "Keep your torso upright and your front knee in line with your foot."
+  ],
+  "Barbell_Deadlift": [
+    "Stand with the bar over the middle of your feet, feet hip-width apart.",
+    "Bend your hips and knees and grab the bar just outside your legs. Back straight, chest up and shoulders over the bar.",
+    "Breathe in, brace your abs and stand up by pushing the floor away with your legs, keeping the bar against your legs throughout.",
+    "Finish standing tall by extending your hips, without leaning back. Lower along the same path, pushing your hips back first.",
+    "Tip: if your back rounds, reduce the weight. Less load with good technique is better."
+  ],
+  "Romanian_Deadlift": [
+    "Stand with the bar in your hands at thigh height and your feet hip-width apart.",
+    "With your knees slightly bent and fixed, push your hips back and lower the bar close to your legs.",
+    "Go down until you feel a stretch in the back of your thighs, usually just below the knees, without rounding your back.",
+    "Come up by driving your hips forward and squeezing your glutes."
+  ],
+  "Stiff-Legged_Dumbbell_Deadlift": [
+    "Stand with a dumbbell in each hand in front of your thighs and your knees almost straight.",
+    "Hinge forward by pushing your hips back and let the dumbbells travel down close to your legs, with a straight back.",
+    "Go down until you feel the stretch in your hamstrings and come back up squeezing your glutes.",
+    "Do not fully lock your knees or round your back to go lower."
+  ],
+  "One-Arm_Kettlebell_Swings": [
+    "Place the kettlebell slightly in front of your feet, which are a little wider than your hips. Grab it with one hand.",
+    "Hike it back between your legs by hinging at the hips, with a straight back.",
+    "Extend your hips explosively so the kettlebell rises to chest height; your arm only guides it.",
+    "Let it fall and go into the next rep by pushing your hips back. Switch hands each set.",
+    "It is a hip movement, not a squat or a shoulder raise."
+  ],
+  "Band_Good_Morning": [
+    "Stand on the band with both feet and pass the other end behind your neck, over your shoulders.",
+    "With your knees slightly bent, lean your torso forward, pushing your hips back with a straight back.",
+    "Go down until your torso is almost parallel to the floor or you feel a stretch in your hamstrings.",
+    "Come back up by extending your hips and squeezing your glutes."
+  ],
+  "Barbell_Hip_Thrust": [
+    "Sit on the floor with your upper back against a bench and the bar over your hips (use a pad).",
+    "Plant your feet hip-width apart with your knees bent.",
+    "Raise your hips by driving through your heels until your torso is in line with your thighs. Squeeze your glutes for a second.",
+    "Lower with control. Keep your chin tucked so you do not arch your lower back."
+  ],
+  "Single_Leg_Glute_Bridge": [
+    "Lie on your back with your knees bent and feet flat. Extend one leg up or out in front.",
+    "Push through the heel of the planted leg and raise your hips until your knee, hips and shoulders are aligned.",
+    "Squeeze the glute for a second at the top and lower with control. Do all the reps and switch sides."
+  ],
+  "Leg_Press": [
+    "Sit in the leg press with your back and hips firmly against the pad and your feet on the platform shoulder-width apart.",
+    "Release the safeties and lower the platform by bending your knees towards your chest, without your hips lifting off the seat.",
+    "Push through your whole foot until your legs are almost straight, without locking your knees.",
+    "Put the safeties back on when you finish."
+  ],
+  "Barbell_Walking_Lunge": [
+    "With the bar on your upper back, as for a squat, take a long step forward.",
+    "Lower until your back knee almost touches the floor, with your torso upright.",
+    "Push through the front leg and bring the back leg straight into the next step.",
+    "You need clear space around you. If you lose your balance, try the dumbbell version first."
+  ],
+  "Dumbbell_Lunges": [
+    "Stand with a dumbbell in each hand at your sides.",
+    "Take a long step forward and lower until both knees are at about 90 degrees.",
+    "Push through the front leg to return to the start and alternate legs.",
+    "Keep your torso upright and your front knee in line with your foot."
+  ],
+  "Lunge_Pass_Through": [
+    "Stand with a kettlebell in one hand.",
+    "Step back and lower into a lunge. At the bottom, pass the kettlebell under your front leg to the other hand.",
+    "Return to the start and repeat with the other leg, passing the kettlebell under again.",
+    "Keep your torso upright and your abs braced throughout."
+  ],
+  "Dumbbell_Step_Ups": [
+    "Stand facing a stable bench or box with a dumbbell in each hand.",
+    "Place one whole foot on the bench and step up by pushing through that leg, without pushing off with the bottom one.",
+    "At the top, straighten the leg and step down with control, lowering the last foot up first.",
+    "Do all the reps on one leg or alternate. Choose a height at which your knee does not rise above your hip."
+  ],
+  "Bodyweight_Walking_Lunge": [
+    "Stand with your hands on your waist or free.",
+    "Take a long step forward and lower until your back knee almost touches the floor.",
+    "Push through the front leg and bring the back leg straight into the next step.",
+    "Keep moving forward with your torso upright."
+  ],
+  "Barbell_Lunge": [
+    "Stand with the bar on your upper back and your feet hip-width apart.",
+    "Take a long step forward and lower until your back knee almost touches the floor.",
+    "Push through the front leg to return to the start and alternate legs.",
+    "Use a weight with which you can control your balance well."
+  ],
+  "Split_Squat_with_Dumbbells": [
+    "Rest the top of your back foot on a bench and step the other foot forward; hold a dumbbell in each hand.",
+    "Lower straight down by bending your front knee until your thigh is almost parallel to the floor.",
+    "Stand up by pushing through the front leg. Do all the reps and switch sides.",
+    "Find a distance from the bench at which your front knee does not travel far past your toes."
+  ],
+  "Lying_Leg_Curls": [
+    "Lie face down on the machine with the pad just above your heels and your knees slightly past the edge of the bench.",
+    "Hold the handles and bend your knees, bringing your heels towards your glutes.",
+    "Squeeze for a second at the top and lower with control, without lifting your hips off the bench."
+  ],
+  "Seated_Leg_Curl": [
+    "Sit in the machine with your back supported and set the pad just above your heels.",
+    "Lower the thigh pad so your thighs cannot lift.",
+    "Bend your knees, taking your heels down and back, hold for a second and return with control."
+  ],
+  "Ball_Leg_Curl": [
+    "Lie on your back with your heels on an exercise ball and your arms on the floor.",
+    "Raise your hips until your body is in line from shoulders to feet.",
+    "Without dropping your hips, bend your knees, rolling the ball towards your glutes.",
+    "Straighten your legs again with control."
+  ],
+  "Floor_Glute-Ham_Raise": [
+    "Kneel on a soft surface and have someone hold your ankles or hook them under something solid.",
+    "With your body straight from knees to head, lower yourself forward as slowly as you can.",
+    "Catch yourself with your hands at the bottom and use them to help you back up.",
+    "It is very demanding: start with few reps and short ranges."
+  ],
+  "Leg_Extensions": [
+    "Sit in the machine with your back supported and the pad on the lower part of your shins.",
+    "Straighten your legs fully without lifting your hips off the seat.",
+    "Hold for a second and lower with control."
+  ],
+  "Single-Leg_Leg_Extension": [
+    "Sit in the leg extension machine with the pad on the lower part of one shin.",
+    "Straighten that leg fully, hold for a second and lower with control.",
+    "Do all the reps and switch legs. It helps even out strength differences between legs."
+  ],
+  "Weighted_Sissy_Squat": [
+    "Stand holding a plate against your chest, holding a stable support with the other hand if you need it.",
+    "Rise onto your toes and push your knees forward while leaning your body back, in a straight line from knees to head.",
+    "Go as low as you can with control and come back up by squeezing your quads.",
+    "It loads the knee heavily: start without weight and with a small range."
+  ],
+  "Standing_Calf_Raises": [
+    "Stand in the machine with your shoulders under the pads and the balls of your feet on the edge of the step.",
+    "Lower your heels as far as you can to stretch your calves.",
+    "Rise onto your toes as high as possible, hold for a second and lower with control.",
+    "Keep your knees straight but not locked."
+  ],
+  "Standing_Barbell_Calf_Raise": [
+    "Stand with the bar on your upper back and your feet hip-width apart. You can put the balls of your feet on a plate.",
+    "Rise onto your toes as high as possible and hold for a second.",
+    "Lower with control. Do it inside the rack for safety."
+  ],
+  "Standing_Dumbbell_Calf_Raise": [
+    "Stand with a dumbbell in each hand and the balls of your feet on a step.",
+    "Lower your heels to stretch and rise onto your toes as high as possible.",
+    "Hold for a second at the top and lower with control."
+  ],
+  "Seated_Calf_Raise": [
+    "Sit in the machine with the balls of your feet on the platform and the pad on your thighs, near your knees.",
+    "Lower your heels to stretch and rise onto your toes as high as possible.",
+    "Hold for a second and lower with control. It mainly works the soleus."
+  ],
+  "Calf_Raises_-_With_Bands": [
+    "Stand on the band with the balls of your feet and hold the ends at shoulder height.",
+    "Rise onto your toes as high as possible, hold for a second and lower with control."
+  ]
+}

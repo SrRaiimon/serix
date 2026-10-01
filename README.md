@@ -17,7 +17,8 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   discos** por lado (barra de 20, 15 o 10 kg), **RPE** opcional por serie, temporizador de descanso,
   sugerencia de progresión, **aviso de récord** al marcar la serie y **sustituir ejercicio** por
   alternativas equivalentes.
-- **Catálogo de 876 ejercicios** en español con material, nivel y un **mapa muscular** propio
+- **En español e inglés:** sigue el idioma del móvil y se puede cambiar en Perfil (o al empezar).
+- **Catálogo de 876 ejercicios** con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.
 - **Progreso:** resumen del mes comparado con el anterior, mapa de calor de los músculos trabajados en los últimos 7 días (y aviso de los
   grupos sin tocar), volumen y entrenamientos por semana, series por músculo, historial, récords y
@@ -68,7 +69,8 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   público, las fotos proceden de webs con derechos (su propio autor lo reconoce) y los textos están
   copiados de bodybuilding.com.
 - **Instrucciones:** escritas para este proyecto (`scripts/catalog/instrucciones/`), sin partir de
-  textos de terceros. Cubren los 876 ejercicios.
+  textos de terceros, y traducidas al inglés a partir de ellas (`scripts/catalog/instructions_en/`).
+  Cubren los 876 ejercicios. En inglés, los nombres son los de la lista original.
 - **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
   animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
   Las figuras cubren los 876 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
@@ -89,7 +91,8 @@ Estructura:
 
 - `src/screens/`: pantallas (Inicio, Rutinas, Entrenamiento, Ejercicios, Progreso, Perfil, Legal…).
 - `src/lib/`: datos y lógica (`store.ts` almacenamiento, `generator.ts` programas, `catalog.ts`
-  catálogo, `migrate.ts` migración de datos, `backup.ts` validación de copias, `share.ts` enlaces).
+  catálogo, `migrate.ts` migración de datos, `backup.ts` validación de copias, `share.ts` enlaces,
+  `i18n.ts` idiomas: cada texto va en el código con su traducción al lado, `t('Terminar', 'Finish')`).
 - `src/sw-template.js`: service worker (precarga de la app para usarla sin conexión).
 - `scripts/`: generación de licencias y del catálogo, tests y comprobación de figuras.
 - `tests/`: tests de discos, calentamiento, estadísticas, copias de seguridad, migración y enlaces compartidos.
@@ -98,7 +101,8 @@ Estructura:
 
 `public/exercises_es.json` se genera con `scripts/catalog/build_catalog.py` a partir de la lista de
 Free Exercise DB (solo nombres y clasificación), de `names_es.txt` (nombres traducidos a mano) y de
-`instrucciones/*.json` (pasos escritos para el proyecto):
+`instrucciones/*.json` (pasos escritos para el proyecto) e `instructions_en/*.json` (su traducción,
+con los mismos ejercicios y número de pasos; el script lo comprueba):
 
 ```bash
 git clone --depth 1 https://github.com/yuhonas/free-exercise-db.git /tmp/fedb

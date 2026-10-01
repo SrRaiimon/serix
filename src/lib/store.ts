@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Unit } from './format'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
+import { setLang, systemLang, type Lang } from './i18n'
 import { trackingOf, type Tracking } from './tracking'
 
 // Los pesos se guardan siempre en kg; la unidad solo afecta a cómo se muestran.
@@ -107,6 +108,8 @@ export interface Settings {
   restSound: boolean
   /** Barra con la que se calculan los discos (kg). Sin valor = la olímpica. */
   barKg?: number
+  /** Idioma elegido; sin valor = el del sistema. */
+  language?: Lang
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */
@@ -193,6 +196,8 @@ const listeners = new Set<() => void>()
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 
 function emit() {
+  // El idioma se aplica antes de avisar a la interfaz, para que se pinte ya en el nuevo.
+  setLang(state.settings.language ?? systemLang())
   listeners.forEach((l) => l())
 }
 

@@ -2,6 +2,7 @@ import { Chip, Sheet } from '../components/ui'
 import { editable, fromKg, toKg, weight, type Unit } from '../lib/format'
 import { BARS, loadBar } from '../lib/plates'
 import { updateSettings, useData } from '../lib/store'
+import { t } from '../lib/i18n'
 
 // Hoja con los discos que hay que poner en cada lado de la barra para un peso.
 
@@ -41,29 +42,29 @@ export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; s
         {showTotal && <div className="plates-total">{weight(weightKg, unit)}</div>}
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
           {bars.map((b) => (
-            <Chip key={b} label={`Barra de ${editable(b)} ${u}`} active={b === bar} onClick={() => updateSettings({ barKg: toKg(b, unit) })} />
+            <Chip key={b} label={t(`Barra de ${editable(b)} ${u}`, `${editable(b)} ${u} bar`)} active={b === bar} onClick={() => updateSettings({ barKg: toKg(b, unit) })} />
           ))}
         </div>
         <svg viewBox="0 0 320 120" className="plates-svg" role="img"
-          aria-label={load.perSide.length ? `Por lado: ${load.perSide.map(editable).join(', ')} ${u}` : 'Solo la barra'}>
+          aria-label={load.perSide.length ? `${t('Por lado', 'Per side')}: ${load.perSide.map(editable).join(', ')} ${u}` : t('Solo la barra', 'Just the bar')}>
           <rect x={0} y={55} width={112} height={10} rx={3} className="plates-bar" />
           <rect x={106} y={46} width={10} height={28} rx={2} className="plates-bar" />
           <rect x={116} y={56} width={200} height={8} rx={3} className="plates-bar" />
           {plates}
         </svg>
         {light ? (
-          <p className="plates-note">Pesa menos que la barra sola ({editable(bar)} {u}).</p>
+          <p className="plates-note">{t(`Pesa menos que la barra sola (${editable(bar)} ${u}).`, `It weighs less than the empty bar (${editable(bar)} ${u}).`)}</p>
         ) : load.perSide.length ? (
           <p className="plates-list">
             {load.perSide.map((p, i) => <span key={i} className="plates-chip" style={{ background: LOOK[`${unit}${p}`].fill, color: LIGHT.has(LOOK[`${unit}${p}`].fill) ? '#111' : '#fff' }}>{editable(p)}</span>)}
-            <span className="muted"> {u} en cada lado</span>
+            <span className="muted"> {u} {t('en cada lado', 'on each side')}</span>
           </p>
         ) : (
-          <p className="plates-note">Solo la barra.</p>
+          <p className="plates-note">{t('Solo la barra.', 'Just the bar.')}</p>
         )}
         {!light && load.missing > 0 && (
           <p className="plates-note">
-            Con estos discos llegas a {editable(load.total)} {u}: faltan {editable(load.missing)} {u}, que no se pueden repartir por igual.
+            {t(`Con estos discos llegas a ${editable(load.total)} ${u}: faltan ${editable(load.missing)} ${u}, que no se pueden repartir por igual.`, `With these plates you reach ${editable(load.total)} ${u}: ${editable(load.missing)} ${u} short, which cannot be split evenly.`)}
           </p>
         )}
       </div>
@@ -72,7 +73,7 @@ export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; s
 
 export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: () => void }) {
   return (
-    <Sheet title="Discos por lado" onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>Listo</button>}>
+    <Sheet title={t('Discos por lado', 'Plates per side')} onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
       <PlatesView weightKg={weightKg} />
     </Sheet>
   )
