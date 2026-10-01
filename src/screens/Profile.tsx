@@ -9,8 +9,8 @@ import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
-import { startRest, testBeep } from '../lib/timer'
-import { lockScreenSupported, requestLockScreenPermission } from '../lib/lockScreen'
+import { restEndAt, startRest, testBeep } from '../lib/timer'
+import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
 import { speak, voiceSupported } from '../lib/voice'
 import { isIOS } from '../lib/pwa'
 import { finishedSessions, replaceData, resetData, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
@@ -170,10 +170,16 @@ export function ProfileScreen() {
           </label>
         )}
         {settings.lockScreenAlert && lockScreenSupported() && (
-          <Row icon={BellRing} label={t('Probar: descanso de 10 s', 'Test: 10 s rest')} chevron={false} onClick={() => {
-            startRest(10)
-            showToast(t('Bloquea el móvil: en 10 segundos te llegará el aviso', 'Lock your phone: the alert will arrive in 10 seconds'))
-          }} />
+          <>
+            <Row icon={BellRing} label={t('Probar: descanso de 10 s', 'Test: 10 s rest')} chevron={false} onClick={() => {
+              if (Notification.permission !== 'granted') return showToast(t('Sin permiso de notificaciones: actívalo en los ajustes del navegador para esta web', 'No notification permission: allow it in the browser settings for this site'))
+              startRest(10)
+              const endAt = restEndAt()
+              if (endAt) startLockScreenTest(endAt)
+              showToast(t('Bloquea el móvil ya: en 10 segundos te llegará el aviso', 'Lock your phone now: the alert will arrive in 10 seconds'))
+            }} />
+            <LockScreenTestResult />
+          </>
         )}
         <label className="list-row">
           <span className="grow">
@@ -227,6 +233,34 @@ export function ProfileScreen() {
 }
 
 // MARK: Medidas
+
+/** Resultado de la prueba del aviso con el móvil bloqueado, al volver a la app. */
+function LockScreenTestResult() {
+  const test = useLockScreenTest()
+  const [, setNow] = useState(0)
+  // Se vuelve a pintar al volver a la app (el resultado se ve entonces).
+  useEffect(() => {
+    const onVisible = () => setNow(Date.now())
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+  if (!test || Date.now() < test.endAt + 1500 || test.pageAt === undefined) return null
+  return <div className="list-row small" role="status" style={{ display: 'block' }}>{testVerdict(test)}</div>
+}
+
+function testVerdict(test: LockScreenTest): ReactNode {
+  const late = (at: number) => Math.max(0, Math.round((at - test.endAt) / 1000))
+  const tips = t('En Samsung: Ajustes → Aplicaciones → Chrome (o Samsung Internet) → Batería → «Sin restricciones». Y en Ajustes → Batería → Límites de uso en segundo plano, quítalo de «Aplicaciones en suspensión» y «en suspensión profunda». Comprueba también que las notificaciones del navegador están permitidas.',
+    'On Samsung: Settings → Apps → Chrome (or Samsung Internet) → Battery → "Unrestricted". And in Settings → Battery → Background usage limits, remove it from "Sleeping apps" and "Deep sleeping apps". Also check that notifications are allowed for the browser.')
+  if (!test.pageHidden && test.notifiedAt === undefined) {
+    return t('El descanso terminó con la app a la vista: bloquea el móvil justo después de tocar «Probar» y vuelve a intentarlo.', 'The rest ended with the app on screen: lock the phone right after tapping "Test" and try again.')
+  }
+  if (test.notifiedAt !== undefined && late(test.notifiedAt) <= 3) {
+    return <>✓ {t('La notificación salió a su hora.', 'The notification fired on time.')} {late(test.pageAt!) > 3 ? t('(La cuenta atrás de la pantalla bloqueada se paró: el aviso lo dio el plan B.)', '(The lock-screen countdown stopped: the backup path sent the alert.)') : ''} {t('Si no la viste, revisa que las notificaciones del navegador estén permitidas y se muestren en la pantalla bloqueada.', 'If you did not see it, check that browser notifications are allowed and shown on the lock screen.')}</>
+  }
+  const delay = late(test.notifiedAt ?? test.pageAt!)
+  return <>{t(`El móvil congeló la app al bloquearlo: el aviso salió con ${delay} s de retraso (al volver a abrirla).`, `The phone froze the app when locked: the alert came ${delay} s late (when you reopened it).`)} {tips}</>
+}
 
 const measureFields: { key: keyof Omit<Measurement, 'id' | 'date'>; label: string; unit?: string }[] = [
   { key: 'weight', get label() { return t('Peso', 'Weight') } },

@@ -54,3 +54,29 @@ self.addEventListener('notificationclick', (event) => {
     }),
   )
 })
+
+// Aviso del descanso con el móvil bloqueado (ver src/lib/lockScreen.ts). La página le avisa al empezar
+// cada descanso; él espera hasta el final dentro del evento (Chrome lo deja vivir hasta 5 minutos) y
+// notifica aunque la página se haya congelado. Si la app está a la vista no hace falta.
+let restEnd = 0
+let restShown = 0
+
+self.addEventListener('message', (event) => {
+  const msg = event.data
+  if (!msg || typeof msg !== 'object') return
+  if (msg.type === 'rest-cancel') restEnd = 0
+  if (msg.type !== 'rest' || typeof msg.endAt !== 'number') return
+  restEnd = msg.endAt
+  const wait = msg.endAt - Date.now()
+  if (wait > 290000) return // más de 5 minutos: lo avisa la página al terminar
+  event.waitUntil(new Promise((resolve) => setTimeout(resolve, Math.max(0, wait))).then(() => notifyRest(msg)))
+})
+
+async function notifyRest(msg) {
+  if (restEnd !== msg.endAt || restShown === msg.endAt) return
+  const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  if (list.some((c) => c.visibilityState === 'visible')) return
+  restShown = msg.endAt
+  await self.registration.showNotification(msg.title, msg.options)
+  for (const c of list) c.postMessage({ type: 'rest-notified', endAt: msg.endAt, at: Date.now() })
+}

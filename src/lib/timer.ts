@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { clearRestFromLockScreen, clearRestNotification, notifyRestDone, showRestOnLockScreen } from './lockScreen'
+import { cancelRestNotification, clearRestFromLockScreen, clearRestNotification, notePageFinish, notifyRestDone, scheduleRestNotification, showRestOnLockScreen } from './lockScreen'
 import { getData } from './store'
 import { t } from './i18n'
 import { speak } from './voice'
@@ -47,14 +47,19 @@ export function useRestTimer(): TimerState {
   )
 }
 
+/** Hora de fin del descanso en curso. */
+export const restEndAt = () => state.endAt
+
 const soundOn = () => getData().settings.restSound
 /** Aviso con la pantalla bloqueada (Android), si está activado en Perfil. */
 const lockScreenOn = () => getData().settings.lockScreenAlert === true
 
 function syncLockScreen() {
   if (!lockScreenOn()) return
-  if (state.endAt) showRestOnLockScreen(state.endAt, state.total, { onAdd: addRest, onSkip: stopRest })
-  else clearRestFromLockScreen()
+  if (state.endAt) {
+    showRestOnLockScreen(state.endAt, state.total, { onAdd: addRest, onSkip: stopRest })
+    void scheduleRestNotification(state.endAt)
+  } else clearRestFromLockScreen()
 }
 
 /**
@@ -156,6 +161,7 @@ export function testBeep() {
 }
 
 function finish() {
+  const endAt = state.endAt
   // ¿Sonó ya el pitido programado? Si el audio estuvo suspendido, su reloj se paró y no sonó.
   const played = scheduled && audio?.state === 'running' && audio.currentTime >= scheduled.at - 0.05
   if (!played) {
@@ -168,7 +174,8 @@ function finish() {
   clearRestFromLockScreen()
   speak(nextLabel ? t(`Descanso terminado. Siguiente: ${nextLabel}`, `Rest is over. Next: ${nextLabel}`) : t('Descanso terminado', 'Rest is over'))
   // Con la app a la vista basta el aviso en pantalla; si no (móvil bloqueado), notificación.
-  if (lockScreenOn() && document.visibilityState === 'hidden') void notifyRestDone()
+  if (endAt) notePageFinish(endAt)
+  if (lockScreenOn() && endAt && document.visibilityState === 'hidden') void notifyRestDone(endAt)
 }
 
 function schedule() {
@@ -205,6 +212,7 @@ export function stopRest() {
   cancelBeep()
   set({ total: 0 })
   clearRestFromLockScreen()
+  if (lockScreenOn()) void cancelRestNotification()
 }
 
 /** Amplía o reduce la cuenta atrás (y lo recuerda para los siguientes descansos). */
