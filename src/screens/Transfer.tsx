@@ -181,7 +181,7 @@ function Receiver() {
         <Card title={t('Datos recibidos', 'Data received')} icon={Smartphone}>
           <span>{result.settings.name ? `${t('De', 'From')} ${result.settings.name}: ` : ''}{plural(sessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}, {plural(result.routines.length, ['rutina', 'rutinas'], ['routine', 'routines'])} {t('y', 'and')} {plural(result.measurements.length, ['medida', 'medidas'], ['measurement', 'measurements'])}.</span>
           {currentSessions > 0 && (
-            <span className="small" style={{ color: 'var(--red)' }}>
+            <span className="small" style={{ color: 'var(--red-text)' }}>
               {t(`Se sustituirán los datos actuales de este móvil (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}).`, `This phone's current data will be replaced (${plural(currentSessions, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}).`)}
             </span>
           )}
@@ -212,7 +212,7 @@ function Receiver() {
           </p>
         </>
       )}
-      {error && <p className="small" style={{ color: 'var(--red)', margin: 0, textAlign: 'center' }}>{error}</p>}
+      {error && <p className="small" style={{ color: 'var(--red-text)', margin: 0, textAlign: 'center' }}>{error}</p>}
       {phase !== 'scanning' && (
         <>
           <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>

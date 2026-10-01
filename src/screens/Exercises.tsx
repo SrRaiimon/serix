@@ -61,7 +61,7 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
             <button onClick={() => setFilter({ ...filter, query: '' })} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>
           )}
         </label>
-        <button className="icon-btn" onClick={() => setOpen(true)} aria-label={t('Filtros', 'Filters')} style={active ? { background: 'var(--accent)', color: '#fff' } : undefined}>
+        <button className="icon-btn" onClick={() => setOpen(true)} aria-label={t('Filtros', 'Filters')} style={active ? { background: 'var(--accent)', color: 'var(--on-accent)' } : undefined}>
           <SlidersHorizontal size={19} />
         </button>
       </div>

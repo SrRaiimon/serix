@@ -63,7 +63,7 @@ export function ImportScreen({ code }: { code: string }) {
                   ? t('Te han compartido una rutina. Se añadirá a las tuyas; no se borra nada.', 'Someone shared a routine with you. It will be added to yours; nothing is deleted.')
                   : t(`Te han compartido ${plan.routines.length} rutinas. Se añadirán a las tuyas; no se borra nada.`, `Someone shared ${plan.routines.length} routines with you. They will be added to yours; nothing is deleted.`)}
               </span>
-              {plan.skipped > 0 && <span className="small" style={{ color: '#f08c00' }}>{t(`${plan.skipped} ejercicios no están en tu versión de la app y se omitirán.`, `${plan.skipped} exercises are not in your version of the app and will be skipped.`)}</span>}
+              {plan.skipped > 0 && <span className="small" style={{ color: 'var(--amber-text)' }}>{t(`${plan.skipped} ejercicios no están en tu versión de la app y se omitirán.`, `${plan.skipped} exercises are not in your version of the app and will be skipped.`)}</span>}
             </Card>
             {iosBrowser && (
               <div className="install-banner" style={{ flexDirection: 'column', alignItems: 'stretch' }}>

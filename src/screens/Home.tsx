@@ -124,8 +124,8 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
   return (
     <Card>
       <div className="row between">
-        <h3>{t('Esta semana', 'This week')}</h3>
-        <strong style={{ color: reached ? 'var(--green)' : 'var(--accent)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
+        <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
+        <strong style={{ color: reached ? 'var(--green-text)' : 'var(--accent-text)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
       </div>
       <Progress value={Math.min(sessions.length, goal)} total={goal} green={reached} />
       <div className="week">
@@ -139,7 +139,7 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
           )
         })}
       </div>
-      {reached && <span className="small bold row" style={{ color: 'var(--green)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
+      {reached && <span className="small bold row" style={{ color: 'var(--green-text)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
     </Card>
   )
 }
@@ -154,7 +154,7 @@ function InstallBanner() {
   }
   return (
     <div className="install-banner">
-      <Smartphone size={26} color="var(--accent)" />
+      <Smartphone size={26} color="var(--accent-text)" />
       <span className="grow small">
         <strong style={{ display: 'block' }}>{t('Instálala en tu móvil', 'Install it on your phone')}</strong>
         {canPrompt ? t('Se abrirá como una app, a pantalla completa y sin conexión.', 'It opens like an app, full screen and offline.') : (

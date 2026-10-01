@@ -133,13 +133,13 @@ export function WorkoutScreen({ session }: { session: Session }) {
           </div>
           <div className="title" style={{ fontVariantNumeric: 'tabular-nums' }}>{clock((now - session.start) / 1000)}</div>
           <div className="right">
-            <button className="btn small" style={{ background: 'var(--green)', color: '#fff' }} onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
+            <button className="btn small" style={{ background: 'var(--green)', color: 'var(--on-accent)' }} onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
           </div>
         </div>
 
         <div className="screen with-nav" style={{ paddingBottom: 140 }}>
           <div className="card">
-            <input className="bold" style={{ fontSize: 24 }} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
+            <input className="bold" style={{ fontSize: 24 }} aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
             {allSets.length > 0 && (
               <>
                 <span className="small muted">{t(`${done} de ${allSets.length} series`, `${done} of ${allSets.length} sets`)}</span>
@@ -273,7 +273,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <button className="row grow" style={{ textAlign: 'left' }} onClick={onInfo}>
           <Thumb exerciseId={exercise.exerciseId} size={44} />
           <span className="grow">
-            <span className="bold clamp-2" style={{ color: 'var(--accent)' }}>
+            <span className="bold clamp-2" style={{ color: 'var(--accent-text)' }}>
               {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
               {exercise.name}
             </span>
@@ -292,7 +292,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       )}
 
       {exercise.deload ? (
-        <span className="small row" style={{ color: 'var(--blue)', gap: 6, alignItems: 'flex-start' }}>
+        <span className="small row" style={{ color: 'var(--blue-text)', gap: 6, alignItems: 'flex-start' }}>
           <BatteryLow size={16} style={{ flexShrink: 0 }} />
           {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
@@ -313,7 +313,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       )}
 
       {hint && !exercise.deload && (
-        <span className="small row" style={{ color: 'var(--green)', gap: 6, alignItems: 'flex-start' }}>
+        <span className="small row" style={{ color: 'var(--green-text)', gap: 6, alignItems: 'flex-start' }}>
           <ArrowUpRight size={16} style={{ flexShrink: 0 }} />
           {hint === 'reps' ? t('La última vez llegaste al máximo de repeticiones.', 'Last time you reached the top of the rep range.') : t('La última vez te sobró margen (RPE 7 o menos).', 'Last time you had reps to spare (RPE 7 or less).')}
           {' '}{t('Prueba con', 'Try')} {weight(Math.max(...previous.map((p) => p.weight)) + toKg(increment(unit), unit), unit)}.

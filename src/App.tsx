@@ -90,11 +90,11 @@ function Main() {
   const active = activeSession(data)
 
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
-  if (route[0] === 'import' && route[1]) return <div className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></div>
+  if (route[0] === 'import' && route[1]) return <main className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></main>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
   // Pasar datos desde otro móvil también se puede hacer antes del cuestionario inicial.
-  if (route[0] === 'transfer') return <div className="app"><Suspense fallback={null}><TransferScreen mode={route[1]} /></Suspense></div>
+  if (route[0] === 'transfer') return <main className="app"><Suspense fallback={null}><TransferScreen mode={route[1]} /></Suspense></main>
   if (!data.settings.onboarded) return <Suspense fallback={null}><OnboardingScreen /></Suspense>
 
   const tab = currentTab(route)
@@ -102,9 +102,11 @@ function Main() {
 
   return (
     <div className={`app ${active && !ui.open ? 'has-active' : ''}`}>
-      <Suspense fallback={<div className="screen" />}>
-        <Screen route={route} />
-      </Suspense>
+      <main>
+        <Suspense fallback={<div className="screen" />}>
+          <Screen route={route} />
+        </Suspense>
+      </main>
       {active && !ui.open && <ActiveBar name={active.name} start={active.start} />}
       <TabBar tab={tab} />
       <Suspense fallback={null}>

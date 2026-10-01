@@ -40,6 +40,9 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
   código.
 - **Política de seguridad de contenido (CSP)** en la build de producción (`vite.config.ts`): solo se
   cargan scripts, estilos, imágenes y conexiones del propio origen.
+- **Accesible:** contraste AA en modo claro y oscuro (texto ≥ 4,5:1). Los colores de relleno
+  (`--accent`, `--green`…) llevan texto `--on-accent`, y para texto e iconos de color se usan
+  `--accent-text`, `--green-text`, etc. Auditado con Lighthouse en todas las pantallas.
 - **Copias de seguridad validadas** al importar (`src/lib/backup.ts`): tamaño máximo de 20 MB, solo
   campos conocidos, tipos comprobados y valores dentro de rangos razonables; lo demás se descarta.
 - La app no pide permisos del sistema (ni ubicación, ni cámara, ni notificaciones). Durante un

@@ -30,7 +30,7 @@ export function OnboardingScreen() {
 
   if (program) {
     return (
-      <div className="app">
+      <main className="app">
         <div className="nav-bar">
           <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
           <div className="title">{t('Vista previa', 'Preview')}</div>
@@ -42,12 +42,12 @@ export function OnboardingScreen() {
           <ProgramPreview program={program} />
         </div>
         <Footer><button className="btn primary block" onClick={() => finish(program)}>{t('Guardar programa', 'Save program')}</button></Footer>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="app">
+    <main className="app">
       <div className="nav-bar" style={{ background: 'transparent', borderBottom: 0, backdropFilter: 'none' }}>
         <div className="left">
           {step > 0 && <button className="nav-btn" onClick={() => setStep(step - 1)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button>}
@@ -65,7 +65,7 @@ export function OnboardingScreen() {
               <Chip label="Español" active={lang() === 'es'} onClick={() => updateSettings({ language: 'es' })} />
               <Chip label="English" active={lang() === 'en'} onClick={() => updateSettings({ language: 'en' })} />
             </div>
-            <Dumbbell size={64} color="var(--accent)" style={{ marginTop: 8 }} />
+            <Dumbbell size={64} color="var(--accent-text)" style={{ marginTop: 8 }} />
             <h1 style={{ fontSize: 34, margin: 0, lineHeight: 1.1 }}>{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
             <p className="muted" style={{ fontSize: 19, margin: 0 }}>
               {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
@@ -150,7 +150,7 @@ export function OnboardingScreen() {
           {step === 0 ? t('Empezar', 'Start') : step === LAST ? t('Crear mi programa', 'Create my program') : t('Continuar', 'Continue')}
         </button>
       </Footer>
-    </div>
+    </main>
   )
 }
 
@@ -173,7 +173,7 @@ function Header({ title, subtitle }: { title: string; subtitle: string }) {
 
 function Feature({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
-    <div className="row"><Icon size={24} color="var(--accent)" style={{ flexShrink: 0 }} /><span>{text}</span></div>
+    <div className="row"><Icon size={24} color="var(--accent-text)" style={{ flexShrink: 0 }} /><span>{text}</span></div>
   )
 }
 
@@ -185,7 +185,7 @@ function Option({ icon: Icon, title, detail, active, onClick }: { icon: LucideIc
         <strong style={{ display: 'block' }}>{title}</strong>
         {detail && <span className="small muted">{detail}</span>}
       </span>
-      {active ? <CircleCheck size={24} color="var(--accent)" /> : <Circle size={24} color="var(--text-3)" />}
+      {active ? <CircleCheck size={24} color="var(--accent-text)" /> : <Circle size={24} color="var(--text-3)" />}
     </button>
   )
 }

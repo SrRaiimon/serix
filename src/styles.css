@@ -7,7 +7,7 @@
   --card-2: #f2f2f7;
   --fill: rgba(118, 118, 128, 0.12);
   --text: #111114;
-  --text-2: rgba(60, 60, 67, 0.62);
+  --text-2: rgba(60, 60, 67, 0.78);
   --text-3: rgba(60, 60, 67, 0.32);
   --separator: rgba(60, 60, 67, 0.16);
   --green: #1fb655;
@@ -15,6 +15,14 @@
   --red: #ff3b30;
   --gold: #f5b400;
   --blue: #0a84ff;
+  /* Colores para TEXTO e iconos (contraste AA, ≥ 4,5:1 sobre el fondo). Los de arriba son para
+     rellenos. Sobre un relleno naranja o verde el texto va oscuro (--on-accent). */
+  --accent-text: #b93a0b;
+  --green-text: #15803d;
+  --red-text: #c4001a;
+  --blue-text: #0062cc;
+  --amber-text: #b45f00;
+  --on-accent: #111114;
   --bar: rgba(249, 249, 249, 0.86);
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
   --radius: 18px;
@@ -37,6 +45,11 @@
     --separator: rgba(84, 84, 88, 0.6);
     --green: #30d158;
     --green-soft: rgba(48, 209, 88, 0.18);
+    --accent-text: #ff8a5c;
+    --green-text: #30d158;
+    --red-text: #ff453a;
+    --blue-text: #0a84ff;
+    --amber-text: #f08c00;
     --bar: rgba(22, 22, 24, 0.86);
     --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
   }
@@ -173,7 +186,7 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 17px;
   padding: 6px 8px;
   border-radius: 10px;
@@ -194,7 +207,7 @@ img {
   display: inline-grid;
   place-items: center;
   border-radius: 50%;
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--fill);
 }
 
@@ -233,7 +246,7 @@ img {
 }
 
 .tabbar button.active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .active-bar {
@@ -249,7 +262,7 @@ img {
   gap: 12px;
   padding: 12px 16px;
   border-radius: 16px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   box-shadow: var(--shadow);
   text-align: left;
@@ -267,6 +280,7 @@ img {
 }
 
 .card h3,
+.card-title,
 .section-title {
   margin: 0;
   font-size: 17px;
@@ -425,11 +439,11 @@ a.list-row:active {
 }
 
 .list-row.danger {
-  color: var(--red);
+  color: var(--red-text);
 }
 
 .list-row.accent {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* MARK: Botones */
@@ -453,12 +467,12 @@ a.list-row:active {
 
 .btn.primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .btn.secondary {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .btn.plain {
@@ -467,7 +481,7 @@ a.list-row:active {
 
 .btn.danger {
   background: rgba(255, 59, 48, 0.12);
-  color: var(--red);
+  color: var(--red-text);
 }
 
 .btn.block {
@@ -515,7 +529,7 @@ a.list-row:active {
 
 .chip.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .tag {
@@ -530,7 +544,7 @@ a.list-row:active {
 
 .tag.accent {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* MARK: Formularios */
@@ -647,7 +661,7 @@ a.list-row:active {
   height: 30px;
   display: grid;
   place-items: center;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .stepper .control span {
@@ -790,7 +804,7 @@ a.list-row:active {
   width: 100%;
   padding: 16px;
   font-size: 19px;
-  color: var(--blue);
+  color: var(--blue-text);
   border-top: 0.5px solid var(--separator);
 }
 
@@ -799,7 +813,7 @@ a.list-row:active {
 }
 
 .dialog .option.destructive {
-  color: var(--red);
+  color: var(--red-text);
 }
 
 .dialog .option.cancel {
@@ -877,16 +891,16 @@ a.list-row:active {
 }
 
 .set-label.warmup {
-  color: #f08c00;
+  color: var(--amber-text);
 }
 
 .set-label.drop {
-  color: var(--blue);
+  color: var(--blue-text);
 }
 
 .set-label.amrap,
 .set-label.failure {
-  color: var(--red);
+  color: var(--red-text);
 }
 
 .set-label sup {
@@ -920,7 +934,7 @@ a.list-row:active {
 }
 
 .stall-box svg {
-  color: #f08c00;
+  color: var(--amber-text);
 }
 
 .set-prev {
@@ -962,7 +976,7 @@ a.list-row:active {
 }
 
 .set-check.done {
-  color: var(--green);
+  color: var(--green-text);
 }
 
 .rest-bar {
@@ -1009,7 +1023,7 @@ a.list-row:active {
 .hero {
   border-radius: 22px;
   padding: 18px;
-  color: #fff;
+  color: var(--on-accent);
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   display: flex;
   flex-direction: column;
@@ -1032,7 +1046,7 @@ a.list-row:active {
 .hero .start {
   margin-top: 4px;
   background: #fff;
-  color: var(--accent);
+  color: var(--on-accent);
 }
 
 .week {
@@ -1055,7 +1069,7 @@ a.list-row:active {
 
 .week .dot.done {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .week .dot.today {
@@ -1076,7 +1090,7 @@ a.list-row:active {
 }
 
 .quick svg {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* MARK: Calendario */
@@ -1100,7 +1114,7 @@ a.list-row:active {
 
 .calendar .day.trained {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
 }
 
@@ -1136,7 +1150,7 @@ a.list-row:active {
 }
 
 .empty > svg {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .empty h2 {
@@ -1168,12 +1182,12 @@ a.list-row:active {
   place-items: center;
   flex-shrink: 0;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .option-card.active .icon {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .numbered {
@@ -1185,7 +1199,7 @@ a.list-row:active {
   place-items: center;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -1204,7 +1218,7 @@ a.list-row:active {
 .pick-circle.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .avatar {
@@ -1216,14 +1230,14 @@ a.list-row:active {
   flex-shrink: 0;
   font-size: 26px;
   font-weight: 800;
-  color: #fff;
+  color: var(--on-accent);
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
 .big-number {
   font-size: 44px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1281,7 +1295,7 @@ html.scroll-locked body {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .group-badge {
@@ -1294,7 +1308,7 @@ html.scroll-locked body {
   font-weight: 800;
   text-align: center;
   vertical-align: 2px;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -1325,7 +1339,7 @@ html.scroll-locked body {
 }
 
 .rpe-chip.active {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -1335,7 +1349,7 @@ html.scroll-locked body {
   border-radius: 50%;
   font-size: 13px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--card);
 }
 
@@ -1504,7 +1518,7 @@ html.scroll-locked body {
   border: 0;
   width: 100%;
   font: inherit;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   animation: rest-done-pulse 1s ease-in-out 3;
 }
@@ -1594,7 +1608,8 @@ html.scroll-locked body {
 }
 
 .rest-full-time.last {
-  color: var(--accent);
+  /* La cuenta atrás grande siempre va sobre negro: naranja claro aunque el móvil esté en modo claro. */
+  color: #ff7345;
 }
 
 .rest-full-actions {
@@ -1617,7 +1632,7 @@ html.scroll-locked body {
 
 .rest-full-done {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   gap: 12px;
   font-size: 20px;
   animation: rest-done-pulse 1s ease-in-out 3;
@@ -1647,7 +1662,7 @@ html.scroll-locked body {
 }
 
 .legal-text a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Calculadora de discos */
@@ -1691,4 +1706,4 @@ html.scroll-locked body {
   padding: 5px 10px; border-radius: 999px; border: 0; font-size: 13px; font-weight: 600;
   background: var(--fill, rgba(120, 120, 128, 0.16)); color: var(--text-2);
 }
-.move-figure-speed.active { background: var(--accent); color: #fff; }
+.move-figure-speed.active { background: var(--accent); color: var(--on-accent); }

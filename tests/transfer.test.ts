@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import jsQR from 'jsqr'
+import qrcode from 'qrcode-generator'
 import { parseBackup } from '../src/lib/backup'
 import { defaultSettings, type AppData } from '../src/lib/store'
 import { addFrame, assemble, CHUNK, emptyReceived, encodeTransfer, isComplete, parseFrame } from '../src/lib/transfer'
@@ -84,8 +86,6 @@ test('sin compresión (navegadores antiguos) también funciona', async () => {
 })
 
 test('los códigos se leen con jsQR aunque sean pequeños (3 px por módulo)', async () => {
-  const { default: qrcode } = await import('qrcode-generator')
-  const { default: jsQR } = await import('jsqr')
   const frames = await encodeTransfer(yearOfData())
   for (const text of [frames[0], frames[frames.length - 1]]) {
     const qr = qrcode(0, 'L')

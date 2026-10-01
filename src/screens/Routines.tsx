@@ -342,7 +342,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
               <span className="grow" />
               <button className="nav-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('Subir', 'Move up')}>↑</button>
               <button className="nav-btn" disabled={i === routine.exercises.length - 1} onClick={() => move(i, 1)} aria-label={t('Bajar', 'Move down')}>↓</button>
-              <button className="nav-btn" style={{ color: 'var(--red)' }} onClick={() => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) })} aria-label={t('Quitar', 'Remove')}><Trash2 size={18} /></button>
+              <button className="nav-btn" style={{ color: 'var(--red-text)' }} onClick={() => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) })} aria-label={t('Quitar', 'Remove')}><Trash2 size={18} /></button>
             </div>
           </div>
         ))}
@@ -411,7 +411,7 @@ export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; o
         {equipmentProfiles.map((p) => (
           <button key={p.id} className="list-row" onClick={() => onChange({ ...config, equipment: p.id })}>
             <span className="grow">{p.label}</span>
-            {config.equipment === p.id && <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>}
+            {config.equipment === p.id && <span style={{ color: 'var(--accent-text)', fontWeight: 800 }}>✓</span>}
           </button>
         ))}
       </div>

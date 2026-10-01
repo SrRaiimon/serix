@@ -21,7 +21,9 @@ export function BarChart({ data, height = 170, color = 'var(--accent)' }: { data
   const bw = cw / data.length
   const ticks = [0, 0.5, 1]
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${height}`} width="100%" role="img">
+    // Para lectores de pantalla, los datos en texto (la gráfica no se puede «ver»).
+    <svg className="chart" viewBox={`0 0 ${W} ${height}`} width="100%" role="img"
+      aria-label={data.map((d) => `${d.label}: ${num(d.value)}`).join(', ')}>
       <defs>
         <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={color} stopOpacity="0.75" />
@@ -74,8 +76,11 @@ export function LineChart({ points, height = 180, color = 'var(--accent)', zeroB
   const px = (x: number) => pad.l + ((x - x0) / (x1 - x0)) * cw
   const py = (y: number) => pad.t + ch - ((y - min) / (max - min)) * ch
   const path = points.map((p, i) => `${i ? 'L' : 'M'}${px(p.x).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ')
+  const first = points.reduce((a, b) => (b.x < a.x ? b : a), points[0])
+  const last = points.reduce((a, b) => (b.x > a.x ? b : a), points[0])
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${height}`} width="100%" role="img">
+    <svg className="chart" viewBox={`0 0 ${W} ${height}`} width="100%" role="img"
+      aria-label={first ? `${shortDay(first.x)}: ${num(first.y)} → ${shortDay(last.x)}: ${num(last.y)}` : undefined}>
       {[0, 0.5, 1].map((t) => {
         const v = min + (max - min) * t
         return (

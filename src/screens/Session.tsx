@@ -112,7 +112,7 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
             </div>
             {e.sets.filter((s) => s.done).map((s) => (
               <div key={s.id} className="row between small" style={{ paddingLeft: 48 }}>
-                <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: '#f08c00' } : undefined}>
+                <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: 'var(--amber-text)' } : undefined}>
                   {s.warmup ? t('Calentamiento', 'Warm-up') : s.kind === 'drop' ? '↳ Drop set' : `${t('Serie', 'Set')} ${++n}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ` · ${t('al fallo', 'to failure')}` : ''}`}
                 </span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{setText(s, trackingOf(e), unit)}</span>
@@ -138,7 +138,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
       left={<button className="icon-btn" onClick={() => share(session, unit, () => showToast(t('Copiado al portapapeles', 'Copied to clipboard')))} aria-label={t('Compartir', 'Share')}><Share2 size={18} /></button>}
       right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        {records.length ? <Trophy size={56} color="var(--gold)" /> : <BadgeCheck size={56} color="var(--accent)" />}
+        {records.length ? <Trophy size={56} color="var(--gold)" /> : <BadgeCheck size={56} color="var(--accent-text)" />}
         <h2 style={{ margin: 0 }}>{t('¡Entrenamiento completado!', 'Workout complete!')}</h2>
         <span className="muted small">{session.name} · {day(session.start)}</span>
       </div>

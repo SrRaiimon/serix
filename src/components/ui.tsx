@@ -71,16 +71,16 @@ export function Card({ title, icon: Icon, children, className = '' }: { title?: 
   return (
     <section className={`card ${className}`}>
       {title && (
-        <h3>
-          {Icon && <Icon size={19} color="var(--accent)" />} {title}
-        </h3>
+        <h2 className="card-title">
+          {Icon && <Icon size={19} color="var(--accent-text)" aria-hidden="true" />} {title}
+        </h2>
       )}
       {children}
     </section>
   )
 }
 
-export function Tile({ value, label, icon: Icon, tint = 'var(--accent)', alt }: { value: ReactNode; label: string; icon?: LucideIcon; tint?: string; alt?: boolean }) {
+export function Tile({ value, label, icon: Icon, tint = 'var(--accent-text)', alt }: { value: ReactNode; label: string; icon?: LucideIcon; tint?: string; alt?: boolean }) {
   return (
     <div className={`tile ${alt ? 'alt' : ''}`}>
       {Icon && <Icon size={18} color={tint} />}
@@ -124,7 +124,7 @@ export function Row({ icon: Icon, label, detail, onClick, chevron = true, classN
 }) {
   const content = (
     <>
-      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red)' : 'var(--accent)'} />}
+      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red-text)' : 'var(--accent-text)'} />}
       {children ?? <span className="grow">{label}</span>}
       {detail !== undefined && <span className="muted">{detail}</span>}
       {onClick && chevron && <ChevronRight size={18} className="chevron" />}

@@ -17,7 +17,7 @@ export function SessionRow({ session, unit, onClick }: { session: Session; unit:
           <span className="row" style={{ gap: 4 }}><Weight size={13} /> {volume(sessionVolume(session), unit)}</span>
           <span className="row" style={{ gap: 4 }}><Layers size={13} /> {sessionSets(session)}</span>
         </span>
-        <span className="small clamp-1" style={{ color: 'var(--text-3)', display: 'block', marginTop: 2 }}>
+        <span className="small clamp-1" style={{ color: 'var(--text-2)', display: 'block', marginTop: 2 }}>
           {session.exercises.map((e) => e.name).join(' · ')}
         </span>
       </span>

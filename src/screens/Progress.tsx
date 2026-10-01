@@ -83,7 +83,7 @@ function Delta({ now, before, format }: { now: number; before: number; format: (
   const up = diff > 0
   const Icon = up ? ArrowUpRight : ArrowDownRight
   return (
-    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--green)' : 'var(--text-2)' }}>
+    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--green-text)' : 'var(--text-2)' }}>
       <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} {t('vs. mes pasado', 'vs. last month')}
     </span>
   )
@@ -136,7 +136,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
       </Card>
       <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue)" />
+        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue-text)" />
       </Card>
       {muscles.length > 0 && (
         <Card title={t('Series por músculo (30 días)', 'Sets per muscle (30 days)')} icon={PersonStanding}>
@@ -244,7 +244,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
           {points.length >= 2 ? (
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: value(p) }))} />
-              <span className="bold row" style={{ gap: 6, color: change >= 0 ? 'var(--green)' : 'var(--red)' }}>
+              <span className="bold row" style={{ gap: 6, color: change >= 0 ? 'var(--green-text)' : 'var(--red-text)' }}>
                 {change >= 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
                 {change >= 0 ? '+' : ''}{num(change)} {unit} {t('desde el', 'since')} {shortDay(first.date)}
               </span>
