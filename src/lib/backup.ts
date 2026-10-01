@@ -22,6 +22,7 @@ const list = <T>(v: unknown, parse: (x: unknown) => T | undefined, max = 10000):
   Array.isArray(v) ? v.slice(0, max).map(parse).filter((x): x is T => x !== undefined) : []
 
 const TRACKING = ['weight_reps', 'time', 'distance_time'] as const
+const SET_KINDS = ['drop', 'amrap', 'failure'] as const
 const DAY = 86400000
 const EPOCH_MIN = Date.UTC(2000, 0, 1)
 const EPOCH_MAX = Date.now() + 365 * DAY
@@ -52,6 +53,7 @@ function setEntry(v: unknown): SetEntry | undefined {
     id: str(v.id, uid(), 50), weight: num(v.weight, 0, 2000, 0), reps: num(v.reps, 0, 1000, 0),
     done: bool(v.done), warmup: bool(v.warmup), doneAt: optNum(v.doneAt, EPOCH_MIN, EPOCH_MAX),
     duration: optNum(v.duration, 0, 86400), distance: optNum(v.distance, 0, 1000), rpe: optNum(v.rpe, 1, 10),
+    kind: oneOf(v.kind, SET_KINDS),
   }
 }
 
@@ -62,6 +64,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     rest: num(v.rest, 0, 900, 90), repsMin: num(v.repsMin, 0, 100, 0), repsMax: num(v.repsMax, 0, 100, 0),
     tracking: oneOf(v.tracking, TRACKING), targetSeconds: optNum(v.targetSeconds, 1, 7200),
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
+    deload: v.deload === true ? true : undefined,
     sets: list(v.sets, setEntry, 100),
   }
 }
@@ -97,6 +100,7 @@ function settings(v: unknown): Settings {
     equipment: oneOf(s.equipment, ['gym', 'dumbbells', 'kettlebell', 'bands', 'bodyweight'] as const) ?? d.equipment,
     favorites: list(s.favorites, (x) => (typeof x === 'string' ? x.slice(0, 200) : undefined), 2000),
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
+    barKg: optNum(s.barKg, 1, 50),
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),

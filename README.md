@@ -80,7 +80,8 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm run build      # licencias + comprobación de tipos + dist/ (con sw.js y su lista de precarga)
+npm test           # tests de la lógica (tests/*.test.ts, con node:test; sin dependencias extra)
+npm run build      # licencias + tipos + tests + figuras + dist/ (con sw.js y su lista de precarga)
 npm run preview    # sirve dist/ en http://localhost:4173
 ```
 
@@ -90,7 +91,8 @@ Estructura:
 - `src/lib/`: datos y lógica (`store.ts` almacenamiento, `generator.ts` programas, `catalog.ts`
   catálogo, `migrate.ts` migración de datos, `backup.ts` validación de copias, `share.ts` enlaces).
 - `src/sw-template.js`: service worker (precarga de la app para usarla sin conexión).
-- `scripts/`: generación de licencias y del catálogo.
+- `scripts/`: generación de licencias y del catálogo, tests y comprobación de figuras.
+- `tests/`: tests de discos, calentamiento, estadísticas, copias de seguridad, migración y enlaces compartidos.
 
 ## Catálogo de ejercicios
 

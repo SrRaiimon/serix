@@ -147,10 +147,13 @@ export function exerciseHistory(exerciseId: string, sessions: Session[]): Exerci
   return points.sort((a, b) => a.date - b.date)
 }
 
-/** Series de trabajo de la última vez que se hizo el ejercicio (`sessions` de más reciente a más antigua). */
+/**
+ * Series de trabajo de la última vez que se hizo el ejercicio (`sessions` de más reciente a más antigua).
+ * Las sesiones de descarga se saltan: después de una se vuelve a los pesos de antes.
+ */
 export function lastSets(exerciseId: string, sessions: Session[]): SetEntry[] {
   for (const s of sessions) {
-    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(workingSets)
+    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId && !e.deload).flatMap(workingSets)
     if (sets.length) return sets
   }
   return []
@@ -160,10 +163,14 @@ export function lastSets(exerciseId: string, sessions: Session[]): SetEntry[] {
  * Sugerencia de subir peso a partir de la última vez:
  * - 'reps': se llegó al máximo de repeticiones en todas las series sin ir al límite (RPE ≤ 9 o sin RPE).
  * - 'easy': todas las series tenían RPE y ninguna pasó de 7, aunque no se llegara al máximo.
+ * Los drop sets no cuentan y las series al fallo cuentan como RPE 10.
  */
-export function progressionHint(last: SetEntry[], repsMax: number): 'reps' | 'easy' | null {
+export function progressionHint(sets: SetEntry[], repsMax: number): 'reps' | 'easy' | null {
+  // Los drop sets se hacen con menos peso a propósito; no cuentan.
+  const last = sets.filter((s) => s.kind !== 'drop')
   if (!last.length || !last.every((s) => s.weight > 0)) return null
-  const rpes = last.map((s) => s.rpe).filter((r): r is number => r !== undefined)
+  // Una serie al fallo es RPE 10 aunque no se apuntara.
+  const rpes = last.map((s) => (s.kind === 'failure' ? 10 : s.rpe)).filter((r): r is number => r !== undefined)
   const hardest = rpes.length ? Math.max(...rpes) : undefined
   if (repsMax > 0 && last.every((s) => s.reps >= repsMax) && (hardest === undefined || hardest <= 9)) return 'reps'
   if (rpes.length === last.length && hardest !== undefined && hardest <= 7) return 'easy'
@@ -202,4 +209,46 @@ export function monthToDate(sessions: Session[], now = new Date()): { current: P
   const daysInPrev = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
   const prevEnd = new Date(prevStart.getFullYear(), prevStart.getMonth(), Math.min(now.getDate(), daysInPrev), now.getHours(), now.getMinutes(), now.getSeconds()).getTime()
   return { current: periodStats(sessions, start, now.getTime() + 1), previous: periodStats(sessions, prevStart.getTime(), prevEnd + 1) }
+}
+
+/** Sesiones seguidas sin superar la mejor marca a partir de las que se avisa de estancamiento. */
+export const STALL_SESSIONS = 3
+
+export interface Stall {
+  exerciseId: string
+  name: string
+  /** Mejor 1RM estimado de antes (kg), el que no se ha superado. */
+  best: number
+  /** Fecha de la última sesión del ejercicio. */
+  last: number
+}
+
+/**
+ * Ejercicio estancado: en sus últimas `STALL_SESSIONS` sesiones (sin contar descargas) no se ha
+ * superado el mejor 1RM estimado de las anteriores. Tras una sesión de descarga la cuenta empieza de
+ * nuevo. `sessions` son las terminadas, en cualquier orden.
+ */
+export function stall(exerciseId: string, sessions: Session[]): Stall | undefined {
+  const points: { e1rm: number; deload: boolean; date: number; name: string }[] = []
+  for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
+    const exercises = s.exercises.filter((e) => e.exerciseId === exerciseId)
+    const sets = exercises.flatMap(workingSets).filter((x) => x.kind !== 'drop' && x.weight > 0 && x.reps > 0)
+    if (!sets.length) continue
+    points.push({ e1rm: Math.max(...sets.map((x) => e1rm(x.weight, x.reps))), deload: exercises.some((e) => e.deload), date: s.start, name: exercises[0].name })
+  }
+  const lastDeload = points.findLastIndex((p) => p.deload)
+  const normal = points.map((p, i) => ({ ...p, i })).filter((p) => !p.deload)
+  if (normal.length <= STALL_SESSIONS) return undefined
+  const recent = normal.slice(-STALL_SESSIONS)
+  if (lastDeload > recent[0].i) return undefined
+  const before = Math.max(...normal.slice(0, -STALL_SESSIONS).map((p) => p.e1rm))
+  if (Math.max(...recent.map((p) => p.e1rm)) > before + 0.01) return undefined
+  const last = points[points.length - 1]
+  return { exerciseId, name: last.name, best: before, last: last.date }
+}
+
+/** Ejercicios estancados entre los hechos desde `since`, del más reciente al más antiguo. */
+export function stalls(sessions: Session[], since: number): Stall[] {
+  const ids = new Set(sessions.filter((s) => s.start >= since).flatMap((s) => s.exercises.map((e) => e.exerciseId)))
+  return [...ids].map((id) => stall(id, sessions)).filter((x): x is Stall => x !== undefined).sort((a, b) => b.last - a.last)
 }

@@ -106,12 +106,13 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
               <span className="bold clamp-2" style={{ fontSize: 15 }}>
                 {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
                 {e.name}
+                {e.deload && <span className="tiny muted" style={{ fontWeight: 400 }}> · descarga</span>}
               </span>
             </div>
             {e.sets.filter((s) => s.done).map((s) => (
               <div key={s.id} className="row between small" style={{ paddingLeft: 48 }}>
                 <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: '#f08c00' } : undefined}>
-                  {s.warmup ? 'Calentamiento' : `Serie ${++n}`}
+                  {s.warmup ? 'Calentamiento' : s.kind === 'drop' ? '↳ Drop set' : `Serie ${++n}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ' · al fallo' : ''}`}
                 </span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{setText(s, trackingOf(e), unit)}</span>
               </div>

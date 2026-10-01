@@ -1,12 +1,12 @@
-import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Trophy, Weight } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, TrendingDown, Trophy, Weight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } from '../components/ui'
-import { duration, fromKg, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, weekly, type PeriodStats } from '../lib/stats'
+import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -128,6 +128,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Clock} value={duration(totalTime)} label="Tiempo total" />
       </div>
       <MonthCard sessions={sessions} unit={unit} />
+      <Stalls sessions={sessions} unit={unit} />
       <WeeklyMuscles sessions={sessions} />
       <Card title="Volumen semanal" icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
@@ -143,6 +144,29 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         </Card>
       )}
     </>
+  )
+}
+
+/** Ejercicios hechos el último mes que no mejoran desde hace varias sesiones. */
+function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const list = useMemo(() => stalls(sessions, Date.now() - 30 * 86400000), [sessions])
+  if (!list.length) return null
+  return (
+    <Card title="Estancados" icon={TrendingDown}>
+      {list.map((x) => (
+        <button key={x.exerciseId} className="row" style={{ textAlign: 'left' }} onClick={() => navigate('progress', 'exercise', x.exerciseId)}>
+          <Thumb exerciseId={x.exerciseId} size={36} />
+          <span className="grow">
+            <span className="bold clamp-2" style={{ fontSize: 15 }}>{x.name}</span>
+            <span className="small muted">Mejor 1RM est.: ~{int(fromKg(x.best, unit))} {unit}</span>
+          </span>
+        </button>
+      ))}
+      <span className="small muted">
+        {STALL_SESSIONS} sesiones o más sin superar su mejor marca. Al empezarlos en el entrenamiento te propondremos una
+        sesión de descarga (menos series y −10 % de peso) o cambiar a una variante.
+      </span>
+    </Card>
   )
 }
 

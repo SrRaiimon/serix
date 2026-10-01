@@ -45,7 +45,12 @@ export interface SetEntry {
   distance?: number
   /** Esfuerzo percibido de 6 a 10 (10 = al fallo). */
   rpe?: number
+  /** Tipo de serie efectiva; sin valor = normal. El calentamiento va aparte (`warmup`). */
+  kind?: SetKind
 }
+
+/** drop = bajada de peso justo después de otra serie, amrap = máximas repeticiones, failure = al fallo. */
+export type SetKind = 'drop' | 'amrap' | 'failure'
 
 export interface SessionExercise {
   id: string
@@ -59,6 +64,8 @@ export interface SessionExercise {
   tracking?: Tracking
   targetSeconds?: number
   groupId?: string
+  /** Sesión de descarga de este ejercicio: no cuenta para sugerir pesos ni para detectar estancamientos. */
+  deload?: boolean
   sets: SetEntry[]
 }
 

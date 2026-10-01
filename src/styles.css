@@ -880,6 +880,34 @@ a.list-row:active {
   color: #f08c00;
 }
 
+.set-label.drop {
+  color: var(--blue);
+}
+
+.set-label.amrap,
+.set-label.failure {
+  color: var(--red);
+}
+
+.set-label sup {
+  font-size: 10px;
+  margin-left: 1px;
+}
+
+.stall-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #f08c00 12%, transparent);
+  color: var(--text);
+}
+
+.stall-box svg {
+  color: #f08c00;
+}
+
 .set-prev {
   text-align: center;
   font-size: 13px;

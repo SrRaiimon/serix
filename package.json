@@ -1,13 +1,14 @@
 {
   "name": "gymweb",
   "private": true,
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "node scripts/licenses.mjs && tsc --noEmit && node scripts/check-figures.mjs && vite build",
+    "build": "node scripts/licenses.mjs && tsc --noEmit && tsc --noEmit -p tests && node scripts/test.mjs && node scripts/check-figures.mjs && vite build",
     "preview": "vite preview --host --port 4173",
-    "check:figures": "node scripts/check-figures.mjs --verbose"
+    "check:figures": "node scripts/check-figures.mjs --verbose",
+    "test": "node scripts/test.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",

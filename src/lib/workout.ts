@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
-import { uid } from './format'
+import { fromKg, increment, toKg, uid, type Unit } from './format'
 import { lastSets, workingSets } from './stats'
 import { normalizeGroups } from './groups'
 import { defaultTracking, type Tracking } from './tracking'
-import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise } from './store'
+import { activeSession, finishedSessions, getData, update, type Routine, type Session, type SessionExercise, type SetEntry, type SetKind } from './store'
 import { resetRestView } from './timer'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
@@ -64,15 +64,57 @@ function sessionExercise(ex: PlannedExercise, history: Session[]): SessionExerci
     targetSeconds: ex.targetSeconds,
     groupId: ex.groupId,
     // Se rellenan con lo que se hizo la última vez para marcar y listo.
-    sets: Array.from({ length: count }, (_, i) => {
-      const prev = last.length ? last[Math.min(i, last.length - 1)] : undefined
-      return {
-        id: uid(), weight: prev?.weight ?? 0, reps: prev?.reps ?? 0, done: false, warmup: false,
-        ...(prev?.duration ? { duration: prev.duration } : {}),
-        ...(prev?.distance ? { distance: prev.distance } : {}),
-      }
-    }),
+    sets: prefillSets(count, last),
   }
+}
+
+/**
+ * Series nuevas copiando la última vez: cada serie con su tipo y, detrás, los drop sets que la
+ * siguieron (solo en las series que ya existían; las de más se añaden normales).
+ */
+export function prefillSets(count: number, last: SetEntry[]): SetEntry[] {
+  const chunks: SetEntry[][] = []
+  for (const set of last) {
+    if (set.kind === 'drop' && chunks.length) chunks[chunks.length - 1].push(set)
+    else chunks.push([set])
+  }
+  const copy = (prev: SetEntry | undefined, kind?: SetKind): SetEntry => ({
+    id: uid(), weight: prev?.weight ?? 0, reps: prev?.reps ?? 0, done: false, warmup: false,
+    ...(prev?.duration ? { duration: prev.duration } : {}),
+    ...(prev?.distance ? { distance: prev.distance } : {}),
+    ...(kind ? { kind } : {}),
+  })
+  const sets: SetEntry[] = []
+  for (let i = 0; i < count; i++) {
+    const chunk = chunks[Math.min(i, chunks.length - 1)]
+    if (!chunk) {
+      sets.push(copy(undefined))
+      continue
+    }
+    const [main, ...drops] = chunk
+    // Una serie suelta que fue drop set (sin otra delante) se copia como normal.
+    sets.push(copy(main, main.kind === 'drop' ? undefined : main.kind))
+    if (i < chunks.length) for (const d of drops) sets.push(copy(d, 'drop'))
+  }
+  return sets
+}
+
+/**
+ * Sesión de descarga del ejercicio: de las series pendientes quedan ~60 % (al menos una) con un
+ * 10 % menos de peso, sin drop sets ni series al fallo. Las ya hechas no se tocan.
+ */
+export function applyDeload(e: SessionExercise, unit: Unit): void {
+  const step = increment(unit)
+  const round = (kg: number) => toKg(Math.round(fromKg(kg, unit) / step) * step, unit)
+  const pending = e.sets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop')
+  const keep = new Set(pending.slice(0, Math.max(1, Math.round(pending.length * 0.6))).map((s) => s.id))
+  e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
+  for (const s of e.sets) {
+    if (!keep.has(s.id)) continue
+    if (s.weight > 0) s.weight = round(s.weight * 0.9)
+    delete s.kind
+  }
+  e.deload = true
 }
 
 export function startRoutine(routine: Routine) {
@@ -109,7 +151,7 @@ export function addExercises(sessionId: string, exercises: Exercise[]) {
       session.exercises.push(sessionExercise({
         exerciseId: e.id, name: e.name, muscle: e.muscle, rest: d.settings.defaultRest,
         // El cardio de distancia suele ser una única serie.
-        repsMin: 0, repsMax: 0, sets: Math.max(last.length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
+        repsMin: 0, repsMax: 0, sets: Math.max(last.filter((x) => x.kind !== 'drop').length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
       }, history))
     }
   })
@@ -183,10 +225,12 @@ export function saveAsRoutine(session: Session) {
       order: d.routines.length,
       createdAt: Date.now(),
       exercises: session.exercises.map((e) => {
-        const reps = workingSets(e).map((s) => s.reps)
+        // Los drop sets van pegados a otra serie: no cuentan como series de la rutina.
+        const main = workingSets(e).filter((s) => s.kind !== 'drop')
+        const reps = main.map((s) => s.reps)
         return {
           exerciseId: e.exerciseId, name: e.name, muscle: e.muscle,
-          sets: Math.max(workingSets(e).length, 1),
+          sets: Math.max(main.length, 1),
           repsMin: reps.length ? Math.max(1, Math.min(...reps)) : 8,
           repsMax: reps.length ? Math.max(1, ...reps) : 12,
           rest: e.rest,

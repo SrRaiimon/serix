@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { MAX_BACKUP_BYTES, parseBackup } from '../src/lib/backup'
+import { defaultSettings, type AppData, type Settings } from '../src/lib/store'
+import { exercise, session, set } from './helpers'
+
+// Required<Settings>: si se añade un ajuste nuevo, este test no compila hasta incluirlo aquí, y la
+// prueba de ida y vuelta comprueba que la copia de seguridad también lo guarda.
+const allSettings: Required<Settings> = {
+  ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
+  catalogVersion: 2, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
+}
+
+const sample = (): AppData => ({
+  version: 1,
+  routines: [{
+    id: 'r1', name: 'Pecho', notes: 'nota', order: 0, createdAt: Date.UTC(2026, 0, 1),
+    exercises: [{ exerciseId: 'bench', name: 'Press', muscle: 'chest', sets: 3, repsMin: 8, repsMax: 12, rest: 90, groupId: 'g' }],
+  }],
+  sessions: [session(0, [exercise('bench', [
+    set(80, 8, { doneAt: Date.UTC(2026, 0, 5, 10, 5), rpe: 8 }),
+    set(60, 8, { kind: 'drop' }), set(80, 6, { kind: 'failure' }), set(80, 9, { kind: 'amrap' }),
+  ], { deload: true })])],
+  measurements: [{ id: 'm1', date: Date.UTC(2026, 0, 1), weight: 80, waist: 85 }],
+  settings: { ...allSettings },
+})
+
+/** Sin las claves con valor undefined, que JSON no guarda. */
+const plain = (v: unknown) => JSON.parse(JSON.stringify(v))
+
+test('una copia exportada se importa igual', () => {
+  const data = sample()
+  const parsed = parseBackup(JSON.stringify(data))
+  assert.deepEqual(plain(parsed), plain(data))
+})
+
+test('no es una copia', () => {
+  assert.throws(() => parseBackup('[]'), /No es una copia/)
+  assert.throws(() => parseBackup('{"routines": []}'), /No es una copia/)
+  assert.throws(() => parseBackup('no es json'))
+  assert.throws(() => parseBackup(' '.repeat(MAX_BACKUP_BYTES + 1)), /demasiado grande/)
+})
+
+test('valores fuera de rango, tipos raros y campos desconocidos', () => {
+  const raw = plain(sample())
+  const s = raw.sessions[0].exercises[0].sets[0]
+  Object.assign(s, { weight: 99999, reps: -3, rpe: 42, kind: 'superserie', hack: '<script>' })
+  raw.sessions[0].exercises[0].deload = 'sí'
+  raw.routines[0].name = 'x'.repeat(5000)
+  raw.settings.unit = 'stone'
+  raw.settings.weeklyGoal = 50
+  raw.sessions.push({ start: 'ayer' }, null, 7)
+  const parsed = parseBackup(JSON.stringify(raw))
+  const p = parsed.sessions[0].exercises[0]
+  assert.equal(p.sets[0].weight, 2000)
+  assert.equal(p.sets[0].reps, 0)
+  assert.equal(p.sets[0].rpe, undefined)
+  assert.equal(p.sets[0].kind, undefined)
+  assert.equal('hack' in p.sets[0], false)
+  assert.equal(p.deload, undefined)
+  assert.equal(parsed.routines[0].name.length, 100)
+  assert.equal(parsed.settings.unit, 'kg')
+  assert.equal(parsed.settings.weeklyGoal, 7)
+  assert.equal(parsed.sessions.length, 1)
+})
+
+test('copias antiguas sin los campos nuevos', () => {
+  const raw = plain(sample())
+  for (const e of raw.sessions[0].exercises) {
+    delete e.deload
+    for (const s of e.sets) delete s.kind
+  }
+  delete raw.measurements
+  const parsed = parseBackup(JSON.stringify(raw))
+  assert.equal(parsed.sessions[0].exercises[0].sets.length, 4)
+  assert.deepEqual(parsed.measurements, [])
+})

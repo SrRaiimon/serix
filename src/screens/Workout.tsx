@@ -1,14 +1,14 @@
-import { ArrowUpRight, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, Timer, Trash2 } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, Timer, Trash2, TrendingDown } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
 import { muscleLabel } from '../lib/labels'
-import { e1rm, lastSets, progressionHint, records, workingSets } from '../lib/stats'
-import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
+import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
+import { finishedSessions, update, useData, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
 import { addRest, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
-import { addExercises, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
+import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { PlatesSheet } from './Plates'
@@ -96,6 +96,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
+        stalled={trackingOf(e) === 'weight_reps' ? stall(e.exerciseId, history) : undefined}
         onInfo={() => setDetail(e.exerciseId)}
         onGroupNext={() => goToNext(i)}
         onRoundEnd={() => roundEnd(i)}
@@ -192,7 +193,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -205,6 +206,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   barbell: boolean
   barKg: number
   previous: SetEntry[]
+  /** Estancado en las últimas sesiones (se propone descarga o variante). */
+  stalled?: Stall
   onInfo: () => void
   onGroupNext: () => void
   onRoundEnd: () => void
@@ -249,6 +252,17 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
     ]
   })
 
+  // Drop set: justo después de la última serie, con un 20 % menos de peso y sin descanso entre medias.
+  const lastWorking = [...exercise.sets].reverse().find((s) => !s.warmup && s.weight > 0)
+  const addDropSet = () => edit((e) => {
+    const step = increment(unit)
+    const kg = toKg(Math.max(step, Math.round(fromKg(lastWorking!.weight * 0.8, unit) / step) * step), unit)
+    e.sets.push({ id: crypto.randomUUID(), weight: kg, reps: lastWorking!.reps, done: false, warmup: false, kind: 'drop' })
+  })
+  const prevMain = previous.filter((p) => p.kind !== 'drop')
+  const prevDrops = previous.filter((p) => p.kind === 'drop')
+  let drops = 0
+
   return (
     <section className="card" id={`ex-${exercise.id}`}>
       <div className="row">
@@ -267,7 +281,28 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <button className="icon-btn" onClick={() => setMenu(true)} aria-label="Opciones del ejercicio"><Ellipsis size={20} /></button>
       </div>
 
-      {hint && (
+      {exercise.deload ? (
+        <span className="small row" style={{ color: 'var(--blue)', gap: 6, alignItems: 'flex-start' }}>
+          <BatteryLow size={16} style={{ flexShrink: 0 }} />
+          Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.
+        </span>
+      ) : !hint && stalled && (
+        <div className="stall-box">
+          <span className="small row" style={{ gap: 6, alignItems: 'flex-start' }}>
+            <TrendingDown size={16} style={{ flexShrink: 0 }} />
+            <span>
+              Llevas {STALL_SESSIONS} sesiones sin superar tu mejor marca (1RM est. ~{int(fromKg(stalled.best, unit))} {unit}).
+              Una sesión de descarga o cambiar a una variante suele ayudar a desatascarse.
+            </span>
+          </span>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>Hacer descarga</button>
+            <button className="btn small plain" onClick={() => setReplacing(true)}>Ver variantes</button>
+          </div>
+        </div>
+      )}
+
+      {hint && !exercise.deload && (
         <span className="small row" style={{ color: 'var(--green)', gap: 6, alignItems: 'flex-start' }}>
           <ArrowUpRight size={16} style={{ flexShrink: 0 }} />
           {hint === 'reps' ? 'La última vez llegaste al máximo de repeticiones.' : 'La última vez te sobró margen (RPE 7 o menos).'}
@@ -283,9 +318,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <span><Check size={14} /></span>
       </div>
 
-      {exercise.sets.map((set) => {
-        const label = set.warmup ? 'C' : String(++working)
-        const prev = previous.length && !set.warmup ? previous[Math.min(working - 1, previous.length - 1)] : undefined
+      {exercise.sets.map((set, i) => {
+        // Los drop sets no suman al número de serie: van pegados a la anterior.
+        const drop = !set.warmup && set.kind === 'drop'
+        const label = set.warmup ? 'C' : drop ? 'D' : String(++working)
+        const prev = set.warmup ? undefined
+          : drop ? prevDrops[drops++]
+          : prevMain.length ? prevMain[Math.min(working - 1, prevMain.length - 1)] : undefined
+        const next = exercise.sets[i + 1]
+        const dropNext = next && !next.done && !next.warmup && next.kind === 'drop'
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking}
             repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
@@ -296,7 +337,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             onRpeDone={() => onAskRpe(undefined)}
             onCompleted={() => {
               onSetDone(set)
-              if (!set.warmup) onAskRpe(set.id)
+              if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
+              // Antes de un drop set no se descansa: se quita peso y se sigue.
+              if (dropNext) return
               if (inGroupWithNext) return onGroupNext()
               startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest)
               if (slot.letter) onRoundEnd()
@@ -305,7 +348,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       })}
 
       <button className="nav-btn" style={{ justifyContent: 'center', fontWeight: 600 }} onClick={() => edit((e) => {
-        const last = e.sets[e.sets.length - 1]
+        const last = [...e.sets].reverse().find((s) => s.kind !== 'drop') ?? e.sets[e.sets.length - 1]
         e.sets.push({
           id: crypto.randomUUID(), weight: last?.weight ?? 0, reps: last?.reps ?? 0, done: false, warmup: false,
           ...(last?.duration ? { duration: last.duration } : {}),
@@ -319,6 +362,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <ActionSheet title={exercise.name} onClose={() => setMenu(false)} options={[
           ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: 'Añadir series de calentamiento', onSelect: addWarmup }] : []),
           ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: `Discos para ${weight(workKg, unit)}`, onSelect: () => setPlates(true) }] : []),
+          ...(tracking === 'weight_reps' && lastWorking ? [{ label: 'Añadir drop set', onSelect: addDropSet }] : []),
+          ...(tracking === 'weight_reps' ? [exercise.deload
+            ? { label: 'Quitar marca de descarga', onSelect: () => edit((e) => { delete e.deload }) }
+            : { label: 'Hacer sesión de descarga', onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: 'Sustituir ejercicio', onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext ? [{
             label: slot.letter ? `Añadir el siguiente ${kind === 'superserie' ? 'a la superserie' : 'al circuito'}` : 'Hacer superserie con el siguiente',
@@ -376,12 +423,21 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
   const [invalid, setInvalid] = useState(false)
   const [menu, setMenu] = useState(false)
+  const [kindMenu, setKindMenu] = useState(false)
   const [plates, setPlates] = useState(false)
 
   useEffect(() => {
     setWeightText(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')
     // Solo al cambiar de unidad; mientras se escribe manda el texto.
   }, [unit])
+
+  // Cambios que no vienen del teclado (p. ej. una descarga): si el texto ya no corresponde al peso
+  // guardado, se reescribe. Mientras se escribe coinciden y no se toca.
+  useEffect(() => {
+    setWeightText((text) => Math.abs(toKg(parseDecimal(text) ?? 0, unit) - set.weight) > 1e-6
+      ? (set.weight > 0 ? editable(fromKg(set.weight, unit)) : '') : text)
+    setRepsText((text) => (Number(text) || 0) === set.reps ? text : (set.reps > 0 ? String(set.reps) : ''))
+  }, [set.weight, set.reps])
 
   const toggle = () => {
     unlockAudio()
@@ -395,7 +451,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
       return
     }
     ;(document.activeElement as HTMLElement | null)?.blur()
-    onChange({ done: true, doneAt: Date.now() })
+    onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
     navigator.vibrate?.(30)
     onCompleted()
   }
@@ -409,7 +465,10 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   return (
     <>
     <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''}`}>
-      <button className={`set-label ${set.warmup ? 'warmup' : ''}`} onClick={() => setMenu(true)} aria-label="Opciones de la serie">{label}</button>
+      <button className={`set-label ${set.warmup ? 'warmup' : set.kind ?? ''}`} onClick={() => setMenu(true)}
+        aria-label={`Opciones de la serie (${setKindLabel(set).toLowerCase()})`}>
+        {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
+      </button>
       <span className="set-prev">{previous ? setShortText(previous, tracking, unit) : '—'}</span>
       {tracking === 'weight_reps' && (
         <>
@@ -445,9 +504,22 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
           ...(barbell && tracking === 'weight_reps' && set.weight > 0 ? [{ label: `Discos para ${weight(set.weight, unit)}`, onSelect: () => setPlates(true) }] : []),
-          { label: set.warmup ? 'Marcar como serie efectiva' : 'Marcar como calentamiento', onSelect: () => onChange({ warmup: !set.warmup }) },
+          ...(tracking === 'weight_reps'
+            ? [{ label: `Tipo: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }]
+            : [{ label: set.warmup ? 'Marcar como serie efectiva' : 'Marcar como calentamiento', onSelect: () => onChange({ warmup: !set.warmup }) }]),
           { label: 'Eliminar serie', destructive: true, onSelect: onDelete },
         ]} />
+      )}
+      {kindMenu && (
+        <ActionSheet title="Tipo de serie" onClose={() => setKindMenu(false)}
+          options={SET_KINDS.map((o) => ({
+            label: o.label === setKindLabel(set) ? `${o.label} ✓` : o.label,
+            onSelect: () => onChange({
+              warmup: o.warmup, kind: o.kind,
+              // Al fallo es RPE 10; si se quita, el RPE vuelve a ser cosa del usuario.
+              ...(o.kind === 'failure' && set.done ? { rpe: 10 } : set.kind === 'failure' ? { rpe: undefined } : {}),
+            }),
+          }))} />
       )}
       {plates && <PlatesSheet weightKg={set.weight} onClose={() => setPlates(false)} />}
     </div>
@@ -458,6 +530,17 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
     </>
   )
 }
+
+const SET_KINDS: { label: string; warmup: boolean; kind?: SetKind }[] = [
+  { label: 'Normal', warmup: false },
+  { label: 'Calentamiento', warmup: true },
+  { label: 'Drop set (bajar peso y seguir)', warmup: false, kind: 'drop' },
+  { label: 'AMRAP (máximas repeticiones)', warmup: false, kind: 'amrap' },
+  { label: 'Al fallo', warmup: false, kind: 'failure' },
+]
+
+const setKindLabel = (set: SetEntry) =>
+  (set.warmup ? SET_KINDS[1] : SET_KINDS.find((o) => o.kind === set.kind) ?? SET_KINDS[0]).label
 
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */
 function RpeRow({ value, open, onOpen, onPick }: {
