@@ -12,9 +12,10 @@ import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
 import { RecoveryCard } from '../components/Recovery'
+import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 
-type Section = 'summary' | 'history' | 'records'
+type Section = 'summary' | 'history' | 'records' | 'achievements'
 let savedSection: Section = 'summary'
 
 export function ProgressScreen() {
@@ -38,10 +39,12 @@ export function ProgressScreen() {
             { value: 'summary', label: t('Resumen', 'Summary') },
             { value: 'history', label: t('Historial', 'History') },
             { value: 'records', label: t('Récords', 'Records') },
+            { value: 'achievements', label: t('Logros', 'Badges') },
           ]} />
           {section === 'summary' && <Summary sessions={sessions} unit={unit} />}
           {section === 'history' && <History sessions={sessions} unit={unit} />}
           {section === 'records' && <Records sessions={sessions} unit={unit} />}
+          {section === 'achievements' && <AchievementsList sessions={sessions} measurements={data.measurements} unit={unit} />}
         </>
       )}
     </div>

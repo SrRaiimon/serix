@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Calculator, FileUp, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -6,15 +6,17 @@ import { day, duration, relative, fromKg, monthYear, num, parseDecimal, rest, re
 import { navigate } from '../lib/router'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
+import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { testBeep } from '../lib/timer'
 import { finishedSessions, replaceData, resetData, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
-import { PlatesView } from './Plates'
+import { PlateInventory, PlatesView } from './Plates'
 
 const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
 import { SessionRow } from '../components/SessionRow'
 import { plural, t, type Lang } from '../lib/i18n'
+import type { Theme } from '../lib/theme'
 
 export function ProfileScreen() {
   const data = useData()
@@ -98,6 +100,14 @@ export function ProfileScreen() {
           </div>
         </div>
         <label className="list-row">
+          <span className="grow">{t('Tema', 'Theme')}</span>
+          <select className="select" value={settings.theme ?? ''} onChange={(e) => updateSettings({ theme: (e.target.value || undefined) as Theme | undefined })}>
+            <option value="">{t('Automático', 'Automatic')}</option>
+            <option value="light">{t('Claro', 'Light')}</option>
+            <option value="dark">{t('Oscuro', 'Dark')}</option>
+          </select>
+        </label>
+        <label className="list-row">
           <span className="grow">Idioma · Language</span>
           <select className="select" value={settings.language ?? ''} onChange={(e) => updateSettings({ language: (e.target.value || undefined) as Lang | undefined })}>
             <option value="">{t('Automático', 'Automatic')}</option>
@@ -139,6 +149,8 @@ export function ProfileScreen() {
         <Row icon={Download} label={t('Exportar copia de seguridad', 'Export backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={exportBackup} chevron={false} />
         <Row icon={Upload} label={t('Importar copia de seguridad', 'Import backup')} onClick={() => fileInput.current?.click()} chevron={false} />
         <Row icon={FileUp} label={t('Importar desde Strong o Hevy', 'Import from Strong or Hevy')} onClick={() => csvInput.current?.click()} chevron={false} />
+        <Row icon={Table} label={t('Exportar a hoja de cálculo (CSV)', 'Export to spreadsheet (CSV)')} chevron={false}
+          onClick={sessions.length ? () => downloadCsv(sessions, settings.unit) : () => showToast(t('Aún no hay entrenamientos que exportar', 'There are no workouts to export yet'))} />
         <Row icon={ArrowRightLeft} label={t('Pasar a otro móvil', 'Move to another phone')} onClick={() => navigate('transfer')} />
         {storage && storage !== 'unsupported' && (
           <Row icon={HardDrive} label={t('Protección contra borrado', 'Protection against deletion')} detail={storage === 'protected' ? t('Activada', 'On') : t('Activar', 'Turn on')}
@@ -422,6 +434,7 @@ export function PlatesScreen() {
           <NumberField label={t('Peso objetivo', 'Target weight')} value={target} onChange={setTarget} suffix={unit} />
         </div>
         {total > 0 && <Card title={t('Discos por lado', 'Plates per side')}><PlatesView weightKg={toKg(total, unit)} showTotal={false} /></Card>}
+        <PlateInventory />
       </div>
     </>
   )

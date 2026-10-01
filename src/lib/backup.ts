@@ -2,6 +2,7 @@ import { uid } from './format'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
+import { PLATE_OPTIONS } from './plates'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -123,6 +124,11 @@ function settings(v: unknown): Settings {
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
     barKg: optNum(s.barKg, 1, 50),
     language: oneOf(s.language, ['es', 'en'] as const),
+    theme: oneOf(s.theme, ['light', 'dark'] as const),
+    plates: isObj(s.plates) ? {
+      kg: list(s.plates.kg, (x) => (typeof x === 'number' && PLATE_OPTIONS.kg.includes(x) ? x : undefined), 20),
+      lb: list(s.plates.lb, (x) => (typeof x === 'number' && PLATE_OPTIONS.lb.includes(x) ? x : undefined), 20),
+    } : undefined,
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),

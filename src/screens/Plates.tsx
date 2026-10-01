@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { Chip, Sheet } from '../components/ui'
 import { editable, fromKg, toKg, weight, type Unit } from '../lib/format'
-import { BARS, loadBar } from '../lib/plates'
+import { availablePlates, BARS, loadBar, PLATE_OPTIONS, stepFor } from '../lib/plates'
 import { updateSettings, useData } from '../lib/store'
 import { t } from '../lib/i18n'
 
@@ -14,6 +15,10 @@ const LOOK: Record<string, { fill: string; h: number; w: number }> = {
   'kg10': { fill: '#2e9e5b', h: 70, w: 11 }, 'kg5': { fill: '#e9eaee', h: 52, w: 9 }, 'kg2.5': { fill: '#d64541', h: 42, w: 8 }, 'kg1.25': { fill: '#b7bcc6', h: 34, w: 7 },
   'lb45': { fill: '#2f6fd6', h: 88, w: 15 }, 'lb35': { fill: '#e8b923', h: 80, w: 13 }, 'lb25': { fill: '#2e9e5b', h: 70, w: 12 },
   'lb10': { fill: '#e9eaee', h: 52, w: 9 }, 'lb5': { fill: '#d64541', h: 42, w: 8 }, 'lb2.5': { fill: '#b7bcc6', h: 34, w: 7 },
+  // Discos fraccionales (los colores pequeños de competición) y el de 55 lb.
+  'kg2': { fill: '#2f6fd6', h: 40, w: 7 }, 'kg1.5': { fill: '#e8b923', h: 37, w: 6 }, 'kg1': { fill: '#2e9e5b', h: 33, w: 6 },
+  'kg0.5': { fill: '#e9eaee', h: 28, w: 5 }, 'kg0.25': { fill: '#b7bcc6', h: 24, w: 4 },
+  'lb55': { fill: '#d64541', h: 88, w: 16 }, 'lb1.25': { fill: '#b7bcc6', h: 28, w: 5 },
 }
 
 /** Barra con los discos de cada lado para un peso (en kg), con selector de barra. */
@@ -24,7 +29,7 @@ export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; s
   const saved = data.settings.barKg !== undefined ? fromKg(data.settings.barKg, unit) : undefined
   // La barra guardada, o la más parecida de la unidad actual (si se cambió de kg a lb).
   const bar = saved === undefined ? bars[0] : bars.reduce((a, b) => (Math.abs(b - saved) < Math.abs(a - saved) ? b : a))
-  const load = loadBar(weightKg, bar, unit)
+  const load = loadBar(weightKg, bar, unit, availablePlates(unit, data.settings.plates))
   const light = fromKg(weightKg, unit) < bar - 1e-6
   const u = unit
 
@@ -72,9 +77,42 @@ export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; s
 }
 
 export function PlatesSheet({ weightKg, onClose }: { weightKg: number; onClose: () => void }) {
+  const [editing, setEditing] = useState(false)
   return (
     <Sheet title={t('Discos por lado', 'Plates per side')} onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
       <PlatesView weightKg={weightKg} />
+      {editing ? <PlateInventory /> : (
+        <button className="nav-btn" style={{ alignSelf: 'center' }} onClick={() => setEditing(true)}>{t('¿No tienes estos discos? Elige los de tu gimnasio', 'Missing some plates? Choose the ones in your gym')}</button>
+      )}
     </Sheet>
+  )
+}
+
+/**
+ * Discos que hay en el gimnasio. Con ellos se calculan los discos de cada lado y el salto mínimo de
+ * peso que usa la app al redondear (calentamiento, progresión, descargas…).
+ */
+export function PlateInventory() {
+  const data = useData()
+  const unit = data.settings.unit
+  const plates = availablePlates(unit, data.settings.plates)
+  const toggle = (p: number) => {
+    const next = plates.includes(p) ? plates.filter((x) => x !== p) : [...plates, p]
+    if (!next.length) return // al menos un disco
+    updateSettings({ plates: { ...data.settings.plates, [unit]: next.sort((a, b) => b - a) } })
+  }
+  return (
+    <div className="card">
+      <strong>{t('Discos de tu gimnasio', 'Plates in your gym')}</strong>
+      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        {PLATE_OPTIONS[unit].map((p) => (
+          <Chip key={p} label={`${editable(p)} ${unit}`} active={plates.includes(p)} onClick={() => toggle(p)} />
+        ))}
+      </div>
+      <span className="small muted">
+        {t(`Salto mínimo de peso: ${editable(stepFor(plates))} ${unit} (el disco más pequeño en cada lado). La app redondea a él los pesos que propone: calentamiento, progresión automática y descargas.`,
+          `Smallest weight jump: ${editable(stepFor(plates))} ${unit} (the smallest plate on each side). The app rounds the weights it suggests to it: warm-up, automatic progression and deloads.`)}
+      </span>
+    </div>
   )
 }

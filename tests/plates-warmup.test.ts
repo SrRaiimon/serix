@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { fromKg, toKg } from '../src/lib/format'
-import { loadBar } from '../src/lib/plates'
+import { fromKg, increment, setWeightSteps, toKg } from '../src/lib/format'
+import { availablePlates, loadBar, stepFor } from '../src/lib/plates'
 import { warmupSets } from '../src/lib/warmup'
 
 test('discos: reparte de mayor a menor', () => {
@@ -54,4 +54,27 @@ test('calentamiento: siempre por debajo del peso de trabajo y cada vez más pesa
       }
     }
   }
+})
+
+test('discos del gimnasio: reparto y salto mínimo', () => {
+  // Sin discos de 15 ni 1,25 pero con 0,5.
+  const gym = availablePlates('kg', { kg: [0.5, 20, 10, 5, 2.5, 25] })
+  assert.deepEqual(gym, [25, 20, 10, 5, 2.5, 0.5])
+  assert.deepEqual(loadBar(100, 20, 'kg', gym).perSide, [25, 10, 5])
+  assert.deepEqual(loadBar(101, 20, 'kg', gym), { perSide: [25, 10, 5, 0.5], total: 101, missing: 0 })
+  assert.equal(stepFor(gym), 1)
+  // Lista vacía o con valores raros: los habituales.
+  assert.deepEqual(availablePlates('kg', { kg: [] }), [25, 20, 15, 10, 5, 2.5, 1.25])
+  assert.deepEqual(availablePlates('lb', { lb: [7] }), [45, 35, 25, 10, 5, 2.5])
+})
+
+test('el salto mínimo cambia los redondeos de la app', () => {
+  setWeightSteps({ kg: 1 })
+  try {
+    assert.equal(increment('kg'), 1)
+    assert.deepEqual(warmupSets(30, 'kg'), [{ weight: 15, reps: 8 }, { weight: 23, reps: 4 }]) // 22,5 → 23
+  } finally {
+    setWeightSteps({})
+  }
+  assert.equal(increment('kg'), 2.5)
 })

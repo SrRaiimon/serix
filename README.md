@@ -23,6 +23,10 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Importar desde Strong y Hevy** (CSV): se empareja cada ejercicio con el catálogo y se puede corregir;
   no duplica entrenamientos al reimportar.
 - **Deshacer** los borrados durante unos segundos (series, ejercicios, entrenamientos, rutinas…).
+- **Logros:** constancia, rachas, volumen, récords y fuerza; se calculan del historial y avisan al terminar.
+- **Discos de tu gimnasio:** la calculadora y todos los redondeos de peso usan los discos que elijas.
+- **Exportar a CSV** (una fila por serie) para Excel, Numbers o Google Sheets.
+- **Tema claro, oscuro o automático**, elegible en Perfil.
 - **En español e inglés:** sigue el idioma del móvil y se puede cambiar en Perfil (o al empezar).
 - **Catálogo de 876 ejercicios** con material, nivel y un **mapa muscular** propio
   (frente y espalda). Todos incluyen **figura animada** del movimiento e instrucciones.

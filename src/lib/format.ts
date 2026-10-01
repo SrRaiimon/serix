@@ -6,7 +6,14 @@ const LB_PER_KG = 2.2046226218
 
 export const fromKg = (kg: number, unit: Unit) => (unit === 'kg' ? kg : kg * LB_PER_KG)
 export const toKg = (value: number, unit: Unit) => (unit === 'kg' ? value : value / LB_PER_KG)
-export const increment = (unit: Unit) => (unit === 'kg' ? 2.5 : 5)
+// Salto mínimo de peso: el doble del disco más pequeño disponible (uno en cada lado). Por defecto
+// 2,5 kg / 5 lb; con los discos del gimnasio elegidos en Perfil, el que corresponda.
+const DEFAULT_STEP: Record<Unit, number> = { kg: 2.5, lb: 5 }
+let customSteps: Partial<Record<Unit, number>> = {}
+export function setWeightSteps(steps: Partial<Record<Unit, number>>) {
+  customSteps = steps
+}
+export const increment = (unit: Unit) => customSteps[unit] ?? DEFAULT_STEP[unit]
 
 // Un formateador por idioma (crearlos cuesta; se reutilizan).
 const formatters = new Map<string, { number: Intl.NumberFormat; int: Intl.NumberFormat }>()

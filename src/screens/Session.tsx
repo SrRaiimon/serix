@@ -10,6 +10,7 @@ import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
 import { saveAsRoutine } from '../lib/workout'
 import { plural, t } from '../lib/i18n'
+import { NewAchievements } from '../components/Achievements'
 
 function setNotes(id: string, notes: string) {
   update((d) => {
@@ -128,7 +129,8 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
 export function SummarySheet({ session, onClose }: { session: Session; onClose: () => void }) {
   const data = useData()
   const unit = data.settings.unit
-  const records = useMemo(() => newRecords(session, finishedSessions(data)), [session, data])
+  const history = useMemo(() => finishedSessions(data), [data])
+  const records = useMemo(() => newRecords(session, history), [session, history])
   const [saved, setSaved] = useState(Boolean(session.routineId))
   const [toast, showToast] = useToast()
   const image = useShareImage(session, unit, records)
@@ -159,6 +161,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
           ))}
         </Card>
       )}
+      <NewAchievements session={session} sessions={history} measurements={data.measurements} unit={unit} />
       <SessionExercises session={session} unit={unit} />
       <Card title={t('Notas', 'Notes')} icon={StickyNote}>
         <textarea rows={3} placeholder={t('¿Cómo te has sentido?', 'How did it feel?')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />

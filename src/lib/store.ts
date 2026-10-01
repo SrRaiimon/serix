@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react'
-import type { Unit } from './format'
+import { setWeightSteps, type Unit } from './format'
+import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
+import { applyTheme, type Theme } from './theme'
 import { trackingOf, type Tracking } from './tracking'
 
 // Los pesos se guardan siempre en kg; la unidad solo afecta a cómo se muestran.
@@ -122,8 +124,12 @@ export interface Settings {
   restSound: boolean
   /** Barra con la que se calculan los discos (kg). Sin valor = la olímpica. */
   barKg?: number
+  /** Discos que hay en el gimnasio, por unidad. Sin valor = los habituales. */
+  plates?: Partial<Record<Unit, number[]>>
   /** Idioma elegido; sin valor = el del sistema. */
   language?: Lang
+  /** Tema elegido; sin valor = el del sistema. */
+  theme?: Theme
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */
@@ -215,6 +221,12 @@ function emit() {
   version++
   // El idioma se aplica antes de avisar a la interfaz, para que se pinte ya en el nuevo.
   setLang(state.settings.language ?? systemLang())
+  applyTheme(state.settings.theme)
+  // Los redondeos de peso de toda la app usan el salto de los discos disponibles.
+  setWeightSteps({
+    kg: stepFor(availablePlates('kg', state.settings.plates)),
+    lb: stepFor(availablePlates('lb', state.settings.plates)),
+  })
   listeners.forEach((l) => l())
 }
 
