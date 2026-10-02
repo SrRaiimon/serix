@@ -23,8 +23,9 @@ const TIME_IDS = new Set([
   'Battling_Ropes', 'Stomach_Vacuum', 'Farmers_Walk',
 ])
 
-export function defaultTracking(e?: Pick<Exercise, 'id' | 'category'>): Tracking {
+export function defaultTracking(e?: Pick<Exercise, 'id' | 'category' | 'tracking'>): Tracking {
   if (!e) return 'weight_reps'
+  if (e.tracking) return e.tracking
   if (DISTANCE_IDS.has(e.id)) return 'distance_time'
   if (TIME_IDS.has(e.id) || e.category === 'stretching') return 'time'
   return 'weight_reps'

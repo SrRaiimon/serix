@@ -1,8 +1,10 @@
-import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, TrendingDown, Trophy, Weight } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy, Weight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
-import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog } from '../components/ui'
+import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
+import { shareImage, svgToPng } from '../lib/shareCard'
 import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
@@ -117,6 +119,56 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   )
 }
 
+const PERIODS: { value: Period; label: () => string }[] = [
+  { value: 'month', label: () => t('Este mes', 'This month') },
+  { value: 'lastMonth', label: () => t('Mes pasado', 'Last month') },
+  { value: 'year', label: () => t('Este año', 'This year') },
+  { value: 'lastYear', label: () => t('Año pasado', 'Last year') },
+]
+
+/** Resumen del mes o del año como imagen para compartir (lib/periodCard.ts). */
+function ShareSummaryCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const [period, setPeriod] = useState<Period>('month')
+  const [image, setImage] = useState<{ file: File; url: string }>()
+  const [toast, showToast] = useToast()
+  const summary = useMemo(() => summarize(sessions, period), [sessions, period])
+  // La imagen se prepara antes de tocar «Compartir»: el menú del sistema tiene que abrirse al instante.
+  useEffect(() => {
+    let cancelled = false
+    let url: string | undefined
+    setImage(undefined)
+    svgToPng(periodCardSVG(summary, unit))
+      .then((blob) => {
+        if (cancelled) return
+        url = URL.createObjectURL(blob)
+        setImage({ file: new File([blob], `serix-${periodLabel(summary).replace(/\s+/g, '-')}.png`, { type: 'image/png' }), url })
+      })
+      .catch(() => setImage(undefined))
+    return () => {
+      cancelled = true
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [summary, unit])
+  const share = async () => {
+    if (!image) return
+    if ((await shareImage(image.file, t('Mi resumen en Serix', 'My Serix summary'))) === 'downloaded') showToast(t('Imagen descargada', 'Image downloaded'))
+  }
+  return (
+    <Card title={t('Tu resumen para compartir', 'Your summary to share')} icon={Share2}>
+      <Segmented value={period} onChange={setPeriod} options={PERIODS.map((p) => ({ value: p.value, label: p.label() }))} />
+      {summary.sessions === 0
+        ? <span className="small muted">{t('No hay entrenamientos en este periodo.', 'There are no workouts in this period.')}</span>
+        : (
+          <>
+            <div className="period-preview">{image ? <img src={image.url} alt={t(`Resumen de ${periodLabel(summary)}`, `Summary of ${periodLabel(summary)}`)} /> : <span className="small muted">{t('Preparando la imagen…', 'Preparing the image…')}</span>}</div>
+            <button className="btn primary" disabled={!image} onClick={() => void share()}><Share2 size={18} /> {t('Compartir imagen', 'Share image')}</button>
+          </>
+        )}
+      {toast}
+    </Card>
+  )
+}
+
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const weeks = weekly(sessions, 12)
   const thisWeek = weeks[weeks.length - 1]
@@ -131,6 +183,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Clock} value={duration(totalTime)} label={t('Tiempo total', 'Total time')} />
       </div>
       <MonthCard sessions={sessions} unit={unit} />
+      <ShareSummaryCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
       <RecoveryCard sessions={sessions} />
       <WeeklyMuscles sessions={sessions} />

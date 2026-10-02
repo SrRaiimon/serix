@@ -75,6 +75,18 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const label = (labels: Labels, k: string) => labels[k]?.[lang() === 'en' ? 1 : 0] ?? cap(k)
 
 export const muscleLabel = (k: string) => label(muscles, k)
+export const MUSCLE_KEYS = Object.keys(muscles)
+export const EQUIPMENT_KEYS = Object.keys(equipment)
+
+/** Zona del cuerpo de cada músculo (para los ejercicios propios, que solo indican el músculo). */
+export const MUSCLE_BODY_PART: Record<string, string> = {
+  pectorals: 'chest', 'serratus-anterior': 'chest',
+  lats: 'back', 'upper-back': 'back', traps: 'back', spine: 'back', 'levator-scapulae': 'back', neck: 'back',
+  delts: 'shoulders',
+  biceps: 'arms', triceps: 'arms', forearms: 'arms',
+  quads: 'legs', hamstrings: 'legs', glutes: 'legs', calves: 'legs', abductors: 'legs', adductors: 'legs',
+  abs: 'core', cardio: 'cardio',
+}
 export const bodyPartLabel = (k: string) => label(bodyParts, k)
 export const equipmentLabel = (k: string) => label(equipment, k)
 export const categoryLabel = (k: string) => label(categories, k)

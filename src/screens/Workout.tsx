@@ -1,3 +1,4 @@
+import { BlockStatus } from '../components/Block'
 import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
@@ -147,6 +148,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
                 <Progress value={done} total={allSets.length} green />
               </>
             )}
+            <BlockStatus at={session.start} />
           </div>
 
           {runs.map((run) => {

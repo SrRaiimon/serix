@@ -1,7 +1,8 @@
 import type { Catalog } from './catalog'
+import { cleanCustomExercise, customToRaw, type CustomExercise } from './customExercises'
 import { uid } from './format'
 import { normalizeGroups } from './groups'
-import type { Routine, RoutineExercise } from './store'
+import { getData, type Routine, type RoutineExercise } from './store'
 import { defaultTracking, type Tracking } from './tracking'
 import { t } from './i18n'
 
@@ -17,11 +18,15 @@ interface Payload {
   /** Nombre del programa, si se comparte uno entero. */
   p?: string
   r: { n: string; x: SharedExercise[] }[]
+  /** Ejercicios propios que usan las rutinas (los demás vienen del catálogo). */
+  c?: CustomExercise[]
 }
 
 export interface ImportedPlan {
   programName?: string
   routines: { name: string; exercises: RoutineExercise[] }[]
+  /** Ejercicios propios de quien lo comparte que aún no tienes: se crean al guardar. */
+  customExercises: CustomExercise[]
   /** Ejercicios que no existen en este catálogo (no debería pasar con la misma versión). */
   skipped: number
 }
@@ -43,10 +48,13 @@ export async function transform(bytes: Uint8Array, stream: CompressionStream | D
 export const canCompress = () => typeof CompressionStream !== 'undefined'
 
 /** Código: "z" + deflate comprimido, o "j" + JSON sin comprimir en navegadores antiguos. */
-export async function encodePlan(routines: Routine[], programName?: string): Promise<string> {
+export async function encodePlan(routines: Routine[], programName?: string, customs: CustomExercise[] = getData().customExercises): Promise<string> {
+  const used = new Set(routines.flatMap((r) => r.exercises.map((e) => e.exerciseId)))
+  const c = customs.filter((x) => used.has(x.id))
   const payload: Payload = {
     v: 1,
     ...(programName ? { p: programName } : {}),
+    ...(c.length ? { c } : {}),
     r: routines.map((r) => ({
       n: r.name,
       x: (() => {
@@ -97,11 +105,23 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
   const payload = JSON.parse(new TextDecoder().decode(json)) as Payload
   if (payload.v !== 1 || !Array.isArray(payload.r)) throw new ShareError(t('Este enlace es de una versión más nueva de la app. Recarga la app e inténtalo de nuevo.', 'This link is from a newer version of the app. Reload the app and try again.'))
 
+  // Los ejercicios propios que trae el enlace: si ya los tienes (mismo identificador), los tuyos.
+  const shared = (Array.isArray(payload.c) ? payload.c : []).slice(0, 200).map(cleanCustomExercise).filter((x): x is CustomExercise => !!x)
+  const sharedById = new Map(shared.map((x) => [x.id, customToRaw(x)]))
+  const needed = new Set<string>()
+  const lookup = (id: string) => {
+    const known = catalog.get(id)
+    if (known) return known
+    const custom = sharedById.get(id)
+    if (custom) needed.add(id)
+    return custom
+  }
+
   let skipped = 0
   const routines = payload.r.map((r) => {
     const groupIds = new Map<number, string>()
     const exercises = r.x.flatMap(([id, sets, repsMin, repsMax, rest, tracking, targetSeconds, group]): RoutineExercise[] => {
-      const exercise = catalog.get(id)
+      const exercise = lookup(id)
       if (!exercise) {
         skipped++
         return []
@@ -118,7 +138,7 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
     normalizeGroups(exercises)
     return { name: String(r.n || t('Rutina', 'Routine')), exercises }
   })
-  return { programName: payload.p, routines, skipped }
+  return { programName: payload.p, routines, skipped, customExercises: shared.filter((x) => needed.has(x.id)) }
 }
 
 function clampInt(v: unknown, min: number, max: number, fallback: number): number {

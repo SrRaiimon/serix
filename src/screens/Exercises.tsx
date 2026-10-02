@@ -1,8 +1,9 @@
-import { ChartLine, Info, ListOrdered, PersonStanding, Plus, Search, SlidersHorizontal, Star, StickyNote, X } from 'lucide-react'
+import { ChartLine, Info, ListOrdered, PencilLine, PersonStanding, Plus, Search, SlidersHorizontal, Star, StickyNote, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { LineChart } from '../components/charts'
 import { MuscleMap, MusclePicker } from '../components/MuscleMap'
 import { ExerciseNoteField } from '../components/ExerciseNote'
+import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, num, weight } from '../lib/format'
@@ -122,7 +123,7 @@ function ExerciseRowContent({ exercise, favorite, thumb = 56 }: { exercise: Exer
       <Thumb exerciseId={exercise.id} size={thumb} />
       <span className="grow">
         <span className="bold clamp-2" style={{ fontSize: 15.5 }}>{exercise.name}</span>
-        <span className="small muted clamp-1" style={{ display: 'block' }}>{muscleLabel(exercise.muscle)} · {equipmentLabel(exercise.equipment)}</span>
+        <span className="small muted clamp-1" style={{ display: 'block' }}>{exercise.custom ? `${t('Propio', 'Custom')} · ` : ''}{muscleLabel(exercise.muscle)} · {equipmentLabel(exercise.equipment)}</span>
       </span>
       {favorite && <Star size={15} fill="var(--gold)" color="var(--gold)" />}
     </>
@@ -142,14 +143,19 @@ export function ExercisesScreen() {
   }
   const results = useMemo(() => catalog.filter(filter, settings.favorites), [catalog, filter, settings.favorites])
   const { shown, sentinel } = useProgressive(results, JSON.stringify(filter))
+  const [creating, setCreating] = useState(false)
 
   return (
     <div className="screen">
-      <LargeTitle title={t('Ejercicios', 'Exercises')} />
+      <LargeTitle title={t('Ejercicios', 'Exercises')} actions={
+        <button className="icon-btn" onClick={() => setCreating(true)} aria-label={t('Crear ejercicio propio', 'Create custom exercise')}><Plus size={22} /></button>
+      } />
+      {creating && <CustomExerciseSheet initialName={filter.query} onClose={() => setCreating(false)} onSaved={(id) => navigate('exercises', id)} />}
       <FilterBar filter={filter} setFilter={setFilter} />
       <div className="list-header">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}</div>
       {results.length === 0 ? (
-        <Empty icon={Search} title={t('Sin resultados', 'No results')} message={t('Prueba con otra palabra o quita algún filtro.', 'Try another word or remove a filter.')} />
+        <Empty icon={Search} title={t('Sin resultados', 'No results')} message={t('Prueba con otra palabra o quita algún filtro. ¿No está? Créalo tú.', 'Try another word or remove a filter. Not there? Create it.')}
+          action={<button className="btn primary" onClick={() => setCreating(true)}><Plus size={18} /> {t('Crear ejercicio', 'Create exercise')}</button>} />
       ) : (
         <div className="list">
           {shown.map((e) => (
@@ -169,7 +175,9 @@ export function ExerciseDetailScreen({ id }: { id: string }) {
   const exercise = catalog.get(id)
   const { settings } = useData()
   const [addTo, setAddTo] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [toast, showToast] = useToast()
+  const custom = useData().customExercises.find((c) => c.id === id)
   if (!exercise) return <div className="screen"><NavBar showBack /><Empty icon={Info} title={t('Ejercicio no encontrado', 'Exercise not found')} message="" /></div>
   const fav = settings.favorites.includes(id)
   return (
@@ -180,11 +188,13 @@ export function ExerciseDetailScreen({ id }: { id: string }) {
             <Star size={19} fill={fav ? 'var(--gold)' : 'none'} color={fav ? 'var(--gold)' : 'var(--accent)'} />
           </button>
           <button className="icon-btn" onClick={() => setAddTo(true)} aria-label={t('Añadir a rutina', 'Add to routine')}><Plus size={20} /></button>
+          {custom && <button className="icon-btn" onClick={() => setEditing(true)} aria-label={t('Editar ejercicio', 'Edit exercise')}><PencilLine size={19} /></button>}
         </>
       } />
       <div className="screen with-nav">
         <ExerciseDetailContent exercise={exercise} />
       </div>
+      {editing && custom && <CustomExerciseSheet existing={custom} onClose={() => setEditing(false)} />}
       {addTo && <AddToRoutine exercise={exercise} onClose={() => setAddTo(false)} onAdded={(name) => showToast(t(`Añadido a ${name}`, `Added to ${name}`))} />}
       {toast}
     </>
@@ -230,11 +240,12 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
       <div>
         <h1 style={{ margin: '0 0 10px', fontSize: 26, lineHeight: 1.15 }}>{exercise.name}</h1>
         <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+          {exercise.custom && <Tag accent>{t('Ejercicio propio', 'Custom exercise')}</Tag>}
           <Tag accent>{muscleLabel(exercise.muscle)}</Tag>
           <Tag>{equipmentLabel(exercise.equipment)}</Tag>
-          <Tag>{categoryLabel(exercise.category)}</Tag>
+          {!exercise.custom && <Tag>{categoryLabel(exercise.category)}</Tag>}
           <Tag>{bodyPartLabel(exercise.bodyPart)}</Tag>
-          <Tag>{levelLabel(exercise.level)}</Tag>
+          {!exercise.custom && <Tag>{levelLabel(exercise.level)}</Tag>}
         </div>
       </div>
       <Card title={t('Tu nota', 'Your note')} icon={StickyNote}>
@@ -306,6 +317,15 @@ export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (li
     }
     setSelected((s) => (s.some((x) => x.id === e.id) ? s.filter((x) => x.id !== e.id) : [...s, e]))
   }
+  // Ejercicio propio recién creado: se elige en cuanto el catálogo lo incluye.
+  const [creating, setCreating] = useState(false)
+  const [created, setCreated] = useState<string>()
+  useEffect(() => {
+    const e = created && catalog.get(created)
+    if (!e) return
+    setCreated(undefined)
+    toggle(e)
+  }, [catalog, created]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Sheet title={title ?? t('Añadir ejercicios', 'Add exercises')} onClose={onClose} scrollKey={JSON.stringify(filter)}
@@ -317,8 +337,12 @@ export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (li
       )}>
       <div className="sheet-sticky">
         <FilterBar filter={filter} setFilter={setFilter} />
-        <span className="small muted">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · <Info size={12} style={{ verticalAlign: -1 }} /> {t('para ver cómo se hace', 'to see how it is done')}</span>
+        <span className="small muted row" style={{ gap: 4 }}>
+          <span className="grow">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · <Info size={12} style={{ verticalAlign: -1 }} /> {t('para ver cómo se hace', 'to see how it is done')}</span>
+          <button className="link-btn small" style={{ color: 'var(--accent-text)' }} onClick={() => setCreating(true)}><Plus size={13} style={{ verticalAlign: -2 }} /> {t('Crear ejercicio', 'Create exercise')}</button>
+        </span>
       </div>
+      {creating && <CustomExerciseSheet initialName={filter.query} onClose={() => setCreating(false)} onSaved={setCreated} />}
       <div className="list">
         {shown.map((e) => {
           const index = selected.findIndex((x) => x.id === e.id)

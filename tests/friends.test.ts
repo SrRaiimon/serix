@@ -15,7 +15,7 @@ const sessions = [
   at(9, [exercise('Barbell_Squat', [set(120, 5)]), exercise('Wide-Grip_Barbell_Bench_Press', [set(90, 1)])]),
   at(40, [exercise('Barbell_Deadlift', [set(150, 3)])]),
 ]
-const data: AppData = { version: 1, routines: [], sessions, measurements: [], exerciseNotes: {}, friends: [], challenges: [], settings: { ...defaultSettings, name: '  Ana  ' } }
+const data: AppData = { version: 1, routines: [], sessions, measurements: [], exerciseNotes: {}, friends: [], challenges: [], customExercises: [], settings: { ...defaultSettings, name: '  Ana  ' } }
 
 test('resumen propio: semana, mes, racha y mejores básicos', () => {
   const s = mySnapshot(data, sessions, now)

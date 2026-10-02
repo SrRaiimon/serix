@@ -8,7 +8,7 @@ import { exercise, session, set } from './helpers'
 // prueba de ida y vuelta comprueba que la copia de seguridad también lo guarda.
 const allSettings: Required<Settings> = {
   ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
-  catalogVersion: 2, guideHidden: true, guideProgressSeen: true, shareBodyWeight: true, friendShareAt: Date.UTC(2026, 0, 3), friendReminderOff: true, friendReminderSnooze: Date.UTC(2026, 0, 6), language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
+  catalogVersion: 2, block: { start: Date.UTC(2026, 0, 5), weeks: 5 }, guideHidden: true, guideProgressSeen: true, shareBodyWeight: true, friendShareAt: Date.UTC(2026, 0, 3), friendReminderOff: true, friendReminderSnooze: Date.UTC(2026, 0, 6), language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
 }
 
 const sample = (): AppData => ({
@@ -26,6 +26,7 @@ const sample = (): AppData => ({
   friends: [{ name: 'Ana', at: Date.UTC(2026, 0, 4), week: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, month: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, streak: 5, total: 40, lifts: { bench: 90, squat: 120 },
     weeks: [[1, 3000], [3, 12000]], muscles: [12, 10, 8, 4, 4, 9, 3, 3, 6], prs: [{ exerciseId: 'bench', name: 'Press', weight: 90, reps: 3, at: Date.UTC(2026, 0, 3) }], bodyWeight: 78.5,
     challenges: [{ challenge: { id: 'abc123', metric: 'sets', group: 0, target: 60, start: Date.UTC(2026, 0, 1), end: Date.UTC(2026, 0, 31), by: 'Ana' }, value: 20 }] }],
+  customExercises: [{ id: 'custom-a1b2c3', name: 'Press máquina azul', muscle: 'pectorals', secondaryMuscles: ['triceps'], equipment: 'machine', tracking: 'weight_reps', notes: 'Asiento en el 4', createdAt: Date.UTC(2026, 0, 2) }],
   challenges: [{ id: 'rep999', metric: 'reps', exerciseId: 'Pullups', exerciseName: 'Dominadas', start: Date.UTC(2026, 0, 1), end: Date.UTC(2026, 0, 15), by: 'Yo' }],
   settings: { ...allSettings },
 })

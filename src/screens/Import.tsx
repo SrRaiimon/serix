@@ -31,6 +31,7 @@ export function ImportScreen({ code }: { code: string }) {
         const base = programName
         while (taken.has(programName)) programName = `${base} (${n++})`
       }
+      for (const c of plan.customExercises) if (!d.customExercises.some((x) => x.id === c.id)) d.customExercises.push(c)
       const start = d.routines.length
       plan.routines.forEach((r, i) => d.routines.push(newRoutineFromImport(r, programName ? i : start + i, programName)))
       if (programName && !d.settings.activeProgram) d.settings.activeProgram = programName
@@ -63,6 +64,9 @@ export function ImportScreen({ code }: { code: string }) {
                   ? t('Te han compartido una rutina. Se añadirá a las tuyas; no se borra nada.', 'Someone shared a routine with you. It will be added to yours; nothing is deleted.')
                   : t(`Te han compartido ${plan.routines.length} rutinas. Se añadirán a las tuyas; no se borra nada.`, `Someone shared ${plan.routines.length} routines with you. They will be added to yours; nothing is deleted.`)}
               </span>
+              {plan.customExercises.length > 0 && <span className="small muted">{plan.customExercises.length === 1
+                ? t(`Incluye 1 ejercicio propio de quien la comparte («${plan.customExercises[0].name}»): se añadirá a tus ejercicios.`, `It includes 1 custom exercise from the sender ("${plan.customExercises[0].name}"): it will be added to your exercises.`)
+                : t(`Incluye ${plan.customExercises.length} ejercicios propios de quien la comparte: se añadirán a tus ejercicios.`, `It includes ${plan.customExercises.length} custom exercises from the sender: they will be added to your exercises.`)}</span>}
               {plan.skipped > 0 && <span className="small" style={{ color: 'var(--amber-text)' }}>{t(`${plan.skipped} ejercicios no están en tu versión de la app y se omitirán.`, `${plan.skipped} exercises are not in your version of the app and will be skipped.`)}</span>}
             </Card>
             {iosBrowser && (

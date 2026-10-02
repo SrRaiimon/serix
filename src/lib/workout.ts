@@ -8,6 +8,7 @@ import { activeSession, finishedSessions, getData, lastPerformed, update, type A
 import { resetRestView } from './timer'
 import { t } from './i18n'
 import { plan } from './progression'
+import { blockWeek } from './block'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
 
@@ -144,6 +145,12 @@ export function nextRoutine(d: AppData): Routine | undefined {
   return pool[(lastIndex + 1) % pool.length]
 }
 
+/** En la semana de descarga del bloque, los ejercicios de peso empiezan ya con la descarga. */
+function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
+  if (blockWeek(d.settings.block)?.deload && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
+  return e
+}
+
 export function startRoutine(routine: Routine) {
   if (activeSession(getData())) return openWorkout()
   update((d) => {
@@ -154,7 +161,7 @@ export function startRoutine(routine: Routine) {
       routineId: routine.id,
       start: Date.now(),
       notes: '',
-      exercises: routine.exercises.map((e) => sessionExercise(e, history)),
+      exercises: routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))),
     })
   })
   openWorkout()
@@ -175,11 +182,11 @@ export function addExercises(sessionId: string, exercises: Exercise[]) {
     const history = finishedSessions(d)
     for (const e of exercises) {
       const last = lastSets(e.id, history)
-      session.exercises.push(sessionExercise({
+      session.exercises.push(blockDeload(d, sessionExercise({
         exerciseId: e.id, name: e.name, muscle: e.muscle, rest: d.settings.defaultRest,
         // El cardio de distancia suele ser una única serie.
         repsMin: 0, repsMax: 0, sets: Math.max(last.filter((x) => x.kind !== 'drop').length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
-      }, history))
+      }, history)))
     }
   })
 }

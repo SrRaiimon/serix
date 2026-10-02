@@ -4,6 +4,8 @@ import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
 import { applyTheme, type Theme } from './theme'
+import type { TrainingBlock } from './block'
+import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
 import { trackingOf, type Tracking } from './tracking'
 
@@ -141,6 +143,8 @@ export interface Settings {
   friendShareAt?: number
   friendReminderOff?: boolean
   friendReminderSnooze?: number
+  /** Bloque de entrenamiento en curso (semanas de carga y descarga programada). */
+  block?: TrainingBlock
   /** Guía de primeros pasos en Inicio: oculta, y si ya visitó Progreso. */
   guideHidden?: boolean
   guideProgressSeen?: boolean
@@ -164,6 +168,8 @@ export interface AppData {
   friends: FriendSnapshot[]
   /** Retos con amigos en los que participas (creados o aceptados). */
   challenges: Challenge[]
+  /** Ejercicios creados por ti (se suman al catálogo). */
+  customExercises: CustomExercise[]
   settings: Settings
 }
 
@@ -192,6 +198,7 @@ const emptyData = (): AppData => ({
   exerciseNotes: {},
   friends: [],
   challenges: [],
+  customExercises: [],
   settings: { ...defaultSettings },
 })
 

@@ -1,4 +1,6 @@
 import { uid } from './format'
+import { cleanBlock } from './block'
+import { cleanCustomExercise, MAX_CUSTOM_EXERCISES } from './customExercises'
 import { cleanChallenge, cleanSnapshot } from './friends'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
@@ -132,6 +134,7 @@ function settings(v: unknown): Settings {
       kg: list(s.plates.kg, (x) => (typeof x === 'number' && PLATE_OPTIONS.kg.includes(x) ? x : undefined), 20),
       lb: list(s.plates.lb, (x) => (typeof x === 'number' && PLATE_OPTIONS.lb.includes(x) ? x : undefined), 20),
     } : undefined,
+    block: cleanBlock(s.block),
     guideHidden: s.guideHidden === true ? true : undefined,
     guideProgressSeen: s.guideProgressSeen === true ? true : undefined,
     shareBodyWeight: s.shareBodyWeight === true ? true : undefined,
@@ -166,6 +169,7 @@ export function parseBackup(text: string): AppData {
     exerciseNotes: exerciseNotes(raw.exerciseNotes),
     friends: list(raw.friends, cleanSnapshot, 200),
     challenges: list(raw.challenges, cleanChallenge, 100),
+    customExercises: list(raw.customExercises, cleanCustomExercise, MAX_CUSTOM_EXERCISES),
     settings: settings(raw.settings),
   }
 }

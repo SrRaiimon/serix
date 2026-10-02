@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { fakeIndexedDB } from './helpers'
-import { Catalog, type RawExercise } from '../src/lib/catalog'
+import { Catalog, emptyFilter, type RawExercise } from '../src/lib/catalog'
+import { cleanCustomExercise } from '../src/lib/customExercises'
+import { defaultTracking } from '../src/lib/tracking'
 import { CATALOG_VERSION, migrateCatalog } from '../src/lib/migrate'
 import { decodePlan, encodePlan, extractCode } from '../src/lib/share'
 import { defaultSettings, getData, replaceData, setExerciseNote } from '../src/lib/store'
@@ -26,7 +28,7 @@ test('migración del catálogo antiguo', () => {
     ] }],
     sessions: [session(0, [exercise('old_bench', [set(80, 8)], { name: 'Nombre del historial', muscle: 'pectorals' })])],
     measurements: [],
-    exerciseNotes: { old_bench: 'Banco en el 3', old_gone: 'Se queda' }, friends: [], challenges: [],
+    exerciseNotes: { old_bench: 'Banco en el 3', old_gone: 'Se queda' }, friends: [], challenges: [], customExercises: [],
     settings: { ...defaultSettings, favorites: ['old_bench', 'Barbell_Bench_Press', 'old_gone'] },
   })
   migrateCatalog(catalog)
@@ -102,4 +104,40 @@ test('notas de ejercicio: se guardan recortadas y vacías se borran', () => {
   assert.equal(getData().exerciseNotes.Plank.length, 300)
   setExerciseNote('Plank', '  ')
   assert.equal('Plank' in getData().exerciseNotes, false)
+})
+
+// MARK: Ejercicios propios
+
+const mine = { id: 'custom-a1b2c3', name: 'Press pecho máquina azul', muscle: 'pectorals', secondaryMuscles: ['triceps'], equipment: 'machine', tracking: 'weight_reps' as const, notes: 'Asiento en el 4\nAgarre neutro', createdAt: 1 }
+
+test('los ejercicios propios se suman al catálogo', () => {
+  const withMine = new Catalog([ex('Plank', 'Plancha')], {}, [mine, { ...mine, id: 'custom-cardio1', name: 'Remo de mi gimnasio', muscle: 'cardio', tracking: 'distance_time' }])
+  const e = withMine.get('custom-a1b2c3')!
+  assert.equal(e.custom, true)
+  assert.equal(e.bodyPart, 'chest')
+  assert.deepEqual(e.instructions, ['Asiento en el 4', 'Agarre neutro'])
+  assert.equal(defaultTracking(withMine.get('custom-cardio1')), 'distance_time')
+  assert.deepEqual(withMine.filter({ ...emptyFilter, query: 'azul' }, []).map((x) => x.id), ['custom-a1b2c3'])
+})
+
+test('una rutina compartida lleva sus ejercicios propios', async () => {
+  const r = { ...routine, exercises: [{ exerciseId: mine.id, name: mine.name, muscle: mine.muscle, sets: 3, repsMin: 8, repsMax: 12, rest: 90 }, routine.exercises[0]] }
+  const plan = await decodePlan(await encodePlan([r], undefined, [mine, { ...mine, id: 'custom-otro01' }]), catalog)
+  assert.equal(plan.skipped, 0)
+  assert.equal(plan.routines[0].exercises[0].name, 'Press pecho máquina azul')
+  assert.deepEqual(plan.customExercises.map((c) => c.id), [mine.id]) // solo el que usa la rutina
+  // Si ya lo tienes, no se vuelve a crear.
+  const known = new Catalog([ex('Barbell_Bench_Press', 'Press de banca')], {}, [mine])
+  assert.deepEqual((await decodePlan(await encodePlan([r], undefined, [mine]), known)).customExercises, [])
+})
+
+test('ejercicios propios manipulados se descartan o se corrigen', () => {
+  assert.equal(cleanCustomExercise({ ...mine, id: 'Barbell_Squat' }), undefined) // no puede pisar el catálogo
+  assert.equal(cleanCustomExercise({ ...mine, name: '   ' }), undefined)
+  assert.equal(cleanCustomExercise({ ...mine, muscle: 'hack' }), undefined)
+  const fixed = cleanCustomExercise({ ...mine, name: 'x'.repeat(200), equipment: 'cohete', tracking: 'otro', secondaryMuscles: ['pectorals', 'triceps', 'falso'] })!
+  assert.equal(fixed.name.length, 60)
+  assert.equal(fixed.equipment, 'other')
+  assert.equal(fixed.tracking, 'weight_reps')
+  assert.deepEqual(fixed.secondaryMuscles, ['triceps'])
 })

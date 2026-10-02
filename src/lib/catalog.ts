@@ -1,5 +1,7 @@
 import { lang, locale } from './i18n'
+import { customToRaw, type CustomExercise } from './customExercises'
 import { bodyPartLabel, equipmentLabel, muscleLabel } from './labels'
+import type { Tracking } from './tracking'
 
 /**
  * Ejercicio del catálogo propio (public/exercises_es.json), generado con
@@ -21,6 +23,10 @@ export interface Exercise {
   secondaryMuscles: string[]
   /** Pasos de ejecución en el idioma de la app (texto propio; vacío si no hay). */
   instructions: string[]
+  /** Ejercicio creado por el usuario (no del catálogo). */
+  custom?: boolean
+  /** Solo los propios: cómo se registra cada serie. */
+  tracking?: Tracking
 }
 
 /** Ejercicio tal como viene en exercises_es.json (los dos idiomas). */
@@ -42,9 +48,9 @@ export class Catalog {
   private byId = new Map<string, Exercise>()
   private keys = new Map<string, string>()
 
-  constructor(raw: RawExercise[], private legacy: Record<string, string> = {}) {
+  constructor(raw: RawExercise[], private legacy: Record<string, string> = {}, custom: CustomExercise[] = []) {
     const en = lang() === 'en'
-    const list: Exercise[] = raw.map(({ instructionsEn, ...e }) => ({
+    const list: Exercise[] = [...raw, ...custom.map(customToRaw)].map(({ instructionsEn, ...e }) => ({
       ...e, nameEs: e.name, name: en ? e.nameEn : e.name,
       instructions: en ? (instructionsEn?.length ? instructionsEn : e.instructions) : e.instructions,
     }))

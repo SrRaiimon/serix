@@ -59,9 +59,13 @@ export default function App() {
   const [raw, setRaw] = useState<CatalogData>()
   const [error, setError] = useState<string>()
   // Se lee para volver a pintar al cambiar de idioma (el idioma sale de los ajustes).
-  useData()
+  // También los ejercicios propios, que se suman al catálogo.
+  // Cada cambio de datos crea objetos nuevos, así que se compara su contenido: el catálogo solo se
+  // rehace si cambian de verdad.
+  const { customExercises } = useData()
+  const customKey = JSON.stringify(customExercises)
   const language = lang()
-  const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy) : undefined), [raw, language])
+  const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey)) : undefined), [raw, language, customKey])
 
   useEffect(() => {
     Promise.all([loadCatalog(), loadData()])

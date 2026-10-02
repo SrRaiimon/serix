@@ -1,3 +1,4 @@
+import { BlockCard } from '../components/Block'
 import { ArrowLeftRight, ClipboardList, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, Thumb, Tile, useCatalog, useToast } from '../components/ui'
@@ -90,7 +91,9 @@ export function RoutinesScreen() {
           message={t('Genera un programa según tu objetivo o crea tu propia rutina desde cero.', 'Generate a program for your goal or build your own routine from scratch.')}
           action={<button className="btn primary" onClick={() => setShowGenerator(true)}><WandSparkles size={19} /> {t('Generar programa', 'Generate program')}</button>} />
       ) : (
-        keys.map((key) => (
+        <>
+        <BlockCard />
+        {keys.map((key) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="list-header">
               <span className="grow clamp-1">{key || t('Mis rutinas', 'My routines')}</span>
@@ -101,7 +104,8 @@ export function RoutinesScreen() {
               {groups.get(key)!.map((r) => <RoutineRow key={r.id} routine={r} data={data} />)}
             </div>
           </div>
-        ))
+        ))}
+        </>
       )}
 
       {menu && (
