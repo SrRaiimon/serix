@@ -41,3 +41,18 @@ test('sin cambios no se ofrece deshacer y descartar el aviso lo anula', () => {
   dismissUndo()
   assert.equal(undo(), false)
 })
+
+test('un cambio no toca la versión anterior y comparte lo que no cambia', () => {
+  reset()
+  update((d) => { d.measurements.push({ id: 'm', date: 1, weight: 80 }) })
+  const before = getData()
+  update((d) => { d.sessions[0].exercises[0].sets[1].reps = 12 })
+  const after = getData()
+  assert.equal(before.sessions[0].exercises[0].sets[1].reps, 8) // la anterior sigue igual (para deshacer)
+  assert.equal(after.sessions[0].exercises[0].sets[1].reps, 12)
+  assert.equal(after.measurements, before.measurements) // lo no tocado no se copia
+  assert.equal(after.sessions[0].exercises[0].sets[0], before.sessions[0].exercises[0].sets[0])
+  // Una receta que no cambia nada no avisa ni guarda.
+  update(() => {})
+  assert.equal(getData(), after)
+})

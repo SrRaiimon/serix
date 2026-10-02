@@ -95,7 +95,7 @@ vez abierta. Gratuita, sin cuentas, sin publicidad y sin analítica.
 - **Ilustraciones:** mapas musculares (`src/components/MuscleMap.tsx`) y figuras de movimiento
   animadas (`src/components/MoveFigure.tsx` + `src/lib/figures.ts`), dibujadas con código y originales.
   Las figuras cubren los 876 ejercicios; en desarrollo se revisan todas en `#/dev-figuras`.
-- **Dependencias:** React (MIT), Lucide (ISC), qrcode-generator (MIT) para crear códigos QR y jsQR (Apache 2.0, con partes traducidas de ZXing) para leerlos con la cámara. Sus textos completos van en `public/licenses.txt`,
+- **Dependencias:** React (MIT), Immer (MIT), Lucide (ISC), qrcode-generator (MIT) para crear códigos QR y jsQR (Apache 2.0, con partes traducidas de ZXing) para leerlos con la cámara. Sus textos completos van en `public/licenses.txt`,
   que `scripts/licenses.mjs` genera en cada build y la app enlaza desde la pantalla legal.
 
 ## Desarrollo

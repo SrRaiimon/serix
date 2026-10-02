@@ -10,7 +10,7 @@ import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
-import { addRest, adjustRestForEffort, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
+import { addRest, adjustRestForEffort, dismissRestDone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
@@ -126,6 +126,11 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const pending = allSets.length - done
 
   useScrollLock()
+  // El audio se prepara cuando el móvil está libre, no al marcar la primera serie.
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 300))
+    idle(prepareAudio)
+  }, [])
   useEffect(() => {
     void keepScreenOn(true)
     const onVisible = () => document.visibilityState === 'visible' && void keepScreenOn(true)

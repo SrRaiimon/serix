@@ -63,6 +63,19 @@ function syncLockScreen() {
 }
 
 /**
+ * Crea el contexto de audio por adelantado (al abrir el entrenamiento, cuando el móvil está libre):
+ * crearlo cuesta y, si se hace al marcar la primera serie, ese toque se nota lento. Nace suspendido;
+ * unlockAudio lo activa en el primer toque.
+ */
+export function prepareAudio() {
+  try {
+    audio ??= new AudioContext()
+  } catch {
+    /* sin audio */
+  }
+}
+
+/**
  * Debe llamarse desde un gesto del usuario: iOS solo deja sonar audio web tras una interacción.
  * Reactiva el audio si está suspendido o «interrumpido» (iOS, tras una llamada o al volver de otra
  * app) y reproduce un instante de silencio, que en algunas versiones de iOS es lo que lo desbloquea.

@@ -1,3 +1,4 @@
+import { produce, setAutoFreeze } from 'immer'
 import { useSyncExternalStore } from 'react'
 import { setWeightSteps, type Unit } from './format'
 import { availablePlates, stepFor } from './plates'
@@ -7,6 +8,10 @@ import { applyTheme, type Theme } from './theme'
 import type { TrainingBlock } from './block'
 import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
+
+// Immer no congela los datos: congelar decenas de miles de series al arrancar cuesta y la app no lo
+// necesita (los datos solo se cambian con update).
+setAutoFreeze(false)
 import { trackingOf, type Tracking } from './tracking'
 
 // Los pesos se guardan siempre en kg; la unidad solo afecta a cómo se muestran.
@@ -283,9 +288,16 @@ export function getData(): AppData {
 }
 
 /** Aplica cambios sobre una copia y la publica. */
+/**
+ * Cambia los datos. Con Immer solo se copia lo que la receta toca y el resto se comparte con la
+ * versión anterior (que queda intacta para «deshacer»): copiar todo con cada serie marcada costaba
+ * decenas de milisegundos con años de historial en un móvil modesto.
+ */
 export function update(recipe: (draft: AppData) => void) {
-  const next = structuredClone(state)
-  recipe(next)
+  const next = produce(state, (draft) => {
+    recipe(draft)
+  })
+  if (next === state) return
   state = next
   emit()
   scheduleSave()

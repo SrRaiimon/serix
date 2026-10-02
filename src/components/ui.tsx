@@ -260,3 +260,22 @@ export function useTick(ms = 1000): number {
   }, [ms])
   return now
 }
+
+const PAGE = 50
+
+/** Lista larga que va mostrando más elementos al acercarse al final (de 50 en 50). */
+export function useProgressive<T>(items: T[], resetKey: string) {
+  const [visible, setVisible] = useState(PAGE)
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => setVisible(PAGE), [resetKey])
+  useEffect(() => {
+    const el = sentinel.current
+    if (!el) return
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setVisible((v) => v + PAGE)
+    }, { rootMargin: '600px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [items])
+  return { shown: items.slice(0, visible), sentinel: visible < items.length ? <div ref={sentinel} style={{ height: 1 }} /> : null }
+}

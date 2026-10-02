@@ -1,10 +1,10 @@
 import { ChartLine, Info, ListOrdered, PencilLine, PersonStanding, Plus, Search, SlidersHorizontal, Star, StickyNote, X } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { LineChart } from '../components/charts'
 import { MuscleMap, MusclePicker } from '../components/MuscleMap'
 import { ExerciseNoteField } from '../components/ExerciseNote'
 import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
-import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useProgressive, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, num, weight } from '../lib/format'
 import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '../lib/labels'
@@ -16,25 +16,6 @@ import { plural, t } from '../lib/i18n'
 
 // Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
 const MoveFigure = lazy(() => import('../components/MoveFigure').then((m) => ({ default: m.MoveFigure })))
-
-const PAGE = 50
-
-/** Lista que va mostrando más elementos al llegar al final. */
-function useProgressive<T>(items: T[], resetKey: string) {
-  const [visible, setVisible] = useState(PAGE)
-  const sentinel = useRef<HTMLDivElement>(null)
-  useEffect(() => setVisible(PAGE), [resetKey])
-  useEffect(() => {
-    const el = sentinel.current
-    if (!el) return
-    const io = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) setVisible((v) => v + PAGE)
-    }, { rootMargin: '600px' })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [items])
-  return { shown: items.slice(0, visible), sentinel: visible < items.length ? <div ref={sentinel} style={{ height: 1 }} /> : null }
-}
 
 export function toggleFavorite(id: string) {
   update((d) => {

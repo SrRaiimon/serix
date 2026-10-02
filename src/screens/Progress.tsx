@@ -2,7 +2,7 @@ import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColu
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
-import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
 import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
@@ -266,8 +266,15 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
 }
 
 function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
-  const months = new Map<string, Session[]>()
+  // Con años de historial se pintan de 50 en 50 al ir bajando (pintarlos todos de golpe se notaba).
+  const { shown, sentinel } = useProgressive(sessions, '')
+  const total = new Map<string, number>()
   for (const s of sessions) {
+    const key = monthYear(s.start)
+    total.set(key, (total.get(key) ?? 0) + 1)
+  }
+  const months = new Map<string, Session[]>()
+  for (const s of shown) {
     const key = monthYear(s.start)
     months.set(key, [...(months.get(key) ?? []), s])
   }
@@ -275,12 +282,13 @@ function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     <>
       {[...months].map(([month, list]) => (
         <div key={month} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="list-header">{month} · {list.length}</div>
+          <div className="list-header">{month} · {total.get(month)}</div>
           <div className="list">
             {list.map((s) => <SessionRow key={s.id} session={s} unit={unit} onClick={() => navigate('progress', 'session', s.id)} />)}
           </div>
         </div>
       ))}
+      {sentinel}
     </>
   )
 }

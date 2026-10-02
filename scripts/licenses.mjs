@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr']
+const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer']
 
 // Autoría que el paquete no recoge en su archivo de licencia.
 const NOTES = {
