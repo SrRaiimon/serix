@@ -109,6 +109,7 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
                 {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
                 {e.name}
                 {e.deload && <span className="tiny muted" style={{ fontWeight: 400 }}> · {t('descarga', 'deload')}</span>}
+                {e.pain !== undefined && <span className="tiny warn-text" style={{ fontWeight: 400 }}> · {t('molestia', 'discomfort')} {e.pain}/10{e.painNote ? ` (${e.painNote})` : ''}</span>}
               </span>
             </div>
             {e.sets.filter((s) => s.done).map((s) => (

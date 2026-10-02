@@ -86,6 +86,9 @@ export interface SessionExercise {
   deload?: boolean
   /** Lo que hizo la progresión automática al preparar el ejercicio (para explicarlo en pantalla). */
   auto?: AutoProgress
+  /** Molestia o dolor durante el ejercicio (1-10) y dónde; se avisa la próxima vez. */
+  pain?: number
+  painNote?: string
   sets: SetEntry[]
 }
 

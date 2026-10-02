@@ -1937,3 +1937,21 @@ html.scroll-locked body {
 .warn-text { color: var(--amber-text); }
 .interval-phase { text-align: center; overflow-wrap: anywhere; padding: 0 16px; }
 .interval-cue { margin: 0; padding: 0 24px; text-align: center; font-size: 17px; color: rgba(235, 235, 245, 0.8); max-width: 420px; }
+
+/* MARK: Consejos durante el entrenamiento */
+
+.coach-box { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--fill); }
+.coach-box.down svg, .coach-box.pain svg { color: var(--amber-text); }
+.coach-box.up svg { color: var(--green-text); }
+.pain-pill { align-self: flex-start; font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--fill); color: var(--amber-text); }
+
+/* MARK: Series por grupo */
+
+.volume-rows { display: flex; flex-direction: column; gap: 8px; }
+.volume-row { display: grid; grid-template-columns: 96px 1fr 36px; gap: 8px; align-items: center; }
+.volume-track { position: relative; height: 14px; border-radius: 7px; background: var(--fill); overflow: hidden; }
+.volume-range { position: absolute; top: 0; bottom: 0; background: var(--green-soft); }
+.volume-fill { position: absolute; left: 0; top: 3px; bottom: 3px; border-radius: 4px; min-width: 2px; }
+.volume-fill.ok { background: var(--green); }
+.volume-fill.low { background: var(--amber-text); }
+.volume-fill.high { background: var(--accent); }

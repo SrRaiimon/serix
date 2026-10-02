@@ -90,6 +90,8 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
     deload: v.deload === true ? true : undefined,
     auto: autoProgress(v.auto),
+    pain: optNum(v.pain, 1, 10),
+    painNote: typeof v.painNote === 'string' && v.painNote.trim() ? v.painNote.slice(0, 100) : undefined,
     sets: list(v.sets, setEntry, 100),
   }
 }

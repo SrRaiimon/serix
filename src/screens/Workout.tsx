@@ -1,4 +1,6 @@
 import { BlockStatus } from '../components/Block'
+import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching'
+import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
 import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
@@ -110,6 +112,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
         stalled={trackingOf(e) === 'weight_reps' ? stall(e.exerciseId, history) : undefined}
+        lastPain={lastPain(e.exerciseId, history)}
+        startedAt={session.start}
         onInfo={() => setDetail(e.exerciseId)}
         onGroupNext={() => goToNext(i)}
         onRoundEnd={() => roundEnd(i)}
@@ -219,7 +223,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -245,6 +249,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   onSetDone: (set: SetEntry) => void
   /** Esfuerzo de una serie: ajusta el descanso que empezó (ver adjustRestForEffort). */
   onEffort: (setId: string, rpe: number | undefined, base: number) => void
+  /** Molestia apuntada la última vez que se hizo este ejercicio. */
+  lastPain?: { pain: number; date: number; note?: string }
+  startedAt: number
 }) {
   const [menu, setMenu] = useState(false)
   const [restMenu, setRestMenu] = useState(false)
@@ -252,7 +259,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const [replacing, setReplacing] = useState(false)
   const [plates, setPlates] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
-  const note = useData().exerciseNotes[exercise.exerciseId]
+  const [painOpen, setPainOpen] = useState(false)
+  const { exerciseNotes, settings } = useData()
+  const note = exerciseNotes[exercise.exerciseId]
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
@@ -344,6 +353,20 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </div>
       )}
 
+      {painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
+        <PainWarning last={painBefore} onAlternatives={() => setReplacing(true)}
+          onLighter={() => edit((e) => {
+            const step = increment(unit)
+            for (const x of e.sets) if (!x.done && x.weight > 0) x.weight = toKg(Math.round(fromKg(x.weight * 0.9, unit) / step) * step, unit)
+          })} />
+      )}
+      {exercise.pain !== undefined && (
+        <button className="pain-pill" onClick={() => setPainOpen(true)}>{t('Molestia', 'Discomfort')} {exercise.pain}/10{exercise.painNote ? ` · ${exercise.painNote}` : ''}</button>
+      )}
+      {tracking === 'weight_reps' && (
+        <EffortSuggestion exercise={exercise} settings={settings} at={startedAt}
+          onApply={(ids, kg) => edit((e) => { for (const x of e.sets) if (ids.includes(x.id)) x.weight = kg })} />
+      )}
       {hint && !exercise.deload && (
         <span className="small row" style={{ color: 'var(--green-text)', gap: 6, alignItems: 'flex-start' }}>
           <ArrowUpRight size={16} style={{ flexShrink: 0 }} />
@@ -415,6 +438,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             ? { label: t('Quitar marca de descarga', 'Remove deload mark'), onSelect: () => edit((e) => { delete e.deload }) }
             : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
+          { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
           { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext ? [{
             label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
@@ -427,6 +451,12 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
           { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => withUndo(t(`Quitado: ${exercise.name}`, `Removed: ${exercise.name}`), () => editList((list, i) => { list.splice(i, 1) })) },
         ]} />
+      )}
+      {painOpen && (
+        <PainSheet exercise={exercise} onClose={() => setPainOpen(false)} onSave={(pain, painNote) => edit((e) => {
+          e.pain = pain
+          e.painNote = pain !== undefined && painNote ? painNote : undefined
+        })} />
       )}
       {restMenu && (
         <ActionSheet title={t('Descanso entre series', 'Rest between sets')} onClose={() => setRestMenu(false)}
