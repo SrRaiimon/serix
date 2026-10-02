@@ -4,6 +4,7 @@ import { LineChart } from '../components/charts'
 import { MuscleMap, MusclePicker } from '../components/MuscleMap'
 import { ExerciseNoteField } from '../components/ExerciseNote'
 import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
+import { RepRecordsCard } from '../components/RepRecords'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, Tag, Thumb, Tile, useCatalog, useProgressive, useToast } from '../components/ui'
 import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, num, weight } from '../lib/format'
@@ -208,7 +209,8 @@ function AddToRoutine({ exercise, onClose, onAdded }: { exercise: Exercise; onCl
 export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
   const data = useData()
   const unit = data.settings.unit
-  const points = useMemo(() => exerciseHistory(exercise.id, finishedSessions(data)), [exercise.id, data])
+  const sessions = useMemo(() => finishedSessions(data), [data])
+  const points = useMemo(() => exerciseHistory(exercise.id, sessions), [exercise.id, sessions])
   // Según lo que se registró de verdad (el tipo se puede cambiar a mano en el entrenamiento).
   const timed = points.length > 0 && points.every((p) => p.maxWeight === 0) && points.some((p) => p.maxDuration > 0 || p.maxDistance > 0)
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
@@ -262,6 +264,7 @@ export function ExerciseDetailContent({ exercise }: { exercise: Exercise }) {
           )}
         </Card>
       )}
+      {points.length > 0 && tracking === 'weight_reps' && <RepRecordsCard exerciseId={exercise.id} sessions={sessions} unit={unit} />}
       {points.length > 0 && tracking !== 'weight_reps' && (
         <Card title={t('Tu historial', 'Your history')} icon={ChartLine}>
           <div className="grid-3">

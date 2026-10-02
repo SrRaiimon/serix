@@ -15,6 +15,7 @@ import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
 import { RecoveryCard } from '../components/Recovery'
 import { YearMap } from '../components/YearMap'
+import { RepRecordsCard } from '../components/RepRecords'
 import { balanceTip, muscleBalance } from '../lib/balance'
 import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
@@ -244,6 +245,8 @@ function ShareSummaryCard({ sessions, unit }: { sessions: Session[]; unit: Unit 
 }
 
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  // El modo sencillo deja lo básico; el volumen por grupo y el equilibrio son para quien ya controla.
+  const simple = useData().settings.simpleMode === true
   const weeks = weekly(sessions, 12)
   const thisWeek = weeks[weeks.length - 1]
   const muscles = setsByMuscle(sessions, Date.now() - 30 * 86400000)
@@ -262,8 +265,8 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <Stalls sessions={sessions} unit={unit} />
       <RecoveryCard sessions={sessions} />
       <WeeklyMuscles sessions={sessions} />
-      <WeeklyVolume sessions={sessions} />
-      <BalanceCard sessions={sessions} />
+      {!simple && <WeeklyVolume sessions={sessions} />}
+      {!simple && <BalanceCard sessions={sessions} />}
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
@@ -394,6 +397,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
             <span className="muted">{t('Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.', 'You need at least two sessions of this exercise to see the chart.')}</span>
           )}
         </Card>
+        <RepRecordsCard exerciseId={id} sessions={sessions} unit={unit} />
         <div className="list-header">{t('Sesiones', 'Sessions')}</div>
         <div className="list">
           {[...points].reverse().map((p) => (

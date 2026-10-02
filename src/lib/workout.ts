@@ -55,12 +55,40 @@ interface PlannedExercise {
   tmSince?: number
 }
 
+/**
+ * Series por lados: cada serie se convierte en una del lado izquierdo y otra del derecho (seguidas,
+ * con el mismo peso y repeticiones). Las que ya tienen lado se dejan como están.
+ */
+export function toSides(sets: SetEntry[]): SetEntry[] {
+  if (sets.some((s) => s.side)) return sets
+  return sets.flatMap((s) => s.warmup ? [s] : [{ ...s, side: 'L' as const }, { ...s, id: uid(), side: 'R' as const }])
+}
+
+/** Quita los lados: se queda con el izquierdo (o la serie sin lado) de cada pareja pendiente. */
+export function fromSides(sets: SetEntry[]): SetEntry[] {
+  return sets.filter((s) => s.done || s.side !== 'R').map((s) => (s.done ? s : { ...s, side: undefined }))
+}
+
+/** Izquierda y derecha alternas (las series de calentamiento, sin lado, solo una vez). */
+function interleave(left: SetEntry[], right: SetEntry[]): SetEntry[] {
+  const r = right.filter((x) => !x.warmup)
+  let i = 0
+  return left.flatMap((l) => (l.warmup ? [l] : [{ ...l, side: 'L' as const }, { ...(r[i++] ?? l), id: uid(), side: 'R' as const }]))
+}
+
 function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = getData().settings.unit): SessionExercise {
-  const last = lastSets(ex.exerciseId, history)
+  const mode = getData().settings.exerciseModes?.[ex.exerciseId] ?? {}
+  // Por lados: la última vez se apuntó cada serie dos veces; para copiarla basta un lado.
+  const lastAll = lastSets(ex.exerciseId, history)
+  const last = mode.unilateral ? lastAll.filter((s) => s.side !== 'R') : lastAll
   const count = Math.max(ex.sets, 1)
-  // Con progresión automática las series se calculan; si no, se copian de la última vez.
-  const auto = trackingOf(ex) === 'weight_reps' ? plan(ex, last, history, unit) : undefined
+  // Con progresión automática las series se calculan; si no, se copian de la última vez. En las
+  // máquinas asistidas no: progresar es quitar ayuda, y eso se decide a mano.
+  const auto = trackingOf(ex) === 'weight_reps' && !mode.assisted ? plan(ex, last, history, unit) : undefined
+  const sets = auto?.sets ?? prefillSets(count, last)
   return {
+    ...(mode.assisted ? { assisted: true } : {}),
+    ...(mode.unilateral ? { unilateral: true } : {}),
     id: uid(),
     exerciseId: ex.exerciseId,
     name: ex.name,
@@ -71,8 +99,11 @@ function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = g
     tracking: ex.tracking,
     targetSeconds: ex.targetSeconds,
     groupId: ex.groupId,
-    // Se rellenan con lo que se hizo la última vez para marcar y listo.
-    sets: auto?.sets ?? prefillSets(count, last),
+    // Se rellenan con lo que se hizo la última vez para marcar y listo. Por lados, cada lado copia lo
+    // suyo (sin progresión automática; con ella, los dos lados con el peso calculado).
+    sets: !mode.unilateral ? sets
+      : auto || !lastAll.some((x) => x.side === 'R') ? toSides(sets.map(({ side: _side, ...x }) => x))
+        : interleave(prefillSets(count, last), prefillSets(count, lastAll.filter((x) => x.side === 'R'))),
     ...(auto?.auto ? { auto: auto.auto } : {}),
     ...(auto?.deload ? { deload: true } : {}),
   }

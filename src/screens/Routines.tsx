@@ -96,7 +96,7 @@ export function RoutinesScreen() {
           </div>} />
       ) : (
         <>
-        <BlockCard />
+        {!data.settings.simpleMode && <BlockCard />}
         {keys.map((key) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="list-header">
@@ -116,7 +116,7 @@ export function RoutinesScreen() {
         <ActionSheet onClose={() => setMenu(false)} options={[
           { label: t('Biblioteca de programas', 'Program library'), onSelect: () => setLibrary(true) },
           { label: t('Generar programa', 'Generate program'), onSelect: () => setShowGenerator(true) },
-          { label: t('Programa 5/3/1 (fuerza)', '5/3/1 program (strength)'), onSelect: () => setShow531(true) },
+          ...(!data.settings.simpleMode ? [{ label: t('Programa 5/3/1 (fuerza)', '5/3/1 program (strength)'), onSelect: () => setShow531(true) }] : []),
           { label: t('Nueva rutina vacía', 'New empty routine'), onSelect: createRoutine },
           { label: t('Importar desde enlace', 'Import from link'), onSelect: importFromLink },
           { label: t('Entrenamiento libre', 'Free workout'), onSelect: startEmpty },

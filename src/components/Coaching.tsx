@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { loadSuggestion, PAIN_WARN, targetRpe } from '../lib/autoreg'
 import { day, weight } from '../lib/format'
 import { t } from '../lib/i18n'
-import type { SessionExercise, Settings } from '../lib/store'
+import { rpeOn, type SessionExercise, type Settings } from '../lib/store'
 import { Chip, Sheet } from './ui'
 
 // Consejos durante el entrenamiento (ver lib/autoreg.ts): ajustar el peso según el RPE y avisar si un
@@ -17,7 +17,7 @@ export function EffortSuggestion({ exercise, settings, at, onApply }: {
   onApply: (setIds: string[], kg: number) => void
 }) {
   const [dismissed, setDismissed] = useState<string>()
-  if (!settings.rpe) return null
+  if (!rpeOn(settings)) return null
   const s = loadSuggestion(exercise, targetRpe(settings.block, at), settings.unit)
   if (!s || dismissed === s.setId) return null
   const down = s.to < s.from

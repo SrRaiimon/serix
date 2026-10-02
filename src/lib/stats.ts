@@ -10,7 +10,14 @@ export function e1rm(weight: number, reps: number): number {
   return reps === 1 ? weight : weight * (1 + reps / 30)
 }
 
-export const workingSets = (e: SessionExercise) => e.sets.filter((s) => s.done && !s.warmup)
+/**
+ * Series efectivas hechas. En máquinas asistidas el peso apuntado es la ayuda, no carga: cuenta como 0
+ * para volumen, récords y 1RM (las repeticiones sí cuentan).
+ */
+export const workingSets = (e: SessionExercise): SetEntry[] => {
+  const sets = e.sets.filter((s) => s.done && !s.warmup)
+  return e.assisted ? sets.map((s) => ({ ...s, weight: 0 })) : sets
+}
 
 export const sessionVolume = (s: Session) =>
   s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
@@ -45,6 +52,49 @@ export function records(sessions: Session[]): PersonalRecord[] {
     }
   }
   return [...best.values()].sort((a, b) => a.name.localeCompare(b.name, locale()))
+}
+
+// MARK: Récords por repeticiones
+
+/** Récords reales por número de repeticiones: el mayor peso movido al menos 1, 3, 5 y 10 veces. */
+export const REP_TARGETS = [1, 3, 5, 10] as const
+
+export interface RepRecord {
+  target: number
+  weight: number
+  /** Repeticiones que se hicieron de verdad (pueden ser más que el objetivo). */
+  reps: number
+  date: number
+}
+
+/** Mejor peso para cada número de repeticiones (`undefined` si nunca se llegó a esas repeticiones). */
+export function repRecords(exerciseId: string, sessions: Session[]): (RepRecord | undefined)[] {
+  const best: (RepRecord | undefined)[] = REP_TARGETS.map(() => undefined)
+  for (const s of sessions) {
+    for (const e of s.exercises) {
+      if (e.exerciseId !== exerciseId) continue
+      for (const x of workingSets(e)) {
+        if (x.weight <= 0) continue
+        REP_TARGETS.forEach((target, i) => {
+          if (x.reps >= target && x.weight > (best[i]?.weight ?? 0)) best[i] = { target, weight: x.weight, reps: x.reps, date: x.doneAt ?? s.start }
+        })
+      }
+    }
+  }
+  return best
+}
+
+/**
+ * ¿La serie bate un récord de repeticiones? Devuelve el mayor número de repeticiones cuyo récord
+ * supera (solo si ya había uno: la primera vez no cuenta como récord).
+ */
+export function repRecordBeaten(weight: number, reps: number, before: (RepRecord | undefined)[]): number | undefined {
+  let beaten: number | undefined
+  REP_TARGETS.forEach((target, i) => {
+    const prev = before[i]
+    if (reps >= target && prev && weight > prev.weight + 0.01) beaten = target
+  })
+  return beaten
 }
 
 /** Récords batidos en `session` respecto a las sesiones anteriores. */
@@ -153,8 +203,9 @@ export function exerciseHistory(exerciseId: string, sessions: Session[]): Exerci
  * Las sesiones de descarga se saltan: después de una se vuelve a los pesos de antes.
  */
 export function lastSets(exerciseId: string, sessions: Session[]): SetEntry[] {
+  // Con el peso tal cual (también la ayuda de las máquinas asistidas), para rellenar las series.
   for (const s of sessions) {
-    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId && !e.deload).flatMap(workingSets)
+    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId && !e.deload).flatMap((e) => e.sets.filter((x) => x.done && !x.warmup))
     if (sets.length) return sets
   }
   return []

@@ -1955,3 +1955,8 @@ html.scroll-locked body {
 .volume-fill.ok { background: var(--green); }
 .volume-fill.low { background: var(--amber-text); }
 .volume-fill.high { background: var(--accent); }
+
+/* MARK: Récords por repeticiones */
+
+.rep-records { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.rep-record { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; border-radius: 12px; background: var(--fill); text-align: center; font-variant-numeric: tabular-nums; }

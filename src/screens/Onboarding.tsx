@@ -25,7 +25,8 @@ export function OnboardingScreen() {
 
   const finish = (p?: GeneratedProgram) => {
     if (p) saveProgram(p)
-    updateSettings({ onboarded: true })
+    // A quien empieza le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se cambia en Perfil).
+    updateSettings({ onboarded: true, ...(settings.simpleMode === undefined && settings.level === 'beginner' ? { simpleMode: true } : {}) })
   }
 
   if (program) {

@@ -13,7 +13,7 @@ import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
 import { speak, voiceSupported } from '../lib/voice'
 import { isIOS } from '../lib/pwa'
-import { finishedSessions, replaceData, resetData, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
+import { finishedSessions, replaceData, resetData, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlateInventory, PlatesView } from './Plates'
 
 const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
@@ -184,12 +184,19 @@ export function ProfileScreen() {
         )}
         <label className="list-row">
           <span className="grow">
+            {t('Modo sencillo', 'Simple mode')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Oculta el RPE, los tipos de serie, los bloques y otras opciones avanzadas', 'Hides RPE, set types, blocks and other advanced options')}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={settings.simpleMode === true} onChange={(e) => updateSettings({ simpleMode: e.target.checked })} />
+        </label>
+        {!settings.simpleMode && <label className="list-row">
+          <span className="grow">
             {t('Anotar esfuerzo (RPE)', 'Log effort (RPE)')}
             <span className="small muted" style={{ display: 'block' }}>{t('Al marcar cada serie, de 6 a 10', 'When ticking each set, from 6 to 10')}</span>
           </span>
           <input type="checkbox" className="toggle" checked={settings.rpe} onChange={(e) => updateSettings({ rpe: e.target.checked })} />
-        </label>
-        {settings.rpe && (
+        </label>}
+        {rpeOn(settings) && (
           <label className="list-row">
             <span className="grow">
               {t('Descanso según el esfuerzo', 'Rest based on effort')}

@@ -10,11 +10,11 @@ import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type Grou
 import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
-import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
-import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
+import { e1rm, lastSets, progressionHint, records, repRecordBeaten, repRecords, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
+import { finishedSessions, rpeOn, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
 import { addRest, adjustRestForEffort, dismissRestDone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
-import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
+import { addExercises, applyDeload, discardSession, finishSession, fromSides, keepScreenOn, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { PlatesSheet } from './Plates'
@@ -40,7 +40,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const [toast, showToast] = useToast()
   // Serie cuyo RPE se está preguntando (la última marcada).
   const [rpeFor, setRpeFor] = useState<string>()
-  const askRpe = (setId?: string) => setRpeFor(data.settings.rpe ? setId : undefined)
+  const askRpe = (setId?: string) => setRpeFor(rpeOn(data.settings) ? setId : undefined)
   const slots = groupSlots(session.exercises)
   const catalog = useCatalog()
   // Mejor 1RM estimado de cada ejercicio antes de este entrenamiento (para avisar de récords al momento).
@@ -53,8 +53,17 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
   const onSetDone = (e: SessionExercise, set: SetEntry) => {
     const best = bestSoFar(e.exerciseId)
-    if (set.warmup || best === undefined || trackingOf(e) !== 'weight_reps') return
+    if (set.warmup || e.assisted || best === undefined || trackingOf(e) !== 'weight_reps') return
     const value = e1rm(set.weight, set.reps)
+    // Récord real de repeticiones (p. ej. el mayor peso a 5): frente al historial y a lo ya hecho hoy.
+    const today = session.exercises.filter((x) => x.exerciseId === e.exerciseId).flatMap(workingSets).filter((x) => x.id !== set.id)
+    const before = repRecords(e.exerciseId, [...history, { ...session, exercises: [{ ...e, sets: today }] }])
+    const repRecord = repRecordBeaten(set.weight, set.reps, before)
+    if (value <= best + 0.01 && repRecord !== undefined) {
+      showToast(t(`Récord de ${repRecord} repeticiones en ${e.name}: ${weight(set.weight, unit)}`, `${repRecord}-rep record on ${e.name}: ${weight(set.weight, unit)}`))
+      navigator.vibrate?.([60, 60, 120])
+      return
+    }
     if (value > best + 0.01) {
       showToast(t(`Nuevo récord en ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`))
       navigator.vibrate?.([60, 60, 120])
@@ -108,6 +117,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         nextName={slots[i].letter && !slots[i].last ? session.exercises[i + 1].name : undefined}
         unit={unit}
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
+        bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight'}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
@@ -223,7 +233,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -234,6 +244,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   unit: Unit
   /** Ejercicio con barra: discos por lado y calentamiento desde la barra sola. */
   barbell: boolean
+  /** De peso corporal: el peso apuntado es lastre. */
+  bodyweight: boolean
   barKg: number
   previous: SetEntry[]
   /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
@@ -261,11 +273,33 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const [noteOpen, setNoteOpen] = useState(false)
   const [painOpen, setPainOpen] = useState(false)
   const { exerciseNotes, settings } = useData()
+  const simple = settings.simpleMode === true
   const note = exerciseNotes[exercise.exerciseId]
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
   })
+  /** Asistido o por lados: en este entrenamiento y, para la próxima vez, en este ejercicio. */
+  const setMode = (change: { assisted?: boolean; unilateral?: boolean }) => {
+    edit((e) => {
+      if (change.assisted !== undefined) e.assisted = change.assisted || undefined
+      if (change.unilateral !== undefined) {
+        e.unilateral = change.unilateral || undefined
+        const done = e.sets.filter((x) => x.done)
+        const pending = e.sets.filter((x) => !x.done)
+        e.sets = [...done, ...(change.unilateral ? toSides(pending) : fromSides(pending))]
+      }
+    })
+    update((d) => {
+      const modes = { ...d.settings.exerciseModes }
+      const mode = { ...modes[exercise.exerciseId], ...change }
+      if (!mode.assisted) delete mode.assisted
+      if (!mode.unilateral) delete mode.unilateral
+      if (Object.keys(mode).length) modes[exercise.exerciseId] = mode
+      else delete modes[exercise.exerciseId]
+      d.settings.exerciseModes = Object.keys(modes).length ? modes : undefined
+    })
+  }
   // Cambios en la lista (orden, grupos): después se revisa que los grupos sigan siendo válidos.
   const editList = (fn: (list: SessionExercise[], i: number, s: Session) => void) => editSession(sessionId, (s) => {
     const i = s.exercises.findIndex((x) => x.id === exercise.id)
@@ -280,7 +314,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const target = exercise.repsMin === exercise.repsMax ? `${exercise.repsMin}` : `${exercise.repsMin}-${exercise.repsMax}`
   const targetSeconds = exercise.targetSeconds ?? defaultTargetSeconds
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
-  const hint = tracking === 'weight_reps' && !exercise.auto ? progressionHint(previous, exercise.repsMax) : null
+  const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
   const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? ` · ${t('Objetivo', 'Target')} ${target} reps` : '')
     : tracking === 'time' ? ` · ${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
@@ -377,7 +411,12 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
 
       <div className={`set-grid set-head ${tracking}`}>
         <span>{t('SERIE', 'SET')}</span><span>{t('ANTERIOR', 'PREVIOUS')}</span>
-        {tracking === 'weight_reps' && <><span>{unit.toUpperCase()}</span><span>REPS</span></>}
+        {tracking === 'weight_reps' && <>
+          {exercise.assisted
+            ? <span title={t('Ayuda de la máquina', 'Machine assistance')}>{t('AYUDA', 'ASSIST')}</span>
+            : <span title={bodyweight ? t('Lastre añadido (0 = sin peso)', 'Added weight (0 = none)') : undefined}>{bodyweight ? `+${unit.toUpperCase()}` : unit.toUpperCase()}</span>}
+          <span>REPS</span>
+        </>}
         {tracking === 'time' && <span>{t('TIEMPO', 'TIME')}</span>}
         {tracking === 'distance_time' && <><span>KM</span><span>{t('TIEMPO', 'TIME')}</span></>}
         <span><Check size={14} /></span>
@@ -386,12 +425,18 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       {exercise.sets.map((set, i) => {
         // Los drop sets no suman al número de serie: van pegados a la anterior.
         const drop = !set.warmup && set.kind === 'drop'
-        const label = set.warmup ? t('C', 'W') : drop ? 'D' : String(++working)
+        // Por lados: el izquierdo y el derecho comparten número (1·I, 1·D).
+        const number = set.warmup || drop ? 0 : set.side === 'R' ? working : ++working
+        const sideMark = set.side === 'L' ? t('·I', '·L') : set.side === 'R' ? t('·D', '·R') : ''
+        const label = set.warmup ? t('C', 'W') : drop ? 'D' : `${number}${sideMark}`
+        const sameSide = set.side ? prevMain.filter((p) => p.side === set.side) : prevMain
         const prev = set.warmup ? undefined
           : drop ? prevDrops[drops++]
-          : prevMain.length ? prevMain[Math.min(working - 1, prevMain.length - 1)] : undefined
+          : sameSide.length ? sameSide[Math.min(number - 1, sameSide.length - 1)] : undefined
         const next = exercise.sets[i + 1]
         const dropNext = next && !next.done && !next.warmup && next.kind === 'drop'
+        // Tras el lado izquierdo se pasa al derecho sin descanso.
+        const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking}
             repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
@@ -404,8 +449,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             onCompleted={() => {
               onSetDone(set)
               if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
-              // Antes de un drop set no se descansa: se quita peso y se sigue.
-              if (dropNext) return
+              // Antes de un drop set no se descansa: se quita peso y se sigue. Igual al cambiar de lado.
+              if (dropNext || sideNext) return
               if (inGroupWithNext) return onGroupNext()
               // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
               const later = exercise.sets.slice(i + 1).find((s) => !s.done)
@@ -420,11 +465,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
 
       <button className="nav-btn" style={{ justifyContent: 'center', fontWeight: 600 }} onClick={() => edit((e) => {
         const last = [...e.sets].reverse().find((s) => s.kind !== 'drop') ?? e.sets[e.sets.length - 1]
-        e.sets.push({
+        const fresh = (side?: 'L' | 'R'): SetEntry => ({
           id: crypto.randomUUID(), weight: last?.weight ?? 0, reps: last?.reps ?? 0, done: false, warmup: false,
           ...(last?.duration ? { duration: last.duration } : {}),
           ...(last?.distance ? { distance: last.distance } : {}),
+          ...(side ? { side } : {}),
         })
+        // Por lados se añade la pareja.
+        if (e.unilateral) e.sets.push(fresh('L'), fresh('R'))
+        else e.sets.push(fresh())
       })}>
         <Plus size={18} /> {t('Añadir serie', 'Add set')}
       </button>
@@ -433,20 +482,27 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <ActionSheet title={exercise.name} onClose={() => setMenu(false)} options={[
           ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: t('Añadir series de calentamiento', 'Add warm-up sets'), onSelect: addWarmup }] : []),
           ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: t(`Discos para ${weight(workKg, unit)}`, `Plates for ${weight(workKg, unit)}`), onSelect: () => setPlates(true) }] : []),
-          ...(tracking === 'weight_reps' && lastWorking ? [{ label: t('Añadir drop set', 'Add drop set'), onSelect: addDropSet }] : []),
-          ...(tracking === 'weight_reps' ? [exercise.deload
+          ...(tracking === 'weight_reps' && lastWorking && !simple ? [{ label: t('Añadir drop set', 'Add drop set'), onSelect: addDropSet }] : []),
+          ...(tracking === 'weight_reps' && !simple ? [exercise.deload
             ? { label: t('Quitar marca de descarga', 'Remove deload mark'), onSelect: () => edit((e) => { delete e.deload }) }
             : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
           { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
+          ...(tracking === 'weight_reps' ? [{
+            label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
+            onSelect: () => setMode({ unilateral: !exercise.unilateral }),
+          }, {
+            label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight helps)'),
+            onSelect: () => setMode({ assisted: !exercise.assisted }),
+          }] : []),
           { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
-          ...(index < total - 1 && !inGroupWithNext ? [{
+          ...(index < total - 1 && !inGroupWithNext && !simple ? [{
             label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
             onSelect: () => editList((list, i) => linkWithNext(list, i)),
           }] : []),
           ...(slot.letter ? [{ label: isSuperset ? t('Sacar de la superserie', 'Remove from superset') : t('Sacar del circuito', 'Remove from circuit'), onSelect: () => editList((list, i) => unlink(list, i)) }] : []),
           { label: `${t('Descanso', 'Rest')}: ${rest(exercise.rest)}`, onSelect: () => setRestMenu(true) },
-          { label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) },
+          ...(!simple ? [{ label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) }] : []),
           ...(index > 0 ? [{ label: t('Subir', 'Move up'), onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
           ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
           { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => withUndo(t(`Quitado: ${exercise.name}`, `Removed: ${exercise.name}`), () => editList((list, i) => { list.splice(i, 1) })) },
@@ -500,6 +556,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
   onDelete: () => void
   onCompleted: () => void
 }) {
+  const simple = useData().settings.simpleMode === true
   const [weightText, setWeightText] = useState(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')
   const [repsText, setRepsText] = useState(set.reps > 0 ? String(set.reps) : '')
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
@@ -587,7 +644,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
         <ActionSheet onClose={() => setMenu(false)} options={[
           ...(barbell && tracking === 'weight_reps' && set.weight > 0 ? [{ label: t(`Discos para ${weight(set.weight, unit)}`, `Plates for ${weight(set.weight, unit)}`), onSelect: () => setPlates(true) }] : []),
           ...(tracking === 'weight_reps'
-            ? [{ label: `${t('Tipo', 'Type')}: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }]
+            ? (simple ? [] : [{ label: `${t('Tipo', 'Type')}: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }])
             : [{ label: set.warmup ? t('Marcar como serie efectiva', 'Mark as working set') : t('Marcar como calentamiento', 'Mark as warm-up'), onSelect: () => onChange({ warmup: !set.warmup }) }]),
           { label: t('Eliminar serie', 'Delete set'), destructive: true, onSelect: onDelete },
         ]} />

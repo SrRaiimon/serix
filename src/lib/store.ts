@@ -65,6 +65,8 @@ export interface SetEntry {
   rpe?: number
   /** Tipo de serie efectiva; sin valor = normal. El calentamiento va aparte (`warmup`). */
   kind?: SetKind
+  /** Ejercicios a una mano o una pierna: lado izquierdo o derecho. */
+  side?: 'L' | 'R'
 }
 
 /** drop = bajada de peso justo después de otra serie, amrap = máximas repeticiones, failure = al fallo. */
@@ -86,6 +88,10 @@ export interface SessionExercise {
   deload?: boolean
   /** Lo que hizo la progresión automática al preparar el ejercicio (para explicarlo en pantalla). */
   auto?: AutoProgress
+  /** Máquina asistida: el peso apuntado es la ayuda (resta), así que no cuenta como peso levantado. */
+  assisted?: boolean
+  /** A una mano o una pierna: cada serie se apunta por lado (izquierdo y derecho). */
+  unilateral?: boolean
   /** Molestia o dolor durante el ejercicio (1-10) y dónde; se avisa la próxima vez. */
   pain?: number
   painNote?: string
@@ -151,6 +157,10 @@ export interface Settings {
   friendShareAt?: number
   friendReminderOff?: boolean
   friendReminderSnooze?: number
+  /** Cómo se hace cada ejercicio (por identificador): asistido o por lados. Se recuerda para la próxima vez. */
+  exerciseModes?: Record<string, ExerciseMode>
+  /** Modo sencillo: oculta RPE, tipos de serie y opciones avanzadas. */
+  simpleMode?: boolean
   /** Bloque de entrenamiento en curso (semanas de carga y descarga programada). */
   block?: TrainingBlock
   /** Guía de primeros pasos en Inicio: oculta, y si ya visitó Progreso. */
@@ -165,6 +175,11 @@ export interface Settings {
   /** Fecha de la última copia exportada y hasta cuándo no recordarla. */
   lastBackupAt?: number
   backupSnoozeUntil?: number
+}
+
+export interface ExerciseMode {
+  assisted?: boolean
+  unilateral?: boolean
 }
 
 export interface AppData {
@@ -347,6 +362,9 @@ export function updateSettings(patch: Partial<Settings>) {
 }
 
 // MARK: Consultas habituales
+
+/** Preguntar el RPE: activado y sin el modo sencillo. */
+export const rpeOn = (s: Settings) => s.rpe && !s.simpleMode
 
 export const finishedSessions = (d: AppData) =>
   d.sessions.filter((s) => s.end !== undefined).sort((a, b) => b.start - a.start)

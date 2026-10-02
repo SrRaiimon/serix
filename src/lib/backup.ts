@@ -78,6 +78,7 @@ function setEntry(v: unknown): SetEntry | undefined {
     done: bool(v.done), warmup: bool(v.warmup), doneAt: optNum(v.doneAt, EPOCH_MIN, EPOCH_MAX),
     duration: optNum(v.duration, 0, 86400), distance: optNum(v.distance, 0, 1000), rpe: optNum(v.rpe, 1, 10),
     kind: oneOf(v.kind, SET_KINDS),
+    side: v.side === 'L' || v.side === 'R' ? v.side : undefined,
   }
 }
 
@@ -90,6 +91,8 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
     deload: v.deload === true ? true : undefined,
     auto: autoProgress(v.auto),
+    assisted: v.assisted === true ? true : undefined,
+    unilateral: v.unilateral === true ? true : undefined,
     pain: optNum(v.pain, 1, 10),
     painNote: typeof v.painNote === 'string' && v.painNote.trim() ? v.painNote.slice(0, 100) : undefined,
     sets: list(v.sets, setEntry, 100),
@@ -137,6 +140,8 @@ function settings(v: unknown): Settings {
       lb: list(s.plates.lb, (x) => (typeof x === 'number' && PLATE_OPTIONS.lb.includes(x) ? x : undefined), 20),
     } : undefined,
     block: cleanBlock(s.block),
+    exerciseModes: exerciseModes(s.exerciseModes),
+    simpleMode: s.simpleMode === true ? true : undefined,
     effortRestOff: s.effortRestOff === true ? true : undefined,
     guideHidden: s.guideHidden === true ? true : undefined,
     guideProgressSeen: s.guideProgressSeen === true ? true : undefined,
@@ -148,6 +153,17 @@ function settings(v: unknown): Settings {
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
   }
+}
+
+function exerciseModes(v: unknown): Settings['exerciseModes'] {
+  if (!isObj(v)) return undefined
+  const modes: NonNullable<Settings['exerciseModes']> = {}
+  for (const [id, m] of Object.entries(v).slice(0, 2000)) {
+    if (!isObj(m) || id.length > 200) continue
+    const mode = { ...(m.assisted === true ? { assisted: true } : {}), ...(m.unilateral === true ? { unilateral: true } : {}) }
+    if (Object.keys(mode).length) modes[id] = mode
+  }
+  return Object.keys(modes).length ? modes : undefined
 }
 
 function exerciseNotes(v: unknown): Record<string, string> {
