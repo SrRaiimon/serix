@@ -49,7 +49,7 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
         ]} />
         <p className="muted small" style={{ margin: 0 }}>
           {mode === 'warmup'
-            ? t('Movilidad y activación antes de entrenar: cada movimiento con su explicación y 5 s para cambiar al siguiente. Sin material.', 'Mobility and activation before training: each move with its explanation and 5 s to switch to the next one. No equipment.')
+            ? t('Movilidad y activación antes de entrenar: cada movimiento con su explicación y 5 s para cambiar al siguiente. Sin material.', 'Mobility and activation before training: each move comes with a short cue, plus 5 s to switch to the next one. No equipment needed.')
             : mode === 'tabata'
             ? t('Rondas de trabajo y descanso. El clásico: 20 s a tope y 10 s de descanso, 8 rondas (4 minutos).', 'Rounds of work and rest. The classic: 20 s all-out and 10 s rest, 8 rounds (4 minutes).')
             : mode === 'emom'

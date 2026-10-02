@@ -48,8 +48,8 @@ function challengeTitle(c: Challenge, unit: Unit, exercise: (c: Challenge) => st
     }
     case 'reps':
       return goal
-        ? t(`${goal} repeticiones seguidas en ${exercise(c)}`, `${goal} reps in a row on ${exercise(c)}`)
-        : t(`Más repeticiones seguidas en ${exercise(c)}`, `Most reps in a row on ${exercise(c)}`)
+        ? t(`${goal} repeticiones seguidas en ${exercise(c)}`, `${goal} reps in one set of ${exercise(c)}`)
+        : t(`Más repeticiones seguidas en ${exercise(c)}`, `Most reps in one set of ${exercise(c)}`)
   }
 }
 
@@ -145,7 +145,7 @@ function ChallengeCard({ c, data, myValue, onMenu }: { c: Challenge; data: AppDa
         </div>
       ))}
       {c.target && <span className="tiny muted">{t(`Objetivo: ${challengeValue(c, c.target, unit)}`, `Goal: ${challengeValue(c, c.target, unit)}`)}</span>}
-      {rows.length === 1 && status !== 'finished' && <span className="tiny muted">{t('Invita a tus amigos: les llega con tu resumen.', 'Invite your friends: it goes with your summary.')}</span>}
+      {rows.length === 1 && status !== 'finished' && <span className="tiny muted">{t('Invita a tus amigos: les llega con tu resumen.', 'Invite your friends: the challenge is sent along with your summary.')}</span>}
     </div>
   )
 }
@@ -167,7 +167,7 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
     <Card title={t('Retos', 'Challenges')} icon={Flag}>
       {live.length === 0 && invites.length === 0 && (
         <span className="small muted">{t('Crea un reto con objetivo y fecha —quién entrena más este mes, 12 entrenamientos en 4 semanas…— e invita a tus amigos.',
-          'Create a challenge with a goal and a deadline —who trains most this month, 12 workouts in 4 weeks…— and invite your friends.')}</span>
+          'Create a challenge with a goal and a deadline —who trains the most this month, 12 workouts in 4 weeks…— and invite your friends.')}</span>
       )}
       {invites.map((c) => (
         <div key={c.id} className="challenge invite">
@@ -260,7 +260,7 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
         <label className="list-row">
           <span className="grow">
             {t('Objetivo (opcional)', 'Goal (optional)')}
-            <span className="small muted" style={{ display: 'block' }}>{t('Sin objetivo, gana quien más sume', 'Without a goal, whoever adds up most wins')}</span>
+            <span className="small muted" style={{ display: 'block' }}>{t('Sin objetivo, gana quien más sume', 'Without a goal, the highest total wins')}</span>
           </span>
           <input className="field" style={{ width: 110, textAlign: 'right' }} inputMode="numeric" placeholder={placeholder} value={target}
             onChange={(e) => setTarget(e.target.value.replace(/[^\d.,]/g, ''))} aria-label={t('Objetivo', 'Goal')} />
@@ -306,7 +306,7 @@ function TrophyCase({ data }: { data: AppData }) {
           </div>
         )
       })}
-      <span className="tiny muted">{t('🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido', '🥇🥈🥉 place with at least one rival · 🎯 goal reached')}</span>
+      <span className="tiny muted">{t('🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido', '🥇🥈🥉 top-3 finish against at least one rival · 🎯 goal reached')}</span>
     </Card>
   )
 }
@@ -612,7 +612,7 @@ export function FriendImportScreen({ code }: { code: string }) {
             {invites.map((c) => (
               <Card key={c.id} title={t(`${friend.name} te reta`, `${friend.name} challenges you`)} icon={Flag}>
                 <strong>{challengeTitle(c, unit, exercise)}</strong>
-                <span className="small muted">{challengeWhen(c)}{c.target ? '' : t(' · gana quien más sume', ' · whoever adds up most wins')}</span>
+                <span className="small muted">{challengeWhen(c)}{c.target ? '' : t(' · gana quien más sume', ' · highest total wins')}</span>
                 <button className="btn primary" onClick={() => join(c)}><UserPlus size={18} /> {t('Aceptar el reto', 'Accept the challenge')}</button>
               </Card>
             ))}

@@ -86,3 +86,9 @@ test('copias antiguas sin los campos nuevos', () => {
   assert.equal(parsed.sessions[0].exercises[0].sets.length, 4)
   assert.deepEqual(parsed.measurements, [])
 })
+
+test('el modo sencillo desactivado a mano se conserva en la copia', () => {
+  const data = sample()
+  data.settings.simpleMode = false
+  assert.equal(parseBackup(JSON.stringify(data)).settings.simpleMode, false)
+})

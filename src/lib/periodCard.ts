@@ -1,7 +1,7 @@
 import { addDays, int, startOfDay, startOfWeek, volume, type Unit } from './format'
 import { locale, t } from './i18n'
 import { MAIN_GROUPS } from './labels'
-import { periodStats, workingSets } from './stats'
+import { periodStats, setCount } from './stats'
 import type { Session } from './store'
 
 // Resumen del mes o del año como imagen para compartir (1080 × 1350, como la del entrenamiento): se
@@ -68,7 +68,7 @@ export function summarize(sessions: Session[], period: Period, now = Date.now())
   const groups = MAIN_GROUPS.map(() => 0)
   for (const s of inside) {
     for (const e of s.exercises) {
-      const n = workingSets(e).length
+      const n = setCount(e)
       if (!n) continue
       const item = byExercise.get(e.exerciseId) ?? { name: e.name, sets: 0 }
       item.sets += n
@@ -151,7 +151,7 @@ function yearGrid(s: PeriodSummary, y: number): string {
 export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   const label = periodLabel(s)
   const yearly = s.period === 'year' || s.period === 'lastYear'
-  const title = yearly ? t(`Mi ${label} entrenando`, `My ${label} in training`) : t(`Mi ${label.split(' ')[0]} entrenando`, `My ${label.split(' ')[0]} in training`)
+  const title = yearly ? t(`Mi ${label} entrenando`, `My ${label} at the gym`) : t(`Mi ${label.split(' ')[0]} entrenando`, `My ${label.split(' ')[0]} at the gym`)
   const hours = s.minutes >= 600 ? int(s.minutes / 60) : (s.minutes / 60).toLocaleString(locale(), { maximumFractionDigits: 1 })
   const tiles: [string, string][] = [
     [int(s.sessions), s.sessions === 1 ? t('entrenamiento', 'workout') : t('entrenamientos', 'workouts')],
@@ -175,7 +175,7 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   const facts: string[] = []
   if (s.bestStreak > 1) facts.push(t(`Racha de ${s.bestStreak} semanas seguidas`, `${s.bestStreak}-week streak`))
   if (s.topGroup !== undefined) facts.push(t(`Lo que más: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`, `Most trained: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`))
-  if (!yearly && s.top[0]) facts.push(t(`Estrella: ${cut(s.top[0].name, 24)}`, `Top: ${cut(s.top[0].name, 24)}`))
+  if (!yearly && s.top[0]) facts.push(t(`Estrella: ${cut(s.top[0].name, 24)}`, `Top exercise: ${cut(s.top[0].name, 22)}`))
   const listY = 1000
   const top = s.top.map((e, i) => `<text x="80" y="${listY + 50 + i * 46}" font-size="30" fill="#e8e9ec">${i + 1}. ${esc(cut(e.name, 38))}</text>
     <text x="1000" y="${listY + 50 + i * 46}" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(t(`${e.sets} series`, `${e.sets} sets`))}</text>`).join('')

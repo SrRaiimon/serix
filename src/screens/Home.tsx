@@ -189,7 +189,7 @@ function GuideCard({ next }: { next?: Routine }) {
     {
       done: finished > 0,
       title: t('Haz tu primer entrenamiento', 'Do your first workout'),
-      detail: t('Marca cada serie al terminarla: el descanso empieza solo y la próxima vez te propone el peso.', 'Tick each set when you finish it: the rest starts by itself and next time it suggests the weight.'),
+      detail: t('Marca cada serie al terminarla: el descanso empieza solo y la próxima vez te propone el peso.', 'Tick each set when you finish it: the rest timer starts automatically and next time the app suggests the weight.'),
       action: () => (next ? startRoutine(next) : startEmpty()),
     },
     {

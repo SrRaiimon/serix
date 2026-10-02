@@ -96,7 +96,8 @@ export function RoutinesScreen() {
           </div>} />
       ) : (
         <>
-        {!data.settings.simpleMode && <BlockCard />}
+        {/* En modo sencillo no se ofrece, pero si ya hay un bloque se muestra para poder verlo y terminarlo. */}
+        {(!data.settings.simpleMode || data.settings.block) && <BlockCard />}
         {keys.map((key) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="list-header">
@@ -582,7 +583,7 @@ function LibrarySheet({ onClose }: { onClose: () => void }) {
             ))}
           </Card>
         ))}
-        <p className="small muted" style={{ margin: 0 }}>{t('El peso sube solo cuando completas las repeticiones. Puedes cambiar cualquier ejercicio después, como en cualquier rutina.', 'The weight goes up by itself when you complete the reps. You can change any exercise afterwards, as in any routine.')}</p>
+        <p className="small muted" style={{ margin: 0 }}>{t('El peso sube solo cuando completas las repeticiones. Puedes cambiar cualquier ejercicio después, como en cualquier rutina.', 'The weight goes up automatically when you complete the reps. You can swap any exercise later, like in any routine.')}</p>
       </Sheet>
     )
   }
@@ -641,7 +642,7 @@ function Program531Sheet({ onClose }: { onClose: () => void }) {
       footer={<button className="btn primary block" disabled={!ready} onClick={create}>{t('Crear programa', 'Create program')}</button>}>
       <p className="muted" style={{ margin: 0 }}>
         {t('Cuatro días por semana, uno por básico. Cada semana cambian los porcentajes (5, 3 y 5/3/1 repeticiones, y una de descarga) y la última serie es «todas las que puedas». El peso sale de tu máximo de entrenamiento (TM), el 90 % de tu 1RM, que sube solo al acabar cada ciclo.',
-          'Four days a week, one per main lift. The percentages change every week (5, 3 and 5/3/1 reps, plus a deload week) and the last set is "as many as you can". Weights come from your training max (TM), 90% of your 1RM, which goes up by itself after each cycle.')}
+          'Four days a week, one per main lift. The percentages change every week (5, 3 and 5/3/1 reps, plus a deload week) and the last set is "as many as you can". Weights come from your training max (TM), 90% of your 1RM, which goes up automatically after each cycle.')}
       </p>
       <div className="list-header">{t('Tu 1RM en cada básico', 'Your 1RM on each lift')}</div>
       <div className="list">

@@ -2,7 +2,7 @@ import { blockWeek, type TrainingBlock } from './block'
 import { fromKg, increment, toKg, type Unit } from './format'
 import type { TrainingGoal } from './generator'
 import { MAIN_GROUPS } from './labels'
-import { workingSets } from './stats'
+import { setCount, workingSets } from './stats'
 import type { Session, SessionExercise } from './store'
 
 // Ideas del panel de entrenadores (ver la conversación de la 0.0.22):
@@ -32,7 +32,7 @@ export function weeklyGroupSets(sessions: Session[], secondaryOf: (exerciseId: s
   for (const s of sessions) {
     if (s.start < since || s.start > now) continue
     for (const e of s.exercises) {
-      const n = workingSets(e).length
+      const n = setCount(e)
       if (!n) continue
       load.set(e.muscle, (load.get(e.muscle) ?? 0) + n)
       for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load.set(m, (load.get(m) ?? 0) + n / 2)

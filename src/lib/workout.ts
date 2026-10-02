@@ -56,12 +56,12 @@ interface PlannedExercise {
 }
 
 /**
- * Series por lados: cada serie se convierte en una del lado izquierdo y otra del derecho (seguidas,
- * con el mismo peso y repeticiones). Las que ya tienen lado se dejan como están.
+ * Series por lados: cada serie pendiente se convierte en una del lado izquierdo y otra del derecho
+ * (seguidas, con el mismo peso y repeticiones), en su sitio. Las hechas y las de calentamiento no.
  */
 export function toSides(sets: SetEntry[]): SetEntry[] {
-  if (sets.some((s) => s.side)) return sets
-  return sets.flatMap((s) => s.warmup ? [s] : [{ ...s, side: 'L' as const }, { ...s, id: uid(), side: 'R' as const }])
+  if (sets.some((s) => !s.done && s.side)) return sets
+  return sets.flatMap((s) => s.warmup || s.done ? [s] : [{ ...s, side: 'L' as const }, { ...s, id: uid(), side: 'R' as const }])
 }
 
 /** Quita los lados: se queda con el izquierdo (o la serie sin lado) de cada pareja pendiente. */

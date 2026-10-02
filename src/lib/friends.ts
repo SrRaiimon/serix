@@ -3,7 +3,7 @@ import { addDays, startOfDay, startOfWeek } from './format'
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { canCompress, fromBase64Url, shareLink, toBase64Url, transform } from './share'
-import { periodStats, records, sessionVolume, streakWeeks, workingSets, type PeriodStats } from './stats'
+import { periodStats, records, sessionVolume, setCount, streakWeeks, workingSets, type PeriodStats } from './stats'
 import { finishedSessions, getData, updateSettings, type AppData, type Session } from './store'
 
 // Retos entre amigos sin servidor: cada uno comparte por enlace (o QR) un resumen de su semana y su
@@ -104,7 +104,7 @@ export function challengeProgress(c: Challenge, sessions: Session[]): number {
       return Math.round(inRange.reduce((t, s) => t + sessionVolume(s), 0))
     case 'sets': {
       const muscles = c.group !== undefined ? MAIN_GROUPS[c.group]?.[1] : undefined
-      return inRange.reduce((t, s) => t + s.exercises.reduce((n, e) => n + (!muscles || muscles.includes(e.muscle) ? workingSets(e).length : 0), 0), 0)
+      return inRange.reduce((t, s) => t + s.exercises.reduce((n, e) => n + (!muscles || muscles.includes(e.muscle) ? setCount(e) : 0), 0), 0)
     }
     case 'reps':
       return Math.max(0, ...inRange.flatMap((s) => s.exercises.filter((e) => e.exerciseId === c.exerciseId).flatMap((e) => workingSets(e).map((x) => x.reps))))
@@ -239,7 +239,7 @@ function muscleSets(sessions: Session[], now: number): number[] {
     if (s.start < since || s.start > now) continue
     for (const e of s.exercises) {
       const g = MAIN_GROUPS.findIndex(([, muscles]) => muscles.includes(e.muscle))
-      if (g >= 0) counts[g] += workingSets(e).length
+      if (g >= 0) counts[g] += setCount(e)
     }
   }
   return counts

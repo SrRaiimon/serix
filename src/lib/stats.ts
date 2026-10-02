@@ -19,10 +19,16 @@ export const workingSets = (e: SessionExercise): SetEntry[] => {
   return e.assisted ? sets.map((s) => ({ ...s, weight: 0 })) : sets
 }
 
+/**
+ * Cuántas series cuentan para el volumen de un músculo: en los ejercicios por lados, cada pareja
+ * izquierda-derecha es una serie (cada pierna hizo una), no dos.
+ */
+export const setCount = (e: SessionExercise) => workingSets(e).filter((s) => s.side !== 'R').length
+
 export const sessionVolume = (s: Session) =>
   s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
 
-export const sessionSets = (s: Session) => s.exercises.reduce((t, e) => t + workingSets(e).length, 0)
+export const sessionSets = (s: Session) => s.exercises.reduce((t, e) => t + setCount(e), 0)
 
 export const sessionReps = (s: Session) =>
   s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.reps, 0), 0)
@@ -134,7 +140,7 @@ export function setsByMuscle(sessions: Session[], since: number): { muscle: stri
   const counts = new Map<string, number>()
   for (const s of sessions) {
     if (s.start < since) continue
-    for (const e of s.exercises) counts.set(e.muscle, (counts.get(e.muscle) ?? 0) + workingSets(e).length)
+    for (const e of s.exercises) counts.set(e.muscle, (counts.get(e.muscle) ?? 0) + setCount(e))
   }
   return [...counts].filter(([, n]) => n > 0).map(([muscle, sets]) => ({ muscle, sets })).sort((a, b) => b.sets - a.sets)
 }
@@ -148,7 +154,7 @@ export function muscleLoad(sessions: Session[], since: number, secondaryOf: (exe
   for (const s of sessions) {
     if (s.start < since) continue
     for (const e of s.exercises) {
-      const sets = workingSets(e).length
+      const sets = setCount(e)
       if (!sets) continue
       load[e.muscle] = (load[e.muscle] ?? 0) + sets
       for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load[m] = (load[m] ?? 0) + sets / 2
@@ -330,7 +336,7 @@ export function muscleRecovery(sessions: Session[], secondaryOf: (exerciseId: st
   for (const s of [...sessions].sort((a, b) => b.start - a.start)) {
     const load: Record<string, number> = {}
     for (const e of s.exercises) {
-      const sets = workingSets(e).length
+      const sets = setCount(e)
       if (!sets) continue
       load[e.muscle] = (load[e.muscle] ?? 0) + sets
       for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load[m] = (load[m] ?? 0) + sets / 2

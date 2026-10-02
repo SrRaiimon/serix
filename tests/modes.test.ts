@@ -1,7 +1,8 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { repRecordBeaten, repRecords, sessionVolume, workingSets } from '../src/lib/stats'
+import { repRecordBeaten, repRecords, sessionSets, sessionVolume, setCount, workingSets } from '../src/lib/stats'
+import { sessionsToCsv } from '../src/lib/exportCsv'
 import { activeSession, defaultSettings, getData, replaceData, type AppData } from '../src/lib/store'
 import { fromSides, startRoutine, toSides } from '../src/lib/workout'
 import { DAY, exercise, fakeIndexedDB, session, set } from './helpers'
@@ -71,4 +72,30 @@ test('el modo de cada ejercicio se recuerda al empezar la rutina', () => {
   assert.equal(lunge.unilateral, true)
   assert.deepEqual(lunge.sets.map((s) => [s.side, s.weight, s.reps]), [['L', 12, 10], ['R', 14, 10], ['L', 12, 9], ['R', 14, 9]])
   assert.equal(new Set(lunge.sets.map((s) => s.id)).size, 4)
+})
+
+test('por lados: cada pareja izquierda-derecha cuenta como una serie para el volumen', () => {
+  const e = exercise('lunge', [set(12, 10, { side: 'L' }), set(12, 10, { side: 'R' }), set(12, 9, { side: 'L' }), set(12, 9, { side: 'R' })], { unilateral: true, muscle: 'quads' })
+  assert.equal(setCount(e), 2)
+  assert.equal(sessionSets(session(0, [e])), 2)
+  assert.equal(sessionVolume(session(0, [e])), 12 * 38) // el peso sí cuenta en los dos lados
+})
+
+test('por lados al activarlo a mitad: las hechas se quedan y el orden se respeta', () => {
+  const sets = [set(20, 5, { done: false, warmup: true }), set(40, 8), set(40, 8, { done: false })]
+  const sided = toSides(sets)
+  assert.deepEqual(sided.map((s) => [s.warmup, s.done, s.side ?? '-']), [[true, false, '-'], [false, true, '-'], [false, false, 'L'], [false, false, 'R']])
+  // Otra vez, tras quitarlo con parejas ya hechas: las pendientes vuelven a emparejarse.
+  const off = fromSides([{ ...sided[2], done: true }, { ...sided[3], done: true }, set(40, 8, { done: false })])
+  assert.deepEqual(toSides(off).map((s) => [s.done, s.side ?? '-']), [[true, 'L'], [true, 'R'], [false, 'L'], [false, 'R']])
+})
+
+test('CSV: la ayuda de las máquinas asistidas va en negativo y el lado en el tipo', () => {
+  const csv = sessionsToCsv([session(0, [
+    exercise('Pullups', [set(20, 8)], { name: 'Dominadas', assisted: true }),
+    exercise('lunge', [set(12, 10, { side: 'L' }), set(12, 10, { side: 'R' })], { name: 'Zancadas', unilateral: true }),
+  ])], 'kg')
+  assert.match(csv, /Dominadas;1;Normal;-20;8/)
+  assert.match(csv, /Zancadas;1;Normal · Izquierda;12;10/)
+  assert.match(csv, /Zancadas;1;Normal · Derecha;12;10/)
 })

@@ -141,7 +141,7 @@ function settings(v: unknown): Settings {
     } : undefined,
     block: cleanBlock(s.block),
     exerciseModes: exerciseModes(s.exerciseModes),
-    simpleMode: s.simpleMode === true ? true : undefined,
+    simpleMode: typeof s.simpleMode === 'boolean' ? s.simpleMode : undefined,
     effortRestOff: s.effortRestOff === true ? true : undefined,
     guideHidden: s.guideHidden === true ? true : undefined,
     guideProgressSeen: s.guideProgressSeen === true ? true : undefined,

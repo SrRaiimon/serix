@@ -21,7 +21,7 @@ import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 
-type Section = 'summary' | 'history' | 'records' | 'achievements'
+type Section = 'summary' | 'muscles' | 'history' | 'records' | 'achievements'
 let savedSection: Section = 'summary'
 
 export function ProgressScreen() {
@@ -47,11 +47,13 @@ export function ProgressScreen() {
         <>
           <Segmented value={section} onChange={setSection} options={[
             { value: 'summary', label: t('Resumen', 'Summary') },
+            { value: 'muscles', label: t('Músculos', 'Muscles') },
             { value: 'history', label: t('Historial', 'History') },
             { value: 'records', label: t('Récords', 'Records') },
             { value: 'achievements', label: t('Logros', 'Badges') },
           ]} />
           {section === 'summary' && <Summary sessions={sessions} unit={unit} />}
+          {section === 'muscles' && <Muscles sessions={sessions} />}
           {section === 'history' && <History sessions={sessions} unit={unit} />}
           {section === 'records' && <Records sessions={sessions} unit={unit} />}
           {section === 'achievements' && <AchievementsList sessions={sessions} measurements={data.measurements} unit={unit} />}
@@ -245,11 +247,8 @@ function ShareSummaryCard({ sessions, unit }: { sessions: Session[]; unit: Unit 
 }
 
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
-  // El modo sencillo deja lo básico; el volumen por grupo y el equilibrio son para quien ya controla.
-  const simple = useData().settings.simpleMode === true
   const weeks = weekly(sessions, 12)
   const thisWeek = weeks[weeks.length - 1]
-  const muscles = setsByMuscle(sessions, Date.now() - 30 * 86400000)
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
   return (
     <>
@@ -259,14 +258,8 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Dumbbell} value={sessions.length} label={t('Entrenos totales', 'Total workouts')} />
         <Tile icon={Clock} value={duration(totalTime)} label={t('Tiempo total', 'Total time')} />
       </div>
-      <MonthCard sessions={sessions} unit={unit} />
-      <YearMap sessions={sessions} unit={unit} />
-      <ShareSummaryCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
-      <RecoveryCard sessions={sessions} />
-      <WeeklyMuscles sessions={sessions} />
-      {!simple && <WeeklyVolume sessions={sessions} />}
-      {!simple && <BalanceCard sessions={sessions} />}
+      <MonthCard sessions={sessions} unit={unit} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
@@ -274,10 +267,26 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue-text)" />
       </Card>
-      {muscles.length > 0 && (
+      <YearMap sessions={sessions} unit={unit} />
+      <ShareSummaryCard sessions={sessions} unit={unit} />
+    </>
+  )
+}
+
+/** Todo lo de los músculos: recuperación, la semana en el mapa, series por grupo y equilibrio. */
+function Muscles({ sessions }: { sessions: Session[] }) {
+  // El modo sencillo deja lo básico; el volumen por grupo y el equilibrio son para quien ya controla.
+  const simple = useData().settings.simpleMode === true
+  const muscles = useMemo(() => (simple ? setsByMuscle(sessions, Date.now() - 30 * 86400000) : []), [sessions, simple])
+  return (
+    <>
+      <RecoveryCard sessions={sessions} />
+      <WeeklyMuscles sessions={sessions} />
+      {!simple && <WeeklyVolume sessions={sessions} />}
+      {!simple && <BalanceCard sessions={sessions} />}
+      {simple && muscles.length > 0 && (
         <Card title={t('Series por músculo (30 días)', 'Sets per muscle (30 days)')} icon={PersonStanding}>
           <HBarChart items={muscles.map((m) => ({ label: muscleLabel(m.muscle), value: m.sets }))} />
-          <span className="small muted">{t('Para ganar músculo se suelen recomendar 10-20 series semanales por grupo.', 'For muscle gain, 10-20 weekly sets per group are usually recommended.')}</span>
         </Card>
       )}
     </>

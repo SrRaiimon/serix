@@ -31,7 +31,7 @@ export function EffortSuggestion({ exercise, settings, at, onApply }: {
             ? t(`Esa serie fue RPE ${s.rpe} y tocaba ~${s.target}: baja a ${weight(s.to, settings.unit)} ${n === 1 ? 'la que queda' : `las ${n} que quedan`} para mantener la técnica.`,
               `That set was RPE ${s.rpe} and ~${s.target} was planned: drop to ${weight(s.to, settings.unit)} for the ${n === 1 ? 'remaining set' : `${n} remaining sets`} to keep good form.`)
             : t(`Esa serie fue RPE ${s.rpe} y tocaba ~${s.target}: te sobra fuerza, puedes subir a ${weight(s.to, settings.unit)}.`,
-              `That set was RPE ${s.rpe} and ~${s.target} was planned: you have some left, you can go up to ${weight(s.to, settings.unit)}.`)}
+              `That set was RPE ${s.rpe} and ~${s.target} was planned: you had reps to spare, so you can go up to ${weight(s.to, settings.unit)}.`)}
         </span>
       </span>
       <div className="row" style={{ gap: 8 }}>

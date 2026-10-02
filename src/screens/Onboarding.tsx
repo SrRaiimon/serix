@@ -4,7 +4,7 @@ import { Card, Chip, Segmented, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, generate, goalInfo, goals, levelInfo, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
-import { updateSettings, useData } from '../lib/store'
+import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
 import { ProgramPreview, saveProgram } from './Routines'
 import { lang, t } from '../lib/i18n'
@@ -25,8 +25,10 @@ export function OnboardingScreen() {
 
   const finish = (p?: GeneratedProgram) => {
     if (p) saveProgram(p)
-    // A quien empieza le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se cambia en Perfil).
-    updateSettings({ onboarded: true, ...(settings.simpleMode === undefined && settings.level === 'beginner' ? { simpleMode: true } : {}) })
+    // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
+    // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
+    const firstTime = settings.simpleMode === undefined && getData().sessions.length === 0
+    updateSettings({ onboarded: true, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
   }
 
   if (program) {

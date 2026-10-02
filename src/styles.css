@@ -621,7 +621,8 @@ a.list-row:active {
 
 .segmented {
   display: grid;
-  grid-auto-columns: 1fr;
+  /* minmax(0, 1fr): con muchas opciones se reparten el ancho en vez de desbordar. */
+  grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   background: var(--fill);
   border-radius: 10px;
@@ -629,10 +630,20 @@ a.list-row:active {
 }
 
 .segmented button {
-  padding: 7px 8px;
+  padding: 7px 4px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* Con cinco opciones o más, letra algo menor para que quepan enteras en un móvil. */
+.segmented.many button {
+  font-size: 12.5px;
+  padding: 7px 2px;
 }
 
 .segmented button.active {

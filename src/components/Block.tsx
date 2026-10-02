@@ -67,7 +67,7 @@ export function BlockCard() {
       <Card title={t('Bloque de entrenamiento', 'Training block')} icon={Layers}>
         <span className="small muted">
           {t('Planifica unas semanas apretando cada vez un poco más (de 3 a 1 repeticiones en la recámara) y una semana de descarga al final para recuperar. Se repite solo.',
-            'Plan a few weeks pushing a little harder each time (from 3 down to 1 rep in reserve) and a deload week at the end to recover. It repeats by itself.')}
+            'Plan a few weeks pushing a little harder each time (from 3 down to 1 rep in reserve) and a deload week at the end to recover. It repeats automatically.')}
         </span>
         <Segmented value={String(weeks)} onChange={(v) => setWeeks(Number(v))}
           options={BLOCK_WEEKS.map((n) => ({ value: String(n), label: t(`${n} sem.`, `${n} wk`) }))} />

@@ -1,6 +1,6 @@
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
-import { workingSets } from './stats'
+import { setCount } from './stats'
 import type { Session } from './store'
 
 // Equilibrio muscular: compara las series de las últimas 4 semanas entre músculos que trabajan en
@@ -41,7 +41,7 @@ export function muscleBalance(sessions: Session[], now = Date.now()): Balance {
   for (const s of sessions) {
     if (s.start < since || s.start > now) continue
     for (const e of s.exercises) {
-      const n = workingSets(e).length
+      const n = setCount(e)
       if (!n) continue
       sets.set(e.muscle, (sets.get(e.muscle) ?? 0) + n)
       total += n

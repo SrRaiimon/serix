@@ -74,7 +74,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     const total = adjustRestForEffort(setId, rpe, base)
     if (total === undefined) return
     showToast(total > 0 ? t(`Descanso +${total} s: ha costado`, `Rest +${total} s: that was hard`)
-      : total < 0 ? t(`Descanso −${-total} s: te sobraba fuerza`, `Rest −${-total} s: you had energy left`)
+      : total < 0 ? t(`Descanso −${-total} s: te sobraba fuerza`, `Rest −${-total} s: you had reps to spare`)
         : t('Descanso normal', 'Normal rest'))
   }
 
@@ -285,9 +285,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       if (change.assisted !== undefined) e.assisted = change.assisted || undefined
       if (change.unilateral !== undefined) {
         e.unilateral = change.unilateral || undefined
-        const done = e.sets.filter((x) => x.done)
-        const pending = e.sets.filter((x) => !x.done)
-        e.sets = [...done, ...(change.unilateral ? toSides(pending) : fromSides(pending))]
+        // Se conservan el orden y las series ya hechas; solo cambian las pendientes.
+        e.sets = change.unilateral ? toSides(e.sets) : fromSides(e.sets)
       }
     })
     update((d) => {
@@ -457,7 +456,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined
               startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp, set.id)
               // Al fallo es RPE 10: el descanso se alarga ya.
-              if (set.kind === 'failure' && !set.warmup) onEffort(set.id, 10, exercise.rest)
+              if (set.kind === 'failure' && !set.warmup && !simple) onEffort(set.id, 10, exercise.rest)
               if (slot.letter) onRoundEnd()
             }} />
         )
@@ -492,7 +491,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
             onSelect: () => setMode({ unilateral: !exercise.unilateral }),
           }, {
-            label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight helps)'),
+            label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight = assistance)'),
             onSelect: () => setMode({ assisted: !exercise.assisted }),
           }] : []),
           { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },

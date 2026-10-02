@@ -139,7 +139,7 @@ export function Row({ icon: Icon, label, detail, onClick, chevron = true, classN
 
 export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
   return (
-    <div className="segmented">
+    <div className={`segmented ${options.length >= 5 ? 'many' : ''}`}>
       {options.map((o) => (
         <button key={o.value} className={o.value === value ? 'active' : ''} onClick={() => onChange(o.value)}>
           {o.label}

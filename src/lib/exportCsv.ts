@@ -34,8 +34,11 @@ export function sessionsToCsv(sessions: Session[], unit: Unit): string {
       for (const x of e.sets.filter((x) => x.done)) {
         rows.push([
           dateText(s.start), s.name, number(minutes), e.name,
-          x.warmup ? '' : String(++n), typeText(x.warmup, x.kind),
-          weighted || x.weight ? number(fromKg(x.weight, unit)) : '', weighted || x.reps ? String(x.reps) : '',
+          // Por lados, la pareja comparte número y el lado va en el tipo. La ayuda de las máquinas
+          // asistidas va en negativo (el convenio habitual: −20 = 20 kg de ayuda), nunca como carga.
+          x.warmup ? '' : String(x.side === 'R' ? n : ++n),
+          [typeText(x.warmup, x.kind), x.side === 'L' ? t('Izquierda', 'Left') : x.side === 'R' ? t('Derecha', 'Right') : ''].filter(Boolean).join(' · '),
+          weighted || x.weight ? number(fromKg(e.assisted && x.weight > 0 ? -x.weight : x.weight, unit)) : '', weighted || x.reps ? String(x.reps) : '',
           number(x.duration), number(x.distance), number(x.rpe), n === 1 && e === s.exercises[0] ? s.notes : '',
         ])
       }
