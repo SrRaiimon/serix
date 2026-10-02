@@ -165,7 +165,7 @@ function Screen({ route }: { route: string[] }) {
       if (a === 'friends') return b ? <FriendDetailScreen id={b} /> : <FriendsScreen />
       return <ProfileScreen />
     case 'timer':
-      return <IntervalScreen />
+      return <IntervalScreen key={b ?? ''} warmup={a === 'warmup' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined} />
     default:
       return <HomeScreen />
   }

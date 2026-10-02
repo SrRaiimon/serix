@@ -6,6 +6,7 @@ import { plural, t } from '../lib/i18n'
 import { buildSegments, DEFAULTS, positionAt, totalSeconds, type IntervalConfig, type IntervalMode, type Segment } from '../lib/intervals'
 import { playTone, unlockAudio } from '../lib/timer'
 import { speak } from '../lib/voice'
+import { focusLabel, WARMUP_FOCUS, type WarmupFocus } from '../lib/warmupRoutine'
 import { keepScreenOn } from '../lib/workout'
 
 // Temporizadores de intervalos: Tabata, EMOM y AMRAP (ver lib/intervals.ts).
@@ -26,8 +27,9 @@ function Select({ label, value, options, format, onChange }: { label: string; va
   )
 }
 
-export function IntervalScreen() {
-  const [config, setConfigState] = useState<IntervalConfig>(lastConfig)
+export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
+  // Desde un entrenamiento se llega con el calentamiento ya elegido (#/timer/warmup/<zona>).
+  const [config, setConfigState] = useState<IntervalConfig>(() => (warmup ? { ...DEFAULTS.warmup, focus: warmup } : lastConfig))
   const [running, setRunning] = useState(false)
   const setConfig = (c: IntervalConfig) => {
     lastConfig = c
@@ -42,16 +44,30 @@ export function IntervalScreen() {
       <NavBar showBack title={t('Temporizador', 'Timer')} />
       <div className="screen with-nav">
         <Segmented value={mode} onChange={(m: IntervalMode) => setConfig(DEFAULTS[m])} options={[
+          { value: 'warmup', label: t('Calentar', 'Warm-up') },
           { value: 'tabata', label: 'Tabata' }, { value: 'emom', label: 'EMOM' }, { value: 'amrap', label: 'AMRAP' },
         ]} />
         <p className="muted small" style={{ margin: 0 }}>
-          {mode === 'tabata'
+          {mode === 'warmup'
+            ? t('Movilidad y activación antes de entrenar: cada movimiento con su explicación y 5 s para cambiar al siguiente. Sin material.', 'Mobility and activation before training: each move with its explanation and 5 s to switch to the next one. No equipment.')
+            : mode === 'tabata'
             ? t('Rondas de trabajo y descanso. El clásico: 20 s a tope y 10 s de descanso, 8 rondas (4 minutos).', 'Rounds of work and rest. The classic: 20 s all-out and 10 s rest, 8 rounds (4 minutes).')
             : mode === 'emom'
               ? t('«Every minute on the minute»: al empezar cada intervalo haces el trabajo y descansas lo que te sobre.', '"Every minute on the minute": at the start of each interval you do the work and rest for whatever time is left.')
               : t('«As many rounds as possible»: todas las rondas que puedas en el tiempo fijado. Ve sumándolas con el botón.', '"As many rounds as possible": as many rounds as you can in the set time. Count them with the button.')}
         </p>
         <div className="list">
+          {mode === 'warmup' && (
+            <>
+              <label className="list-row">
+                <span className="grow">{t('Para', 'For')}</span>
+                <select className="select" value={config.focus ?? 'full'} onChange={(e) => setConfig({ ...config, focus: e.target.value as WarmupFocus })}>
+                  {WARMUP_FOCUS.map((f) => <option key={f} value={f}>{focusLabel(f)}</option>)}
+                </select>
+              </label>
+              <Select label={t('Cada movimiento', 'Each move')} value={config.work} options={[30, 45, 60]} format={seconds} onChange={(work) => setConfig({ ...config, work })} />
+            </>
+          )}
           {mode === 'tabata' && (
             <>
               <Select label={t('Trabajo', 'Work')} value={config.work} options={range(5, 300, 5)} format={seconds} onChange={(work) => setConfig({ ...config, work })} />
@@ -68,7 +84,7 @@ export function IntervalScreen() {
           {mode === 'amrap' && (
             <Select label={t('Duración', 'Duration')} value={config.work / 60} options={range(1, 60, 1)} format={(v) => `${v} min`} onChange={(m) => setConfig({ ...config, work: m * 60 })} />
           )}
-          <Select label={t('Preparación', 'Get ready')} value={config.prep} options={range(0, 30, 5)} format={(v) => (v ? `${v} s` : t('Ninguna', 'None'))} onChange={(prep) => setConfig({ ...config, prep })} />
+          {mode !== 'warmup' && <Select label={t('Preparación', 'Get ready')} value={config.prep} options={range(0, 30, 5)} format={(v) => (v ? `${v} s` : t('Ninguna', 'None'))} onChange={(prep) => setConfig({ ...config, prep })} />}
         </div>
         <Card>
           <span className="row" style={{ gap: 8 }}><Timer size={18} /> {t('Total', 'Total')}: <strong>{clock(totalSeconds(segments))}</strong></span>
@@ -84,7 +100,9 @@ export function IntervalScreen() {
 }
 
 const phaseName = (s: Segment, mode: IntervalMode) =>
-  s.kind === 'prep' ? t('PREPÁRATE', 'GET READY') : s.kind === 'rest' ? t('DESCANSO', 'REST') : mode === 'amrap' ? 'AMRAP' : t('TRABAJO', 'WORK')
+  s.kind === 'prep' ? t('PREPÁRATE', 'GET READY')
+    : mode === 'warmup' ? (s.kind === 'rest' ? t('SIGUIENTE', 'NEXT') : s.label ?? '')
+      : s.kind === 'rest' ? t('DESCANSO', 'REST') : mode === 'amrap' ? 'AMRAP' : t('TRABAJO', 'WORK')
 
 function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; segments: Segment[]; onClose: () => void }) {
   useScrollLock()
@@ -124,7 +142,8 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
         navigator.vibrate?.(150)
       }
       const s = pos.segment
-      speak(s.kind === 'prep' ? t('Prepárate', 'Get ready')
+      speak(config.mode === 'warmup' ? (s.kind === 'work' ? s.label ?? '' : `${t('Siguiente', 'Next')}: ${s.label ?? ''}`)
+        : s.kind === 'prep' ? t('Prepárate', 'Get ready')
         : s.kind === 'rest' ? t('Descanso', 'Rest')
           : config.mode === 'emom' ? t(`Minuto ${s.round}`, `Interval ${s.round}`)
             : config.mode === 'amrap' ? t('Adelante', 'Go')
@@ -162,7 +181,8 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
           </svg>
           <div className="rest-full-center">
             <span className="rest-full-label">
-              {config.mode === 'amrap' ? plural(amrapRounds, ['ronda', 'rondas'], ['round', 'rounds'])
+              {config.mode === 'warmup' ? (pos.segment.kind === 'work' ? t(`${pos.segment.round} de ${work}`, `${pos.segment.round} of ${work}`) : pos.segment.label ?? '')
+                : config.mode === 'amrap' ? plural(amrapRounds, ['ronda', 'rondas'], ['round', 'rounds'])
                 : pos.segment.round > 0 ? (config.mode === 'emom' ? t(`Minuto ${pos.segment.round} de ${work}`, `Interval ${pos.segment.round} of ${work}`) : t(`Ronda ${pos.segment.round} de ${work}`, `Round ${pos.segment.round} of ${work}`))
                   : ''}
             </span>
@@ -170,6 +190,7 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
             <span className="rest-full-label">{t('Total', 'Total')} {clock(Math.ceil(Math.max(0, pos.totalRemaining)))}</span>
           </div>
         </div>
+        {config.mode === 'warmup' && !pos.done && pos.segment.kind === 'work' && pos.segment.cue && <p className="interval-cue">{pos.segment.cue}</p>}
         <div className="rest-full-actions">
           {pos.done ? (
             <button className="btn primary" style={{ gridColumn: '1 / -1' }} onClick={onClose}>{t('Cerrar', 'Close')}</button>

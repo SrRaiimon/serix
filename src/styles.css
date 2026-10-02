@@ -1926,3 +1926,14 @@ html.scroll-locked body {
 .year-cell.future { opacity: 0.35; }
 .year-cell.selected { stroke: var(--text); stroke-width: 1.5; }
 .year-day { display: flex; flex-direction: column; gap: 8px; }
+
+/* MARK: Equilibrio muscular */
+
+.balance { display: flex; flex-direction: column; gap: 6px; }
+.balance-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--fill); }
+.balance-bar span { display: block; min-width: 3px; background: var(--accent); }
+.balance-bar span + span { background: var(--blue); }
+.balance-bar span.short { opacity: 0.45; }
+.warn-text { color: var(--amber-text); }
+.interval-phase { text-align: center; overflow-wrap: anywhere; padding: 0 16px; }
+.interval-cue { margin: 0; padding: 0 24px; text-align: center; font-size: 17px; color: rgba(235, 235, 245, 0.8); max-width: 420px; }

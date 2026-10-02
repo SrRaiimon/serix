@@ -1,11 +1,11 @@
 import { BlockCard } from '../components/Block'
-import { ArrowLeftRight, ClipboardList, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
+import { ArrowLeftRight, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, Thumb, Tile, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
-import { equipmentProfiles, generate, goals, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { finishedSessions, lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine } from '../lib/store'
@@ -53,6 +53,7 @@ export function RoutinesScreen() {
   const data = useData()
   const [showGenerator, setShowGenerator] = useState(false)
   const [show531, setShow531] = useState(false)
+  const [library, setLibrary] = useState(false)
   const [menu, setMenu] = useState(false)
   const [editing, setEditing] = useState<string>()
   const [programMenu, setProgramMenu] = useState<string>()
@@ -89,7 +90,10 @@ export function RoutinesScreen() {
       {data.routines.length === 0 ? (
         <Empty icon={ClipboardList} title={t('Aún no tienes rutinas', 'No routines yet')}
           message={t('Genera un programa según tu objetivo o crea tu propia rutina desde cero.', 'Generate a program for your goal or build your own routine from scratch.')}
-          action={<button className="btn primary" onClick={() => setShowGenerator(true)}><WandSparkles size={19} /> {t('Generar programa', 'Generate program')}</button>} />
+          action={<div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button className="btn primary" onClick={() => setShowGenerator(true)}><WandSparkles size={19} /> {t('Generar programa', 'Generate program')}</button>
+            <button className="btn secondary" onClick={() => setLibrary(true)}><Library size={19} /> {t('Biblioteca', 'Library')}</button>
+          </div>} />
       ) : (
         <>
         <BlockCard />
@@ -110,6 +114,7 @@ export function RoutinesScreen() {
 
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
+          { label: t('Biblioteca de programas', 'Program library'), onSelect: () => setLibrary(true) },
           { label: t('Generar programa', 'Generate program'), onSelect: () => setShowGenerator(true) },
           { label: t('Programa 5/3/1 (fuerza)', '5/3/1 program (strength)'), onSelect: () => setShow531(true) },
           { label: t('Nueva rutina vacía', 'New empty routine'), onSelect: createRoutine },
@@ -135,6 +140,7 @@ export function RoutinesScreen() {
       )}
       {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
       {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
+      {library && <LibrarySheet onClose={() => setLibrary(false)} />}
       {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
       {qrSheet}
       {toast}
@@ -532,6 +538,73 @@ const progressionOptions = (): { id: Progression | ''; label: string }[] => [
 ]
 
 /** Crea el programa 5/3/1 (4 días) a partir del 1RM de los cuatro básicos. */
+/** Programas listos para usar (lib/generator.ts, LIBRARY): elegir, ver y añadir. */
+function LibrarySheet({ onClose }: { onClose: () => void }) {
+  const catalog = useCatalog()
+  const data = useData()
+  const [chosen, setChosen] = useState<LibraryProgram>()
+  const [equipment, setEquipment] = useState<EquipmentProfile>(data.settings.equipment)
+  const program = useMemo(() => (chosen ? buildLibraryProgram(chosen, equipment, catalog) : undefined), [chosen, equipment, catalog])
+
+  const add = () => {
+    if (!program) return
+    // Si ya tienes uno con ese nombre, se añade con otro para no mezclarlos.
+    const taken = new Set(data.routines.map((r) => r.programName))
+    let name = program.name
+    for (let n = 2; taken.has(name); n++) name = `${program.name} (${n})`
+    saveProgram({ ...program, name })
+    onClose()
+    navigate('routines')
+  }
+
+  if (chosen && program) {
+    return (
+      <Sheet title={t(...chosen.name)} onClose={onClose}
+        left={<button className="nav-btn" onClick={() => setChosen(undefined)}>{t('Atrás', 'Back')}</button>}
+        footer={<button className="btn primary block" onClick={add}>{t('Añadir programa', 'Add program')}</button>}>
+        <p className="muted" style={{ margin: 0 }}>{t(...chosen.description)}</p>
+        {!chosen.equipment && (
+          <label className="list-row card-row">
+            <span className="grow">{t('Material', 'Equipment')}</span>
+            <select className="select" value={equipment} onChange={(e) => setEquipment(e.target.value as EquipmentProfile)}>
+              {equipmentProfiles.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+          </label>
+        )}
+        {program.days.map((d, i) => (
+          <Card key={i} title={d.name}>
+            {d.exercises.map((g) => (
+              <div key={g.exercise.id} className="row" style={{ gap: 10 }}>
+                <Thumb exerciseId={g.exercise.id} size={40} />
+                <span className="grow clamp-2">{g.exercise.name}</span>
+                <span className="small muted" style={{ whiteSpace: 'nowrap' }}>{g.sets} × {g.repsMin === g.repsMax ? g.repsMin : `${g.repsMin}-${g.repsMax}`}</span>
+              </div>
+            ))}
+          </Card>
+        ))}
+        <p className="small muted" style={{ margin: 0 }}>{t('El peso sube solo cuando completas las repeticiones. Puedes cambiar cualquier ejercicio después, como en cualquier rutina.', 'The weight goes up by itself when you complete the reps. You can change any exercise afterwards, as in any routine.')}</p>
+      </Sheet>
+    )
+  }
+
+  return (
+    <Sheet title={t('Biblioteca de programas', 'Program library')} onClose={onClose}
+      left={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
+      <div className="list">
+        {LIBRARY.map((p) => (
+          <button key={p.id} className="list-row" onClick={() => setChosen(p)}>
+            <span className="grow" style={{ textAlign: 'left' }}>
+              <span className="bold" style={{ display: 'block' }}>{t(...p.name)}</span>
+              <span className="small muted clamp-2">{levelInfo(p.level).label}{p.equipment ? ` · ${equipmentInfo(p.equipment).label}` : ''} · {t(...p.description)}</span>
+            </span>
+            <ChevronRight size={18} className="muted" />
+          </button>
+        ))}
+      </div>
+    </Sheet>
+  )
+}
+
 function Program531Sheet({ onClose }: { onClose: () => void }) {
   const catalog = useCatalog()
   const data = useData()

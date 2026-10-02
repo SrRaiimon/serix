@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy, Weight } from 'lucide-react'
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy, Weight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -15,6 +15,7 @@ import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
 import { RecoveryCard } from '../components/Recovery'
 import { YearMap } from '../components/YearMap'
+import { balanceTip, muscleBalance } from '../lib/balance'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 
@@ -55,6 +56,40 @@ export function ProgressScreen() {
         </>
       )}
     </div>
+  )
+}
+
+/** Equilibrio entre músculos opuestos en las últimas 4 semanas (lib/balance.ts). */
+function BalanceCard({ sessions }: { sessions: Session[] }) {
+  const balance = useMemo(() => muscleBalance(sessions), [sessions])
+  if (balance.total === 0) return null
+  return (
+    <Card title={t('Equilibrio muscular (4 semanas)', 'Muscle balance (4 weeks)')} icon={Scale}>
+      {balance.pairs.map((p) => {
+        const [a, b] = p.sets
+        const total = a + b
+        return (
+          <div key={p.id} className="balance">
+            <span className="row between small">
+              <span className="bold">{t(...p.sides[0])} <span className="muted">{a}</span></span>
+              <span className="bold">{t(...p.sides[1])} <span className="muted">{b}</span></span>
+            </span>
+            <div className="balance-bar" role="img" aria-label={`${t(...p.sides[0])} ${a} ${t('series', 'sets')}, ${t(...p.sides[1])} ${b} ${t('series', 'sets')}`}>
+              <span style={{ width: `${total ? (a / total) * 100 : 50}%` }} className={p.short === 0 ? 'short' : ''} />
+              <span style={{ width: `${total ? (b / total) * 100 : 50}%` }} className={p.short === 1 ? 'short' : ''} />
+            </div>
+            {total === 0
+              ? <span className="small muted">{t('Sin series de estos grupos en 4 semanas.', 'No sets for these groups in 4 weeks.')}</span>
+              : total < 12
+                ? <span className="small muted">{t('Aún pocas series para valorarlo.', 'Too few sets to judge yet.')}</span>
+                : <span className={`small ${p.short !== undefined ? 'warn-text' : 'muted'}`}>{p.short !== undefined && <AlertTriangle size={14} style={{ verticalAlign: -2 }} />} {balanceTip(p)}</span>}
+          </div>
+        )
+      })}
+      {balance.neglected.length > 0 && (
+        <span className="small warn-text"><AlertTriangle size={14} style={{ verticalAlign: -2 }} /> {t(`Sin ninguna serie en 4 semanas: ${balance.neglected.map((n) => t(...n).toLowerCase()).join(', ')}.`, `No sets at all in 4 weeks: ${balance.neglected.map((n) => t(...n).toLowerCase()).join(', ')}.`)}</span>
+      )}
+    </Card>
   )
 }
 
@@ -189,6 +224,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <Stalls sessions={sessions} unit={unit} />
       <RecoveryCard sessions={sessions} />
       <WeeklyMuscles sessions={sessions} />
+      <BalanceCard sessions={sessions} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>

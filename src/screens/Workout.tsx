@@ -1,5 +1,7 @@
 import { BlockStatus } from '../components/Block'
-import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { navigate } from '../lib/router'
+import { focusFor } from '../lib/warmupRoutine'
+import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -157,6 +159,12 @@ export function WorkoutScreen({ session }: { session: Session }) {
               </>
             )}
             <BlockStatus at={session.start} />
+            {done === 0 && session.exercises.length > 0 && (
+              <button className="link-btn small" style={{ color: 'var(--accent-text)' }} onClick={() => {
+                minimizeWorkout()
+                navigate('timer', 'warmup', focusFor(session.exercises.map((e) => e.muscle)))
+              }}><Flame size={14} style={{ verticalAlign: -2 }} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
+            )}
           </div>
 
           {runs.map((run) => {

@@ -191,3 +191,103 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     days,
   }
 }
+
+// MARK: Biblioteca de programas
+//
+// Programas clásicos con nombres genéricos (sin copiar programas con marca). Usan los mismos huecos que
+// el generador, así que se adaptan al material elegido: con mancuernas, la sentadilla pasa a ser
+// sentadilla con mancuernas o goblet, etc.
+
+type SchemeRow = [sets: number, repsMin: number, repsMax: number, rest: number]
+
+export interface LibraryProgram {
+  id: string
+  name: [es: string, en: string]
+  description: [es: string, en: string]
+  days: number
+  level: TrainingLevel
+  /** Material fijo (programas pensados para casa); sin valor, el que elijas. */
+  equipment?: EquipmentProfile
+  templates: Template[]
+  scheme: Record<Kind, SchemeRow>
+  progression?: Progression
+}
+
+const HYPERTROPHY: Record<Kind, SchemeRow> = { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] }
+const BEGINNER: Record<Kind, SchemeRow> = { compound: [3, 8, 12, 90], accessory: [2, 10, 15, 60], core: [2, 12, 15, 45], conditioning: [3, 10, 15, 45] }
+const STRENGTH_5X5: Record<Kind, SchemeRow> = { compound: [5, 5, 5, 180], accessory: [3, 8, 12, 90], core: [3, 10, 15, 60], conditioning: [3, 10, 15, 45] }
+const HOME: Record<Kind, SchemeRow> = { compound: [3, 10, 15, 75], accessory: [3, 12, 20, 45], core: [3, 15, 20, 30], conditioning: [3, 30, 40, 30] }
+
+const strengthA = T(['Fuerza A', 'Strength A'], [['squat', 0], ['chestPress', 0], ['horizontalPull', 0]])
+const strengthB = T(['Fuerza B', 'Strength B'], [['squat', 0], ['shoulderPress', 0], ['hinge', 0]])
+const homeA = T(['Casa A', 'Home A'], [['squat', 2], ['chestPress', 1], ['horizontalPull', 2], ['shoulderPress', 1], ['lunge', 0], ['core', 0]])
+const homeB = T(['Casa B', 'Home B'], [['hinge', 2], ['inclinePress', 1], ['horizontalPull', 3], ['lateralRaise', 0], ['biceps', 1], ['triceps', 2], ['core', 1]])
+const quickA = T(['Exprés A', 'Express A'], [['squat', 0], ['chestPress', 0], ['horizontalPull', 0], ['core', 0]])
+const quickB = T(['Exprés B', 'Express B'], [['hinge', 1], ['shoulderPress', 0], ['verticalPull', 0], ['lunge', 0]])
+
+export const LIBRARY: LibraryProgram[] = [
+  {
+    id: 'fullbody3', name: ['Cuerpo completo · 3 días', 'Full body · 3 days'], days: 3, level: 'beginner',
+    description: ['El mejor punto de partida: todo el cuerpo en cada sesión, tres días alternos. Pocas series y técnica primero.', 'The best starting point: the whole body every session, three non-consecutive days. Few sets and technique first.'],
+    templates: [fullBodyA, fullBodyB, fullBodyC], scheme: BEGINNER,
+  },
+  {
+    id: 'express2', name: ['Exprés · 2 días', 'Express · 2 days'], days: 2, level: 'beginner',
+    description: ['Para semanas con poco tiempo: 4 ejercicios básicos por sesión, unos 40 minutos.', 'For busy weeks: 4 basic exercises per session, about 40 minutes.'],
+    templates: [quickA, quickB], scheme: BEGINNER,
+  },
+  {
+    id: 'strength5x5', name: ['Fuerza 5×5 · 3 días', 'Strength 5×5 · 3 days'], days: 3, level: 'beginner', progression: 'linear',
+    description: ['Dos sesiones (A y B) que se alternan: 5 series de 5 en los básicos y subida de peso en cada sesión si completas todas. Clásico para ganar fuerza rápido al principio.', 'Two sessions (A and B) that alternate: 5 sets of 5 on the main lifts and a weight increase each session if you complete them all. A classic for fast early strength gains.'],
+    templates: [strengthA, strengthB], scheme: STRENGTH_5X5,
+  },
+  {
+    id: 'ppl3', name: ['Empuje / Tirón / Pierna · 3 días', 'Push / Pull / Legs · 3 days'], days: 3, level: 'intermediate',
+    description: ['Cada grupo una vez por semana con bastante volumen por sesión.', 'Each group once a week with plenty of volume per session.'],
+    templates: [pushA, pullA, legsA], scheme: HYPERTROPHY,
+  },
+  {
+    id: 'upperlower4', name: ['Torso / Pierna · 4 días', 'Upper / Lower · 4 days'], days: 4, level: 'intermediate',
+    description: ['Cada músculo dos veces por semana: el reparto más equilibrado para ganar músculo con 4 días.', 'Every muscle twice a week: the most balanced split for building muscle on 4 days.'],
+    templates: [upperA, lowerA, upperB, lowerB], scheme: HYPERTROPHY,
+  },
+  {
+    id: 'ppl6', name: ['Empuje / Tirón / Pierna · 6 días', 'Push / Pull / Legs · 6 days'], days: 6, level: 'advanced',
+    description: ['Cada grupo dos veces por semana con dos variantes de cada sesión. Mucho volumen: para quien ya entrena con constancia.', 'Each group twice a week with two variants of each session. High volume: for people who already train consistently.'],
+    templates: [pushA, pullA, legsA, pushB, pullB, legsB], scheme: HYPERTROPHY,
+  },
+  {
+    id: 'home-dumbbells', name: ['En casa con mancuernas · 3 días', 'Home with dumbbells · 3 days'], days: 3, level: 'beginner', equipment: 'dumbbells',
+    description: ['Solo mancuernas y un banco (o una silla firme). Alterna A y B.', 'Just dumbbells and a bench (or a sturdy chair). Alternate A and B.'],
+    templates: [homeA, homeB, homeA], scheme: HOME,
+  },
+  {
+    id: 'home-bodyweight', name: ['Peso corporal · 3 días', 'Bodyweight · 3 days'], days: 3, level: 'beginner', equipment: 'bodyweight',
+    description: ['Sin material: flexiones, sentadillas, zancadas, remo invertido (con una mesa) y core.', 'No equipment: push-ups, squats, lunges, inverted rows (under a table) and core.'],
+    templates: [homeA, homeB, homeA], scheme: HOME,
+  },
+]
+
+/** Un programa de la biblioteca con los ejercicios del material indicado. */
+export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog): GeneratedProgram {
+  const allowed = new Set(equipmentInfo(p.equipment ?? equipment).allowed)
+  const days = p.templates.map((template, index) => {
+    const used = new Set<string>()
+    const exercises: GeneratedExercise[] = []
+    for (const [name, variant] of template.slots) {
+      const slot: Slot = slots[name]
+      const exercise = pick(slot, variant, allowed, used, catalog)
+      if (!exercise) continue
+      used.add(exercise.id)
+      const [sets, repsMin, repsMax, rest] = p.scheme[slot.kind]
+      exercises.push({ exercise, sets, repsMin, repsMax, rest, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
+    }
+    return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
+  })
+  const level = levelInfo(p.level).label
+  return {
+    name: t(...p.name),
+    summary: `${t(`${p.days} días por semana`, `${p.days} days a week`)} · ${level} · ${equipmentInfo(p.equipment ?? equipment).label}`,
+    days,
+  }
+}
