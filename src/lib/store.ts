@@ -148,6 +148,8 @@ export interface Settings {
   /** Guía de primeros pasos en Inicio: oculta, y si ya visitó Progreso. */
   guideHidden?: boolean
   guideProgressSeen?: boolean
+  /** No ajustar el descanso según el RPE de la serie (por defecto sí se ajusta). */
+  effortRestOff?: boolean
   /** Preguntar el RPE al marcar cada serie. */
   rpe: boolean
   /** 1 = Exercise Gym GIFs DB (antiguo), 2 = catálogo propio actual. */

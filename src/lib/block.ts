@@ -1,4 +1,4 @@
-import { startOfWeek } from './format'
+import { addDays, startOfWeek } from './format'
 import { t } from './i18n'
 
 // Bloques de entrenamiento (mesociclos): unas semanas apretando cada vez un poco más y, al final, una
@@ -42,6 +42,15 @@ export function blockWeek(b: TrainingBlock | undefined, now = Date.now()): Block
   if (week === b.weeks) return { week, weeks: b.weeks, cycle, deload: true }
   const rir = loading <= 1 ? 2 : Math.round(3 - (2 * (week - 1)) / (loading - 1))
   return { week, weeks: b.weeks, cycle, deload: false, rir }
+}
+
+/**
+ * Cuándo empieza un bloque nuevo: esta semana si aún queda la mayor parte (de lunes a jueves); si no,
+ * el lunes siguiente, para que la primera semana de carga no dure uno o dos días.
+ */
+export function blockStart(now = Date.now()): number {
+  const day = new Date(now).getDay()
+  return day >= 1 && day <= 4 ? now : addDays(startOfWeek(now), 7).getTime()
 }
 
 /** Qué toca esta semana, en una frase. */

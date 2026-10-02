@@ -3,7 +3,7 @@ import { addDays, startOfDay, startOfWeek } from './format'
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { canCompress, fromBase64Url, shareLink, toBase64Url, transform } from './share'
-import { newRecords, periodStats, records, sessionVolume, streakWeeks, workingSets, type PeriodStats } from './stats'
+import { periodStats, records, sessionVolume, streakWeeks, workingSets, type PeriodStats } from './stats'
 import { finishedSessions, getData, updateSettings, type AppData, type Session } from './store'
 
 // Retos entre amigos sin servidor: cada uno comparte por enlace (o QR) un resumen de su semana y su
@@ -246,16 +246,23 @@ function muscleSets(sessions: Session[], now: number): number[] {
 }
 
 function recentRecords(sessions: Session[], now: number): RecentRecord[] {
+  // Una sola pasada en orden: el mejor 1RM estimado de cada ejercicio hasta cada sesión (igual que
+  // newRecords, pero sin recalcular todo el historial para cada sesión).
   const since = now - 30 * 86400000
-  const best = new Map<string, RecentRecord>()
-  for (const s of sessions) {
-    if (s.start < since || s.start > now) continue
-    for (const r of newRecords(s, sessions)) {
-      const prev = best.get(r.exerciseId)
-      if (!prev || r.date >= prev.at) best.set(r.exerciseId, { exerciseId: r.exerciseId, name: r.name, weight: r.weight, reps: r.reps, at: r.date })
+  const bestBefore = new Map<string, number>()
+  const found = new Map<string, RecentRecord>()
+  for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
+    if (s.start > now) break
+    const mine = records([s])
+    for (const r of mine) {
+      const prev = bestBefore.get(r.exerciseId)
+      if (s.start >= since && prev !== undefined && r.e1rm > prev + 0.01) {
+        found.set(r.exerciseId, { exerciseId: r.exerciseId, name: r.name, weight: r.weight, reps: r.reps, at: r.date })
+      }
     }
+    for (const r of mine) bestBefore.set(r.exerciseId, Math.max(bestBefore.get(r.exerciseId) ?? 0, r.e1rm))
   }
-  return [...best.values()].sort((a, b) => b.at - a.at).slice(0, 3)
+  return [...found.values()].sort((a, b) => b.at - a.at).slice(0, 3)
 }
 
 /** Peso corporal más reciente (kg). */

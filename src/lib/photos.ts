@@ -24,19 +24,30 @@ const STORE = 'photos'
 const MAX_SIDE = 1600
 const THUMB_SIDE = 360
 
+// Una sola conexión para toda la sesión (abrir una por operación las va acumulando).
+let db: Promise<IDBDatabase> | undefined
+
 function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  db ??= new Promise<IDBDatabase>((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1)
     req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id' })
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      // Si el navegador la cierra (p. ej. al borrar datos del sitio), la siguiente operación abre otra.
+      req.result.onclose = () => { db = undefined }
+      resolve(req.result)
+    }
+    req.onerror = () => {
+      db = undefined
+      reject(req.error)
+    }
   })
+  return db
 }
 
 async function run<T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T> | void): Promise<T | undefined> {
-  const db = await openDB()
+  const conn = await openDB()
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, mode)
+    const tx = conn.transaction(STORE, mode)
     const req = action(tx.objectStore(STORE))
     tx.oncomplete = () => resolve(req ? req.result : undefined)
     tx.onerror = () => reject(tx.error)
@@ -69,9 +80,36 @@ export function usePhotos(): Photo[] | undefined {
 
 // MARK: Guardar, borrar
 
+/** Ancho y alto de la imagen sin dibujarla (el navegador no la decodifica entera para esto). */
+function dimensions(source: Blob): Promise<{ width: number; height: number }> {
+  const url = URL.createObjectURL(source)
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => reject(new Error('image'))
+    img.src = url
+  }).finally(() => URL.revokeObjectURL(url))
+}
+
+/**
+ * Decodifica ya reducida: una foto de 50 o 100 megapíxeles a tamaño completo ocupa cientos de MB y
+ * puede tumbar la app en un móvil modesto. Solo se fija el ancho, así nunca se deforma aunque el
+ * navegador gire la imagen (EXIF) antes o después de reducirla.
+ */
+async function decode(source: Blob, side: number): Promise<ImageBitmap> {
+  try {
+    const { width, height } = await dimensions(source)
+    const scale = Math.min(1, side / Math.max(width, height))
+    if (scale < 1) return await createImageBitmap(source, { imageOrientation: 'from-image', resizeWidth: Math.round(width * scale), resizeQuality: 'high' })
+  } catch {
+    /* sin estas opciones (navegadores antiguos): sin reducir al decodificar */
+  }
+  return createImageBitmap(source, { imageOrientation: 'from-image' })
+}
+
 /** Reduce una imagen a JPEG con el lado mayor como mucho de `side` px (respeta la orientación EXIF). */
 async function shrink(source: Blob, side: number, quality: number): Promise<Blob> {
-  const bitmap = await createImageBitmap(source, { imageOrientation: 'from-image' })
+  const bitmap = await decode(source, side)
   const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(bitmap.width * scale)

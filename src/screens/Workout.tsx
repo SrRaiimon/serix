@@ -8,7 +8,7 @@ import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { e1rm, lastSets, progressionHint, records, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
-import { addRest, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
+import { addRest, adjustRestForEffort, dismissRestDone, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { addExercises, applyDeload, discardSession, finishSession, keepScreenOn, minimizeWorkout, replaceSessionExercise } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
@@ -57,6 +57,13 @@ export function WorkoutScreen({ session }: { session: Session }) {
     }
   }
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
+  const onEffort = (setId: string, rpe: number | undefined, base: number) => {
+    const total = adjustRestForEffort(setId, rpe, base)
+    if (total === undefined) return
+    showToast(total > 0 ? t(`Descanso +${total} s: ha costado`, `Rest +${total} s: that was hard`)
+      : total < 0 ? t(`Descanso −${-total} s: te sobraba fuerza`, `Rest −${-total} s: you had energy left`)
+        : t('Descanso normal', 'Normal rest'))
+  }
 
   // Dentro de una superserie o circuito no se descansa: se pasa directamente al siguiente ejercicio.
   const goToNext = (from: number) => {
@@ -107,6 +114,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         rpeFor={rpeFor}
         onAskRpe={askRpe}
         onSetDone={(set) => onSetDone(e, set)}
+        onEffort={onEffort}
       />
     )
   }
@@ -198,7 +206,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -222,6 +230,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   onAskRpe: (setId?: string) => void
   /** Serie recién marcada (para avisar si es récord). */
   onSetDone: (set: SetEntry) => void
+  /** Esfuerzo de una serie: ajusta el descanso que empezó (ver adjustRestForEffort). */
+  onEffort: (setId: string, rpe: number | undefined, base: number) => void
 }) {
   const [menu, setMenu] = useState(false)
   const [restMenu, setRestMenu] = useState(false)
@@ -354,6 +364,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             askRpe={rpeFor === set.id}
             onAskRpe={() => onAskRpe(set.id)}
             onRpeDone={() => onAskRpe(undefined)}
+            onRpePicked={(rpe) => onEffort(set.id, rpe, exercise.rest)}
             onCompleted={() => {
               onSetDone(set)
               if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
@@ -363,7 +374,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
               const later = exercise.sets.slice(i + 1).find((s) => !s.done)
               const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined
-              startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp)
+              startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp, set.id)
+              // Al fallo es RPE 10: el descanso se alarga ya.
+              if (set.kind === 'failure' && !set.warmup) onEffort(set.id, 10, exercise.rest)
               if (slot.letter) onRoundEnd()
             }} />
         )
@@ -426,11 +439,13 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onChange, onDelete, onCompleted }: {
+function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted }: {
   set: SetEntry
   askRpe: boolean
   onAskRpe: () => void
   onRpeDone: () => void
+  /** RPE elegido (para ajustar el descanso). */
+  onRpePicked: (rpe: number | undefined) => void
   label: string
   previous?: SetEntry
   tracking: Tracking
@@ -549,7 +564,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
     </div>
     {set.done && !set.warmup && (askRpe || set.rpe !== undefined) && (
       <RpeRow value={set.rpe} open={askRpe} onOpen={onAskRpe}
-        onPick={(rpe) => { onChange({ rpe }); onRpeDone() }} />
+        onPick={(rpe) => { onChange({ rpe }); onRpeDone(); onRpePicked(rpe) }} />
     )}
     </>
   )

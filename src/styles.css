@@ -1877,7 +1877,13 @@ html.scroll-locked body {
 .compare-photos { position: relative; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: var(--fill); touch-action: pan-y; }
 .compare-line { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 6px rgba(0, 0, 0, 0.5); pointer-events: none; }
 .compare-photos input[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
-.photo-viewer { position: fixed; inset: 0; z-index: 60; background: #000; display: flex; flex-direction: column; }
+/* El visor es siempre oscuro (la foto luce más sobre negro): usa los colores del tema oscuro. */
+.photo-viewer {
+  position: fixed; inset: 0; z-index: 60; background: #000; display: flex; flex-direction: column; color-scheme: dark;
+  --accent: #ff7345; --bg: #000000; --card: #1c1c1e; --fill: rgba(118, 118, 128, 0.24); --text: #f5f5f7; --text-2: rgba(235, 235, 245, 0.6);
+  --accent-text: #ff8a5c; --red-text: #ff453a; --bar: rgba(22, 22, 24, 0.86); --separator: rgba(84, 84, 88, 0.6);
+  color: var(--text);
+}
 .photo-viewer-img { flex: 1; min-height: 0; display: grid; place-items: center; }
 .photo-viewer-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .photo-viewer-bar { padding: 12px 16px calc(12px + var(--safe-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; background: var(--bg); }
@@ -1909,3 +1915,14 @@ html.scroll-locked body {
 .block-dots span.deload.current { background: var(--green); box-shadow: none; }
 .period-preview { display: grid; place-items: center; min-height: 200px; }
 .period-preview img { width: 100%; max-width: 320px; border-radius: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+
+/* MARK: Mapa del año */
+
+.year-map { display: block; cursor: pointer; touch-action: manipulation; }
+.year-map-label { font-size: 8px; fill: var(--text-2); }
+.year-cell { fill: var(--fill); }
+.year-cell.on { fill: var(--accent); opacity: 0.6; }
+.year-cell.hot { fill: var(--accent); }
+.year-cell.future { opacity: 0.35; }
+.year-cell.selected { stroke: var(--text); stroke-width: 1.5; }
+.year-day { display: flex; flex-direction: column; gap: 8px; }

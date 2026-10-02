@@ -189,10 +189,47 @@ function schedule() {
   syncLockScreen()
 }
 
-/** @param next lo que toca después (ejercicio y serie), para el aviso por voz */
-export function startRest(seconds: number, next?: string) {
+// MARK: Descanso según el esfuerzo
+
+/** Serie que inició el descanso en curso y cuánto se ha ajustado ya por su RPE. */
+let restSetId: string | undefined
+let effortApplied = 0
+
+/**
+ * Segundos de más (o de menos) según el esfuerzo de la serie: al límite (RPE 9,5–10) +30 s, RPE 9
+ * +15 s y si sobró fuerza (RPE 7 o menos) −15 s. Descansos muy cortos (menos de 45 s) no se tocan.
+ */
+export function effortRestDelta(rpe: number | undefined, base: number): number {
+  if (rpe === undefined || base < 45) return 0
+  if (rpe >= 9.5) return 30
+  if (rpe >= 9) return 15
+  if (rpe <= 7) return -15
+  return 0
+}
+
+/**
+ * Ajusta el descanso en curso al RPE de la serie que lo empezó. Si se cambia el RPE se aplica solo la
+ * diferencia. Devuelve el ajuste total, o `undefined` si no se tocó (otro descanso, ya terminado o
+ * desactivado en Perfil).
+ */
+export function adjustRestForEffort(setId: string, rpe: number | undefined, base: number): number | undefined {
+  if (getData().settings.effortRestOff || !state.endAt || restSetId !== setId) return undefined
+  const delta = effortRestDelta(rpe, base) - effortApplied
+  if (!delta) return undefined
+  effortApplied += delta
+  addRest(delta)
+  return effortApplied
+}
+
+/**
+ * @param next lo que toca después (ejercicio y serie), para el aviso por voz
+ * @param setId la serie que acaba de terminar (para ajustar el descanso a su RPE)
+ */
+export function startRest(seconds: number, next?: string, setId?: string) {
   if (seconds <= 0) return
   nextLabel = next
+  restSetId = setId
+  effortApplied = 0
   unlockAudio()
   set({ endAt: Date.now() + seconds * 1000, total: seconds * 1000, big: preferBig })
   schedule()
@@ -212,7 +249,8 @@ export function stopRest() {
   cancelBeep()
   set({ total: 0 })
   clearRestFromLockScreen()
-  if (lockScreenOn()) void cancelRestNotification()
+  // Siempre: el aviso pudo programarse antes de desactivarlo en Perfil.
+  void cancelRestNotification()
 }
 
 /** Amplía o reduce la cuenta atrás (y lo recuerda para los siguientes descansos). */

@@ -135,6 +135,7 @@ function settings(v: unknown): Settings {
       lb: list(s.plates.lb, (x) => (typeof x === 'number' && PLATE_OPTIONS.lb.includes(x) ? x : undefined), 20),
     } : undefined,
     block: cleanBlock(s.block),
+    effortRestOff: s.effortRestOff === true ? true : undefined,
     guideHidden: s.guideHidden === true ? true : undefined,
     guideProgressSeen: s.guideProgressSeen === true ? true : undefined,
     shareBodyWeight: s.shareBodyWeight === true ? true : undefined,

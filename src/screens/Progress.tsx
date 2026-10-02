@@ -14,6 +14,7 @@ import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
 import { RecoveryCard } from '../components/Recovery'
+import { YearMap } from '../components/YearMap'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 
@@ -183,6 +184,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <Tile icon={Clock} value={duration(totalTime)} label={t('Tiempo total', 'Total time')} />
       </div>
       <MonthCard sessions={sessions} unit={unit} />
+      <YearMap sessions={sessions} unit={unit} />
       <ShareSummaryCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
       <RecoveryCard sessions={sessions} />

@@ -11,6 +11,7 @@ import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { RECOVERING, useRecovery } from '../components/Recovery'
 import { BlockStatus } from '../components/Block'
+import { blockWeek } from '../lib/block'
 import { SessionRow } from '../components/SessionRow'
 import { plural, t } from '../lib/i18n'
 import { copiedToast, shareMine, shareReminderDue } from '../lib/friends'
@@ -43,7 +44,7 @@ export function HomeScreen() {
 
       {!active && guideVisible(data, sessions.length) && <GuideCard next={next} />}
 
-      {!active && data.settings.block && <div className="card"><BlockStatus /></div>}
+      {!active && blockWeek(data.settings.block) && <div className="card"><BlockStatus /></div>}
 
       {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : guideVisible(data, sessions.length) ? null : (
         <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>

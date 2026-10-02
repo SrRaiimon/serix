@@ -161,3 +161,16 @@ test('los trofeos viajan en el resumen y se acotan; la clasificación final no v
   assert.deepEqual(cleanSnapshot({ ...s, trophies: [-1, 1e9, 'x', 2] })?.trophies, [0, 10000, 0, 2])
   assert.deepEqual(cleanChallenge(c)?.final, c.final) // en la copia de seguridad sí se guarda
 })
+
+test('récords recientes: solo mejoras de los últimos 30 días frente a lo anterior', () => {
+  const B = 'Barbell_Squat'
+  const hist = [
+    at(60, [exercise(B, [set(100, 5)])]),
+    at(20, [exercise(B, [set(110, 5)])]), // récord
+    at(10, [exercise(B, [set(105, 5)])]), // no
+    at(5, [exercise('Pullups', [set(10, 8)])]), // primera vez: no es récord
+    at(2, [exercise(B, [set(110, 6)])]), // récord (más reps)
+  ]
+  const s = mySnapshot(data, hist, now)
+  assert.deepEqual(s.prs?.map((r) => [r.exerciseId, r.weight, r.reps]), [[B, 110, 6]])
+})

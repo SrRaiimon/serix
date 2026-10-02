@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { blockWeek, cleanBlock } from '../src/lib/block'
+import { blockStart, blockWeek, cleanBlock } from '../src/lib/block'
 import { periodRange, summarize } from '../src/lib/periodCard'
 import { exercise, set } from './helpers'
 import type { Session } from '../src/lib/store'
@@ -64,4 +64,15 @@ test('rangos de los periodos', () => {
   const now = new Date(2026, 0, 15, 9).getTime()
   assert.deepEqual(periodRange('lastMonth', now), { from: new Date(2025, 11, 1).getTime(), to: new Date(2026, 0, 1).getTime() })
   assert.equal(periodRange('month', now).to, new Date(2026, 0, 16).getTime())
+})
+
+test('un bloque nuevo empieza esta semana de lunes a jueves; si no, el lunes siguiente', () => {
+  const thursday = monday + 3 * DAY
+  assert.equal(blockStart(thursday), thursday)
+  const friday = monday + 4 * DAY
+  assert.equal(blockStart(friday), new Date(2026, 0, 12).getTime())
+  assert.equal(blockStart(monday + 6 * DAY), new Date(2026, 0, 12).getTime()) // domingo
+  // Programado: hasta el lunes no hay semana.
+  assert.equal(blockWeek({ start: blockStart(friday), weeks: 5 }, friday), undefined)
+  assert.equal(blockWeek({ start: blockStart(friday), weeks: 5 }, new Date(2026, 0, 12, 9).getTime())?.week, 1)
 })

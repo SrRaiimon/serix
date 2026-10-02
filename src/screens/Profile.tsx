@@ -189,6 +189,15 @@ export function ProfileScreen() {
           </span>
           <input type="checkbox" className="toggle" checked={settings.rpe} onChange={(e) => updateSettings({ rpe: e.target.checked })} />
         </label>
+        {settings.rpe && (
+          <label className="list-row">
+            <span className="grow">
+              {t('Descanso según el esfuerzo', 'Rest based on effort')}
+              <span className="small muted" style={{ display: 'block' }}>{t('RPE 9: +15 s · RPE 9,5–10 o al fallo: +30 s · RPE 7 o menos: −15 s', 'RPE 9: +15 s · RPE 9.5–10 or to failure: +30 s · RPE 7 or less: −15 s')}</span>
+            </span>
+            <input type="checkbox" className="toggle" checked={!settings.effortRestOff} onChange={(e) => updateSettings({ effortRestOff: e.target.checked ? undefined : true })} />
+          </label>
+        )}
       </div>
 
       <div className="list-header">{t('Tus datos', 'Your data')}</div>
