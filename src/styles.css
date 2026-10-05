@@ -548,7 +548,8 @@ a.list-row:active {
 }
 
 .list-row.accent {
-  color: var(--accent-text);
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* MARK: Botones */
@@ -1111,9 +1112,7 @@ a.list-row:active {
   color: var(--text-2);
 }
 
-.set-row.done .set-input {
-  color: var(--text-2);
-}
+
 
 .set-row.done .set-input {
   background: transparent;
@@ -1182,10 +1181,13 @@ a.list-row:active {
 .set-prev {
   text-align: center;
   font-size: 12.5px;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .set-input {
@@ -1377,14 +1379,13 @@ a.list-row:active {
   color: var(--on-ink);
 }
 
-.week .dot.past {
-  background: transparent;
-  color: var(--text-2);
-}
-
+.week .dot.past,
 .week .dot.future {
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.week .dot.past {
+  color: var(--text-2);
 }
 
 .week .dot.today {
@@ -1646,16 +1647,16 @@ html.scroll-locked body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: -2px 0 4px;
-  padding: 10px;
-  border-radius: 12px;
-  background: var(--fill);
+  margin: 0 0 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--separator);
+  border-bottom: 1px solid var(--separator);
 }
 
 .rpe-chips {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
 }
 
 .rpe-chip {
@@ -1663,10 +1664,9 @@ html.scroll-locked body {
   border-radius: 10px;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
-  background: var(--card);
+  background: var(--fill);
 }
 
 .rpe-chip.active {
@@ -2233,9 +2233,9 @@ html.scroll-locked body {
 
 /* MARK: Cifras en banda (Progreso) y objetivo semanal */
 
-.stat-band { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; overflow: hidden; background: var(--separator); border: 1px solid var(--separator); border-radius: var(--radius); }
+.stat-band { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; background: var(--card); border: 1px solid var(--separator); border-radius: var(--radius); }
 .stat-band.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.stat-band > div { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; min-width: 0; background: var(--card); }
+.stat-band > div { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; min-width: 0; box-shadow: -1px -1px 0 var(--separator); }
 .stat-band.three > div { padding: 12px 14px; }
 .stat-band.three strong { font-size: 26px; }
 .stat-band strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; line-height: 1.05; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2251,3 +2251,13 @@ html.scroll-locked body {
 .goal-pips { display: flex; gap: 6px; }
 .goal-pips span { flex: 1; height: 8px; border-radius: 4px; background: var(--fill); }
 .goal-pips span.on { background: var(--ink); }
+
+/* MARK: Récords por repeticiones en filas */
+
+.rep-rows { display: flex; flex-direction: column; }
+.rep-row { display: grid; grid-template-columns: 64px auto 1fr; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--separator); }
+.rep-row:first-child { border-top: 0; padding-top: 0; }
+.rep-row .rep-target { font-size: 13px; font-weight: 700; color: var(--text-2); }
+.rep-row strong { font-family: var(--font-display); font-size: 22px; font-weight: 800; font-stretch: 104%; white-space: nowrap; }
+.rep-row strong small { font-size: 12px; color: var(--text-2); }
+.rep-row > span:last-child { text-align: right; white-space: nowrap; }

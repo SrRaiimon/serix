@@ -1,7 +1,7 @@
 import { Check, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, StatBand, useTick, useToast } from '../components/ui'
-import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
+import { addDays, clock, day, startOfDay, startOfWeek, volumeShort } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -25,6 +25,7 @@ export function HomeScreen() {
   const { name, weeklyGoal, unit } = data.settings
   const weekStart = startOfWeek(Date.now()).getTime()
   const thisWeek = sessions.filter((s) => s.start >= weekStart)
+  const lastWeek = sessions.filter((s) => s.start >= weekStart - 7 * 86400000 && s.start < weekStart)
   const thisMonth = sessions.filter((s) => new Date(s.start).getMonth() === new Date().getMonth() && new Date(s.start).getFullYear() === new Date().getFullYear())
 
   return (
@@ -53,11 +54,15 @@ export function HomeScreen() {
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
-      <StatBand items={[
-        { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
-        { value: thisMonth.length, label: t('Este mes', 'This month') },
-        { value: volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') },
-      ]} />
+      {sessions.length > 0 && (
+        <StatBand items={[
+          { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
+          { value: thisMonth.length, label: t('Este mes', 'This month') },
+          thisWeek.length > 0
+            ? { value: volumeShort(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') }
+            : { value: volumeShort(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Vol. sem. pasada', 'Last week vol.') },
+        ]} />
+      )}
 
       <div className="grid-2">
         <button className="quick" onClick={startEmpty}><Zap size={22} />{t('Entreno libre', 'Free workout')}</button>
@@ -102,7 +107,10 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
       {tired.length > 0 && (
         <span className="small row hero-warning">
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
-          {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}
+          <span>
+            {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}.{' '}
+            <span style={{ fontWeight: 400 }}>{t('Puedes entrenar: baja un poco el peso o haz una serie menos en esos ejercicios.', 'You can train: lower the weight a little or do one set less on those exercises.')}</span>
+          </span>
         </span>
       )}
       <button className="btn primary start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
@@ -130,7 +138,7 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
     <Card>
       <div className="row between" style={{ alignItems: 'flex-end' }}>
         <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
-        <span className="week-count"><strong>{sessions.length}</strong> / {goal}</span>
+        <span className="week-count"><strong>{sessions.length}</strong> / {goal} {t('entrenos', 'workouts')}</span>
       </div>
       <div className="week">
         {days.map((d, i) => {
@@ -144,7 +152,7 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
           )
         })}
       </div>
-      {!reached && <span className="small muted">{plural(goal - sessions.length, ['entreno más para tu objetivo', 'entrenos más para tu objetivo'], ['more workout to reach your goal', 'more workouts to reach your goal'])}</span>}
+
       {reached && <span className="small bold row" style={{ color: 'var(--green-text)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
     </Card>
   )

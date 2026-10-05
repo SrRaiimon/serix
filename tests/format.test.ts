@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { clock, editable, fromKg, parseDecimal, rest, startOfWeek, toKg } from '../src/lib/format'
+import { clock, editable, fromKg, parseDecimal, rest, startOfWeek, toKg, volumeShort } from '../src/lib/format'
 import { digitsToSeconds, formatDigits, secondsToDigits } from '../src/lib/tracking'
 
 test('kg ↔ lb ida y vuelta', () => {
@@ -41,4 +41,11 @@ test('la semana empieza en lunes', () => {
   assert.equal(monday.getDay(), 1)
   assert.equal(monday.getDate(), 5)
   assert.equal(startOfWeek(monday).getTime(), monday.getTime())
+})
+
+test('volumen corto para columnas estrechas', () => {
+  assert.equal(volumeShort(17100, 'kg'), '17,1 t')
+  assert.equal(volumeShort(373140, 'kg'), '373,1 t')
+  assert.match(volumeShort(9500, 'kg'), /^9\.?500 kg$/)
+  assert.equal(volumeShort(10000, 'lb'), '22k lb')
 })

@@ -2,7 +2,7 @@ import { Medal } from 'lucide-react'
 import { useMemo } from 'react'
 import { shortDay, weightValue, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
-import { repRecords } from '../lib/stats'
+import { REP_TARGETS, repRecords } from '../lib/stats'
 import type { Session } from '../lib/store'
 import { Card } from './ui'
 
@@ -10,14 +10,22 @@ import { Card } from './ui'
 export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: string; sessions: Session[]; unit: Unit }) {
   const list = useMemo(() => repRecords(exerciseId, sessions), [exerciseId, sessions])
   if (!list.some(Boolean)) return null
+  // Si la misma serie es el récord de varias repeticiones (p. ej. 97,5 kg × 9 vale para 1, 3 y 5), va en una sola fila.
+  const rows: { targets: number[]; r: (typeof list)[number] }[] = []
+  list.forEach((r, i) => {
+    const target = REP_TARGETS[i]
+    const prev = rows[rows.length - 1]
+    if (prev && r && prev.r && prev.r.weight === r.weight && prev.r.reps === r.reps && prev.r.date === r.date) prev.targets.push(target)
+    else rows.push({ targets: [target], r })
+  })
   return (
     <Card title={t('Récords por repeticiones', 'Rep records')} icon={Medal}>
-      <div className="rep-records">
-        {list.map((r, i) => (
-          <div key={i} className="rep-record">
-            <span className="tiny muted">{[1, 3, 5, 10][i]}RM</span>
-            <span className="bold">{r ? <>{weightValue(r.weight, unit)}<small> {unit}</small></> : '—'}</span>
-            <span className="tiny muted">{r ? (r.reps > r.target ? t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`) : shortDay(r.date)) : ' '}</span>
+      <div className="rep-rows">
+        {rows.map(({ targets, r }) => (
+          <div key={targets[0]} className="rep-row">
+            <span className="rep-target">{targets.length > 1 ? `${targets[0]}–${targets[targets.length - 1]}` : targets[0]}RM</span>
+            <strong>{r ? <>{weightValue(r.weight, unit)}<small> {unit}</small></> : '—'}</strong>
+            <span className="small muted">{r ? `${r.reps} reps · ${shortDay(r.date)}` : t('Aún sin marca', 'No record yet')}</span>
           </div>
         ))}
       </div>

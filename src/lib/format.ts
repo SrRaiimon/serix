@@ -31,6 +31,12 @@ export const int = (v: number) => fmt().int.format(Math.round(v))
 export const weightValue = (kg: number, unit: Unit) => num(fromKg(kg, unit))
 export const weight = (kg: number, unit: Unit) => `${weightValue(kg, unit)} ${unit}`
 export const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
+/** Volumen corto para cifras en columna estrecha: «17,1 t» (o «37,7k lb») a partir de 10.000. */
+export const volumeShort = (kg: number, unit: Unit) => {
+  const v = fromKg(kg, unit)
+  if (v < 10000) return volume(kg, unit)
+  return unit === 'kg' ? `${num(Math.round(v / 100) / 10)} t` : `${num(Math.round(v / 100) / 10)}k lb`
+}
 
 /** Número editable sin separador de miles y con el separador decimal del idioma. */
 export function editable(value: number): string {

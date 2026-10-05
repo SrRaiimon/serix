@@ -133,7 +133,7 @@ export function Row({ icon: Icon, label, detail, onClick, chevron = true, classN
 }) {
   const content = (
     <>
-      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red-text)' : className.includes('accent') ? 'var(--accent-text)' : 'var(--text-2)'} />}
+      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red-text)' : className.includes('accent') ? 'var(--text)' : 'var(--text-2)'} />}
       {children ?? <span className="grow">{label}</span>}
       {detail !== undefined && <span className="muted">{detail}</span>}
       {onClick && chevron && <ChevronRight size={18} className="chevron" />}

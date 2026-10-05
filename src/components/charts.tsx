@@ -36,7 +36,7 @@ export function BarChart({ data, height = 170, color = 'var(--text-2)' }: { data
         return (
           <g key={i}>
             {d.value > 0 && (
-              <rect x={pad.l + i * bw + bw * 0.18} y={pad.t + ch - h} width={bw * 0.64} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
+              <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - h} width={bw * 0.42} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
             )}
             {i % 2 === 0 && (
               <text x={pad.l + i * bw + bw / 2} y={height - 5} textAnchor="middle">{d.label}</text>
@@ -48,6 +48,12 @@ export function BarChart({ data, height = 170, color = 'var(--text-2)' }: { data
   )
 }
 
+function niceStep(raw: number): number {
+  const p = 10 ** Math.floor(Math.log10(raw))
+  const f = raw / p
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p
+}
+
 export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBased = false }: { points: { x: number; y: number }[]; height?: number; color?: string; zeroBased?: boolean }) {
   const pad = { l: 4, r: 40, t: 10, b: 20 }
   const ys = points.map((p) => p.y)
@@ -57,9 +63,11 @@ export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBase
     max += 1
     min = Math.max(0, min - 1)
   }
-  const span = max - min
-  min -= zeroBased ? 0 : span * 0.1
-  max += span * 0.1
+  // Ejes con cifras redondas (90 / 110 / 130 en vez de 91 / 110,5 / 130).
+  const span = max - min || Math.abs(max) || 1
+  const step = niceStep((span * 1.2) / 2)
+  min = zeroBased ? 0 : Math.floor((min - span * 0.1) / step) * step
+  max = min + Math.ceil((max + span * 0.1 - min) / (2 * step)) * 2 * step
   const xs = points.map((p) => p.x)
   const x0 = Math.min(...xs)
   const x1 = Math.max(...xs) === x0 ? x0 + 1 : Math.max(...xs)

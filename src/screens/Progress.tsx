@@ -5,10 +5,10 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, volume, weight } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, volume, volumeShort, weight } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, monthToDate, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
+import { exerciseHistory, monthToDate, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -248,7 +248,6 @@ function ShareSummaryCard({ sessions, unit }: { sessions: Session[]; unit: Unit 
 
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const weeks = weekly(sessions, 12)
-  const thisWeek = weeks[weeks.length - 1]
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
   return (
     <>
@@ -257,7 +256,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         { value: sessions.length, label: t('Entrenos totales', 'Total workouts') },
         { value: hours(totalTime), label: t('Tiempo total', 'Total time') },
         { value: streakWeeks(sessions), label: t('Semanas seguidas', 'Weeks in a row') },
-        { value: volume(thisWeek.volume, unit), label: t('Volumen esta semana', 'Volume this week') },
+        { value: volumeShort(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
       ]} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />

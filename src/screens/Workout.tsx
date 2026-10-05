@@ -166,7 +166,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
           </div>
           <div className="title workout-clock">{clock((now - session.start) / 1000)}</div>
           <div className="right">
-            <button className="btn small ink" onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
+            <button className="btn small secondary" onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
           </div>
         </div>
 
@@ -319,7 +319,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
   const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
-  const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? ` · ${t('Objetivo', 'Target')} ${target} reps` : '')
+  const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? ` · ${t('Objetivo', 'Target')}\u00a0${target.replace('-', '\u2011')}\u00a0reps` : '')
     : tracking === 'time' ? ` · ${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
   let working = 0
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
@@ -354,7 +354,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               {exercise.name}
             </span>
             <span className="small muted">
-              {muscleLabel(exercise.muscle)}{objective} · {inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('Descanso', 'Rest')} ${rest(exercise.rest)}`}
+              {muscleLabel(exercise.muscle)}{objective} · {inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('Descanso', 'Rest')}\u00a0${rest(exercise.rest).replace(' ', '\u00a0')}`}
             </span>
           </span>
         </button>
@@ -612,7 +612,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
         aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
-      <span className="set-prev">{previous ? setShortText(previous, tracking, unit) : '—'}</span>
+      <span className="set-prev">{previous ? setShortText(previous, tracking, unit).replace(' × ', '×') : '—'}</span>
       {tracking === 'weight_reps' && (
         <>
           <input className="set-input" inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
