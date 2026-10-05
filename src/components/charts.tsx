@@ -11,7 +11,15 @@ function niceMax(v: number) {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p
 }
 
-export function BarChart({ data, height = 170, color = 'var(--text-2)' }: { data: { label: string; value: number }[]; height?: number; color?: string }) {
+export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick = num, average = false }: {
+  data: { label: string; value: number }[]
+  height?: number
+  color?: string
+  /** Formato de las cifras del eje (p. ej. «20 t»). */
+  tick?: (v: number) => string
+  /** Línea discontinua con la media de las semanas con datos. */
+  average?: boolean
+}) {
   const pad = { l: 4, r: 46, t: 8, b: 20 }
   const max = niceMax(Math.max(...data.map((d) => d.value), 0))
   const cw = W - pad.l - pad.r
@@ -27,10 +35,17 @@ export function BarChart({ data, height = 170, color = 'var(--text-2)' }: { data
         return (
           <g key={t}>
             <line className="grid-line" x1={pad.l} x2={W - pad.r} y1={y} y2={y} />
-            <text x={W - pad.r + 4} y={y + 3}>{num(max * t)}</text>
+            <text x={W - pad.r + 4} y={y + 3}>{tick(max * t)}</text>
           </g>
         )
       })}
+      {average && (() => {
+        const filled = data.filter((d) => d.value > 0)
+        if (filled.length < 2) return null
+        const mean = filled.reduce((s, d) => s + d.value, 0) / filled.length
+        const y = pad.t + ch - (mean / max) * ch
+        return <line className="avg-line" x1={pad.l} x2={W - pad.r} y1={y} y2={y} />
+      })()}
       {data.map((d, i) => {
         const h = (d.value / max) * ch
         return (
@@ -65,9 +80,10 @@ export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBase
   }
   // Ejes con cifras redondas (90 / 110 / 130 en vez de 91 / 110,5 / 130).
   const span = max - min || Math.abs(max) || 1
-  const step = niceStep((span * 1.2) / 2)
-  min = zeroBased ? 0 : Math.floor((min - span * 0.1) / step) * step
-  max = min + Math.ceil((max + span * 0.1 - min) / (2 * step)) * 2 * step
+  const unit = niceStep(span / 5)
+  const lo = zeroBased ? 0 : Math.floor((min - span * 0.05) / unit) * unit
+  min = min >= 0 ? Math.max(0, lo) : lo
+  max = Math.ceil((max + span * 0.05) / unit) * unit
   const xs = points.map((p) => p.x)
   const x0 = Math.min(...xs)
   const x1 = Math.max(...xs) === x0 ? x0 + 1 : Math.max(...xs)

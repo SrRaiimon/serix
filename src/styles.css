@@ -40,6 +40,7 @@
   --bar: #ffffff;
   --shadow: 0 10px 30px rgba(14, 16, 19, 0.12);
   --radius: 14px;
+  --chart-bar: color-mix(in srgb, var(--text) 32%, transparent);
   --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --safe-top: env(safe-area-inset-top);
@@ -1458,6 +1459,12 @@ a.list-row:active {
   font-size: 10px;
 }
 
+.chart .avg-line {
+  stroke: var(--text);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
 .chart .grid-line {
   stroke: var(--separator);
   stroke-width: 0.5;
@@ -1675,8 +1682,8 @@ html.scroll-locked body {
 }
 
 .rpe-help {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   font-size: 13px;
   font-weight: 800;
@@ -2261,3 +2268,14 @@ html.scroll-locked body {
 .rep-row strong { font-family: var(--font-display); font-size: 22px; font-weight: 800; font-stretch: 104%; white-space: nowrap; }
 .rep-row strong small { font-size: 12px; color: var(--text-2); }
 .rep-row > span:last-child { text-align: right; white-space: nowrap; }
+
+/* MARK: Ronda 5: detalles */
+
+.exercise-meta { display: block; color: var(--text); font-weight: 600; }
+.session-delta { min-width: 34px; text-align: right; font-size: 13px; font-weight: 700; }
+/* Serie actual: la fila marcada y los campos en blanco sobre ella (no gris sobre gris). */
+.set-row.current .set-input { background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); }
+.set-label { background: transparent; }
+.best-lifts span.clamp-2 { min-height: 2.6em; }
+.segmented { gap: 2px; }
+.rpe-scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-top: -2px; }

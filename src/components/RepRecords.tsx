@@ -18,6 +18,7 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
     if (prev && r && prev.r && prev.r.weight === r.weight && prev.r.reps === r.reps && prev.r.date === r.date) prev.targets.push(target)
     else rows.push({ targets: [target], r })
   })
+  const merged = rows.find((x) => x.targets.length > 1)
   return (
     <Card title={t('Récords por repeticiones', 'Rep records')} icon={Medal}>
       <div className="rep-rows">
@@ -29,7 +30,9 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
           </div>
         ))}
       </div>
-      <span className="small muted">{t('El mayor peso que has movido al menos esas repeticiones (real, no estimado).', 'The heaviest weight you have moved for at least that many reps (actual, not estimated).')}</span>
+      <span className="small muted">{t('El mayor peso que has levantado haciendo al menos esas repeticiones (real, no estimado).', 'The heaviest weight you have lifted for at least that many reps (actual, not estimated).')}
+        {merged?.r && ' ' + t(`Hacerlo con más repeticiones también cuenta para menos: ${weightValue(merged.r.weight, unit)} ${unit} × ${merged.r.reps} vale para ${merged.targets.slice(0, -1).join(', ')} y ${merged.targets[merged.targets.length - 1]} repeticiones.`,
+          `Doing it for more reps also counts for fewer: ${weightValue(merged.r.weight, unit)} ${unit} × ${merged.r.reps} counts for ${merged.targets.slice(0, -1).join(', ')} and ${merged.targets[merged.targets.length - 1]} reps.`)}</span>
     </Card>
   )
 }

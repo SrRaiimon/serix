@@ -259,12 +259,13 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         { value: volumeShort(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
       ]} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
-        <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
+        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average
+          tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
+        <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit} lifted (weight × reps). The dashed line is your average.`)}</span>
       </Card>
       <MonthCard sessions={sessions} unit={unit} />
       <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} />
+        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} tick={(v) => (Number.isInteger(v) ? num(v) : '')} />
       </Card>
       <Stalls sessions={sessions} unit={unit} />
       <YearMap sessions={sessions} unit={unit} />
@@ -434,6 +435,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
                 <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(change)} {unit}</strong>
                 <span className="small muted">{t('desde el', 'since')} {shortDay(first.date)}</span>
               </span>
+              {metric === 'e1rm' && <span className="small muted">{t('1RM estimado: el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated 1RM: the weight you could lift once, worked out from your sets.')}</span>}
             </>
           ) : (
             <span className="muted">{t('Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.', 'You need at least two sessions of this exercise to see the chart.')}</span>
@@ -442,13 +444,19 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
         <RepRecordsCard exerciseId={id} sessions={sessions} unit={unit} />
         <div className="list-header">{t('Sesiones', 'Sessions')}</div>
         <div className="list">
-          {[...points].reverse().map((p) => (
-            <div key={p.date} className="list-row">
-              <span className="grow">{shortDay(p.date)}</span>
-              <span className="small muted">{t('máx.', 'max')} {weight(p.maxWeight, unit)}</span>
-              <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{int(fromKg(p.e1rm, unit))} <span className="tiny muted">1RM</span></span>
-            </div>
-          ))}
+          {[...points].reverse().map((p, i, list) => {
+            // Cambio respecto a la sesión anterior de este ejercicio (la siguiente en la lista, que va de nueva a vieja).
+            const before = list[i + 1]
+            const diff = before ? fromKg(p.e1rm - before.e1rm, unit) : 0
+            return (
+              <div key={p.date} className="list-row">
+                <span className="grow">{shortDay(p.date)}</span>
+                <span className="small muted">{t('máx.', 'max')} {weight(p.maxWeight, unit)}</span>
+                <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))}` : ''}</span>
+                <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{int(fromKg(p.e1rm, unit))} <span className="tiny muted">1RM</span></span>
+              </div>
+            )
+          })}
         </div>
       </div>
       {detail && <ExerciseSheet exerciseId={id} onClose={() => setDetail(false)} />}

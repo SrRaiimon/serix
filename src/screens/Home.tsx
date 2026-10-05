@@ -60,7 +60,7 @@ export function HomeScreen() {
           { value: thisMonth.length, label: t('Este mes', 'This month') },
           thisWeek.length > 0
             ? { value: volumeShort(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') }
-            : { value: volumeShort(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Vol. sem. pasada', 'Last week vol.') },
+            : { value: volumeShort(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
 
@@ -109,7 +109,10 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
           <span>
             {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}.{' '}
-            <span style={{ fontWeight: 400 }}>{t('Puedes entrenar: baja un poco el peso o haz una serie menos en esos ejercicios.', 'You can train: lower the weight a little or do one set less on those exercises.')}</span>
+            <span style={{ fontWeight: 400 }}>
+              {t('Puedes entrenar: baja un poco el peso o haz una serie menos en', 'You can train: lower the weight a little or do one set less on')}{' '}
+              {routine.exercises.filter((e) => tired.some((g) => g.muscles.includes(e.muscle))).map((e) => e.name).join(', ')}.
+            </span>
           </span>
         </span>
       )}

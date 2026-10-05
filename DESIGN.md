@@ -69,12 +69,20 @@ Theme: `color-scheme: light dark` follows the system; Profile can force `data-th
   - Modifiers: `block` (full width), `small`, `btn-sm`.
 - **Chips** (`.chip`): pill, `--card` with inset `--separator` hairline; `active` = `--ink` / `--on-ink`. Selection is ink, never orange.
 - **Tags** (`.tag`): `--fill` + `--text-2`; `.tag.accent` is a `--line-strong` outline in `--text` (not orange).
-- **Tiles** (`Tile` in `ui.tsx`): card with hairline, Archivo value + 12.5px `--text-2` label; `.alt` uses `--card-2`.
+- **Stat band** (`StatBand` in `ui.tsx`, `.stat-band`): the default way to show 2–4 figures. One hairline card split by 1px rules, Archivo 800 values (30px, 26px in three columns), 12.5px `--text-2` labels, no icons. Long volumes use `volumeShort` («17,1 t»). Never show a discouraging zero: fall back to last week or hide the band until there is data.
+- **Tiles** (`Tile` in `ui.tsx`): legacy single figure card; prefer the stat band.
+- **Best lifts** (`BestLifts` in `Progress.tsx`): top three estimated 1RMs in Archivo under a 2px ink rule, with the 30-day gain.
+- **Rep records** (`RepRecordsCard`): rows separated by hairlines; targets that share the same set merge («1–5RM»).
+- **Charts** (`charts.tsx`): monochrome. Bars in `--text-2`, thin (42% of the slot); the current (last) bar or point in `--accent` as the "you are here" marker. Axes use round values.
+- **Card titles**: text only, no icons.
 - **Lists** (`.list`, `Row`): grouped card with hairline, rows min-height 48px, chevron in `--text-3`, `danger` and `accent` rows use the `*-text` tokens.
 - **Hero card** (`NextCard` in `Home.tsx`, `.hero`): white card with hairline, `.hero-ribbon` hanging from the top-right edge, meta line, routine name in Archivo, `.hero-facts` (exercises / minutes / sets) above a hairline, full-width primary Start button.
 - **Tab bar** (`TabBar` in `App.tsx`, `.tabbar`): fixed, 5 columns, `--bar` with top hairline, 10.5px labels in `--text-2`; active tab turns `--text` / 700 and gets a 12x10 ribbon dropping from the bar edge.
 - **Active bar** (`.active-bar`): floating workout-in-progress pill above the tab bar, `--ink` background, `--shadow`, orange ribbon notch on its left edge.
-- **Set rows** (`SetRow` in `Workout.tsx`, `.set-row`): grid row; `.current` (first unfinished set) gets a 9x22 ribbon sliding in from the card's left edge; `.done` gets `--green-soft`.
+- **Set rows** (`SetRow` in `Workout.tsx`, `.set-row`): grid row with 40px inputs and 20px Archivo figures; `.current` (first unfinished set) gets a `--fill` row and a 14x34 ribbon sliding in from the card's left edge; `.done` drops the input fills and shows an ink check (no green). «Previous» stays on one line («130×9 @7»).
+- **RPE** (`RpeRow`): one row of eight 44px chips between hairlines, no nested box; closes itself on pick.
+- **Rest bar**: «DESCANSO» label over a 30px Archivo countdown, −15 / +15 / Skip on the right, and a 3px orange line along the top edge that shrinks with the remaining time.
+- **Week** (`WeekCard`): «0 / 3 entrenos» counter; days as loose numbers, today filled orange with a «HOY» label, trained days in ink.
 - Also: sheets, action sheets, segmented control, stepper, toast, progress bar (all in `ui.tsx`).
 
 ## The ribbon
@@ -86,7 +94,10 @@ The single brand motif: an orange (`--accent`) shape cut with `clip-path` that m
 | `.hero-ribbon` | 22x44, hangs from top edge, notched bottom | `ribbon-drop 0.6s var(--ease-out)` |
 | `.tabbar button.active::before` | 12x10 from the bar's top edge | `ribbon-drop 0.42s var(--ease-out)` |
 | `.set-row.current::before` | 9x22, notched right side | `ribbon-slide 0.42s var(--ease-out)` |
+| `.set-row.current::before` (size) | 14x34 | (as above) |
 | `.active-bar::before` | 9x22, notched right side | static |
+| `.rest-line` | 3px line on the rest bar's top edge | shrinks with the countdown |
+| Today in the week, last bar/point in charts | orange fill | static |
 
 - `ribbon-drop`: `translateY(-110%)` to `0`. `ribbon-slide`: `translateX(-110%)` to `0`.
 - `--ease-out: cubic-bezier(0.22, 1, 0.36, 1)`.
@@ -113,7 +124,7 @@ The single brand motif: an orange (`--accent`) shape cut with `clip-path` that m
 
 Do
 - Keep orange for the primary action and the ribbon ("where you are") only.
-- Use `--ink` / `--on-ink` for selection states.
+- Use `--ink` / `--on-ink` for selection states (chips, segmented control, RPE, done checks).
 - Use 1px hairlines and `--radius` for surfaces; shadow only when something floats.
 - Set numbers in Archivo 800 with tabular figures.
 
@@ -122,7 +133,8 @@ Don't
 - No coloured `border-left` thicker than 1px (the superset `.group-box` uses 1px `--accent`, the maximum).
 - No gradients, except the muscle-map illustration (`--mm-bg-*` panels and `.mm-key-*` legend swatches).
 - No glass or `backdrop-filter` blur.
-- No orange for non-primary things (tags, chips, selected states, decorative icons).
+- No orange for non-primary things (tags, chips, selected states, decorative icons, action rows).
+- No green or blue for "good" deltas: positive changes are ink and bold; only losses use `--red-text`.
 - No runtime-loaded fonts, trackers or invented tokens.
 
 ## Provenance

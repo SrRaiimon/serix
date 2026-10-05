@@ -319,8 +319,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
   const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
-  const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? ` · ${t('Objetivo', 'Target')}\u00a0${target.replace('-', '\u2011')}\u00a0reps` : '')
-    : tracking === 'time' ? ` · ${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
+  const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? `${target.replace('-', '\u2011')}\u00a0reps` : '')
+    : tracking === 'time' ? `${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
   let working = 0
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
   const workKg = exercise.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
@@ -353,8 +353,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
               {exercise.name}
             </span>
-            <span className="small muted">
-              {muscleLabel(exercise.muscle)}{objective} · {inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('Descanso', 'Rest')}\u00a0${rest(exercise.rest).replace(' ', '\u00a0')}`}
+            <span className="small muted" style={{ display: 'block' }}>{muscleLabel(exercise.muscle)}</span>
+            <span className="small exercise-meta">
+              {[objective, inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('descanso', 'rest')}\u00a0${rest(exercise.rest).replace(' ', '\u00a0')}`].filter(Boolean).join(' · ')}
             </span>
           </span>
         </button>
@@ -741,6 +742,7 @@ function RpeRow({ value, open, onOpen, onPick }: {
             onClick={() => onPick(value === v ? undefined : v)}>{num(v)}</button>
         ))}
       </div>
+      <div className="rpe-scale" aria-hidden="true"><span>{t('← Fácil', '← Easy')}</span><span>{t('Al fallo →', 'To failure →')}</span></div>
       {help && (
         <span className="small muted">
           {t('Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3. Es opcional; sirve para saber cuándo subir peso.',
