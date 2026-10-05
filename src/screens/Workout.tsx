@@ -3,7 +3,7 @@ import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Link2, Maximize2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Link2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -181,10 +181,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
             )}
             <BlockStatus at={session.start} />
             {done === 0 && session.exercises.length > 0 && (
-              <button className="link-btn small" style={{ color: 'var(--accent-text)' }} onClick={() => {
+              <button className="btn small secondary" style={{ alignSelf: 'flex-start' }} onClick={() => {
                 minimizeWorkout()
                 navigate('timer', 'warmup', focusFor(session.exercises.map((e) => e.muscle)))
-              }}><Flame size={14} style={{ verticalAlign: -2 }} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
+              }}><Flame size={15} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
             )}
           </div>
 
@@ -703,7 +703,7 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
     ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
     : auto.kind === 'hold'
-      ? t('Progresión automática: mismo peso hasta completar todas las repeticiones.', 'Automatic progression: same weight until you complete every rep.')
+      ? t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.')
       : auto.week === 4
         ? t(`5/3/1 · semana 4 de 4 (descarga) · TM ${weight(auto.tm, unit)}`, `5/3/1 · week 4 of 4 (deload) · TM ${weight(auto.tm, unit)}`)
         : t(`5/3/1 · semana ${auto.week} de 4 · TM ${weight(auto.tm, unit)} · en la última serie, todas las repeticiones que puedas con buena técnica.`,
@@ -801,22 +801,14 @@ function RestBar() {
   const remaining = Math.max(0, (timer.endAt - now) / 1000)
   const progress = timer.total > 0 ? remaining / (timer.total / 1000) : 0
   if (timer.big) return <RestFullScreen remaining={remaining} progress={progress} />
-  const r = 17
-  const c = 2 * Math.PI * r
   return (
     <Overlay>
     <div className="rest-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 45 }}>
-      <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <span className="rest-line" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
+      <div style={{ maxWidth: 528, margin: '0 auto', width: '100%', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button className="rest-expand" onClick={() => setRestBig(true)} aria-label={t('Ver la cuenta atrás en grande', 'Show the countdown full screen')}>
-          <svg width="42" height="42" viewBox="0 0 42 42" style={{ flexShrink: 0 }}>
-            <circle cx="21" cy="21" r={r} stroke="var(--fill)" strokeWidth="5" fill="none" />
-            <circle cx="21" cy="21" r={r} stroke="var(--accent)" strokeWidth="5" fill="none" strokeLinecap="round"
-              strokeDasharray={c} strokeDashoffset={c * (1 - progress)} transform="rotate(-90 21 21)" />
-          </svg>
-          <div className="grow" style={{ textAlign: 'left' }}>
-            <div className="tiny muted row" style={{ gap: 4 }}><Timer size={12} /> {t('Descanso', 'Rest')} <Maximize2 size={11} /></div>
-            <div className="rest-time">{clock(Math.ceil(remaining))}</div>
-          </div>
+          <span className="rest-label">{t('Descanso', 'Rest')}</span>
+          <span className="rest-time">{clock(Math.ceil(remaining))}</span>
         </button>
         <button className="btn small plain" onClick={() => addRest(-15)}>−15</button>
         <button className="btn small plain" onClick={() => addRest(15)}>+15</button>

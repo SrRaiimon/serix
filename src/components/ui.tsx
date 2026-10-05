@@ -67,12 +67,12 @@ export function NavBar({ title, left, right, showBack }: { title?: string; left?
   )
 }
 
-export function Card({ title, icon: Icon, children, className = '' }: { title?: ReactNode; icon?: LucideIcon; children: ReactNode; className?: string }) {
+export function Card({ title, children, className = '' }: { title?: ReactNode; icon?: LucideIcon; children: ReactNode; className?: string }) {
   return (
     <section className={`card ${className}`}>
       {title && (
         <h2 className="card-title">
-          {Icon && <Icon size={18} color="var(--text-2)" aria-hidden="true" />} {title}
+          {title}
         </h2>
       )}
       {children}
@@ -86,6 +86,15 @@ export function Tile({ value, label, icon: Icon, tint = 'var(--text-2)', alt }: 
       {Icon && <Icon size={18} color={tint} />}
       <div className="value">{value}</div>
       <div className="label">{label}</div>
+    </div>
+  )
+}
+
+/** Cifras grandes en banda, separadas por líneas de 1 px (sin cajas ni iconos). */
+export function StatBand({ items }: { items: { value: ReactNode; label: string }[] }) {
+  return (
+    <div className={`stat-band ${items.length === 3 ? 'three' : ''}`}>
+      {items.map((x) => <div key={x.label}><strong>{x.value}</strong><span>{x.label}</span></div>)}
     </div>
   )
 }

@@ -36,7 +36,7 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
           <Search size={18} />
           <input
             type="search"
-            placeholder={t('Buscar: press, sentadilla, polea…', 'Search: press, squat, cable…')}
+            placeholder={t('Buscar ejercicio', 'Search exercises')}
             value={filter.query}
             onChange={(e) => setFilter({ ...filter, query: e.target.value })}
           />

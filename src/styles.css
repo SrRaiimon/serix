@@ -1107,8 +1107,12 @@ a.list-row:active {
 }
 
 .set-row.done .set-label {
-  background: var(--ink);
-  color: var(--on-ink);
+  background: transparent;
+  color: var(--text-2);
+}
+
+.set-row.done .set-input {
+  color: var(--text-2);
 }
 
 .set-row.done .set-input {
@@ -1229,6 +1233,26 @@ a.list-row:active {
   padding: 10px 16px calc(var(--safe-bottom) + 10px);
   background: var(--bar);
   border-top: 1px solid var(--separator);
+}
+
+.rest-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* Lo que queda de descanso, como una línea naranja a lo ancho del borde superior. */
+.rest-line {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 0.5s linear;
 }
 
 .rest-time {
@@ -1364,6 +1388,14 @@ a.list-row:active {
 }
 
 .week .dot.today {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+}
+
+.week .dot.today.done {
+  background: var(--ink);
+  color: var(--on-ink);
   box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--accent);
 }
 
@@ -1848,8 +1880,9 @@ html.scroll-locked body {
 /* Cuenta atrás del descanso a pantalla completa */
 .rest-expand {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
   flex: 1;
   min-width: 0;
   padding: 0;
@@ -2194,14 +2227,17 @@ html.scroll-locked body {
 
 .rep-records { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .rep-record { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; border-radius: 12px; background: var(--fill); text-align: center; font-variant-numeric: tabular-nums; }
-.rep-record .bold { font-family: var(--font-display); font-stretch: 108%; font-size: 17px; font-weight: 800; }
+.rep-record .bold { font-family: var(--font-display); font-stretch: 100%; font-size: 19px; font-weight: 800; white-space: nowrap; }
+.rep-record small { font-size: 11px; color: var(--text-2); }
+.delta-big { font-family: var(--font-display); font-size: 24px; font-weight: 800; font-stretch: 104%; }
 
 /* MARK: Cifras en banda (Progreso) y objetivo semanal */
 
-.stat-band { display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border: 1px solid var(--separator); border-radius: var(--radius); }
-.stat-band > div { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; min-width: 0; }
-.stat-band > div:nth-child(odd) { border-right: 1px solid var(--separator); }
-.stat-band > div:nth-child(n + 3) { border-top: 1px solid var(--separator); }
+.stat-band { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; overflow: hidden; background: var(--separator); border: 1px solid var(--separator); border-radius: var(--radius); }
+.stat-band.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat-band > div { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; min-width: 0; background: var(--card); }
+.stat-band.three > div { padding: 12px 14px; }
+.stat-band.three strong { font-size: 26px; }
 .stat-band strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; line-height: 1.05; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stat-band span { font-size: 12.5px; color: var(--text-2); }
 .best-lifts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -2209,6 +2245,7 @@ html.scroll-locked body {
 .best-lifts strong { white-space: nowrap; font-family: var(--font-display); font-size: 28px; font-weight: 800; font-stretch: 104%; line-height: 1; }
 .best-lifts small { font-size: 13px; font-weight: 700; color: var(--text-2); }
 .best-lifts span { font-size: 13px; color: var(--text-2); }
+.best-lifts em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--text); }
 .week-count { font-size: 15px; color: var(--text-2); font-weight: 600; }
 .week-count strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; color: var(--text); line-height: 1; }
 .goal-pips { display: flex; gap: 6px; }

@@ -1,6 +1,6 @@
-import { Calendar, Check, Compass, Users, ClipboardList, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Check, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Card, Tile, useTick, useToast } from '../components/ui'
+import { Card, StatBand, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
@@ -51,15 +51,13 @@ export function HomeScreen() {
         </Card>
       )}
 
-      <InstallBanner />
-
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
-      <div className="grid-3">
-        <Tile icon={Flame} value={streakWeeks(sessions)} label={t('Racha (sem.)', 'Streak (wks)')} />
-        <Tile icon={Calendar} value={thisMonth.length} label={t('Este mes', 'This month')} />
-        <Tile icon={Weight} value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label={t('Volumen sem.', 'Weekly volume')} />
-      </div>
+      <StatBand items={[
+        { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
+        { value: thisMonth.length, label: t('Este mes', 'This month') },
+        { value: volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') },
+      ]} />
 
       <div className="grid-2">
         <button className="quick" onClick={startEmpty}><Zap size={22} />{t('Entreno libre', 'Free workout')}</button>
@@ -77,6 +75,8 @@ export function HomeScreen() {
           <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => navigate('progress')}>{t('Ver todo el historial', 'See full history')}</button>
         </>
       )}
+
+      <InstallBanner />
     </div>
   )
 }
@@ -132,16 +132,13 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
         <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
         <span className="week-count"><strong>{sessions.length}</strong> / {goal}</span>
       </div>
-      <div className="goal-pips" role="img" aria-label={t(`${sessions.length} de ${goal} entrenos`, `${sessions.length} of ${goal} workouts`)}>
-        {Array.from({ length: Math.max(goal, sessions.length) }, (_, i) => <span key={i} className={i < sessions.length ? 'on' : ''} />)}
-      </div>
       <div className="week">
         {days.map((d, i) => {
           const time = d.getTime()
           const state = trained.has(time) ? 'done' : time < today ? 'past' : time > today ? 'future' : ''
           return (
             <div key={time}>
-              <span className="tiny muted bold">{t('LMXJVSD', 'MTWTFSS')[i]}</span>
+              <span className={`tiny bold ${time === today ? '' : 'muted'}`}>{time === today ? t('HOY', 'TODAY') : t('LMXJVSD', 'MTWTFSS')[i]}</span>
               <div className={`dot ${state} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
             </div>
           )

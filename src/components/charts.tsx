@@ -1,4 +1,3 @@
-import { useId } from 'react'
 import { num, shortDay } from '../lib/format'
 
 // Gráficas SVG sencillas: barras verticales, línea y barras horizontales.
@@ -12,9 +11,8 @@ function niceMax(v: number) {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p
 }
 
-export function BarChart({ data, height = 170, color = 'var(--accent)' }: { data: { label: string; value: number }[]; height?: number; color?: string }) {
-  const gradient = useId()
-  const pad = { l: 4, r: 36, t: 8, b: 20 }
+export function BarChart({ data, height = 170, color = 'var(--text-2)' }: { data: { label: string; value: number }[]; height?: number; color?: string }) {
+  const pad = { l: 4, r: 46, t: 8, b: 20 }
   const max = niceMax(Math.max(...data.map((d) => d.value), 0))
   const cw = W - pad.l - pad.r
   const ch = height - pad.t - pad.b
@@ -24,12 +22,6 @@ export function BarChart({ data, height = 170, color = 'var(--accent)' }: { data
     // Para lectores de pantalla, los datos en texto (la gráfica no se puede «ver»).
     <svg className="chart" viewBox={`0 0 ${W} ${height}`} width="100%" role="img"
       aria-label={data.map((d) => `${d.label}: ${num(d.value)}`).join(', ')}>
-      <defs>
-        <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.75" />
-          <stop offset="1" stopColor={color} />
-        </linearGradient>
-      </defs>
       {ticks.map((t) => {
         const y = pad.t + ch * (1 - t)
         return (
@@ -44,7 +36,7 @@ export function BarChart({ data, height = 170, color = 'var(--accent)' }: { data
         return (
           <g key={i}>
             {d.value > 0 && (
-              <rect x={pad.l + i * bw + bw * 0.18} y={pad.t + ch - h} width={bw * 0.64} height={h} rx={3} fill={`url(#${gradient})`} />
+              <rect x={pad.l + i * bw + bw * 0.18} y={pad.t + ch - h} width={bw * 0.64} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
             )}
             {i % 2 === 0 && (
               <text x={pad.l + i * bw + bw / 2} y={height - 5} textAnchor="middle">{d.label}</text>
@@ -56,7 +48,7 @@ export function BarChart({ data, height = 170, color = 'var(--accent)' }: { data
   )
 }
 
-export function LineChart({ points, height = 180, color = 'var(--accent)', zeroBased = false }: { points: { x: number; y: number }[]; height?: number; color?: string; zeroBased?: boolean }) {
+export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBased = false }: { points: { x: number; y: number }[]; height?: number; color?: string; zeroBased?: boolean }) {
   const pad = { l: 4, r: 40, t: 10, b: 20 }
   const ys = points.map((p) => p.y)
   let min = zeroBased ? 0 : Math.min(...ys)
@@ -91,7 +83,7 @@ export function LineChart({ points, height = 180, color = 'var(--accent)', zeroB
         )
       })}
       <path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
-      {points.map((p, i) => <circle key={i} cx={px(p.x)} cy={py(p.y)} r={3.5} fill={color} />)}
+      {points.map((p, i) => <circle key={i} cx={px(p.x)} cy={py(p.y)} r={i === points.length - 1 ? 5 : points.length > 16 ? 0 : 3} fill={i === points.length - 1 ? 'var(--accent)' : color} />)}
       <text x={pad.l} y={height - 5}>{shortDay(x0)}</text>
       <text x={W - pad.r} y={height - 5} textAnchor="end">{shortDay(x1)}</text>
     </svg>
@@ -106,7 +98,7 @@ export function HBarChart({ items }: { items: { label: string; value: number }[]
         <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '112px 1fr 28px', alignItems: 'center', gap: 8 }}>
           <span className="small clamp-1">{item.label}</span>
           <div style={{ height: 16, borderRadius: 4, background: 'var(--fill)', overflow: 'hidden' }}>
-            <div style={{ width: `${(item.value / max) * 100}%`, height: '100%', borderRadius: 4, background: 'var(--accent)' }} />
+            <div style={{ width: `${(item.value / max) * 100}%`, height: '100%', borderRadius: 4, background: 'var(--ink)' }} />
           </div>
           <span className="small muted" style={{ textAlign: 'right' }}>{item.value}</span>
         </div>

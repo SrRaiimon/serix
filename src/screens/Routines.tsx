@@ -1,7 +1,7 @@
 import { BlockCard } from '../components/Block'
 import { ArrowLeftRight, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
@@ -189,11 +189,11 @@ export function RoutineDetailScreen({ id }: { id: string }) {
     <>
       <NavBar showBack title={routine.name} right={<button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones', 'Options')}><Ellipsis size={20} /></button>} />
       <div className="screen with-nav">
-        <div className="grid-3">
-          <Tile icon={Dumbbell} value={routine.exercises.length} label={t('Ejercicios', 'Exercises')} />
-          <Tile icon={Layers} value={routineSets(routine)} label={t('Series', 'Sets')} />
-          <Tile icon={Clock} value={`~${routineMinutes(routine)}′`} label={t('Duración', 'Duration')} />
-        </div>
+        <StatBand items={[
+          { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
+          { value: routineSets(routine), label: t('Series', 'Sets') },
+          { value: `~${routineMinutes(routine)}′`, label: t('Duración', 'Duration') },
+        ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header">{t('Ejercicios', 'Exercises')}</div>
         <div className="list">

@@ -2,13 +2,13 @@ import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColu
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
-import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
+import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, volume, weight } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, monthToDate, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
+import { exerciseHistory, monthToDate, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -164,7 +164,7 @@ function Delta({ now, before, format }: { now: number; before: number; format: (
   const up = diff > 0
   const Icon = up ? ArrowUpRight : ArrowDownRight
   return (
-    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--green-text)' : 'var(--text-2)' }}>
+    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--text)' : 'var(--text-2)', fontWeight: up ? 700 : 400 }}>
       <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} {t('vs. mes pasado', 'vs. last month')}
     </span>
   )
@@ -252,20 +252,20 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
   return (
     <>
-      <div className="stat-band">
-        <div><strong>{thisWeek.sessions}</strong><span>{t('Entrenos esta semana', 'Workouts this week')}</span></div>
-        <div><strong>{volume(thisWeek.volume, unit)}</strong><span>{t('Volumen esta semana', 'Volume this week')}</span></div>
-        <div><strong>{sessions.length}</strong><span>{t('Entrenos totales', 'Total workouts')}</span></div>
-        <div><strong>{hours(totalTime)}</strong><span>{t('Tiempo total', 'Total time')}</span></div>
-      </div>
       <BestLifts sessions={sessions} unit={unit} />
-      <MonthCard sessions={sessions} unit={unit} />
+      <StatBand items={[
+        { value: sessions.length, label: t('Entrenos totales', 'Total workouts') },
+        { value: hours(totalTime), label: t('Tiempo total', 'Total time') },
+        { value: streakWeeks(sessions), label: t('Semanas seguidas', 'Weeks in a row') },
+        { value: volume(thisWeek.volume, unit), label: t('Volumen esta semana', 'Volume this week') },
+      ]} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones)`, `Last 12 weeks · ${unit} lifted (weight × reps)`)}</span>
       </Card>
+      <MonthCard sessions={sessions} unit={unit} />
       <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue-text)" />
+        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} />
       </Card>
       <Stalls sessions={sessions} unit={unit} />
       <YearMap sessions={sessions} unit={unit} />
@@ -301,7 +301,13 @@ function hours(ms: number): string {
 
 /** Las tres mejores marcas (1RM estimado), en grande: lo primero que se quiere ver en Progreso. */
 function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
-  const top = useMemo(() => records(sessions).sort((a, b) => b.e1rm - a.e1rm).slice(0, 3), [sessions])
+  const { top, before } = useMemo(() => {
+    const monthAgo = Date.now() - 30 * 86400000
+    return {
+      top: records(sessions).sort((a, b) => b.e1rm - a.e1rm).slice(0, 3),
+      before: new Map(records(sessions.filter((s) => s.start < monthAgo)).map((r) => [r.exerciseId, r.e1rm])),
+    }
+  }, [sessions])
   if (!top.length) return null
   return (
     <Card title={t('Tus mejores marcas', 'Your best lifts')} icon={Trophy}>
@@ -310,10 +316,13 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
             <strong>{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
             <span className="clamp-2">{r.name}</span>
+            {(r.e1rm - (before.get(r.exerciseId) ?? r.e1rm)) >= 0.5 && (
+              <em title={t('Mejora en los últimos 30 días', 'Gain in the last 30 days')}>+{int(fromKg(r.e1rm - before.get(r.exerciseId)!, unit))} {unit} · 30 d</em>
+            )}
           </button>
         ))}
       </div>
-      <span className="small muted">{t('1RM estimado de tu mejor serie. Toca uno para ver su evolución.', 'Estimated 1RM from your best set. Tap one to see its progress.')}</span>
+      <span className="small muted">{t('1RM estimado de tu mejor serie y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'Estimated 1RM from your best set and how much it rose in 30 days. Tap one to see its progress.')}</span>
     </Card>
   )
 }
@@ -383,7 +392,7 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
               <span className="small muted">{weight(r.weight, unit)} × {r.reps} · {shortDay(r.date)}</span>
             </span>
             <span style={{ textAlign: 'right' }}>
-              <span className="bold" style={{ display: 'block' }}>{weightValue(r.e1rm, unit)}</span>
+              <span className="bold" style={{ display: 'block' }}>{int(fromKg(r.e1rm, unit))} {unit}</span>
               <span className="tiny muted">{t('1RM est.', 'est. 1RM')}</span>
             </span>
           </button>
@@ -422,9 +431,9 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
           {points.length >= 2 ? (
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: value(p) }))} />
-              <span className="bold row" style={{ gap: 6, color: change >= 0 ? 'var(--green-text)' : 'var(--red-text)' }}>
-                {change >= 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
-                {change >= 0 ? '+' : ''}{num(change)} {unit} {t('desde el', 'since')} {shortDay(first.date)}
+              <span className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+                <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(change)} {unit}</strong>
+                <span className="small muted">{t('desde el', 'since')} {shortDay(first.date)}</span>
               </span>
             </>
           ) : (
@@ -438,7 +447,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
             <div key={p.date} className="list-row">
               <span className="grow">{shortDay(p.date)}</span>
               <span className="small muted">{t('máx.', 'max')} {weight(p.maxWeight, unit)}</span>
-              <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{weightValue(p.e1rm, unit)} <span className="tiny muted">1RM</span></span>
+              <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{int(fromKg(p.e1rm, unit))} <span className="tiny muted">1RM</span></span>
             </div>
           ))}
         </div>

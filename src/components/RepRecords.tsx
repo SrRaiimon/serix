@@ -1,6 +1,6 @@
 import { Medal } from 'lucide-react'
 import { useMemo } from 'react'
-import { shortDay, weight, type Unit } from '../lib/format'
+import { shortDay, weightValue, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { repRecords } from '../lib/stats'
 import type { Session } from '../lib/store'
@@ -16,7 +16,7 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
         {list.map((r, i) => (
           <div key={i} className="rep-record">
             <span className="tiny muted">{[1, 3, 5, 10][i]}RM</span>
-            <span className="bold">{r ? weight(r.weight, unit) : '—'}</span>
+            <span className="bold">{r ? <>{weightValue(r.weight, unit)}<small> {unit}</small></> : '—'}</span>
             <span className="tiny muted">{r ? (r.reps > r.target ? t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`) : shortDay(r.date)) : ' '}</span>
           </div>
         ))}

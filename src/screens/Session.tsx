@@ -1,6 +1,6 @@
-import { BadgeCheck, Clock, Dumbbell, ImageIcon, Layers, Repeat, Share2, StickyNote, Trash2, Trophy, Weight } from 'lucide-react'
+import { BadgeCheck, Dumbbell, ImageIcon, Share2, StickyNote, Trash2, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { ActionSheet, Card, Empty, NavBar, Sheet, Thumb, Tile, useCatalog, useToast } from '../components/ui'
+import { ActionSheet, Card, Empty, NavBar, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import { day, duration, time, volume, weight, type Unit } from '../lib/format'
 import { back } from '../lib/router'
 import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
@@ -85,12 +85,12 @@ async function shareSessionImage(file: File | undefined, title: string, showToas
 
 export function SessionStats({ session, unit }: { session: Session; unit: Unit }) {
   return (
-    <div className="grid-2">
-      <Tile icon={Clock} value={duration(sessionDuration(session))} label={t('Duración', 'Duration')} />
-      <Tile icon={Weight} value={volume(sessionVolume(session), unit)} label={t('Volumen total', 'Total volume')} />
-      <Tile icon={Layers} value={sessionSets(session)} label={t('Series efectivas', 'Working sets')} />
-      <Tile icon={Repeat} value={sessionReps(session)} label={t('Repeticiones', 'Reps')} />
-    </div>
+    <StatBand items={[
+      { value: duration(sessionDuration(session)), label: t('Duración', 'Duration') },
+      { value: volume(sessionVolume(session), unit), label: t('Volumen total', 'Total volume') },
+      { value: sessionSets(session), label: t('Series efectivas', 'Working sets') },
+      { value: sessionReps(session), label: t('Repeticiones', 'Reps') },
+    ]} />
   )
 }
 
