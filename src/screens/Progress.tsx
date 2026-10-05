@@ -1,8 +1,8 @@
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Clock, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy, Weight } from 'lucide-react'
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
-import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, Tile, useCatalog, useProgressive, useToast } from '../components/ui'
+import { Card, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
 import { duration, fromKg, int, monthYear, num, shortDay, volume, weight, weightValue } from '../lib/format'
@@ -252,13 +252,13 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
   return (
     <>
-      <div className="grid-2">
-        <Tile icon={Calendar} value={thisWeek.sessions} label={t('Entrenos esta semana', 'Workouts this week')} />
-        <Tile icon={Weight} value={volume(thisWeek.volume, unit)} label={t('Volumen esta semana', 'Volume this week')} />
-        <Tile icon={Dumbbell} value={sessions.length} label={t('Entrenos totales', 'Total workouts')} />
-        <Tile icon={Clock} value={duration(totalTime)} label={t('Tiempo total', 'Total time')} />
+      <div className="stat-band">
+        <div><strong>{thisWeek.sessions}</strong><span>{t('Entrenos esta semana', 'Workouts this week')}</span></div>
+        <div><strong>{volume(thisWeek.volume, unit)}</strong><span>{t('Volumen esta semana', 'Volume this week')}</span></div>
+        <div><strong>{sessions.length}</strong><span>{t('Entrenos totales', 'Total workouts')}</span></div>
+        <div><strong>{hours(totalTime)}</strong><span>{t('Tiempo total', 'Total time')}</span></div>
       </div>
-      <Stalls sessions={sessions} unit={unit} />
+      <BestLifts sessions={sessions} unit={unit} />
       <MonthCard sessions={sessions} unit={unit} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} />
@@ -267,6 +267,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} color="var(--blue-text)" />
       </Card>
+      <Stalls sessions={sessions} unit={unit} />
       <YearMap sessions={sessions} unit={unit} />
       <ShareSummaryCard sessions={sessions} unit={unit} />
     </>
@@ -290,6 +291,30 @@ function Muscles({ sessions }: { sessions: Session[] }) {
         </Card>
       )}
     </>
+  )
+}
+
+/** Horas totales sin minutos a partir de 10 h, para que la cifra quepa entera. */
+function hours(ms: number): string {
+  return ms >= 10 * 3600000 ? `${Math.round(ms / 3600000)} h` : duration(ms)
+}
+
+/** Las tres mejores marcas (1RM estimado), en grande: lo primero que se quiere ver en Progreso. */
+function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const top = useMemo(() => records(sessions).sort((a, b) => b.e1rm - a.e1rm).slice(0, 3), [sessions])
+  if (!top.length) return null
+  return (
+    <Card title={t('Tus mejores marcas', 'Your best lifts')} icon={Trophy}>
+      <div className="best-lifts">
+        {top.map((r) => (
+          <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
+            <strong>{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
+            <span className="clamp-2">{r.name}</span>
+          </button>
+        ))}
+      </div>
+      <span className="small muted">{t('1RM estimado de tu mejor serie. Toca uno para ver su evolución.', 'Estimated 1RM from your best set. Tap one to see its progress.')}</span>
+    </Card>
   )
 }
 

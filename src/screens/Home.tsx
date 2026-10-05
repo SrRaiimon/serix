@@ -1,6 +1,6 @@
 import { Calendar, Check, Compass, Users, ClipboardList, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Card, Progress, Tile, useTick, useToast } from '../components/ui'
+import { Card, Tile, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
@@ -36,8 +36,6 @@ export function HomeScreen() {
         </div>
       </header>
 
-      <InstallBanner />
-
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
       {shareReminderDue(data) && <FriendReminderCard friends={data.friends.length} />}
@@ -52,6 +50,8 @@ export function HomeScreen() {
           <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
         </Card>
       )}
+
+      <InstallBanner />
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
@@ -128,22 +128,26 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
   const reached = sessions.length >= goal
   return (
     <Card>
-      <div className="row between">
+      <div className="row between" style={{ alignItems: 'flex-end' }}>
         <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
-        <strong style={{ color: reached ? 'var(--green-text)' : 'var(--text)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
+        <span className="week-count"><strong>{sessions.length}</strong> / {goal}</span>
       </div>
-      <Progress value={Math.min(sessions.length, goal)} total={goal} green={reached} />
+      <div className="goal-pips" role="img" aria-label={t(`${sessions.length} de ${goal} entrenos`, `${sessions.length} of ${goal} workouts`)}>
+        {Array.from({ length: Math.max(goal, sessions.length) }, (_, i) => <span key={i} className={i < sessions.length ? 'on' : ''} />)}
+      </div>
       <div className="week">
         {days.map((d, i) => {
           const time = d.getTime()
+          const state = trained.has(time) ? 'done' : time < today ? 'past' : time > today ? 'future' : ''
           return (
             <div key={time}>
               <span className="tiny muted bold">{t('LMXJVSD', 'MTWTFSS')[i]}</span>
-              <div className={`dot ${trained.has(time) ? 'done' : ''} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
+              <div className={`dot ${state} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
             </div>
           )
         })}
       </div>
+      {!reached && <span className="small muted">{plural(goal - sessions.length, ['entreno más para tu objetivo', 'entrenos más para tu objetivo'], ['more workout to reach your goal', 'more workouts to reach your goal'])}</span>}
       {reached && <span className="small bold row" style={{ color: 'var(--green-text)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
     </Card>
   )

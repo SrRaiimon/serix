@@ -731,8 +731,8 @@ a.list-row:active {
 }
 
 .segmented button.active {
-  background: var(--card);
-  box-shadow: 0 1px 3px rgba(14, 16, 19, 0.14), inset 0 0 0 1px var(--separator);
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .toggle {
@@ -1098,20 +1098,30 @@ a.list-row:active {
   position: absolute;
   left: -8px;
   top: 50%;
-  width: 9px;
-  height: 22px;
-  margin-top: -11px;
+  width: 14px;
+  height: 34px;
+  margin-top: -17px;
   background: var(--accent);
   clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%);
   animation: ribbon-slide 0.42s var(--ease-out);
 }
 
-.set-row.done {
-  background: var(--green-soft);
+.set-row.done .set-label {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+.set-row.done .set-input {
+  background: transparent;
+}
+
+/* Serie que toca: toda la fila marcada y la cinta grande entrando desde el borde de la tarjeta. */
+.set-row.current {
+  background: var(--fill);
 }
 
 .set-label {
-  height: 32px;
+  height: 40px;
   border-radius: 8px;
   background: var(--fill);
   font-weight: 700;
@@ -1167,16 +1177,15 @@ a.list-row:active {
 
 .set-prev {
   text-align: center;
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.2;
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .set-input {
-  height: 32px;
+  height: 40px;
   width: 100%;
   border-radius: 8px;
   background: var(--fill);
@@ -1184,7 +1193,7 @@ a.list-row:active {
   font-family: var(--font-display);
   font-weight: 800;
   font-stretch: 104%;
-  font-size: 17px;
+  font-size: 20px;
   font-variant-numeric: tabular-nums;
   border: 1.5px solid transparent;
 }
@@ -1207,7 +1216,7 @@ a.list-row:active {
 }
 
 .set-check.done {
-  color: var(--green-text);
+  color: var(--ink);
 }
 
 .rest-bar {
@@ -1224,8 +1233,8 @@ a.list-row:active {
 
 .rest-time {
   font-family: var(--font-display);
-  font-stretch: 110%;
-  font-size: 28px;
+  font-stretch: 100%;
+  font-size: 30px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -1342,6 +1351,16 @@ a.list-row:active {
 .week .dot.done {
   background: var(--ink);
   color: var(--on-ink);
+}
+
+.week .dot.past {
+  background: transparent;
+  color: var(--text-2);
+}
+
+.week .dot.future {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .week .dot.today {
@@ -1603,14 +1622,16 @@ html.scroll-locked body {
 
 .rpe-chips {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
 .rpe-chip {
-  height: 34px;
-  border-radius: 8px;
-  font-size: 14px;
+  height: 44px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   background: var(--card);
@@ -2077,12 +2098,7 @@ html.scroll-locked body {
 .duo-hpair { display: flex; flex-direction: column; gap: 2px; }
 .duo-hbar { height: 7px; border-radius: 4px; min-width: 2px; }
 
-/* En modo oscuro la opción elegida necesita un gris claro: sobre el fondo negro (pantallas y hojas)
-   el color de las tarjetas no se distingue. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .segmented button.active { background: #34363c; }
-}
-:root[data-theme="dark"] .segmented button.active { background: #34363c; }
+
 
 /* MARK: Fotos de progreso */
 
@@ -2099,7 +2115,7 @@ html.scroll-locked body {
 .photo-viewer {
   position: fixed; inset: 0; z-index: 60; background: #000; display: flex; flex-direction: column; color-scheme: dark;
   --accent: #ff7345; --bg: #000000; --card: #1c1c1e; --fill: rgba(118, 118, 128, 0.24); --text: #f5f5f7; --text-2: rgba(235, 235, 245, 0.6);
-  --accent-text: #ff8a5c; --red-text: #ff453a; --bar: rgba(22, 22, 24, 0.86); --separator: rgba(84, 84, 88, 0.6);
+  --accent-text: #ff8a5c; --red-text: #ff453a; --bar: rgba(22, 22, 24, 0.86); --separator: rgba(84, 84, 88, 0.6); --ink: #f3f4f6; --on-ink: #08090b;
   color: var(--text);
 }
 .photo-viewer-img { flex: 1; min-height: 0; display: grid; place-items: center; }
@@ -2179,3 +2195,22 @@ html.scroll-locked body {
 .rep-records { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .rep-record { display: flex; flex-direction: column; gap: 2px; padding: 10px 8px; border-radius: 12px; background: var(--fill); text-align: center; font-variant-numeric: tabular-nums; }
 .rep-record .bold { font-family: var(--font-display); font-stretch: 108%; font-size: 17px; font-weight: 800; }
+
+/* MARK: Cifras en banda (Progreso) y objetivo semanal */
+
+.stat-band { display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border: 1px solid var(--separator); border-radius: var(--radius); }
+.stat-band > div { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; min-width: 0; }
+.stat-band > div:nth-child(odd) { border-right: 1px solid var(--separator); }
+.stat-band > div:nth-child(n + 3) { border-top: 1px solid var(--separator); }
+.stat-band strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; line-height: 1.05; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-band span { font-size: 12.5px; color: var(--text-2); }
+.best-lifts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.best-lifts button { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 10px 0 0; border-top: 2px solid var(--ink); }
+.best-lifts strong { white-space: nowrap; font-family: var(--font-display); font-size: 28px; font-weight: 800; font-stretch: 104%; line-height: 1; }
+.best-lifts small { font-size: 13px; font-weight: 700; color: var(--text-2); }
+.best-lifts span { font-size: 13px; color: var(--text-2); }
+.week-count { font-size: 15px; color: var(--text-2); font-weight: 600; }
+.week-count strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; color: var(--text); line-height: 1; }
+.goal-pips { display: flex; gap: 6px; }
+.goal-pips span { flex: 1; height: 8px; border-radius: 4px; background: var(--fill); }
+.goal-pips span.on { background: var(--ink); }

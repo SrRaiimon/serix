@@ -176,7 +176,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
             {allSets.length > 0 && (
               <>
                 <span className="small muted">{t(`${done} de ${allSets.length} series`, `${done} of ${allSets.length} sets`)}</span>
-                <Progress value={done} total={allSets.length} green />
+                <Progress value={done} total={allSets.length} />
               </>
             )}
             <BlockStatus at={session.start} />
@@ -641,7 +641,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
       )}
       <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? t('Desmarcar serie', 'Untick set') : t('Marcar serie', 'Tick set')}>
         {set.done
-          ? <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor" /><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          ? <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor" /><path d="M7 12.5l3.2 3.2L17 9" style={{ stroke: 'var(--on-ink)' }} strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
           : <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" stroke="currentColor" strokeWidth="1.8" fill="none" /></svg>}
       </button>
       {menu && (
