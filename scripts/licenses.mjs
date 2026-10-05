@@ -3,10 +3,12 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer']
+const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer', '@fontsource-variable/archivo']
 
 // Autoría que el paquete no recoge en su archivo de licencia.
 const NOTES = {
+  '@fontsource-variable/archivo': 'Tipografía Archivo (Omnibus-Type, https://github.com/Omnibus-Type/Archivo), empaquetada por\n' +
+    'Fontsource. Se incluye el archivo latin-wdth-normal.woff2 sin modificar (src/assets/fonts).',
   jsqr: 'jsQR, de Cosmo Wolfe y colaboradores (https://github.com/cozmo/jsQR). Parte del código\n' +
     '(corrección de errores Reed-Solomon) está traducido de ZXing (https://github.com/zxing/zxing),\n' +
     'también con licencia Apache 2.0. Se distribuye sin cambios.',

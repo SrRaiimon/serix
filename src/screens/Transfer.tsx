@@ -202,7 +202,7 @@ function Receiver() {
       {phase === 'scanning' && (
         <>
           <div className="progress green" style={{ width: '100%' }}>
-            <div style={{ width: `${received.total ? (received.parts.size / received.total) * 100 : 0}%` }} />
+            <div style={{ transform: `scaleX(${received.total ? received.parts.size / received.total : 0})` }} />
           </div>
           <span className="bold" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {received.total ? t(`${received.parts.size} de ${received.total} códigos`, `${received.parts.size} of ${received.total} codes`) : t('Apunta al código del otro móvil', 'Point at the code on the other phone')}

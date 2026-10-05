@@ -161,7 +161,7 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
   const r = 46
   const c = 2 * Math.PI * r
   const progress = pos.segment.seconds ? pos.remaining / pos.segment.seconds : 0
-  const color = pos.segment.kind === 'rest' ? 'var(--green)' : pos.segment.kind === 'prep' ? '#f5a300' : 'var(--accent)'
+  const color = pos.segment.kind === 'rest' ? 'var(--green)' : pos.segment.kind === 'prep' ? 'var(--gold)' : 'var(--accent)'
   const toggle = () => {
     if (paused) {
       setPausedTotal(pausedTotal + Date.now() - paused.at)

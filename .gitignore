@@ -1,3 +1,7 @@
 node_modules
 dist
 .DS_Store
+
+# Herramientas de diseño (capturas y estado local)
+.impeccable/review/
+.impeccable/questions/

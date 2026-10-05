@@ -204,7 +204,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
             const slot = detailSlots[i]
             return (
               <button key={i} className="list-row" onClick={() => setDetail(e.exerciseId)}
-                style={slot.letter ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : undefined}>
+                style={slot.letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
                 <Thumb exerciseId={e.exerciseId} size={50} />
                 <span className="grow">
                   <span className="bold clamp-2" style={{ fontSize: 15 }}>
@@ -303,7 +303,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
         {routine.exercises.map((e, i) => (
           <div key={i} className="list-row" style={{
             flexDirection: 'column', alignItems: 'stretch', gap: 10,
-            ...(slots[i].letter ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : {}),
+            ...(slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : {}),
           }}>
             {slots[i].letter && slots[i].first && (
               <span className="group-head"><Link2 size={15} /> {groupKind(slots[i].size)} {slots[i].letter}: {t('sin descanso entre ejercicios', 'no rest between exercises')}</span>

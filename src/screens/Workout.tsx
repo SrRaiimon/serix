@@ -104,6 +104,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     if (e.groupId && last && session.exercises[last[0]].groupId === e.groupId) last.push(i)
     else runs.push([i])
   })
+  const currentSet = session.exercises.flatMap((x) => x.sets).find((x) => !x.done)?.id
   const block = (i: number) => {
     const e = session.exercises[i]
     return (
@@ -121,6 +122,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
+        currentSet={currentSet}
         stalled={trackingOf(e) === 'weight_reps' ? stall(e.exerciseId, history) : undefined}
         lastPain={lastPain(e.exerciseId, history)}
         startedAt={session.start}
@@ -162,15 +164,15 @@ export function WorkoutScreen({ session }: { session: Session }) {
           <div className="left">
             <button className="icon-btn" onClick={minimizeWorkout} aria-label={t('Minimizar', 'Minimize')}><ChevronDown size={22} /></button>
           </div>
-          <div className="title" style={{ fontVariantNumeric: 'tabular-nums' }}>{clock((now - session.start) / 1000)}</div>
+          <div className="title workout-clock">{clock((now - session.start) / 1000)}</div>
           <div className="right">
-            <button className="btn small" style={{ background: 'var(--green)', color: 'var(--on-accent)' }} onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
+            <button className="btn small ink" onClick={() => setConfirm('finish')}>{t('Terminar', 'Finish')}</button>
           </div>
         </div>
 
         <div className="screen with-nav" style={{ paddingBottom: 140 }}>
           <div className="card">
-            <input className="bold" style={{ fontSize: 24 }} aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
+            <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
             {allSets.length > 0 && (
               <>
                 <span className="small muted">{t(`${done} de ${allSets.length} series`, `${done} of ${allSets.length} sets`)}</span>
@@ -233,7 +235,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, barKg, previous, upcoming, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -250,6 +252,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   previous: SetEntry[]
   /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
   upcoming?: SessionExercise
+  /** Primera serie pendiente del entrenamiento (lleva la cinta de «aquí vas»). */
+  currentSet?: string
   /** Estancado en las últimas sesiones (se propone descarga o variante). */
   stalled?: Stall
   onInfo: () => void
@@ -345,7 +349,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <button className="row grow" style={{ textAlign: 'left' }} onClick={onInfo}>
           <Thumb exerciseId={exercise.exerciseId} size={44} />
           <span className="grow">
-            <span className="bold clamp-2" style={{ color: 'var(--accent-text)' }}>
+            <span className="clamp-2 exercise-name">
               {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
               {exercise.name}
             </span>
@@ -366,7 +370,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       {exercise.auto && <AutoNote auto={exercise.auto} unit={unit} />}
 
       {exercise.deload && exercise.auto?.kind !== 'wave' ? (
-        <span className="small row" style={{ color: 'var(--blue-text)', gap: 6, alignItems: 'flex-start' }}>
+        <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
           <BatteryLow size={16} style={{ flexShrink: 0 }} />
           {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
@@ -437,7 +441,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         // Tras el lado izquierdo se pasa al derecho sin descanso.
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
-          <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking}
+          <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
             repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
@@ -537,8 +541,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted }: {
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted }: {
   set: SetEntry
+  current: boolean
   askRpe: boolean
   onAskRpe: () => void
   onRpeDone: () => void
@@ -602,7 +607,7 @@ function SetRow({ set, label, previous, tracking, repsPlaceholder, timePlacehold
 
   return (
     <>
-    <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''}`}>
+    <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''} ${current ? 'current' : ''}`}>
       <button className={`set-label ${set.warmup ? 'warmup' : set.kind ?? ''}`} onClick={() => setMenu(true)}
         aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
@@ -704,7 +709,7 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
         : t(`5/3/1 · semana ${auto.week} de 4 · TM ${weight(auto.tm, unit)} · en la última serie, todas las repeticiones que puedas con buena técnica.`,
           `5/3/1 · week ${auto.week} of 4 · TM ${weight(auto.tm, unit)} · on the last set, as many good reps as you can.`)
   return (
-    <span className="small row" style={{ color: 'var(--blue-text)', gap: 6, alignItems: 'flex-start' }}>
+    <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
       <TrendingUp size={16} style={{ flexShrink: 0 }} />
       {text}
     </span>

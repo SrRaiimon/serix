@@ -72,7 +72,7 @@ export function Card({ title, icon: Icon, children, className = '' }: { title?: 
     <section className={`card ${className}`}>
       {title && (
         <h2 className="card-title">
-          {Icon && <Icon size={19} color="var(--accent-text)" aria-hidden="true" />} {title}
+          {Icon && <Icon size={18} color="var(--text-2)" aria-hidden="true" />} {title}
         </h2>
       )}
       {children}
@@ -80,7 +80,7 @@ export function Card({ title, icon: Icon, children, className = '' }: { title?: 
   )
 }
 
-export function Tile({ value, label, icon: Icon, tint = 'var(--accent-text)', alt }: { value: ReactNode; label: string; icon?: LucideIcon; tint?: string; alt?: boolean }) {
+export function Tile({ value, label, icon: Icon, tint = 'var(--text-2)', alt }: { value: ReactNode; label: string; icon?: LucideIcon; tint?: string; alt?: boolean }) {
   return (
     <div className={`tile ${alt ? 'alt' : ''}`}>
       {Icon && <Icon size={18} color={tint} />}
@@ -124,7 +124,7 @@ export function Row({ icon: Icon, label, detail, onClick, chevron = true, classN
 }) {
   const content = (
     <>
-      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red-text)' : 'var(--accent-text)'} />}
+      {Icon && <Icon size={20} color={className.includes('danger') ? 'var(--red-text)' : className.includes('accent') ? 'var(--accent-text)' : 'var(--text-2)'} />}
       {children ?? <span className="grow">{label}</span>}
       {detail !== undefined && <span className="muted">{detail}</span>}
       {onClick && chevron && <ChevronRight size={18} className="chevron" />}
@@ -246,7 +246,7 @@ export function Progress({ value, total, green }: { value: number; total: number
   const pct = total > 0 ? Math.min(100, (value / total) * 100) : 0
   return (
     <div className={`progress ${green ? 'green' : ''}`}>
-      <div style={{ width: `${pct}%` }} />
+      <div style={{ transform: `scaleX(${pct / 100})` }} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Calendar, Check, Compass, Users, ClipboardList, Clock, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
+import { Calendar, Check, Compass, Users, ClipboardList, Download, Dumbbell, Flame, HeartPulse, Play, Share, Smartphone, Star, Timer, Weight, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, Tile, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, startOfDay, startOfWeek, volume } from '../lib/format'
@@ -56,9 +56,9 @@ export function HomeScreen() {
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
       <div className="grid-3">
-        <Tile icon={Flame} tint="#ff9500" value={streakWeeks(sessions)} label={t('Racha (sem.)', 'Streak (wks)')} />
-        <Tile icon={Calendar} tint="var(--blue)" value={thisMonth.length} label={t('Este mes', 'This month')} />
-        <Tile icon={Weight} tint="#bf5af2" value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label={t('Volumen sem.', 'Weekly volume')} />
+        <Tile icon={Flame} value={streakWeeks(sessions)} label={t('Racha (sem.)', 'Streak (wks)')} />
+        <Tile icon={Calendar} value={thisMonth.length} label={t('Este mes', 'This month')} />
+        <Tile icon={Weight} value={volume(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit)} label={t('Volumen sem.', 'Weekly volume')} />
       </div>
 
       <div className="grid-2">
@@ -86,24 +86,26 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
   return (
-    <section className="hero">
-      <div className="row between">
-        <span className="kicker">{t('SIGUIENTE ENTRENAMIENTO', 'NEXT WORKOUT')}</span>
-        {routine.programName && <span className="small clamp-1" style={{ opacity: 0.9, maxWidth: '55%' }}>{routine.programName}</span>}
-      </div>
-      <h2>{routine.name}</h2>
-      <span style={{ opacity: 0.92 }}>{muscleSummary(routine)}</span>
-      <span className="small row" style={{ gap: 14, fontWeight: 600 }}>
-        <span className="row" style={{ gap: 5 }}><Dumbbell size={15} /> {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}</span>
-        <span className="row" style={{ gap: 5 }}><Clock size={15} /> ~{routineMinutes(routine)} min</span>
+    <section className="hero" aria-labelledby="next-workout">
+      <span className="hero-ribbon" aria-hidden="true" />
+      <span className="small clamp-1 hero-meta">
+        <span className="sr-only">{t('Siguiente entrenamiento', 'Next workout')}: </span>
+        {routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}
       </span>
+      <h2 id="next-workout">{routine.name}</h2>
+      <span className="muted">{muscleSummary(routine)}</span>
+      <div className="hero-facts">
+        <span className="hero-fact"><strong>{routine.exercises.length}</strong>{routine.exercises.length === 1 ? t('ejercicio', 'exercise') : t('ejercicios', 'exercises')}</span>
+        <span className="hero-fact"><strong>~{routineMinutes(routine)}</strong>{t('minutos', 'minutes')}</span>
+        <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
+      </div>
       {tired.length > 0 && (
         <span className="small row hero-warning">
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
           {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}
         </span>
       )}
-      <button className="btn start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
+      <button className="btn primary start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
     </section>
   )
 }
@@ -112,7 +114,7 @@ function ContinueCard({ session }: { session: Session }) {
   const now = useTick()
   return (
     <Card title={t('Entrenamiento en curso', 'Workout in progress')} icon={Dumbbell}>
-      <strong style={{ fontSize: 20 }}>{session.name}</strong>
+      <strong className="exercise-name" style={{ fontSize: 22 }}>{session.name}</strong>
       <span className="muted" style={{ fontVariantNumeric: 'tabular-nums' }}>{t('Llevas', 'Elapsed')} {clock((now - session.start) / 1000)}</span>
       <button className="btn primary" onClick={openWorkout}>{t('Continuar', 'Resume')}</button>
     </Card>
@@ -128,7 +130,7 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
     <Card>
       <div className="row between">
         <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
-        <strong style={{ color: reached ? 'var(--green-text)' : 'var(--accent-text)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
+        <strong style={{ color: reached ? 'var(--green-text)' : 'var(--text)' }}>{t(`${sessions.length} de ${goal}`, `${sessions.length} of ${goal}`)}</strong>
       </div>
       <Progress value={Math.min(sessions.length, goal)} total={goal} green={reached} />
       <div className="week">
@@ -157,14 +159,14 @@ function InstallBanner() {
   }
   return (
     <div className="install-banner">
-      <Smartphone size={26} color="var(--accent-text)" />
+      <Smartphone size={26} color="var(--text-2)" />
       <span className="grow small">
         <strong style={{ display: 'block' }}>{t('Instálala en tu móvil', 'Install it on your phone')}</strong>
         {canPrompt ? t('Se abrirá como una app, a pantalla completa y sin conexión.', 'It opens like an app, full screen and offline.') : (
           <>{t('Pulsa', 'Tap')} <Share size={13} style={{ verticalAlign: -2 }} /> <b>{t('Compartir', 'Share')}</b> {t('y luego', 'and then')} <b>{t('Añadir a pantalla de inicio', 'Add to Home Screen')}</b>.</>
         )}
       </span>
-      {canPrompt && <button className="btn small primary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
+      {canPrompt && <button className="btn small secondary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
       <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
   )

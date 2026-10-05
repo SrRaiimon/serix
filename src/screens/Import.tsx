@@ -99,7 +99,7 @@ export function ImportScreen({ code }: { code: string }) {
         )}
       </div>
       {plan && (
-        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(var(--safe-bottom) + 16px)', background: 'linear-gradient(transparent, var(--bg) 30%)', zIndex: 35 }}>
+        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(var(--safe-bottom) + 16px)', background: 'var(--bg)', borderTop: '1px solid var(--separator)', zIndex: 35 }}>
           <div style={{ maxWidth: 528, margin: '0 auto' }}>
             <button className="btn primary block" onClick={save}><Download size={19} /> {t('Guardar en mis rutinas', 'Save to my routines')}</button>
           </div>

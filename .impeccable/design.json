@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "thesis": "A quiet, precise neutral instrument where only two things speak: the numbers you lift and one orange ribbon marking where you are.",
+  "tokens": {
+    "light": {
+      "--accent": "#ff5a1f",
+      "--accent-2": "#ff7a45",
+      "--bg": "#f1f2f4",
+      "--card": "#ffffff",
+      "--card-2": "#f6f7f8",
+      "--fill": "rgba(14, 16, 19, 0.055)",
+      "--text": "#0e1013",
+      "--text-2": "#50545c",
+      "--text-3": "rgba(14, 16, 19, 0.3)",
+      "--separator": "rgba(14, 16, 19, 0.09)",
+      "--line-strong": "rgba(14, 16, 19, 0.2)",
+      "--ink": "#0e1013",
+      "--on-ink": "#ffffff",
+      "--green": "#1fb655",
+      "--green-soft": "rgba(31, 182, 85, 0.13)",
+      "--red": "#ff3b30",
+      "--gold": "#f5b400",
+      "--blue": "#0a84ff",
+      "--accent-text": "#b4380a",
+      "--green-text": "#15803d",
+      "--red-text": "#c4001a",
+      "--blue-text": "#0062cc",
+      "--amber-text": "#b45f00",
+      "--on-accent": "#111114",
+      "--bar": "#ffffff",
+      "--shadow": "0 10px 30px rgba(14, 16, 19, 0.12)"
+    },
+    "dark": {
+      "--accent": "#ff6a33",
+      "--bg": "#08090b",
+      "--card": "#131417",
+      "--card-2": "#1b1d21",
+      "--fill": "rgba(255, 255, 255, 0.07)",
+      "--text": "#f3f4f6",
+      "--text-2": "#a3a7af",
+      "--text-3": "rgba(255, 255, 255, 0.3)",
+      "--separator": "rgba(255, 255, 255, 0.085)",
+      "--line-strong": "rgba(255, 255, 255, 0.2)",
+      "--ink": "#f3f4f6",
+      "--on-ink": "#08090b",
+      "--green": "#30d158",
+      "--green-soft": "rgba(48, 209, 88, 0.15)",
+      "--accent-text": "#ff8a5c",
+      "--green-text": "#30d158",
+      "--red-text": "#ff453a",
+      "--blue-text": "#0a84ff",
+      "--amber-text": "#f08c00",
+      "--bar": "#101114",
+      "--shadow": "0 10px 30px rgba(0, 0, 0, 0.6)"
+    },
+    "roles": {
+      "--accent": "primary action and ribbon only",
+      "--ink/--on-ink": "selection states and focus ring",
+      "*-text": "AA text and icons (>= 4.5:1)",
+      "--separator/--line-strong": "1px hairlines",
+      "--shadow": "floating layers only"
+    },
+    "darkSelectors": ["@media (prefers-color-scheme: dark) :root:not([data-theme=\"light\"])", ":root[data-theme=\"dark\"]"]
+  },
+  "typography": {
+    "display": {
+      "token": "--font-display",
+      "family": "Archivo",
+      "file": "src/assets/fonts/archivo-latin-wdth.woff2",
+      "axes": { "wdth": "62% 125%", "wght": "100 900" },
+      "usage": "large titles and numerals",
+      "weight": 800,
+      "stretchRange": "100%-112%"
+    },
+    "text": {
+      "family": "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+      "size": "16px",
+      "lineHeight": 1.35
+    },
+    "numerals": "tabular-nums (global on html, body)",
+    "sectionLabel": { "selector": ".list-header", "size": "12px", "weight": 700, "transform": "uppercase", "tracking": "0.08em" }
+  },
+  "radius": { "--radius": "14px", "button": "12px", "buttonSmall": "10px", "setRow": "10px", "pill": "999px", "sheet": "18px 18px 0 0" },
+  "motion": {
+    "--ease-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "signature": {
+      "ribbon-drop": { "from": "translateY(-110%)", "to": "translateY(0)", "used": [".hero-ribbon 0.6s", ".tabbar button.active::before 0.42s"] },
+      "ribbon-slide": { "from": "translateX(-110%)", "to": "translateX(0)", "used": [".set-row.current::before 0.42s"] }
+    },
+    "functional": ["slide-up", "fade", "rest-done-pulse", "button press scale(0.98)"],
+    "reducedMotion": "prefers-reduced-motion: reduce sets all animation and transition durations to 0.01ms"
+  },
+  "browser": {
+    "selection": "color-mix(in srgb, var(--accent) 28%, transparent)",
+    "caret": "var(--accent)",
+    "focus": "2px solid var(--ink), offset 2px",
+    "scrollbar": "var(--text-3) transparent"
+  },
+  "components": [
+    { "name": "Button", "selector": ".btn", "variants": ["primary", "secondary", "plain", "ink", "danger", "block", "small"] },
+    { "name": "Chip", "selector": ".chip", "source": "src/components/ui.tsx", "active": "--ink/--on-ink" },
+    { "name": "Tag", "selector": ".tag", "variants": ["accent (line-strong outline)"] },
+    { "name": "Tile", "selector": ".tile", "source": "src/components/ui.tsx", "variants": ["alt"] },
+    { "name": "List", "selector": ".list, .list-row, .list-header", "source": "src/components/ui.tsx (Row)" },
+    { "name": "HeroCard", "selector": ".hero, .hero-ribbon", "source": "src/screens/Home.tsx (NextCard)" },
+    { "name": "TabBar", "selector": ".tabbar", "source": "src/App.tsx (TabBar)" },
+    { "name": "ActiveBar", "selector": ".active-bar", "source": "src/App.tsx" },
+    { "name": "SetRow", "selector": ".set-row", "source": "src/screens/Workout.tsx (SetRow)", "states": ["current (ribbon)", "done (--green-soft)"] },
+    { "name": "Sheet", "selector": ".sheet, .sheet-backdrop", "source": "src/components/ui.tsx" },
+    { "name": "ActionSheet", "selector": ".dialog", "source": "src/components/ui.tsx" },
+    { "name": "Segmented", "selector": ".segmented", "source": "src/components/ui.tsx" }
+  ],
+  "rules": {
+    "dont": ["kickers/eyebrows", "coloured border-left > 1px", "gradients except muscle-map illustration", "glass/backdrop blur", "orange for non-primary things", "runtime-loaded fonts"]
+  },
+  "accessibility": { "lighthouse": 100, "minContrast": 4.5 },
+  "assets": [
+    { "path": "src/assets/fonts/archivo-latin-wdth.woff2", "license": "OFL-1.1", "source": "@fontsource-variable/archivo@5.3.0" }
+  ],
+  "provenance": "No raster images generated in this redesign; Archivo credited in public/licenses.txt, README.md and src/screens/Legal.tsx."
+}

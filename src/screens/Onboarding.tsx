@@ -59,7 +59,7 @@ export function OnboardingScreen() {
         <div className="right"><button className="nav-btn" style={{ color: 'var(--text-2)' }} onClick={() => finish()}>{t('Saltar', 'Skip')}</button></div>
       </div>
       {step > 0 && (
-        <div className="progress" style={{ margin: '0 16px' }}><div style={{ width: `${(step / LAST) * 100}%` }} /></div>
+        <div className="progress" style={{ margin: '0 16px' }}><div style={{ transform: `scaleX(${step / LAST})` }} /></div>
       )}
       <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
         {step === 0 && (
@@ -159,7 +159,7 @@ export function OnboardingScreen() {
 
 function Footer({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(var(--safe-bottom) + 16px)', background: 'linear-gradient(transparent, var(--bg) 30%)' }}>
+    <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(var(--safe-bottom) + 16px)', background: 'var(--bg)', borderTop: '1px solid var(--separator)' }}>
       <div style={{ maxWidth: 528, margin: '0 auto' }}>{children}</div>
     </div>
   )
