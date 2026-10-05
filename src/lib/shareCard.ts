@@ -1,21 +1,21 @@
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from '../components/muscleShapes'
-import { day, duration, volume, weight, type Unit } from './format'
+import { day, volumeShort, weight, type Unit } from './format'
 import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from './stats'
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
 import { plural, t } from './i18n'
+import { C, SANS, cardChrome, cardFooter, cardTitle, esc, rule, statBand } from './cardStyle'
+import archivoUrl from '../assets/fonts/archivo-latin-wdth.woff2?url'
 
 // Tarjeta del entrenamiento para compartir como imagen (1080 × 1350, formato 4:5). Se dibuja como SVG
 // con colores fijos y se convierte a PNG en el propio dispositivo: no se envía nada a ningún servidor.
 
 const W = 1080
 const H = 1350
-const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`
 
 /** Escala del mapa muscular (420 × 450) dentro de la tarjeta. */
 const MAP_SCALE = 1.0
 
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s)
 
 type Paint = 'p' | 's' | 'm'
@@ -25,7 +25,7 @@ function muscleMap(paint: (name: string) => Paint): string {
   const half = (view: 'front' | 'back') => {
     const regions = Object.entries(REGIONS[view]).map(([name, d]) => [d, DECOR.has(name) ? 'm' : paint(name === 'obliques' ? 'abs' : name)] as const)
     return [
-      `<path d="${SILHOUETTE}" fill="#0c0d10"/>`,
+      `<path d="${SILHOUETTE}" fill="#16181c"/>`,
       // Halo suave bajo los músculos principales (sustituye al filtro de brillo).
       ...regions.filter(([, p]) => p === 'p').map(([d]) => `<path d="${d}" fill="none" stroke="#ff6a3d" stroke-opacity="0.28" stroke-width="7" stroke-linejoin="round"/>`),
       ...regions.map(([d, p]) => `<path d="${d}" fill="url(#c${p})"/>`),
@@ -57,8 +57,8 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
   const paint = (name: string): Paint => (primary.has(name) ? 'p' : secondary.has(name) ? 's' : 'm')
 
   const stats: [string, string][] = [
-    [duration(sessionDuration(session)), t('Duración', 'Duration')],
-    [volume(sessionVolume(session), unit), t('Volumen', 'Volume')],
+    [`${Math.round(sessionDuration(session) / 60000)} min`, t('Duración', 'Duration')],
+    [volumeShort(sessionVolume(session), unit), t('Volumen', 'Volume')],
     [String(sessionSets(session)), t('Series', 'Sets')],
     records.length ? [String(records.length), records.length === 1 ? t('Récord', 'Record') : t('Récords', 'Records')] : [String(sessionReps(session)), t('Repeticiones', 'Reps')],
   ]
@@ -74,50 +74,58 @@ export function shareCardSVG({ session, unit, records, secondaryOf }: CardInput)
   })
   const record = records[0]
 
-  const statTiles = stats.map(([value, label], i) => {
-    const x = 60 + i * 245
-    return `<rect x="${x}" y="300" width="225" height="150" rx="28" fill="#ffffff" fill-opacity="0.05"/>
-      <text x="${x + 24}" y="378" font-size="50" font-weight="700" fill="#f5f5f7">${esc(value)}</text>
-      <text x="${x + 24}" y="422" font-size="26" fill="#9aa0ab">${label}</text>`
-  }).join('')
-
   const exerciseRows = lines.map(([name, detail], i) => {
     const y = 1080 + i * 46
-    return `<text x="80" y="${y}" font-size="28" fill="#e8e9ec">${esc(name)}</text>
-      <text x="1000" y="${y}" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(detail)}</text>`
+    return `<text x="80" y="${y}" font-size="28" fill="${C.text}">${esc(name)}</text>
+      <text x="1000" y="${y}" font-size="28" fill="${C.text2}" text-anchor="end">${esc(detail)}</text>`
   }).join('')
   const extra = done.length - shown.length
   const more = extra > 0
-    ? `<text x="80" y="${1080 + shown.length * 46}" font-size="24" fill="#6b7280">${extra === 1 ? t('y 1 ejercicio más', 'and 1 more exercise') : t(`y ${extra} ejercicios más`, `and ${extra} more exercises`)}</text>`
+    ? `<text x="80" y="${1080 + shown.length * 46}" font-size="24" fill="${C.text3}">${extra === 1 ? t('y 1 ejercicio más', 'and 1 more exercise') : t(`y ${extra} ejercicios más`, `and ${extra} more exercises`)}</text>`
     : ''
-  const recordBadge = record
-    ? `<rect x="60" y="480" width="960" height="70" rx="35" fill="#ff6a3d" fill-opacity="0.14"/>
-      <text x="540" y="526" font-size="30" font-weight="600" fill="#ff8a5c" text-anchor="middle">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 28))} · ${esc(weight(record.weight, unit))} × ${record.reps}</text>`
+  // Récord: una fila con la cinta pequeña (la única marca naranja además de la de la esquina).
+  const recordRow = record
+    ? `<path d="M60 474h20v32l-10-8-10 8z" fill="${C.accent}"/>
+      <text x="96" y="500" font-size="30" font-weight="600" fill="${C.text}">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 28))} · ${esc(weight(record.weight, unit))} × ${record.reps}</text>
+      ${rule(536, W)}`
     : ''
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${SANS}">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2129"/><stop offset="1" stop-color="#0d0f12"/></linearGradient>
-    <radialGradient id="glow" cx="0.85" cy="0.05" r="0.6"><stop offset="0" stop-color="#ff6a3d" stop-opacity="0.22"/><stop offset="1" stop-color="#ff6a3d" stop-opacity="0"/></radialGradient>
     <linearGradient id="cm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#474c57"/><stop offset="1" stop-color="#32363e"/></linearGradient>
     <linearGradient id="cp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa06b"/><stop offset="0.55" stop-color="#ff6a3d"/><stop offset="1" stop-color="#e8481f"/></linearGradient>
     <linearGradient id="cs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb48f" stop-opacity="0.8"/><stop offset="1" stop-color="#ff7a4d" stop-opacity="0.6"/></linearGradient>
   </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <rect width="${W}" height="${H}" fill="url(#glow)"/>
-  <text x="60" y="110" font-size="34" font-weight="800" letter-spacing="6" fill="#ff6a3d">SERIX</text>
-  <text x="1020" y="110" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(day(session.start))}</text>
-  <text x="60" y="220" font-size="68" font-weight="800" fill="#f5f5f7">${esc(cut(session.name, 24))}</text>
-  ${statTiles}
-  ${recordBadge}
+  ${cardChrome(W, H, day(session.start))}
+  ${cardTitle(cut(session.name, 30), 250, session.name.length > 22 ? 52 : session.name.length > 16 ? 62 : 72)}
+  ${statBand(60, 290, 960, 150, stats, 4)}
+  ${recordRow}
   <g transform="translate(${(W - 420 * MAP_SCALE) / 2}, ${record ? 578 : 510}) scale(${MAP_SCALE})">${muscleMap(paint)}</g>
+  ${rule(1030, W)}
   ${exerciseRows}${more}
-  <text x="540" y="1322" font-size="24" fill="#5b616d" text-anchor="middle">${t('Entrenado con Serix', 'Trained with Serix')} · srraiimon.github.io/serix</text>
+  ${cardFooter(W, H)}
 </svg>`
+}
+
+let fontCss: Promise<string> | undefined
+/** Archivo como data URL dentro del SVG: una imagen SVG no puede cargar fuentes de fuera. Sin red, la del sistema. */
+function embeddedFont(): Promise<string> {
+  fontCss ??= fetch(archivoUrl)
+    .then((r) => r.blob())
+    .then((b) => new Promise<string>((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(`@font-face{font-family:'Archivo';src:url(${reader.result}) format('woff2');font-weight:100 900;font-stretch:62% 125%}`)
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(b)
+    }))
+    .catch(() => '')
+  return fontCss
 }
 
 /** Convierte el SVG en PNG dibujándolo en un canvas. */
 export async function svgToPng(svg: string): Promise<Blob> {
+  const css = await embeddedFont()
+  if (css) svg = svg.replace(/<svg([^>]*)>/, `<svg$1><style>${css}</style>`)
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
   try {
     const img = new Image()

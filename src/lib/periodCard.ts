@@ -2,6 +2,7 @@ import { addDays, int, startOfDay, startOfWeek, volume, type Unit } from './form
 import { locale, t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { periodStats, setCount } from './stats'
+import { C, DISPLAY, SANS, cardChrome, cardFooter, cardTitle, esc, statBand } from './cardStyle'
 import type { Session } from './store'
 
 // Resumen del mes o del año como imagen para compartir (1080 × 1350, como la del entrenamiento): se
@@ -98,26 +99,24 @@ export function periodLabel(s: Pick<PeriodSummary, 'period' | 'from'>): string {
 
 const W = 1080
 const H = 1350
-const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s)
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-/** Mes: calendario de lunes a domingo con los días entrenados en naranja. */
+/** Mes: calendario de lunes a domingo con los días entrenados en blanco (tinta del tema oscuro). */
 function monthGrid(s: PeriodSummary, y: number): string {
   const first = new Date(s.from)
   const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate()
   const offset = (first.getDay() + 6) % 7
   const cw = 132, ch = 62, gap = 8, x0 = (W - (7 * cw + 6 * gap)) / 2
   const names = Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(s.from), i).toLocaleDateString(locale(), { weekday: 'narrow' }))
-  const head = names.map((n, i) => `<text x="${x0 + i * (cw + gap) + cw / 2}" y="${y}" font-size="24" fill="#6b7280" text-anchor="middle">${esc(n.toUpperCase())}</text>`).join('')
+  const head = names.map((n, i) => `<text x="${x0 + i * (cw + gap) + cw / 2}" y="${y}" font-size="24" fill="${C.text3}" text-anchor="middle">${esc(n.toUpperCase())}</text>`).join('')
   const cells = Array.from({ length: daysInMonth }, (_, i) => {
     const pos = offset + i
     const cx = x0 + (pos % 7) * (cw + gap)
     const cy = y + 20 + Math.floor(pos / 7) * (ch + gap)
     const n = s.days.get(new Date(first.getFullYear(), first.getMonth(), i + 1).getTime()) ?? 0
-    return `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" rx="14" fill="${n ? '#ff6a3d' : '#ffffff'}" fill-opacity="${n ? 1 : 0.05}"/>
-      <text x="${cx + cw / 2}" y="${cy + 40}" font-size="24" font-weight="${n ? 700 : 400}" fill="${n ? '#111114' : '#6b7280'}" text-anchor="middle">${i + 1}</text>`
+    return `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" rx="14" fill="${n ? C.text : '#ffffff'}" fill-opacity="${n ? 1 : 0.05}"/>
+      <text x="${cx + cw / 2}" y="${cy + 40}" font-size="24" font-weight="${n ? 800 : 400}" fill="${n ? C.bg : C.text3}" text-anchor="middle">${i + 1}</text>`
   }).join('')
   return head + cells
 }
@@ -137,14 +136,14 @@ function yearGrid(s: PeriodSummary, y: number): string {
       const ms = day.getTime()
       if (ms < s.from || ms >= yearEnd) continue
       const n = s.days.get(ms) ?? 0
-      cells.push(`<rect x="${x0 + w * (size + gap)}" y="${y + 30 + d * (size + gap)}" width="${size}" height="${size}" rx="4" fill="${n ? '#ff6a3d' : '#ffffff'}" fill-opacity="${n ? 1 : 0.06}"/>`)
+      cells.push(`<rect x="${x0 + w * (size + gap)}" y="${y + 30 + d * (size + gap)}" width="${size}" height="${size}" rx="4" fill="${n ? C.text : '#ffffff'}" fill-opacity="${n ? 1 : 0.06}"/>`)
       if (day.getDate() === 1 && day.getMonth() % 2 === 0) {
-        labels.push(`<text x="${x0 + w * (size + gap)}" y="${y + 16}" font-size="20" fill="#6b7280">${esc(day.toLocaleDateString(locale(), { month: 'short' }).replace('.', ''))}</text>`)
+        labels.push(`<text x="${x0 + w * (size + gap)}" y="${y + 16}" font-size="20" fill="${C.text3}">${esc(day.toLocaleDateString(locale(), { month: 'short' }).replace('.', ''))}</text>`)
       }
     }
   }
   const trained = s.days.size
-  labels.push(`<text x="${W / 2}" y="${y + 30 + 7 * (size + gap) + 44}" font-size="26" fill="#9aa0ab" text-anchor="middle">${esc(trained === 1 ? t('1 día entrenado', '1 day trained') : t(`${trained} días entrenados`, `${trained} days trained`))}</text>`)
+  labels.push(`<text x="${W / 2}" y="${y + 30 + 7 * (size + gap) + 44}" font-size="26" fill="${C.text2}" text-anchor="middle">${esc(trained === 1 ? t('1 día entrenado', '1 day trained') : t(`${trained} días entrenados`, `${trained} days trained`))}</text>`)
   return labels.join('') + cells.join('')
 }
 
@@ -159,13 +158,7 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
     [volume(s.volume, unit), t('levantados', 'lifted')],
     [int(s.records), s.records === 1 ? t('récord batido', 'record broken') : t('récords batidos', 'records broken')],
   ]
-  const tileSvg = tiles.map(([value, name], i) => {
-    const x = 60 + (i % 2) * 490
-    const y = 260 + Math.floor(i / 2) * 190
-    return `<rect x="${x}" y="${y}" width="470" height="170" rx="30" fill="#ffffff" fill-opacity="0.05"/>
-      <text x="${x + 32}" y="${y + 92}" font-size="${value.length > 11 ? 50 : 64}" font-weight="800" fill="#f5f5f7">${esc(value)}</text>
-      <text x="${x + 32}" y="${y + 138}" font-size="28" fill="#9aa0ab">${esc(name)}</text>`
-  }).join('')
+  const tileSvg = statBand(60, 270, 960, 175, tiles, 2)
 
   const grid = yearly ? yearGrid(s, 680) : monthGrid(s, 690)
   // Debajo del calendario del mes (5 o 6 filas según el mes) o del año.
@@ -177,27 +170,20 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   if (s.topGroup !== undefined) facts.push(t(`Lo que más: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`, `Most trained: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`))
   if (!yearly && s.top[0]) facts.push(t(`Estrella: ${cut(s.top[0].name, 24)}`, `Top exercise: ${cut(s.top[0].name, 22)}`))
   const listY = 1000
-  const top = s.top.map((e, i) => `<text x="80" y="${listY + 50 + i * 46}" font-size="30" fill="#e8e9ec">${i + 1}. ${esc(cut(e.name, 38))}</text>
-    <text x="1000" y="${listY + 50 + i * 46}" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(t(`${e.sets} series`, `${e.sets} sets`))}</text>`).join('')
+  const top = s.top.map((e, i) => `<text x="80" y="${listY + 50 + i * 46}" font-size="30" fill="${C.text}">${i + 1}. ${esc(cut(e.name, 38))}</text>
+    <text x="1000" y="${listY + 50 + i * 46}" font-size="28" fill="${C.text2}" text-anchor="end">${esc(t(`${e.sets} series`, `${e.sets} sets`))}</text>`).join('')
   const topBlock = yearly && s.top.length
-    ? `<text x="80" y="${listY}" font-size="26" font-weight="700" letter-spacing="2" fill="#ff8a5c">${esc(t('MIS EJERCICIOS ESTRELLA', 'MY TOP EXERCISES'))}</text>${top}`
+    ? `<text x="80" y="${listY}" font-family="${DISPLAY}" font-size="34" font-weight="800" fill="${C.text}">${esc(t('Mis ejercicios estrella', 'My top exercises'))}</text>${top}`
     : ''
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2129"/><stop offset="1" stop-color="#0d0f12"/></linearGradient>
-    <radialGradient id="glow" cx="0.85" cy="0.05" r="0.6"><stop offset="0" stop-color="#ff6a3d" stop-opacity="0.22"/><stop offset="1" stop-color="#ff6a3d" stop-opacity="0"/></radialGradient>
-  </defs>
-  <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <rect width="${W}" height="${H}" fill="url(#glow)"/>
-  <text x="60" y="110" font-size="34" font-weight="800" letter-spacing="6" fill="#ff6a3d">SERIX</text>
-  <text x="1020" y="110" font-size="28" fill="#9aa0ab" text-anchor="end">${esc(cap(label))}</text>
-  <text x="60" y="210" font-size="64" font-weight="800" fill="#f5f5f7">${esc(cut(title, 28))}</text>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${SANS}">
+  ${cardChrome(W, H, cap(label))}
+  ${cardTitle(cut(title, 26), 238, 64)}
   ${tileSvg}
   ${grid}
-  ${facts.length ? `<text x="${W / 2}" y="${factsY}" font-size="28" fill="#e8e9ec" text-anchor="middle">${esc(facts.slice(0, yearly ? 2 : 1).join(' · '))}</text>` : ''}
-  ${!yearly && facts.length > 1 ? `<text x="${W / 2}" y="${factsY + 44}" font-size="28" fill="#9aa0ab" text-anchor="middle">${esc(facts.slice(1).join(' · '))}</text>` : ''}
+  ${facts.length ? `<text x="${W / 2}" y="${factsY}" font-size="28" fill="${C.text}" text-anchor="middle">${esc(facts.slice(0, yearly ? 2 : 1).join(' · '))}</text>` : ''}
+  ${!yearly && facts.length > 1 ? `<text x="${W / 2}" y="${factsY + 44}" font-size="28" fill="${C.text2}" text-anchor="middle">${esc(facts.slice(1).join(' · '))}</text>` : ''}
   ${topBlock}
-  <text x="540" y="1322" font-size="24" fill="#5b616d" text-anchor="middle">${t('Entrenado con Serix', 'Trained with Serix')} · srraiimon.github.io/serix</text>
+  ${cardFooter(W, H)}
 </svg>`
 }

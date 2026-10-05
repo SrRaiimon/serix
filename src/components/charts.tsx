@@ -50,6 +50,10 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
         const h = (d.value / max) * ch
         return (
           <g key={i}>
+            {d.value === 0 && i === data.length - 1 && (
+              // Semana en curso aún vacía: una marca naranja en la base indica dónde va.
+              <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - 3} width={bw * 0.42} height={3} rx={1.5} fill="var(--accent)" />
+            )}
             {d.value > 0 && (
               <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - h} width={bw * 0.42} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
             )}

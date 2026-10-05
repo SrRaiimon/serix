@@ -5,7 +5,7 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, volume, volumeShort, weight } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, volumeShort, weight } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
@@ -160,12 +160,12 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
 function Delta({ now, before, format }: { now: number; before: number; format: (v: number) => string }) {
   if (before === 0 && now === 0) return null
   const diff = now - before
-  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">{t('igual que el mes pasado', 'same as last month')}</span>
+  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">{t('= mes pasado', '= last month')}</span>
   const up = diff > 0
   const Icon = up ? ArrowUpRight : ArrowDownRight
   return (
-    <span className="tiny row" style={{ gap: 2, color: up ? 'var(--text)' : 'var(--text-2)', fontWeight: up ? 700 : 400 }}>
-      <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} {t('vs. mes pasado', 'vs. last month')}
+    <span className="tiny row" style={{ gap: 2, whiteSpace: 'nowrap', color: up ? 'var(--text)' : 'var(--text-2)', fontWeight: up ? 700 : 400 }}>
+      <Icon size={13} /> {up ? '+' : '−'}{format(Math.abs(diff))} {t('vs. mes ant.', 'vs. last mo.')}
     </span>
   )
 }
@@ -184,7 +184,7 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     <Card title={`${t('Este mes', 'This month')} (${month})`} icon={Calendar}>
       <div className="month-grid">
         {item(t('Entrenos', 'Workouts'), 'sessions', (v) => String(v))}
-        {item(t('Volumen', 'Volume'), 'volume', (v) => volume(v, unit))}
+        {item(t('Volumen', 'Volume'), 'volume', (v) => volumeShort(v, unit))}
         {item(t('Series efectivas', 'Working sets'), 'sets', (v) => String(v))}
         {item(t('Tiempo', 'Time'), 'time', (v) => duration(v))}
       </div>
@@ -264,9 +264,6 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit} lifted (weight × reps). The dashed line is your average.`)}</span>
       </Card>
       <MonthCard sessions={sessions} unit={unit} />
-      <Card title={t('Entrenamientos por semana', 'Workouts per week')} icon={Calendar}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.sessions }))} height={130} tick={(v) => (Number.isInteger(v) ? num(v) : '')} />
-      </Card>
       <Stalls sessions={sessions} unit={unit} />
       <YearMap sessions={sessions} unit={unit} />
       <ShareSummaryCard sessions={sessions} unit={unit} />
