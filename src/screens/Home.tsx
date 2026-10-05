@@ -1,7 +1,7 @@
 import { Check, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, StatBand, useTick, useToast } from '../components/ui'
-import { addDays, clock, day, startOfDay, startOfWeek, volumeShort } from '../lib/format'
+import { addDays, clock, day, startOfDay, startOfWeek, tons } from '../lib/format'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -59,8 +59,8 @@ export function HomeScreen() {
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
           { value: thisMonth.length, label: t('Este mes', 'This month') },
           thisWeek.length > 0
-            ? { value: volumeShort(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') }
-            : { value: volumeShort(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
+            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') }
+            : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
 

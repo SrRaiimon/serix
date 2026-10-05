@@ -717,6 +717,14 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
   )
 }
 
+/** Lo que significa cada RPE en repeticiones que quedaban («2 más»), para quien no conoce la escala. */
+function rirLabel(rpe: number): string {
+  const left = 10 - rpe
+  if (left === 0) return t('fallo', 'failure')
+  if (!Number.isInteger(left)) return `${Math.floor(left)}–${Math.ceil(left)}`
+  return t(`${left} más`, `${left} left`)
+}
+
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */
 function RpeRow({ value, open, onOpen, onPick }: {
   value?: number
@@ -738,11 +746,11 @@ function RpeRow({ value, open, onOpen, onPick }: {
       </div>
       <div className="rpe-chips">
         {rpeValues.map((v) => (
-          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`}
-            onClick={() => onPick(value === v ? undefined : v)}>{num(v)}</button>
+          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`} aria-label={`RPE ${num(v)}: ${rirLabel(v)}`}
+            onClick={() => onPick(value === v ? undefined : v)}><span>{num(v)}</span><small aria-hidden="true">{rirLabel(v)}</small></button>
         ))}
       </div>
-      <div className="rpe-scale" aria-hidden="true"><span>{t('← Fácil', '← Easy')}</span><span>{t('Al fallo →', 'To failure →')}</span></div>
+      <span className="rpe-scale">{t('Debajo, las repeticiones que aún podías hacer.', 'Below each number, the reps you still had left.')}</span>
       {help && (
         <span className="small muted">
           {t('Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3. Es opcional; sirve para saber cuándo subir peso.',

@@ -5,7 +5,7 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, volumeShort, weight } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, tons, weight } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
@@ -160,7 +160,7 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
 function Delta({ now, before, format }: { now: number; before: number; format: (v: number) => string }) {
   if (before === 0 && now === 0) return null
   const diff = now - before
-  if (Math.abs(diff) < 1e-6) return <span className="tiny muted">{t('= mes pasado', '= last month')}</span>
+  if (Math.abs(diff) < 1e-6) return null
   const up = diff > 0
   const Icon = up ? ArrowUpRight : ArrowDownRight
   return (
@@ -184,7 +184,7 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     <Card title={`${t('Este mes', 'This month')} (${month})`} icon={Calendar}>
       <div className="month-grid">
         {item(t('Entrenos', 'Workouts'), 'sessions', (v) => String(v))}
-        {item(t('Volumen', 'Volume'), 'volume', (v) => volumeShort(v, unit))}
+        {item(t('Volumen', 'Volume'), 'volume', (v) => (unit === 'kg' ? `${num(Math.round(v / 100) / 10)} t` : tons(v, unit)))}
         {item(t('Series efectivas', 'Working sets'), 'sets', (v) => String(v))}
         {item(t('Tiempo', 'Time'), 'time', (v) => duration(v))}
       </div>
@@ -256,12 +256,12 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         { value: sessions.length, label: t('Entrenos totales', 'Total workouts') },
         { value: hours(totalTime), label: t('Tiempo total', 'Total time') },
         { value: streakWeeks(sessions), label: t('Semanas seguidas', 'Weeks in a row') },
-        { value: volumeShort(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
+        { value: tons(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
       ]} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
         <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average
           tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
-        <span className="small muted">{t(`Últimas 12 semanas · ${unit} levantados (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit} lifted (weight × reps). The dashed line is your average.`)}</span>
+        <span className="small muted">{t(`Últimas 12 semanas · ${unit === 'kg' ? 'toneladas' : 'miles de lb'} levantadas (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit === 'kg' ? 'tonnes' : 'thousands of lb'} lifted (weight × reps). The dashed line is your average.`)}</span>
       </Card>
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
@@ -319,7 +319,7 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           </button>
         ))}
       </div>
-      <span className="small muted">{t('1RM estimado de tu mejor serie y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'Estimated 1RM from your best set and how much it rose in 30 days. Tap one to see its progress.')}</span>
+      <span className="small muted">{t('Máximo estimado a una repetición (1RM) según tu mejor serie, y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'Estimated one-rep max (1RM) from your best set, and how much it rose in 30 days. Tap one to see its progress.')}</span>
     </Card>
   )
 }
@@ -335,13 +335,13 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           <Thumb exerciseId={x.exerciseId} size={36} />
           <span className="grow">
             <span className="bold clamp-2" style={{ fontSize: 15 }}>{x.name}</span>
-            <span className="small muted">{t('Mejor 1RM est.', 'Best est. 1RM')}: ~{int(fromKg(x.best, unit))} {unit}</span>
+            <span className="small muted">{t(`Sin mejorar en las últimas ${STALL_SESSIONS} sesiones · máx. est. ${int(fromKg(x.best, unit))} ${unit}`, `No progress in the last ${STALL_SESSIONS} sessions · est. max ${int(fromKg(x.best, unit))} ${unit}`)}</span>
           </span>
         </button>
       ))}
       <span className="small muted">
-        {t(`${STALL_SESSIONS} sesiones o más sin superar su mejor marca. Al empezarlos en el entrenamiento te propondremos una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante.`,
-          `${STALL_SESSIONS} or more sessions without beating their best. When you start them in a workout we will suggest a deload session (fewer sets and −10% weight) or switching to a variation.`)}
+        {t('Pueden haber subido este mes y llevar unas sesiones parados. Al empezarlos te propondremos una descarga (menos series y −10 % de peso) o una variante.',
+          'They may have gone up this month and still be stuck for a few sessions. When you start them we will suggest a deload (fewer sets and −10% weight) or a variation.')}
       </span>
     </Card>
   )
@@ -390,7 +390,7 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             </span>
             <span style={{ textAlign: 'right' }}>
               <span className="bold" style={{ display: 'block' }}>{int(fromKg(r.e1rm, unit))} {unit}</span>
-              <span className="tiny muted">{t('1RM est.', 'est. 1RM')}</span>
+              <span className="tiny muted">{t('máx. est.', 'est. max')}</span>
             </span>
           </button>
         ))}
@@ -420,7 +420,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
       <NavBar showBack title={name} right={<button className="icon-btn" onClick={() => setDetail(true)} aria-label={t('Técnica', 'Technique')}><Info size={19} /></button>} />
       <div className="screen with-nav">
         <Segmented value={metric} onChange={setMetric} options={[
-          { value: 'e1rm', label: t('1RM est.', 'Est. 1RM') },
+          { value: 'e1rm', label: t('Máx. estimado', 'Est. max') },
           { value: 'weight', label: t('Peso máx.', 'Max weight') },
           { value: 'volume', label: t('Volumen', 'Volume') },
         ]} />
@@ -432,25 +432,25 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
                 <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(change)} {unit}</strong>
                 <span className="small muted">{t('desde el', 'since')} {shortDay(first.date)}</span>
               </span>
-              {metric === 'e1rm' && <span className="small muted">{t('1RM estimado: el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated 1RM: the weight you could lift once, worked out from your sets.')}</span>}
+              {metric === 'e1rm' && <span className="small muted">{t('Máximo estimado (1RM): el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated max (1RM): the weight you could lift once, worked out from your sets.')}</span>}
             </>
           ) : (
             <span className="muted">{t('Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.', 'You need at least two sessions of this exercise to see the chart.')}</span>
           )}
         </Card>
         <RepRecordsCard exerciseId={id} sessions={sessions} unit={unit} />
-        <div className="list-header">{t('Sesiones', 'Sessions')}</div>
+        <div className="list-header session-head"><span>{t('Sesiones', 'Sessions')}</span><span>{t('Peso', 'Weight')}</span><span /><span>{t('Máx. est.', 'Est. max')}</span></div>
         <div className="list">
           {[...points].reverse().map((p, i, list) => {
             // Cambio respecto a la sesión anterior de este ejercicio (la siguiente en la lista, que va de nueva a vieja).
             const before = list[i + 1]
             const diff = before ? fromKg(p.e1rm - before.e1rm, unit) : 0
             return (
-              <div key={p.date} className="list-row">
-                <span className="grow">{shortDay(p.date)}</span>
-                <span className="small muted">{t('máx.', 'max')} {weight(p.maxWeight, unit)}</span>
-                <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))}` : ''}</span>
-                <span className="bold" style={{ minWidth: 70, textAlign: 'right' }}>{int(fromKg(p.e1rm, unit))} <span className="tiny muted">1RM</span></span>
+              <div key={p.date} className="list-row session-row">
+                <span>{shortDay(p.date)}</span>
+                <span className="small muted">{weight(p.maxWeight, unit)}</span>
+                <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))} ${unit}` : ''}</span>
+                <span className="bold">{int(fromKg(p.e1rm, unit))} {unit}</span>
               </div>
             )
           })}

@@ -75,6 +75,9 @@ Theme: `color-scheme: light dark` follows the system; Profile can force `data-th
 - **Rep records** (`RepRecordsCard`): rows separated by hairlines; targets that share the same set merge («1–5RM»).
 - **Charts** (`charts.tsx`): monochrome. Bars in `--text-2`, thin (42% of the slot); the current (last) bar or point in `--accent` as the "you are here" marker. Axes use round values.
 - **Card titles**: text only, no icons.
+- **Share images** (`cardStyle.ts`, `shareCard.ts`, `periodCard.ts`): the dark system on a flat `#08090b` ground, the orange ribbon hanging top-right, Archivo embedded as a data URL when converting to PNG, figures in a hairline band, volume always in tonnes. Workouts come as a post (1080×1350) and an Instagram story (1080×1920).
+- **Volume**: `tons()` everywhere from 1000 kg («6 t», «17,1 t»).
+- **RPE chips** show the reps left under each number («2 más», «fallo»).
 - **Lists** (`.list`, `Row`): grouped card with hairline, rows min-height 48px, chevron in `--text-3`, `danger` and `accent` rows use the `*-text` tokens.
 - **Hero card** (`NextCard` in `Home.tsx`, `.hero`): white card with hairline, `.hero-ribbon` hanging from the top-right edge, meta line, routine name in Archivo, `.hero-facts` (exercises / minutes / sets) above a hairline, full-width primary Start button.
 - **Tab bar** (`TabBar` in `App.tsx`, `.tabbar`): fixed, 5 columns, `--bar` with top hairline, 10.5px labels in `--text-2`; active tab turns `--text` / 700 and gets a 12x10 ribbon dropping from the bar edge.

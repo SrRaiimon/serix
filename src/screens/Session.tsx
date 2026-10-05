@@ -1,7 +1,7 @@
 import { BadgeCheck, Dumbbell, ImageIcon, Share2, StickyNote, Trash2, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { ActionSheet, Card, Empty, NavBar, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
-import { day, duration, time, volume, weight, type Unit } from '../lib/format'
+import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
+import { day, duration, time, tons, volume, weight, type Unit } from '../lib/format'
 import { back } from '../lib/router'
 import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
 import { newRecords, sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
@@ -52,29 +52,35 @@ async function share(s: Session, unit: Unit, fallback: () => void) {
  * Imagen del entrenamiento para compartir. Se genera al abrir la pantalla para que, al pulsar el
  * botón, el menú de compartir del sistema se abra al instante (Safari lo exige tras un toque).
  */
+type ShareImage = { file: File; url: string }
+
 function useShareImage(session: Session | undefined, unit: Unit, records: PersonalRecord[]) {
   const catalog = useCatalog()
-  const [image, setImage] = useState<{ file: File; url: string }>()
+  // Publicación (4:5) e historia de Instagram (9:16). Las dos se preparan antes de tocar «Compartir».
+  const [images, setImages] = useState<{ post?: ShareImage; story?: ShareImage }>({})
   const key = session ? [session.id, session.end, sessionSets(session), session.name, unit, records.length].join('|') : ''
   useEffect(() => {
     if (!session) return
     let cancelled = false
-    let url: string | undefined
-    const svg = shareCardSVG({ session, unit, records, secondaryOf: (id) => catalog.get(id)?.secondaryMuscles ?? [] })
-    svgToPng(svg)
+    const urls: string[] = []
+    const date = new Date(session.start).toISOString().slice(0, 10)
+    const make = (story: boolean) => svgToPng(shareCardSVG({ session, unit, records, story, secondaryOf: (id) => catalog.get(id)?.secondaryMuscles ?? [] }))
       .then((blob) => {
         if (cancelled) return
-        url = URL.createObjectURL(blob)
-        setImage({ file: new File([blob], `serix-${new Date(session.start).toISOString().slice(0, 10)}.png`, { type: 'image/png' }), url })
+        const url = URL.createObjectURL(blob)
+        urls.push(url)
+        const image = { file: new File([blob], `serix-${date}${story ? '-historia' : ''}.png`, { type: 'image/png' }), url }
+        setImages((x) => ({ ...x, [story ? 'story' : 'post']: image }))
       })
-      .catch(() => setImage(undefined))
+      .catch(() => undefined)
+    void make(false).then(() => make(true))
     return () => {
       cancelled = true
-      if (url) URL.revokeObjectURL(url)
+      urls.forEach((u) => URL.revokeObjectURL(u))
     }
     // Se regenera solo cuando cambia algo que aparece en la imagen.
   }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
-  return image
+  return images
 }
 
 async function shareSessionImage(file: File | undefined, title: string, showToast: (text: string) => void) {
@@ -87,7 +93,7 @@ export function SessionStats({ session, unit }: { session: Session; unit: Unit }
   return (
     <StatBand items={[
       { value: duration(sessionDuration(session)), label: t('Duración', 'Duration') },
-      { value: volume(sessionVolume(session), unit), label: t('Volumen total', 'Total volume') },
+      { value: tons(sessionVolume(session), unit), label: t('Volumen total', 'Total volume') },
       { value: sessionSets(session), label: t('Series efectivas', 'Working sets') },
       { value: sessionReps(session), label: t('Repeticiones', 'Reps') },
     ]} />
@@ -134,7 +140,9 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
   const records = useMemo(() => newRecords(session, history), [session, history])
   const [saved, setSaved] = useState(Boolean(session.routineId))
   const [toast, showToast] = useToast()
-  const image = useShareImage(session, unit, records)
+  const images = useShareImage(session, unit, records)
+  const [format, setFormat] = useState<'post' | 'story'>('post')
+  const image = images[format]
 
   return (
     <Sheet title="" onClose={onClose}
@@ -147,7 +155,11 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
       </div>
       <SessionStats session={session} unit={unit} />
       <Card title={t('Compártelo', 'Share it')} icon={ImageIcon}>
-        {image ? <img className="share-preview" src={image.url} alt={t('Imagen del entrenamiento para compartir', 'Workout image to share')} /> : <div className="share-preview" />}
+        <Segmented value={format} onChange={setFormat} options={[
+          { value: 'post', label: t('Publicación', 'Post') },
+          { value: 'story', label: t('Historia', 'Story') },
+        ]} />
+        {image ? <img className={`share-preview ${format}`} src={image.url} alt={t('Imagen del entrenamiento para compartir', 'Workout image to share')} /> : <div className={`share-preview ${format}`} />}
         <button className="btn primary" disabled={!image} onClick={() => void shareSessionImage(image?.file, session.name, showToast)}>
           <ImageIcon size={18} /> {t('Compartir imagen', 'Share image')}
         </button>
@@ -184,7 +196,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [toast, showToast] = useToast()
   const records = useMemo(() => (session ? newRecords(session, finishedSessions(data)) : []), [session, data])
-  const image = useShareImage(session, data.settings.unit, records)
+  const images = useShareImage(session, data.settings.unit, records)
   if (!session) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={Dumbbell} title={t('Entrenamiento eliminado', 'Workout deleted')} message="" /></div></>
   const unit = data.settings.unit
 
@@ -205,7 +217,8 @@ export function SessionDetailScreen({ id }: { id: string }) {
       </div>
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
-          { label: t('Compartir imagen', 'Share image'), onSelect: () => void shareSessionImage(image?.file, session.name, showToast) },
+          { label: t('Compartir imagen', 'Share image'), onSelect: () => void shareSessionImage(images.post?.file, session.name, showToast) },
+          { label: t('Compartir como historia (9:16)', 'Share as story (9:16)'), onSelect: () => void shareSessionImage(images.story?.file, session.name, showToast) },
           { label: t('Compartir como texto', 'Share as text'), onSelect: () => void share(session, unit, () => showToast(t('Copiado al portapapeles', 'Copied to clipboard'))) },
           ...(!session.routineId ? [{ label: t('Guardar como rutina', 'Save as routine'), onSelect: () => { saveAsRoutine(session); showToast(t('Guardada como rutina', 'Saved as routine')) } }] : []),
         ]} />

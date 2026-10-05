@@ -1,4 +1,5 @@
 import { num, shortDay } from '../lib/format'
+import { t } from '../lib/i18n'
 
 // Gráficas SVG sencillas: barras verticales, línea y barras horizontales.
 
@@ -52,7 +53,10 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
           <g key={i}>
             {d.value === 0 && i === data.length - 1 && (
               // Semana en curso aún vacía: una marca naranja en la base indica dónde va.
-              <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - 3} width={bw * 0.42} height={3} rx={1.5} fill="var(--accent)" />
+              <>
+                <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - 4} width={bw * 0.42} height={4} rx={2} fill="var(--accent)" />
+                <text x={pad.l + i * bw + bw * 0.71} y={pad.t + ch - 10} textAnchor="end">{t('esta sem.', 'this wk')}</text>
+              </>
             )}
             {d.value > 0 && (
               <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - h} width={bw * 0.42} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />

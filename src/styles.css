@@ -2263,7 +2263,7 @@ html.scroll-locked body {
 /* MARK: Récords por repeticiones en filas */
 
 .rep-rows { display: flex; flex-direction: column; }
-.rep-row { display: grid; grid-template-columns: 64px auto 1fr; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--separator); }
+.rep-row { display: grid; grid-template-columns: 88px auto 1fr; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid var(--separator); }
 .rep-row:first-child { border-top: 0; padding-top: 0; }
 .rep-row .rep-target { font-size: 13px; font-weight: 700; color: var(--text-2); }
 .rep-row strong { font-family: var(--font-display); font-size: 22px; font-weight: 800; font-stretch: 104%; white-space: nowrap; }
@@ -2279,7 +2279,7 @@ html.scroll-locked body {
 .set-label { background: transparent; }
 .best-lifts span.clamp-2 { min-height: 2.6em; }
 .segmented { gap: 2px; }
-.rpe-scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-top: -2px; }
+.rpe-scale { font-size: 12px; color: var(--text-2); margin-top: -2px; }
 
 /* MARK: Ronda 6 */
 
@@ -2294,3 +2294,11 @@ html.scroll-locked body {
 .week .dot.today { background: transparent; color: var(--text); box-shadow: inset 0 0 0 2px var(--accent); }
 .week .dot.today.done { background: var(--ink); color: var(--on-ink); box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--accent); }
 .segmented { gap: 4px; }
+.share-preview.story { aspect-ratio: 9 / 16; width: 52%; }
+.session-row, .session-head { display: grid; grid-template-columns: minmax(0, 1fr) 72px 58px 74px; align-items: baseline; gap: 6px; }
+.session-row > :not(:first-child), .session-head > :not(:first-child) { text-align: right; }
+.session-head { margin: 6px 0 -8px; padding: 0 17px; letter-spacing: 0.04em; }
+.session-delta { min-width: 0; }
+.rpe-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 50px; }
+.rpe-chip small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.rpe-chip.active small { color: var(--on-ink); }
