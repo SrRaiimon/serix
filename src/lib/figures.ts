@@ -246,8 +246,9 @@ const LYING = { torso: -90, head: -90, thigh: 100, shin: 178, foot: 95 }
 const flatBench: Prop = { type: 'bench', span: [34, 150], y: 168 }
 const benchPress: Figure = {
   view: 'side', work: ['chest', 'arms'], anchor: { joint: 'hip', at: [128, 158] }, shadow: 100,
-  props: [flatBench, { type: 'plate', at: 'wrist', front: true, size: 28 }],
-  frames: [{ ...LYING, upper: 2, fore: 0 }, { ...LYING, upper: 110, fore: -2 }],
+  // Arriba la barra queda sobre el esternón (no sobre la cara) y baja a la parte baja del pecho.
+  props: [flatBench, { type: 'plate', at: 'wrist', front: true, size: 24 }],
+  frames: [{ ...LYING, upper: 14, fore: 4 }, { ...LYING, upper: 110, fore: -2 }],
 }
 const benchDumbbell: Figure = { ...benchPress, props: [flatBench, { type: 'dumbbell', at: 'wrist', front: true }] }
 const benchBand: Figure = { ...benchPress, props: [flatBench, { type: 'band', at: 'wrist', to: 'shoulder' }] }
