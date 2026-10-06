@@ -11,6 +11,8 @@ import { clock, fromKg, int, num, relative, type Unit } from '../lib/format'
 import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, exerciseUsage, type ExerciseUsage } from '../lib/stats'
+import { alternatives } from '../lib/alternatives'
+import { equipmentInfo } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
 import { plural, t } from '../lib/i18n'
@@ -27,8 +29,10 @@ export function toggleFavorite(id: string) {
 
 function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (f: ExerciseFilter) => void }) {
   const catalog = useCatalog()
+  const { settings } = useData()
+  const myGear = equipmentInfo(settings.equipment)
   const [open, setOpen] = useState(false)
-  const active = [filter.muscle, filter.equipment, filter.category].filter(Boolean).length + (filter.favoritesOnly ? 1 : 0)
+  const active = [filter.muscle, filter.equipment, filter.category, filter.allowedEquipment].filter(Boolean).length + (filter.favoritesOnly ? 1 : 0)
   return (
     <>
       <div className="row">
@@ -50,6 +54,7 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
       </div>
       {active > 0 && (
         <div className="chips">
+          {filter.allowedEquipment && <Chip active label={t(`Con mi material: ${myGear.label}`, `My equipment: ${myGear.label}`)} icon={X} ariaLabel={t('Quitar filtro: con mi material', 'Remove filter: my equipment')} onClick={() => setFilter({ ...filter, allowedEquipment: undefined })} />}
           {filter.favoritesOnly && <Chip active label={t('Favoritos', 'Favourites')} icon={X} ariaLabel={`${t('Quitar filtro', 'Remove filter')}: ${t('Favoritos', 'Favourites')}`} onClick={() => setFilter({ ...filter, favoritesOnly: false })} />}
           {filter.muscle && <Chip active label={muscleLabel(filter.muscle)} icon={X} ariaLabel={`${t('Quitar filtro', 'Remove filter')}: ${muscleLabel(filter.muscle)}`} onClick={() => setFilter({ ...filter, muscle: undefined })} />}
           {filter.equipment && <Chip active label={equipmentLabel(filter.equipment)} icon={X} ariaLabel={`${t('Quitar filtro', 'Remove filter')}: ${equipmentLabel(filter.equipment)}`} onClick={() => setFilter({ ...filter, equipment: undefined })} />}
@@ -73,6 +78,14 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
           right={<button className="nav-btn bold" onClick={() => setOpen(false)}>{t('Listo', 'Done')}</button>}>
           <MusclePicker value={filter.muscle} onChange={(muscle) => setFilter({ ...filter, muscle })} />
           <div className="list">
+            <label className="list-row">
+              <span className="grow">
+                {t('Solo con mi material', 'Only with my equipment')}
+                <span className="small muted" style={{ display: 'block' }}>{myGear.label} · {t('se cambia en Perfil → Repetir cuestionario inicial', 'change it in Profile → Redo the initial questionnaire')}</span>
+              </span>
+              <input type="checkbox" className="toggle" checked={Boolean(filter.allowedEquipment)}
+                onChange={(e) => setFilter({ ...filter, allowedEquipment: e.target.checked ? myGear.allowed : undefined })} />
+            </label>
             <label className="list-row">
               <Star size={20} color="var(--gold)" />
               <span className="grow">{t('Solo favoritos', 'Favourites only')}</span>
@@ -134,6 +147,7 @@ function useUsage() {
   return useMemo(() => exerciseUsage(finishedSessions(data)), [data])
 }
 
+// «Con mi material» no cuenta: es la vista normal para quien entrena en casa.
 const filtering = (f: ExerciseFilter) => Boolean(f.query.trim() || f.bodyPart || f.muscle || f.equipment || f.category || f.favoritesOnly)
 
 /** Al buscar, primero lo que empieza por lo escrito y lo que ya has hecho; el resto, en orden alfabético. */
@@ -144,13 +158,15 @@ function rank(results: Exercise[], query: string, usage: Map<string, ExerciseUsa
   return [...results].sort((a, b) => score(a) - score(b))
 }
 
-// El filtro se conserva al volver desde la ficha de un ejercicio.
-let savedFilter: ExerciseFilter = emptyFilter
+// El filtro se conserva al volver desde la ficha de un ejercicio. La primera vez, quien no entrena en un
+// gimnasio completo ve solo lo que puede hacer con su material.
+let savedFilter: ExerciseFilter | undefined
 
 export function ExercisesScreen() {
   const catalog = useCatalog()
   const { settings } = useData()
-  const [filter, setFilterState] = useState(savedFilter)
+  const [filter, setFilterState] = useState<ExerciseFilter>(() => savedFilter
+    ?? (settings.equipment === 'gym' ? emptyFilter : { ...emptyFilter, allowedEquipment: equipmentInfo(settings.equipment).allowed }))
   const setFilter = (f: ExerciseFilter) => {
     savedFilter = f
     setFilterState(f)
@@ -161,7 +177,8 @@ export function ExercisesScreen() {
   const [creating, setCreating] = useState(false)
   // Sin buscar ni filtrar: arriba, los que ya haces (el más reciente primero).
   const mine = useMemo(() => filtering(filter) ? [] : [...usage.entries()].sort((a, b) => b[1].last - a[1].last).slice(0, 8)
-    .map(([id, u]) => ({ exercise: catalog.get(id), usage: u })).filter((x): x is { exercise: Exercise; usage: ExerciseUsage } => Boolean(x.exercise)), [filter, usage, catalog])
+    .map(([id, u]) => ({ exercise: catalog.get(id), usage: u }))
+    .filter((x): x is { exercise: Exercise; usage: ExerciseUsage } => Boolean(x.exercise) && (!filter.allowedEquipment || filter.allowedEquipment.includes(x.exercise!.equipment))), [filter, usage, catalog])
 
   return (
     <div className="screen">
@@ -222,7 +239,7 @@ export function ExerciseDetailScreen({ id }: { id: string }) {
       } />
       <div className="screen with-nav">
         <ExerciseDetailContent exercise={exercise} actions={
-          <button className="btn secondary small" style={{ alignSelf: 'flex-start' }} onClick={() => setAddTo(true)}><Plus size={17} /> {t('Añadir a una rutina', 'Add to a routine')}</button>
+          <button className="btn primary small" style={{ alignSelf: 'flex-start' }} onClick={() => setAddTo(true)}><Plus size={17} /> {t('Añadir a una rutina', 'Add to a routine')}</button>
         } />
       </div>
       {editing && custom && <CustomExerciseSheet existing={custom} onClose={() => setEditing(false)} />}
@@ -283,11 +300,14 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
         <Card title={t('Tu historial', 'Your history')}>
           <StatBand items={[
             { value: usage ? setShortText(usage.top, 'weight_reps', unit).replace(' × ', '×').replace(/ @[\d,.]+$/, '') : '—', label: usage ? t(`Última vez · ${relative(usage.last).toLowerCase()}`, `Last time · ${relative(usage.last).toLowerCase()}`) : t('Última vez', 'Last time') },
-            { value: `${int(fromKg(Math.max(...points.map((p) => p.e1rm)), unit))} ${unit}`, label: t('Máx. estimado', 'Est. max') },
+            { value: `${int(fromKg(Math.max(...points.map((p) => p.e1rm)), unit))} ${unit}`, label: t('Máx. estimado a 1 rep', 'Est. 1-rep max') },
             { value: points.length, label: points.length === 1 ? t('sesión', 'session') : t('sesiones', 'sessions') },
           ]} />
           {points.length >= 2 && (
-            <LineChart points={points.map((p) => ({ x: p.date, y: fromKg(p.e1rm, unit) }))} />
+            <>
+              <LineChart points={points.map((p) => ({ x: p.date, y: fromKg(p.e1rm, unit) }))} />
+              <span className="small muted">{t(`Máximo estimado a 1 repetición en cada sesión (${unit}): el peso que podrías levantar una vez según tus series.`, `Estimated one-rep max per session (${unit}): the weight you could lift once based on your sets.`)}</span>
+            </>
           )}
           <button className="btn small secondary" style={{ alignSelf: 'flex-start' }} onClick={() => navigate('progress', 'exercise', exercise.id)}>
             <ChartLine size={16} /> {t('Ver todo tu progreso', 'See all your progress')}
@@ -315,6 +335,9 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
             {steps.map((step, i) => <li key={i}>{step}</li>)}
           </ol>
           {tip && <p className="ex-tip"><strong>{t('Clave:', 'Key point:')}</strong> {tip}</p>}
+          {needsSpotter(exercise) && !/topes|ayud|segurid|spot|safety/i.test(tip ?? '') && (
+            <p className="ex-tip"><strong>{t('Seguridad:', 'Safety:')}</strong> {t('con peso alto, usa los topes de seguridad del rack o pide a alguien que te ayude. Si entrenas solo, no pongas los cierres para poder soltar los discos.', 'with heavy weight, use the rack safety bars or ask someone to spot you. If you train alone, leave the collars off so you can tip the plates off.')}</p>
+          )}
         </Card>
       )}
       <Card title={t('Músculos', 'Muscles')}>
@@ -324,11 +347,60 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
           {exercise.secondaryMuscles.length > 0 && <><br /><strong>{t('Secundarios', 'Secondary')}:</strong> {exercise.secondaryMuscles.map(muscleLabel).join(', ')}</>}
         </span>
       </Card>
+      <Alternatives exercise={exercise} />
       <Card title={t('Tu nota', 'Your note')}>
         <ExerciseNoteField exerciseId={exercise.id} />
       </Card>
       {points.length > 0 && tracking === 'weight_reps' && <RepRecordsCard exerciseId={exercise.id} sessions={sessions} unit={unit} />}
     </>
+  )
+}
+
+/** Barra pesada sobre el pecho o la espalda: press de banca y sentadilla, donde hace falta un plan para fallar. */
+function needsSpotter(e: Exercise): boolean {
+  return e.equipment === 'barbell' && /bench press|squat|press de banca|sentadilla/i.test(`${e.nameEs} ${e.nameEn}`)
+}
+
+/** Ejercicios parecidos para el mismo músculo que puedes hacer con tu material (por si falta máquina o barra). */
+function Alternatives({ exercise }: { exercise: Exercise }) {
+  const catalog = useCatalog()
+  const { settings } = useData()
+  const usage = useUsage()
+  const gear = equipmentInfo(settings.equipment)
+  const list = useMemo(() => {
+    // Primero las que usan material de verdad (mancuernas, máquina…); detrás las bandas y el peso corporal;
+    // y al final las de salto o impacto, que no son un sustituto para todo el mundo.
+    const own = gear.allowed.filter((x) => x !== 'bodyweight')
+    const tier = (e: Exercise) =>
+      /salto|saltando|jump|plyo|explosiv/i.test(`${e.nameEs} ${e.nameEn}`) ? 4
+        : e.equipment === 'band' && own.length > 1 ? 2
+          : e.equipment === 'bodyweight' && own.length > 0 ? 3
+            : own.includes(e.equipment) ? 0 : 1
+    return alternatives(catalog, { exerciseId: exercise.id, muscle: exercise.muscle }, settings.equipment, new Set())
+      .filter((e) => e.equipment !== exercise.equipment || !gear.allowed.includes(exercise.equipment))
+      .slice(0, 12)
+      .map((e, i) => ({ e, k: tier(e) * 100 + i }))
+      .sort((a, b) => a.k - b.k)
+      .slice(0, 4)
+      .map(({ e }) => e)
+  }, [catalog, exercise, settings.equipment, gear])
+  if (!list.length) return null
+  const canDo = gear.allowed.includes(exercise.equipment)
+  return (
+    <Card title={canDo ? t('Alternativas', 'Alternatives') : t('Con tu material', 'With your equipment')}>
+      <span className="small muted" style={{ marginTop: -6 }}>
+        {canDo
+          ? t(`Mismo músculo con otro material, por si está ocupado (${gear.label.toLowerCase()}).`, `Same muscle with other equipment, in case it is taken (${gear.label.toLowerCase()}).`)
+          : t(`Este necesita ${equipmentLabel(exercise.equipment).toLowerCase()}. Estos trabajan lo mismo con ${gear.label.toLowerCase()}.`, `This one needs ${equipmentLabel(exercise.equipment).toLowerCase()}. These work the same with ${gear.label.toLowerCase()}.`)}
+      </span>
+      <div className="alt-list">
+        {list.map((e) => (
+          <button key={e.id} className="row" style={{ textAlign: 'left' }} onClick={() => navigate('exercises', e.id)}>
+            <ExerciseRowContent exercise={e} favorite={settings.favorites.includes(e.id)} thumb={40} usage={usage.get(e.id)} unit={settings.unit} />
+          </button>
+        ))}
+      </div>
+    </Card>
   )
 }
 

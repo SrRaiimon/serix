@@ -2330,3 +2330,17 @@ html.scroll-locked body {
 .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
 .search input:focus-visible { outline: none; }
 .search:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+.alt-list { display: flex; flex-direction: column; }
+.alt-list > button { padding: 10px 0; border-top: 1px solid var(--separator); }
+.alt-list > button:first-child { border-top: 0; padding-top: 2px; }
+
+.rep-table { display: grid; grid-template-columns: 52px auto 1fr; align-items: baseline; column-gap: 14px; }
+.rep-table > * { padding: 9px 0; border-top: 1px solid var(--separator); }
+.rep-table > .rep-th { border-top: 0; padding: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+.rep-table > .rep-th:nth-child(3), .rep-table > span.small { text-align: right; }
+.rep-table .rep-target { font-family: var(--font-display); font-weight: 800; font-size: 17px; }
+.rep-table strong { font-family: var(--font-display); font-size: 20px; font-weight: 800; white-space: nowrap; }
+.rep-table strong small { font-size: 12px; color: var(--text-2); }
+/* Ficha: la figura, más baja para que el historial se vea sin bajar. */
+.ex-head ~ .move-figure svg, .ex-head ~ .move-figure .move-figure-placeholder { max-width: 230px; }
+textarea { resize: none; }

@@ -84,6 +84,7 @@ export class Catalog {
       if (f.equipment && e.equipment !== f.equipment) return false
       if (f.category && e.category !== f.category) return false
       if (favs && !favs.has(e.id)) return false
+      if (f.allowedEquipment && !f.allowedEquipment.includes(e.equipment)) return false
       if (terms.length) {
         const key = this.keys.get(e.id) ?? ''
         return terms.every((t) => key.includes(t))
@@ -108,6 +109,8 @@ export interface ExerciseFilter {
   equipment?: string
   category?: string
   favoritesOnly: boolean
+  /** Material con el que se pueden hacer (el de tu perfil); sin valor = todos. */
+  allowedEquipment?: string[]
 }
 
 export const emptyFilter: ExerciseFilter = { query: '', favoritesOnly: false }
