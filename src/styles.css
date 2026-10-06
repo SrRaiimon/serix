@@ -2459,6 +2459,11 @@ textarea { resize: none; }
 .amount-row { gap: 8px; }
 .food-health { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--fill); color: var(--text-2); }
 .food-health svg { flex-shrink: 0; margin-top: 1px; color: var(--text); }
+.food-health.doubt > svg { color: var(--amber-text); }
+.food-health.doubt .btn { display: flex; }
+.doubt-line { display: flex; align-items: center; gap: 4px; margin-top: 2px; color: var(--amber-text); font-weight: 600; }
+.doubt-line svg { flex-shrink: 0; }
+.list-header .meal-total { text-transform: none; letter-spacing: 0; }
 .food-row-text > .small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: unset; }
 .amount-chips { flex-wrap: wrap; overflow: visible; }
 .after-bars { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--separator); }

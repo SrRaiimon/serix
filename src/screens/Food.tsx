@@ -14,9 +14,8 @@ import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 // Comidas (ver lib/nutrition.ts): lo comido cada día frente a tu objetivo, por comidas.
 
 const g = (v: number) => (v >= 10 ? int(v) : editable(Math.round(v * 10) / 10))
-/** «prot. 8 · hid. 35 · grasa 3,9», sin separar la cifra de su nombre al partir la línea. */
-const macroParts = (v: Per100, skipZero = false) => ([[t('prot.', 'prot.'), v.p], [t('hid.', 'carbs'), v.c], [t('grasa', 'fat'), v.f]] as [string, number][])
-  .filter(([, x]) => !skipZero || x > 0).map(([label, x]) => `${label}\u00a0${g(x)}`)
+/** Une cifra y unidad con espacios que no se parten al cambiar de línea («11 g prot.»). */
+const nb = (text: string) => text.replace(/ /g, '\u00a0')
 
 export function FoodScreen() {
   const data = useData()
@@ -78,7 +77,7 @@ export function FoodScreen() {
           <section key={meal} className="meal">
             <div className="list-header">
               <span className="grow">{mealLabel(meal)}</span>
-              {items.length > 0 && <span>{proteinOnly ? t(`${g(sums.p)} g proteína`, `${g(sums.p)} g protein`) : `${int(sums.kcal)} kcal`}</span>}
+              {items.length > 0 && <span className="meal-total">{proteinOnly ? nb(`${g(sums.p)} g prot.`) : nb(`${int(sums.kcal)} kcal`)}</span>}
               <button className="meal-more" onClick={() => setMealMenu(meal)} aria-label={t(`Opciones de ${mealLabel(meal)}`, `${mealLabel(meal)} options`)}><Ellipsis size={20} /></button>
             </div>
             <div className="list">
@@ -88,7 +87,7 @@ export function FoodScreen() {
                   <button key={e.id} className="list-row" onClick={() => setEditing(e)}>
                     <span className="grow" style={{ minWidth: 0 }}>
                       <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
-                      <span className="small muted">{[e.ref?.kind === 'quick' ? t('A mano', 'Manual') : `${g(e.grams)}\u00a0g`, ...(proteinOnly ? [] : macroParts(v, e.ref?.kind === 'quick'))].join(' · ')}</span>
+                      <span className="small muted">{[...(e.ref?.kind === 'quick' ? [t('A mano', 'By hand')] : [nb(`${g(e.grams)} g`)]), ...(proteinOnly || (e.ref?.kind === 'quick' && !v.p) ? [] : [nb(`${g(v.p)} g prot.`)])].join(' · ')}</span>
                     </span>
                     {proteinOnly ? <strong className="food-kcal">{g(v.p)}<small> g prot.</small></strong> : <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>}
                   </button>
@@ -101,7 +100,7 @@ export function FoodScreen() {
                     <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Repetir lo de ayer', "Repeat yesterday's")}</span>
                     <span className="small muted">
                       {yesterdayItems.length === 1 ? yesterdayItems[0].name : t(`${yesterdayItems[0].name} y ${yesterdayItems.length - 1} más`, `${yesterdayItems[0].name} and ${yesterdayItems.length - 1} more`)}
-                      {' · '}{proteinOnly ? `${g(yesterdaySums.p)} g prot.` : `${int(yesterdaySums.kcal)} kcal`}
+                      {' · '}{proteinOnly ? nb(`${g(yesterdaySums.p)} g prot.`) : nb(`${int(yesterdaySums.kcal)} kcal`)}
                     </span>
                   </span>
                 </button>
@@ -156,7 +155,7 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
             <strong className="food-big">{g(totals.p)}</strong>
             <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
           </span>
-          <span className="small muted">{missing > 0 ? t(`Faltan ${g(missing)} g`, `${g(missing)} g to go`) : t('Objetivo cumplido', 'Goal reached')}</span>
+          <span className="small muted">{missing > 0 ? t(`Te quedan ${g(missing)} g`, `${g(missing)} g left`) : t('Objetivo cumplido', 'Goal reached')}</span>
         </div>
         <div className="food-bar" role="progressbar" aria-label={t('Proteína del día', 'Protein today')} aria-valuemin={0} aria-valuemax={goals.protein} aria-valuenow={Math.round(totals.p)}>
           <div style={{ transform: `scaleX(${pct(totals.p, goals.protein) / 100})` }} />
@@ -176,7 +175,7 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
           <strong className="food-big">{int(totals.kcal)}</strong>
           <span className="muted"> / {int(goals.kcal)} kcal</span>
         </span>
-        <span className={`small ${left < 0 ? 'over' : 'muted'}`}>{left >= 0 ? t(`Te quedan ${int(left)}`, `${int(left)} left`) : t(`${int(-left)} de más`, `${int(-left)} over`)}</span>
+        <span className={`small ${left < 0 ? 'over' : 'muted'}`}>{left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}</span>
       </div>
       <div className={`food-bar ${left < 0 ? 'over' : ''}`} role="progressbar" aria-label={t('Calorías del día', 'Calories today')} aria-valuemin={0} aria-valuemax={goals.kcal} aria-valuenow={Math.round(totals.kcal)}>
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
@@ -204,6 +203,8 @@ interface Pickable {
   portions: Portion[]
   ref?: FoodRef
   grams?: number
+  /** El alimento de «Mis alimentos» detrás (guardado o aún no: se guarda al añadirlo). */
+  source?: MyFood
 }
 
 const fromBasic = (f: BasicFood): Pickable => ({
@@ -220,9 +221,10 @@ const fromMine = (f: MyFood): Pickable => ({
   per100: f.per100,
   portions: f.portion ? [f.portion] : [],
   ref: f.source === 'off' && f.barcode ? { kind: 'off', id: f.barcode } : { kind: 'mine', id: f.id },
+  source: f,
 })
 
-type View = { kind: 'list' } | { kind: 'amount'; food: Pickable } | { kind: 'scan' } | { kind: 'create'; barcode?: string; name?: string } | { kind: 'quick'; name?: string }
+type View = { kind: 'list' } | { kind: 'amount'; food: Pickable } | { kind: 'scan' } | { kind: 'create'; barcode?: string; name?: string } | { kind: 'quick'; name?: string } | { kind: 'fix'; food: MyFood }
 
 function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: string; meal: MealKey; onClose: () => void; onAdded: (text: string) => void }) {
   const data = useData()
@@ -240,25 +242,19 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
 
   const add = (food: Pickable, grams: number, close = true) => {
     update((d) => {
+      // Un producto de Open Food Facts o escaneado se guarda en «Mis alimentos» al añadirlo, no al abrirlo.
+      const f = food.source
+      if (f && !d.nutrition.foods.some((x) => x.id === f.id || (f.barcode && x.barcode === f.barcode))) d.nutrition.foods.push(f)
       d.nutrition.entries.push({ id: uid(), day, meal, name: food.name, grams, per100: food.per100, ref: food.ref, at: Date.now() })
     })
     onAdded(t(`Añadido a ${mealLabel(meal).toLowerCase()}: ${food.name}`, `Added to ${mealLabel(meal).toLowerCase()}: ${food.name}`))
     if (close) onClose()
   }
-  /** Un producto de Open Food Facts se guarda en «Mis alimentos» (una vez) y se elige la cantidad. */
-  const pickProduct = (product: ScannedProduct) => {
-    const known = data.nutrition.foods.find((f) => f.barcode === product.barcode)
-    const food: MyFood = known ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
-    if (!known) update((d) => { d.nutrition.foods.push(food) })
-    setView({ kind: 'amount', food: fromMine(food) })
-  }
-  /** Añadir de un toque la ración del envase (y guardar el producto en «Mis alimentos»). */
-  const addProduct = (product: ScannedProduct) => {
-    const known = data.nutrition.foods.find((f) => f.barcode === product.barcode)
-    const food: MyFood = known ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
-    if (!known) update((d) => { d.nutrition.foods.push(food) })
-    add(fromMine(food), product.portion?.g ?? 100, false)
-  }
+  const productFood = (product: ScannedProduct): MyFood => data.nutrition.foods.find((f) => f.barcode === product.barcode)
+    ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
+  const pickProduct = (product: ScannedProduct) => setView({ kind: 'amount', food: fromMine(productFood(product)) })
+  /** Añadir de un toque la ración del envase. */
+  const addProduct = (product: ScannedProduct) => add(fromMine(productFood(product)), product.portion?.g ?? 100, false)
   const searchOnline = async (text: string) => {
     abort.current?.abort()
     abort.current = new AbortController()
@@ -272,8 +268,13 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
 
   const mealPicker = <Segmented value={meal} onChange={setMeal} options={MEALS.map((m) => ({ value: m, label: mealLabel(m) }))} />
   if (view.kind === 'amount') {
+    const source = view.food.source
     return <AmountSheet food={view.food} title={t('Añadir', 'Add')} onBack={() => setView({ kind: 'list' })} onClose={onClose} onSave={(grams) => add(view.food, grams)}
-      dayEntries={dayEntries} goals={goals} extra={mealPicker} />
+      dayEntries={dayEntries} goals={goals} extra={mealPicker} onFix={source ? () => setView({ kind: 'fix', food: source }) : undefined} />
+  }
+  if (view.kind === 'fix') {
+    return <MyFoodSheet initial={view.food} onBack={() => setView({ kind: 'amount', food: fromMine(view.food) })} onClose={onClose}
+      onSaved={(f) => setView({ kind: 'amount', food: fromMine(f) })} />
   }
   if (view.kind === 'scan') {
     return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose}
@@ -301,19 +302,29 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
   const offResults = off && off.query === q && Array.isArray(off.state) ? off.state : undefined
   const amountText = (per100: Per100, grams: number) => {
     const v = amountOf(per100, grams)
-    return proteinOnly ? `${g(grams)} g · ${g(v.p)} g prot.` : `${g(grams)} g · ${int(v.kcal)} kcal · ${g(v.p)} g prot.`
+    return (proteinOnly ? [`${g(grams)} g`, `${g(v.p)} g prot.`] : [`${g(grams)} g`, `${int(v.kcal)} kcal`, `${g(v.p)} g prot.`]).map(nb).join(' · ')
   }
   /** Un apunte a mano: sus totales, sin inventar la proteína si no se escribió. */
-  const quickText = (v: Per100) => [t('A mano', 'Manual'), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), ...(v.p > 0 || proteinOnly ? [`${g(v.p)} g prot.`] : [])].join(' · ')
+  const quickText = (v: Per100) => [t('A mano', 'By hand'), ...(proteinOnly ? [] : [nb(`${int(v.kcal)} kcal`)]), ...(v.p > 0 || proteinOnly ? [nb(`${g(v.p)} g prot.`)] : [])].join(' · ')
   /** Lo que añade el «+»: la ración si la hay (o lo último que apuntaste), si no 100 g. */
   const quickGrams = (food: Pickable) => food.grams ?? food.portions[0]?.g ?? 100
-  /** Misma línea para todos: [marca ·] [ración ·] g · kcal · prot. [· aviso]. */
-  const detailText = (per100: Per100, grams: number, extra: { brand?: string; portion?: Portion; check?: boolean }) => [
+  /** Misma línea para todos: [marca ·] [ración ·] g · kcal · prot. (la ración, si no es justo 100 g). */
+  const detailText = (per100: Per100, grams: number, extra: { brand?: string; portion?: Portion }) => [
     extra.brand,
-    extra.portion && extra.portion.g === grams ? portionLabel(extra.portion.label) : undefined,
+    extra.portion && extra.portion.g === grams && grams !== 100 ? nb(portionLabel(extra.portion.label)) : undefined,
     amountText(per100, grams),
-    extra.check && doubtfulValues(per100) ? t('revisa la etiqueta', 'check the label') : undefined,
   ].filter(Boolean).join(' · ')
+  /** Fila de un alimento: el «+» añade lo que dice la línea; si sus valores no cuadran, hay que abrirlo antes. */
+  const foodRow = (key: string, name: string, detail: string, doubtful: boolean, onOpen: () => void, onAdd: () => void, grams: number) => (
+    <div key={key} className="list-row quick-row">
+      <button className="quick-main" onClick={onOpen}>
+        <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{name}</span>
+        <span className="small muted">{detail}</span>
+        {doubtful && <span className="small doubt-line"><TriangleAlert size={14} aria-hidden="true" /> {t('Las kcal no cuadran: revisa la etiqueta', 'Calories do not add up: check the label')}</span>}
+      </button>
+      {!doubtful && <button className="icon-btn" onClick={onAdd} aria-label={t(`Añadir ${g(grams)} g de ${name}`, `Add ${g(grams)} g of ${name}`)}><Plus size={19} /></button>}
+    </div>
+  )
   const addMeal = (id: string) => {
     const m = data.nutrition.meals.find((x) => x.id === id)
     if (!m) return
@@ -323,15 +334,11 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
     onAdded(t(`Añadida: ${m.name}`, `Added: ${m.name}`))
     onClose()
   }
-  const row = (key: string, food: Pickable) => (
-    <div key={key} className="list-row quick-row">
-      <button className="quick-main" onClick={() => setView({ kind: 'amount', food })}>
-        <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{food.name}</span>
-        <span className="small muted">{detailText(food.per100, quickGrams(food), { brand: food.detail, portion: food.portions[0], check: food.ref?.kind !== 'basic' })}</span>
-      </button>
-      <button className="icon-btn" onClick={() => add(food, quickGrams(food), false)} aria-label={t(`Añadir ${g(quickGrams(food))} g de ${food.name}`, `Add ${g(quickGrams(food))} g of ${food.name}`)}><Plus size={19} /></button>
-    </div>
-  )
+  const row = (key: string, food: Pickable) => {
+    const grams = quickGrams(food)
+    return foodRow(key, food.name, detailText(food.per100, grams, { brand: food.detail, portion: food.portions[0] }), food.ref?.kind !== 'basic' && doubtfulValues(food.per100),
+      () => setView({ kind: 'amount', food }), () => add(food, grams, false), grams)
+  }
 
   return (
     <Sheet title={t(`Añadir a ${mealLabel(meal).toLowerCase()}`, `Add to ${mealLabel(meal).toLowerCase()}`)} onClose={onClose} scrollKey={q}
@@ -356,7 +363,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
                 <button key={m.id} className="list-row" onClick={() => addMeal(m.id)} aria-label={t(`Añadir ${m.name}`, `Add ${m.name}`)}>
                   <span className="grow food-row-text">
                     <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{m.name}</span>
-                    <span className="small muted">{proteinOnly ? `${g(v.p)} g prot.` : `${int(v.kcal)} kcal · ${g(v.p)} g prot.`} · {m.items.map((x) => x.name).join(', ')}</span>
+                    <span className="small muted">{[t(`${m.items.length} alimentos`, `${m.items.length} foods`), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), `${g(v.p)} g prot.`].map(nb).join(' · ')}</span>
                   </span>
                   <span className="icon-btn" aria-hidden="true"><Plus size={19} /></span>
                 </button>
@@ -404,15 +411,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
           <div className="list">
             {offResults?.filter((p) => !data.nutrition.foods.some((f) => f.barcode === p.barcode)).map((p) => {
               const grams = p.portion?.g ?? 100
-              return (
-                <div key={p.barcode} className="list-row quick-row">
-                  <button className="quick-main" onClick={() => pickProduct(p)}>
-                    <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{p.name}</span>
-                    <span className="small muted">{detailText(p.per100, grams, { brand: p.brand, portion: p.portion, check: true })}</span>
-                  </button>
-                  <button className="icon-btn" onClick={() => addProduct(p)} aria-label={t(`Añadir ${g(grams)} g de ${p.name}`, `Add ${g(grams)} g of ${p.name}`)}><Plus size={19} /></button>
-                </div>
-              )
+              return foodRow(p.barcode, p.name, detailText(p.per100, grams, { brand: p.brand, portion: p.portion }), doubtfulValues(p.per100), () => pickProduct(p), () => addProduct(p), grams)
             })}
             {offResults && offResults.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
             {off?.query === q && off.state === 'offline' ? (
@@ -434,7 +433,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
 }
 
 /** Cantidad en gramos (raciones de un toque, × 2 y × 3, − / +), lo que aporta y cómo queda el día. */
-function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDelete, extra, dayEntries, goals, editingId }: {
+function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDelete, onFix, extra, dayEntries, goals, editingId }: {
   food: Pickable
   title: string
   initialGrams?: number
@@ -442,6 +441,8 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
   onClose: () => void
   onSave: (grams: number) => void
   onDelete?: () => void
+  /** Corregir los valores del alimento (cuando no cuadran). */
+  onFix?: () => void
   extra?: ReactNode
   /** Lo apuntado ese día, para enseñar cómo queda tras añadirlo. */
   dayEntries?: FoodEntry[]
@@ -473,10 +474,13 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
         {food.detail && <span className="muted">{food.detail}</span>}
       </header>
       {food.ref?.kind !== 'basic' && food.ref?.kind !== 'quick' && doubtfulValues(food.per100) && (
-        <p className="food-health small" style={{ margin: 0 }}>
+        <p className="food-health doubt small" style={{ margin: 0 }}>
           <TriangleAlert size={16} />
-          <span>{t(`Estos valores no cuadran: ${int(food.per100.kcal)} kcal por 100 g, pero sus macros suman unas ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)}. Comprueba la etiqueta antes de fiarte.`,
-            `These values do not add up: ${int(food.per100.kcal)} kcal per 100 g, but its macros add up to about ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)}. Check the label before relying on it.`)}</span>
+          <span className="grow">
+            {t(`Estos valores no cuadran: pone ${int(food.per100.kcal)} kcal por 100 g, pero su proteína, hidratos y grasa dan unas ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)} kcal. Mira la etiqueta del envase.`,
+              `These values do not add up: it says ${int(food.per100.kcal)} kcal per 100 g, but its protein, carbs and fat give about ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)} kcal. Check the label on the pack.`)}
+            {onFix && <button className="btn secondary btn-sm" style={{ marginTop: 8 }} onClick={onFix}><PenLine size={16} /> {t('Corregir valores', 'Fix values')}</button>}
+          </span>
         </p>
       )}
       <div className="list-row card-row amount-row">
@@ -547,46 +551,59 @@ function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, 
   onDelete?: () => void
 }) {
   const fmt = (v?: number) => (v === undefined ? '' : editable(Math.round(v * 10) / 10))
+  const proteinOnly = useData().settings.nutrition?.proteinOnly === true
   const [name, setName] = useState(initialName ?? '')
   const [values, setValues] = useState({ kcal: fmt(initial?.kcal), p: fmt(initial?.p), c: fmt(initial?.c), f: fmt(initial?.f) })
   const num = (x: string) => (x.trim() === '' ? 0 : parseDecimal(x))
   const parsed = { kcal: num(values.kcal), p: num(values.p), c: num(values.c), f: num(values.f) }
-  const ok = parsed.kcal !== null && parsed.kcal > 0 && parsed.kcal <= 5000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 500)
+  // En «solo proteína» lo obligatorio es la proteína (las calorías no se ven); si no, las calorías.
+  const ok = parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 5000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 500)
+    && (proteinOnly ? parsed.p! > 0 : parsed.kcal > 0)
   const field = (key: keyof typeof values, label: string, unit: string) => (
     <label className="list-row">
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder={key === 'kcal' ? '0' : t('opcional', 'optional')} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
+      <input inputMode="decimal" placeholder={key === (proteinOnly ? 'p' : 'kcal') ? '0' : t('opcional', 'optional')} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
       <span className="muted" style={{ width: 32 }}>{unit}</span>
     </label>
   )
   // Referencias redondas y orientativas (un plato de restaurante varía mucho): mejor que dejarlo sin apuntar.
   const examples = [
-    { name: t('Pizza entera', 'Whole pizza'), kcal: 900 },
-    { name: t('Menú del día', 'Set lunch menu'), kcal: 1100 },
-    { name: t('Hamburguesa con patatas', 'Burger and fries'), kcal: 1000 },
-    { name: t('Bocadillo', 'Sandwich (baguette)'), kcal: 500 },
+    { name: t('Pizza entera', 'Whole pizza'), kcal: 900, p: 35 },
+    { name: t('Menú del día', 'Set lunch menu'), kcal: 1100, p: 45 },
+    { name: t('Hamburguesa con patatas', 'Burger and fries'), kcal: 1000, p: 40 },
+    { name: t('Bocadillo', 'Sandwich (baguette)'), kcal: 500, p: 22 },
   ]
   return (
     <Sheet title={t('Apuntar a mano', 'Log by hand')} onClose={onClose}
       left={onBack ? <button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button> : <button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}
       footer={<button className="btn primary block" disabled={!ok} onClick={() => onSave(name.trim().slice(0, 120) || t(`${mealLabel(meal)} (a mano)`, `${mealLabel(meal)} (manual)`), { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! })}>{onDelete ? t('Guardar', 'Save') : t('Añadir', 'Add')}</button>}>
-      <p className="small muted" style={{ margin: 0 }}>{t('Para un plato que no está en la lista (por ejemplo, comiendo fuera): escribe el total. Solo las calorías son obligatorias.', 'For a dish that is not in the list (for example, eating out): type the total. Only calories are required.')}</p>
+      <p className="small muted" style={{ margin: 0 }}>{proteinOnly
+        ? t('Para un plato que no está en la lista (por ejemplo, comiendo fuera): escribe la proteína que lleva, aproximada.', 'For a dish that is not in the list (for example, eating out): type roughly how much protein it has.')
+        : t('Para un plato que no está en la lista (por ejemplo, comiendo fuera): escribe el total. Solo las calorías son obligatorias.', 'For a dish that is not in the list (for example, eating out): type the total. Only calories are required.')}</p>
       <div className="list">
         <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Qué era (opcional)', 'What it was (optional)')} onChange={(e) => setName(e.target.value)} /></label>
       </div>
       <div className="list">
-        {field('kcal', t('Calorías', 'Calories'), 'kcal')}
-        {field('p', t('Proteína', 'Protein'), 'g')}
-        {field('c', t('Hidratos', 'Carbs'), 'g')}
-        {field('f', t('Grasa', 'Fat'), 'g')}
+        {proteinOnly ? field('p', t('Proteína', 'Protein'), 'g') : (
+          <>
+            {field('kcal', t('Calorías', 'Calories'), 'kcal')}
+            {field('p', t('Proteína', 'Protein'), 'g')}
+            {field('c', t('Hidratos', 'Carbs'), 'g')}
+            {field('f', t('Grasa', 'Fat'), 'g')}
+          </>
+        )}
       </div>
       {!onDelete && (
         <>
           <div className="list-header">{t('Si no sabes cuánto es (aproximado)', "If you don't know (approximate)")}</div>
-          <div className="chips amount-chips">
+          <div className="list">
             {examples.map((x) => (
-              <button key={x.name} className={`chip ${values.kcal === String(x.kcal) ? 'active' : ''}`}
-                onClick={() => { setValues({ ...values, kcal: String(x.kcal) }); if (!name.trim()) setName(x.name) }}>{x.name} ≈ {int(x.kcal)}</button>
+              <button key={x.name} className="list-row" aria-pressed={values.kcal === String(x.kcal) && values.p === String(x.p)}
+                onClick={() => { setValues({ ...values, kcal: String(x.kcal), p: String(x.p) }); if (!name.trim() || name === initialName) setName(x.name) }}>
+                <span className="grow">{x.name}</span>
+                <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`]).map(nb).join(' · ')}</span>
+                {values.kcal === String(x.kcal) && values.p === String(x.p) && <span className="check">✓</span>}
+              </button>
             ))}
           </div>
         </>
@@ -666,9 +683,8 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
     }
     if (product === 'offline') return setState({ kind: 'error', code, message: t('No hay conexión para consultar el producto. Inténtalo de nuevo o créalo a mano.', 'No connection to look up the product. Try again or create it yourself.') })
     if (!product) return onMissing(code)
-    const food: MyFood = { id: uid(), name: product.name, brand: product.brand, barcode: code, per100: product.per100, portion: product.portion, source: 'off' }
-    update((d) => { d.nutrition.foods.push(food) })
-    onFound(food)
+    // Se guarda en «Mis alimentos» al añadirlo (así puedes corregirlo antes si no cuadra).
+    onFound({ id: uid(), name: product.name, brand: product.brand, barcode: code, per100: product.per100, portion: product.portion, source: 'off' })
   }
 
   const start = async () => {
@@ -747,21 +763,37 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
 
 // MARK: Mis alimentos
 
-function MyFoodSheet({ barcode, initialName, onBack, onClose, onSaved }: { barcode?: string; initialName?: string; onBack: () => void; onClose: () => void; onSaved: (f: MyFood) => void }) {
-  const [name, setName] = useState(initialName ?? '')
-  const [values, setValues] = useState({ kcal: '', p: '', c: '', f: '', portion: '' })
+/** Crear un alimento propio o, con `initial`, corregir los valores de uno (p. ej. de Open Food Facts). */
+function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClose, onSaved }: {
+  barcode?: string
+  initialName?: string
+  initial?: MyFood
+  onBack: () => void
+  onClose: () => void
+  onSaved: (f: MyFood) => void
+}) {
+  const barcode = initial?.barcode ?? newBarcode
+  const fmt = (v?: number) => (v === undefined ? '' : editable(v))
+  const [name, setName] = useState(initial?.name ?? initialName ?? '')
+  const [values, setValues] = useState({ kcal: fmt(initial?.per100.kcal), p: fmt(initial?.per100.p), c: fmt(initial?.per100.c), f: fmt(initial?.per100.f), portion: fmt(initial?.portion?.g) })
   const parsed = { kcal: parseDecimal(values.kcal), p: parseDecimal(values.p), c: parseDecimal(values.c), f: parseDecimal(values.f) }
   const ok = name.trim() && parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 1000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 100)
   const portion = parseDecimal(values.portion)
   const save = () => {
     if (!ok) return
     const food: MyFood = {
-      id: uid(), name: name.trim().slice(0, 120), source: 'mine',
+      id: initial?.id ?? uid(), name: name.trim().slice(0, 120), source: 'mine',
+      ...(initial?.brand ? { brand: initial.brand } : {}),
       per100: { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! },
       ...(barcode ? { barcode } : {}),
-      ...(portion && portion > 0 && portion <= 5000 ? { portion: { label: t('1 ración', '1 serving'), g: portion } } : {}),
+      ...(portion && portion > 0 && portion <= 5000 ? { portion: { label: initial?.portion?.g === portion ? initial.portion.label : t('1 ración', '1 serving'), g: portion } } : {}),
     }
-    update((d) => { d.nutrition.foods.push(food) })
+    update((d) => {
+      // Corregido: sustituye al guardado (mismo id o mismo código) o se guarda ahora.
+      const i = d.nutrition.foods.findIndex((x) => x.id === food.id || (barcode && x.barcode === barcode))
+      if (i >= 0) d.nutrition.foods[i] = food
+      else d.nutrition.foods.push(food)
+    })
     onSaved(food)
   }
   const field = (key: keyof typeof values, label: string, unit: string) => (
@@ -772,10 +804,11 @@ function MyFoodSheet({ barcode, initialName, onBack, onClose, onSaved }: { barco
     </label>
   )
   return (
-    <Sheet title={t('Nuevo alimento', 'New food')} onClose={onClose}
+    <Sheet title={initial ? t('Corregir valores', 'Fix values') : t('Nuevo alimento', 'New food')} onClose={onClose}
       left={<button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button>}
       footer={<button className="btn primary block" disabled={!ok} onClick={save}>{t('Guardar', 'Save')}</button>}>
-      {barcode && <p className="small muted" style={{ margin: 0 }}>{t(`El código ${barcode} no está en Open Food Facts. Copia los valores de la etiqueta y lo tendrás guardado para la próxima vez.`, `Code ${barcode} is not on Open Food Facts. Copy the values from the label and it will be saved for next time.`)}</p>}
+      {initial && <p className="small muted" style={{ margin: 0 }}>{t('Copia los valores por 100 g de la etiqueta. Se guarda en «Mis alimentos» con lo que escribas.', 'Copy the per 100 g values from the label. It is saved in "My foods" with what you type.')}</p>}
+      {barcode && !initial && <p className="small muted" style={{ margin: 0 }}>{t(`El código ${barcode} no está en Open Food Facts. Copia los valores de la etiqueta y lo tendrás guardado para la próxima vez.`, `Code ${barcode} is not on Open Food Facts. Copy the values from the label and it will be saved for next time.`)}</p>}
       <div className="list">
         <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Nombre (p. ej. «Mi batido»)', 'Name (e.g. "My shake")')} onChange={(e) => setName(e.target.value)} /></label>
       </div>
@@ -783,7 +816,7 @@ function MyFoodSheet({ barcode, initialName, onBack, onClose, onSaved }: { barco
       <div className="list">
         {field('kcal', t('Calorías', 'Calories'), 'kcal')}
         {field('p', t('Proteína', 'Protein'), 'g')}
-        {field('c', t('Carbohidratos', 'Carbs'), 'g')}
+        {field('c', t('Hidratos', 'Carbs'), 'g')}
         {field('f', t('Grasa', 'Fat'), 'g')}
       </div>
       <div className="list-header">{t('Opcional', 'Optional')}</div>
@@ -859,7 +892,7 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
         <div className="list">
           {numberRow(t('Calorías', 'Calories'), own.kcal, (v) => setOwn({ ...own, kcal: v }), 'kcal')}
           {numberRow(t('Proteína', 'Protein'), own.protein, (v) => setOwn({ ...own, protein: v }), 'g')}
-          {numberRow(t('Carbohidratos', 'Carbs'), own.carbs, (v) => setOwn({ ...own, carbs: v }), 'g')}
+          {numberRow(t('Hidratos', 'Carbs'), own.carbs, (v) => setOwn({ ...own, carbs: v }), 'g')}
           {numberRow(t('Grasa', 'Fat'), own.fat, (v) => setOwn({ ...own, fat: v }), 'g')}
         </div>
       ) : (
@@ -903,8 +936,8 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
       )}
       {!manual && (
         <p className="list-footer" style={{ margin: 0 }}>
-          {t('Se calcula con la fórmula de Mifflin-St Jeor y tu actividad. Proteína: la que elijas por kilo (si no, 1,8 g, o 2,2 si pierdes grasa); por encima de 1,6 g apenas hay más beneficio para el músculo. Es una estimación: si en 2-3 semanas tu peso no va como quieres, ajusta las calorías un 5-10 %.',
-            'Calculated with the Mifflin-St Jeor formula and your activity. Protein: what you choose per kg (otherwise 1.8 g, or 2.2 when losing fat); above 1.6 g there is little extra benefit for muscle. It is an estimate: if your weight is not moving as you want after 2-3 weeks, adjust calories by 5-10%.')}
+          {t(`Se calcula con la fórmula de Mifflin-St Jeor y tu actividad. Proteína: ${editable(perKgValue)} g por kilo de peso. Con 1,6 g basta a la mayoría para ganar músculo; 1,8-2,2 g da margen, sobre todo si pierdes grasa (ayuda a no perder músculo). Es una estimación: si en 2-3 semanas tu peso no va como quieres, ajusta las calorías un 5-10 %.`,
+            `Calculated with the Mifflin-St Jeor formula and your activity. Protein: ${editable(perKgValue)} g per kg of body weight. 1.6 g is enough for most people to build muscle; 1.8-2.2 g gives some margin, especially when losing fat (it helps keep muscle). It is an estimate: if your weight is not moving as you want after 2-3 weeks, adjust calories by 5-10%.`)}
         </p>
       )}
     </Sheet>
