@@ -484,8 +484,75 @@ DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
+--- barcode-detector 3.2.2 (MIT) ---
+
+barcode-detector, de Ze-Zheng Wu (https://github.com/Sec-ant/barcode-detector): lector de códigos
+de barras para los navegadores que no traen uno. Se distribuye sin cambios.
+
+MIT License
+
+Copyright (c) 2023 Ze-Zheng Wu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--- zxing-wasm 3.1.3 (MIT) ---
+
+zxing-wasm, de Ze-Zheng Wu (https://github.com/Sec-ant/zxing-wasm). Incluye compilado a WebAssembly
+(zxing_reader.wasm) ZXing-C++ (https://github.com/zxing-cpp/zxing-cpp), de Axel Waggershauser y
+colaboradores, con licencia Apache 2.0 (texto completo en la sección de jsqr). Se distribuye sin cambios.
+
+MIT License
+
+Copyright (c) 2023 Ze-Zheng Wu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 --- Datos de ejercicios ---
 Nombres y clasificación (músculos, material, nivel) tomados de la lista de Free Exercise DB
 (https://github.com/yuhonas/free-exercise-db) y traducidos a mano. Son datos de hecho: la app no
 incluye fotos ni textos de terceros. Las instrucciones, los mapas musculares y las figuras de
 movimiento son contenido propio de Serix.
+
+--- Datos de alimentos (Comidas) ---
+Lista básica (public/foods.json): valores de la tabla de composición ANSES-CIQUAL 2020 (Agence nationale
+de sécurité sanitaire de l'alimentation, de l'environnement et du travail, Francia), https://ciqual.anses.fr,
+con la Licence Ouverte / Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/).
+Se han seleccionado 125 alimentos; los nombres en español y las raciones son propios. Los valores no se han
+modificado; cuando falta la energía, se calcula con los factores del Reglamento (UE) 1169/2011.
+
+Productos con código de barras: se consultan en Open Food Facts (https://world.openfoodfacts.org) al
+escanearlos. Contiene datos de Open Food Facts, disponibles con la Open Database License (ODbL 1.0,
+https://opendatacommons.org/licenses/odbl/1-0/); el contenido de cada producto, con la Database Contents
+License (https://opendatacommons.org/licenses/dbcl/1-0/).

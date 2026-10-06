@@ -50,7 +50,7 @@ test('por lados: cada serie se convierte en izquierda y derecha, y se puede desh
 test('el modo de cada ejercicio se recuerda al empezar la rutina', () => {
   const now = Date.now()
   const data: AppData = {
-    version: 1, measurements: [], exerciseNotes: {}, friends: [], challenges: [], customExercises: [],
+    version: 1, measurements: [], exerciseNotes: {}, friends: [], challenges: [], customExercises: [], nutrition: { entries: [], foods: [], meals: [] },
     settings: { ...defaultSettings, exerciseModes: { Pullups: { assisted: true }, Dumbbell_Lunges: { unilateral: true } } },
     routines: [{ id: 'r', name: 'R', notes: '', order: 0, createdAt: 0, exercises: [
       { exerciseId: 'Pullups', name: 'Dominadas', muscle: 'lats', sets: 3, repsMin: 6, repsMax: 10, rest: 90, progression: 'double' },

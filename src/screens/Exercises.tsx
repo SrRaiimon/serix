@@ -181,7 +181,10 @@ export function ExercisesScreen() {
     .filter((x): x is { exercise: Exercise; usage: ExerciseUsage } => Boolean(x.exercise) && (!filter.allowedEquipment || filter.allowedEquipment.includes(x.exercise!.equipment))), [filter, usage, catalog])
 
   return (
-    <div className="screen">
+    <>
+    {/* Ya no es una pestaña: se llega desde Rutinas o Inicio, así que lleva «Atrás». */}
+    <NavBar showBack />
+    <div className="screen with-nav">
       <LargeTitle title={t('Ejercicios', 'Exercises')} actions={
         <button className="icon-btn" onClick={() => setCreating(true)} aria-label={t('Crear ejercicio propio', 'Create custom exercise')}><Plus size={22} /></button>
       } />
@@ -214,6 +217,7 @@ export function ExercisesScreen() {
       )}
       {sentinel}
     </div>
+    </>
   )
 }
 

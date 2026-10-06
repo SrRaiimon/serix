@@ -6,6 +6,7 @@ import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Sess
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
+import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -152,6 +153,7 @@ function settings(v: unknown): Settings {
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
+    nutrition: nutritionGoals(s.nutrition),
   }
 }
 
@@ -175,6 +177,67 @@ function exerciseNotes(v: unknown): Record<string, string> {
   return notes
 }
 
+// MARK: Comidas
+
+function per100(v: unknown): Per100 | undefined {
+  if (!isObj(v)) return undefined
+  const kcal = optNum(v.kcal, 0, 1000), p = optNum(v.p, 0, 100), c = optNum(v.c, 0, 100), f = optNum(v.f, 0, 100)
+  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f } : undefined
+}
+
+function foodRef(v: unknown): FoodRef | undefined {
+  if (!isObj(v)) return undefined
+  const kind = oneOf(v.kind, ['basic', 'off', 'mine'] as const)
+  return kind && typeof v.id === 'string' ? { kind, id: v.id.slice(0, 60) } : undefined
+}
+
+function foodEntry(v: unknown): FoodEntry | undefined {
+  if (!isObj(v) || typeof v.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v.day)) return undefined
+  const values = per100(v.per100), meal = oneOf(v.meal, MEALS), grams = optNum(v.grams, 0.1, 5000)
+  if (!values || !meal || grams === undefined) return undefined
+  return { id: str(v.id, uid(), 50), day: v.day, meal, name: str(v.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(v.ref), at: num(v.at, EPOCH_MIN, EPOCH_MAX, Date.now()) }
+}
+
+function myFood(v: unknown): MyFood | undefined {
+  if (!isObj(v)) return undefined
+  const values = per100(v.per100)
+  const name = str(v.name, '', 120)
+  if (!values || !name) return undefined
+  const portion = isObj(v.portion) && optNum(v.portion.g, 0.1, 5000) !== undefined ? { label: str(v.portion.label, '', 60), g: v.portion.g as number } : undefined
+  return {
+    id: str(v.id, uid(), 50), name, per100: values, source: v.source === 'off' ? 'off' : 'mine',
+    ...(typeof v.brand === 'string' && v.brand ? { brand: v.brand.slice(0, 80) } : {}),
+    ...(typeof v.barcode === 'string' && /^\d{8,14}$/.test(v.barcode) ? { barcode: v.barcode } : {}),
+    ...(portion ? { portion } : {}),
+  }
+}
+
+function savedMeal(v: unknown): SavedMeal | undefined {
+  if (!isObj(v)) return undefined
+  const items = list(v.items, (x) => {
+    if (!isObj(x)) return undefined
+    const values = per100(x.per100), grams = optNum(x.grams, 0.1, 5000)
+    return values && grams !== undefined ? { name: str(x.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(x.ref) } : undefined
+  }, 50)
+  return items.length ? { id: str(v.id, uid(), 50), name: str(v.name, '', 80) || t('Comida', 'Meal'), items } : undefined
+}
+
+function nutrition(v: unknown): NutritionData {
+  if (!isObj(v)) return { entries: [], foods: [], meals: [] }
+  return { entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200) }
+}
+
+function nutritionGoals(v: unknown): NutritionGoals | undefined {
+  if (!isObj(v)) return undefined
+  const kcal = optNum(v.kcal, 500, 10000), protein = optNum(v.protein, 0, 600), carbs = optNum(v.carbs, 0, 1500), fat = optNum(v.fat, 0, 600)
+  if (kcal === undefined || protein === undefined || carbs === undefined || fat === undefined) return undefined
+  return {
+    kcal, protein, carbs, fat,
+    sex: oneOf(v.sex, ['m', 'f'] as const), age: optNum(v.age, 10, 110), heightCm: optNum(v.heightCm, 100, 250),
+    weightKg: optNum(v.weightKg, 25, 400), activity: optNum(v.activity, 1, 2.5), aim: oneOf(v.aim, ['lose', 'keep', 'gain'] as const),
+  }
+}
+
 /** Convierte el contenido de un archivo en datos válidos, o lanza un error si no es una copia. */
 export function parseBackup(text: string): AppData {
   if (text.length > MAX_BACKUP_BYTES) throw new Error(t('El archivo es demasiado grande.', 'The file is too large.'))
@@ -189,6 +252,7 @@ export function parseBackup(text: string): AppData {
     friends: list(raw.friends, cleanSnapshot, 200),
     challenges: list(raw.challenges, cleanChallenge, 100),
     customExercises: list(raw.customExercises, cleanCustomExercise, MAX_CUSTOM_EXERCISES),
+    nutrition: nutrition(raw.nutrition),
     settings: settings(raw.settings),
   }
 }

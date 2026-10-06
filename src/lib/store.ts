@@ -8,6 +8,7 @@ import { applyTheme, type Theme } from './theme'
 import type { TrainingBlock } from './block'
 import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
+import { emptyNutrition, type NutritionData, type NutritionGoals } from './nutrition'
 
 // Immer no congela los datos: congelar decenas de miles de series al arrancar cuesta y la app no lo
 // necesita (los datos solo se cambian con update).
@@ -175,6 +176,8 @@ export interface Settings {
   /** Fecha de la última copia exportada y hasta cuándo no recordarla. */
   lastBackupAt?: number
   backupSnoozeUntil?: number
+  /** Objetivo diario de calorías y macronutrientes (Comidas). */
+  nutrition?: NutritionGoals
 }
 
 export interface ExerciseMode {
@@ -195,6 +198,8 @@ export interface AppData {
   challenges: Challenge[]
   /** Ejercicios creados por ti (se suman al catálogo). */
   customExercises: CustomExercise[]
+  /** Comidas: lo apuntado cada día, tus alimentos y tus comidas guardadas. */
+  nutrition: NutritionData
   settings: Settings
 }
 
@@ -224,6 +229,7 @@ const emptyData = (): AppData => ({
   friends: [],
   challenges: [],
   customExercises: [],
+  nutrition: emptyNutrition(),
   settings: { ...defaultSettings },
 })
 
@@ -295,7 +301,7 @@ export function flush() {
 
 export async function loadData(): Promise<void> {
   const stored = await readData().catch(() => undefined)
-  if (stored) state = { ...emptyData(), ...stored, settings: { ...defaultSettings, ...stored.settings } }
+  if (stored) state = { ...emptyData(), ...stored, nutrition: { ...emptyNutrition(), ...stored.nutrition }, settings: { ...defaultSettings, ...stored.settings } }
   // Pide al navegador que no borre los datos si falta espacio.
   void navigator.storage?.persist?.()
   emit()

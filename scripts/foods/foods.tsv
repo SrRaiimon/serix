@@ -1,0 +1,125 @@
+egg	Huevo	Egg	22000	1 huevo	1 egg	60
+egg-boiled	Huevo cocido	Hard-boiled egg	22010	1 huevo	1 egg	60
+egg-fried	Huevo frito	Fried egg	22501	1 huevo	1 egg	55
+egg-scrambled	Huevos revueltos	Scrambled eggs	22502	1 ración	1 serving	120
+egg-white	Clara de huevo	Egg white	22001	1 clara	1 white	35
+spanish-omelette	Tortilla de patatas	Spanish potato omelette	22510	1 pincho	1 slice	120
+chicken-breast-raw	Pechuga de pollo (cruda)	Chicken breast (raw)	36017	1 filete	1 fillet	150
+chicken-breast	Pechuga de pollo (hecha)	Chicken breast (cooked)	36018	1 filete	1 fillet	120
+chicken-leg	Muslo de pollo con piel (asado)	Chicken leg with skin (roasted)	36004	1 muslo	1 leg	120
+turkey-breast	Pechuga de pavo (a la plancha)	Turkey breast (pan-fried)	36306	1 filete	1 fillet	120
+turkey-slices	Fiambre de pavo	Sliced turkey	28964	3 lonchas	3 slices	30
+beef-mince-5	Carne picada de ternera 5 % grasa (cruda)	Minced beef 5% fat (raw)	6250	1 ración	1 serving	125
+beef-mince-15	Carne picada de ternera 15 % grasa (cruda)	Minced beef 15% fat (raw)	6254	1 ración	1 serving	125
+beef-steak	Filete de ternera (a la plancha)	Beef steak (grilled)	6200	1 filete	1 steak	150
+pork-tenderloin	Solomillo de cerdo (crudo)	Pork tenderloin (raw)	28201	1 ración	1 serving	150
+pork-chop	Chuleta de cerdo (a la plancha)	Pork chop (grilled)	28101	1 chuleta	1 chop	150
+ham-cooked	Jamón cocido	Cooked ham	28900	3 lonchas	3 slices	30
+serrano	Jamón serrano	Serrano ham	28845	3 lonchas	3 slices	30
+cured-sausage	Embutido curado (salchichón, fuet)	Dry-cured sausage	30301	5 rodajas	5 slices	25
+salmon	Salmón (a la plancha)	Salmon (pan-fried)	26229	1 filete	1 fillet	150
+salmon-raw	Salmón (crudo)	Salmon (raw)	26036	1 filete	1 fillet	150
+smoked-salmon	Salmón ahumado	Smoked salmon	26037	2 lonchas	2 slices	40
+tuna-canned	Atún al natural (lata, escurrido)	Canned tuna in water (drained)	26039	1 lata	1 can	56
+tuna-canned-oil	Atún en aceite (lata, escurrido)	Canned tuna in oil (drained)	26245	1 lata	1 can	56
+tuna-fresh	Atún fresco (crudo)	Fresh tuna (raw)	26053	1 filete	1 fillet	150
+cod	Bacalao (al horno)	Cod (baked)	26023	1 filete	1 fillet	150
+hake	Merluza (cruda)	Hake (raw)	26048	1 filete	1 fillet	150
+sardines	Sardinas en aceite de oliva (lata)	Sardines in olive oil (canned)	26040	1 lata	1 can	85
+shrimp	Gambas (cocidas)	Prawns (cooked)	10007	1 ración	1 serving	100
+milk-whole	Leche entera	Whole milk	19023	1 vaso	1 glass	250
+milk-semi	Leche semidesnatada	Semi-skimmed milk	19041	1 vaso	1 glass	250
+milk-skim	Leche desnatada	Skimmed milk	19050	1 vaso	1 glass	250
+yogurt-plain	Yogur natural	Plain yogurt	19593	1 yogur	1 pot	125
+yogurt-skim	Yogur natural desnatado	Plain fat-free yogurt	19594	1 yogur	1 pot	125
+yogurt-greek	Yogur griego natural	Plain Greek-style yogurt	19860	1 yogur	1 pot	125
+quark	Queso fresco batido 0 %	Fat-free quark	19639	1 tarrina	1 pot	125
+mozzarella	Mozzarella	Mozzarella	19590	1 ración	1 serving	30
+emmental	Queso emmental	Emmental cheese	12115	1 ración	1 serving	30
+edam	Queso edam	Edam cheese	12729	1 ración	1 serving	30
+parmesan	Parmesano	Parmesan	12120	1 cucharada	1 tablespoon	5
+rice-raw	Arroz blanco (crudo)	White rice (dry)	9100	1 ración	1 serving	80
+rice	Arroz blanco (cocido)	White rice (cooked)	9104	1 plato	1 plate	200
+rice-brown	Arroz integral (cocido)	Brown rice (cooked)	9103	1 plato	1 plate	200
+pasta	Pasta (cocida)	Pasta (cooked)	9811	1 plato	1 plate	200
+oats	Copos de avena	Rolled oats	9311	1 ración	1 serving	40
+bread	Pan (de barra)	Bread (baguette)	7001	1 trozo	1 piece	60
+bread-whole	Pan integral	Wholemeal bread	7110	1 rebanada	1 slice	40
+sandwich-loaf	Pan de molde	Sliced bread	7200	1 rebanada	1 slice	25
+sandwich-loaf-whole	Pan de molde integral	Wholemeal sliced bread	7111	1 rebanada	1 slice	25
+tortilla-wheat	Tortilla de trigo (wrap)	Wheat wrap	7815	1 tortilla	1 wrap	60
+cornflakes	Copos de maíz	Corn flakes	32014	1 bol	1 bowl	30
+muesli	Muesli	Muesli	32004	1 ración	1 serving	50
+rice-cakes	Tortitas de arroz	Rice cakes	7352	1 tortita	1 cake	8
+potato-boiled	Patata cocida	Boiled potato	4003	1 patata	1 potato	170
+potato-baked	Patata asada	Baked potato	4002	1 patata	1 potato	170
+fries	Patatas fritas (al horno, congeladas)	Oven chips (frozen)	4030	1 ración	1 serving	120
+crisps	Patatas fritas de bolsa	Potato crisps	4004	1 bolsa	1 bag	40
+sweet-potato	Boniato (cocido)	Sweet potato (cooked)	4102	1 boniato	1 sweet potato	150
+quinoa	Quinoa (cocida)	Quinoa (cooked)	9341	1 plato	1 plate	180
+lentils	Lentejas (cocidas)	Lentils (cooked)	20587	1 plato	1 plate	200
+chickpeas	Garbanzos (cocidos)	Chickpeas (cooked)	20507	1 plato	1 plate	200
+beans	Alubias (cocidas)	White beans (cooked)	20502	1 plato	1 plate	200
+kidney-beans	Alubias rojas (cocidas)	Kidney beans (cooked)	20503	1 plato	1 plate	200
+peas	Guisantes (cocidos)	Garden peas (cooked)	20326	1 ración	1 serving	150
+tofu	Tofu	Tofu	20904	1 ración	1 serving	100
+soy-drink	Bebida de soja	Soy drink	18901	1 vaso	1 glass	250
+almond-drink	Bebida de almendras (sin azúcar)	Almond drink (unsweetened)	18107	1 vaso	1 glass	250
+banana	Plátano	Banana	13005	1 plátano	1 banana	120
+apple	Manzana	Apple	13620	1 manzana	1 apple	180
+orange	Naranja	Orange	13034	1 naranja	1 orange	150
+pear	Pera	Pear	13188	1 pera	1 pear	170
+peach	Melocotón	Peach	13195	1 melocotón	1 peach	150
+strawberries	Fresas	Strawberries	13014	1 bol	1 bowl	150
+blueberries	Arándanos	Blueberries	13028	1 puñado	1 handful	75
+grapes	Uvas	Grapes	13044	1 racimo	1 bunch	150
+watermelon	Sandía	Watermelon	13036	1 tajada	1 slice	300
+melon	Melón	Melon	13026	1 tajada	1 slice	200
+pineapple	Piña	Pineapple	13002	1 rodaja	1 slice	100
+kiwi	Kiwi	Kiwi	13021	1 kiwi	1 kiwi	75
+mango	Mango	Mango	13025	1 mango	1 mango	200
+dates	Dátiles	Dates	13011	1 dátil	1 date	8
+raisins	Pasas	Raisins	13046	1 puñado	1 handful	30
+avocado	Aguacate	Avocado	13004	½ aguacate	½ avocado	75
+olives	Aceitunas	Olives	13184	10 aceitunas	10 olives	30
+tomato	Tomate	Tomato	20047	1 tomate	1 tomato	120
+lettuce	Lechuga	Lettuce	20123	1 plato	1 plate	80
+spinach	Espinacas (crudas)	Spinach (raw)	20270	1 plato	1 plate	60
+broccoli	Brócoli (cocido)	Broccoli (cooked)	20303	1 ración	1 serving	150
+carrot	Zanahoria	Carrot	20009	1 zanahoria	1 carrot	70
+onion	Cebolla (sofrita sin aceite)	Onion (pan-fried, no fat)	20322	½ cebolla	½ onion	60
+pepper	Pimiento rojo	Red pepper	20087	1 pimiento	1 pepper	150
+cucumber	Pepino	Cucumber	20019	½ pepino	½ cucumber	150
+zucchini	Calabacín	Courgette	20020	1 calabacín	1 courgette	200
+mushrooms	Champiñones	Mushrooms	20056	1 ración	1 serving	100
+green-beans	Judías verdes (cocidas)	Green beans (cooked)	20320	1 ración	1 serving	150
+corn	Maíz dulce (lata)	Sweet corn (canned)	20066	1 lata pequeña	1 small can	140
+gazpacho	Gazpacho	Gazpacho	25967	1 vaso	1 glass	250
+olive-oil	Aceite de oliva virgen extra	Extra virgin olive oil	17270	1 cucharada	1 tablespoon	10
+sunflower-oil	Aceite de girasol	Sunflower oil	17440	1 cucharada	1 tablespoon	10
+butter	Mantequilla	Butter	16400	1 porción	1 pat	10
+peanut-butter	Crema de cacahuete	Peanut butter	15202	1 cucharada	1 tablespoon	16
+almonds	Almendras	Almonds	15041	1 puñado	1 handful	30
+walnuts	Nueces	Walnuts	15005	1 puñado	1 handful	30
+peanuts	Cacahuetes tostados	Roasted peanuts	15053	1 puñado	1 handful	30
+cashews	Anacardos	Cashews	15054	1 puñado	1 handful	30
+chia	Semillas de chía	Chia seeds	15047	1 cucharada	1 tablespoon	12
+honey	Miel	Honey	31008	1 cucharada	1 tablespoon	20
+sugar	Azúcar	Sugar	31016	1 cucharadita	1 teaspoon	5
+jam	Mermelada	Jam	31006	1 cucharada	1 tablespoon	20
+dark-chocolate	Chocolate negro (más de 70 %)	Dark chocolate (over 70%)	31074	1 onza	1 square	10
+orange-juice	Zumo de naranja	Orange juice	2070	1 vaso	1 glass	200
+cola	Refresco de cola	Cola	18018	1 lata	1 can	330
+cola-zero	Refresco de cola sin azúcar	Sugar-free cola	18060	1 lata	1 can	330
+beer	Cerveza	Beer	5001	1 caña	1 small glass	200
+beer-free	Cerveza sin alcohol	Alcohol-free beer	5030	1 tercio	1 bottle	330
+wine	Vino tinto	Red wine	5214	1 copa	1 glass	150
+coffee	Café solo	Espresso	18071	1 taza	1 cup	40
+coffee-milk	Café con leche (sin azúcar)	White coffee (no sugar)	18151	1 taza	1 cup	200
+pizza	Pizza margarita	Margherita pizza	25404	1 porción	1 slice	110
+burger	Hamburguesa (de cadena)	Hamburger (fast food)	25413	1 hamburguesa	1 burger	110
+hummus	Hummus	Hummus	25621	2 cucharadas	2 tablespoons	30
+croissant	Cruasán	Croissant	7620	1 cruasán	1 croissant	60
+biscuits	Galletas (tipo María)	Plain biscuits	24001	4 galletas	4 biscuits	25
+ketchup	Kétchup	Ketchup	11008	1 cucharada	1 tablespoon	15
+mayo	Mayonesa	Mayonnaise	11054	1 cucharada	1 tablespoon	14

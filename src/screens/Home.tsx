@@ -1,7 +1,8 @@
-import { Check, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, WandSparkles, X, Zap } from 'lucide-react'
+import { Check, ChevronRight, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Card, StatBand, useTick, useToast } from '../components/ui'
-import { addDays, clock, day, startOfDay, startOfWeek, tons } from '../lib/format'
+import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
+import { addDays, clock, day, int, startOfDay, startOfWeek, tons } from '../lib/format'
+import { dayKey, dayTotals } from '../lib/nutrition'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -54,6 +55,8 @@ export function HomeScreen() {
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
 
+      <FoodTodayCard />
+
       {sessions.length > 0 && (
         <StatBand items={[
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
@@ -83,6 +86,31 @@ export function HomeScreen() {
 
       <InstallBanner />
     </div>
+  )
+}
+
+/** Lo comido hoy frente al objetivo (Comidas). Solo si hay objetivo o algo apuntado hoy. */
+function FoodTodayCard() {
+  const data = useData()
+  const today = dayKey()
+  const entries = data.nutrition.entries.filter((e) => e.day === today)
+  const goals = data.settings.nutrition
+  if (!goals && !entries.length) return null
+  const totals = dayTotals(entries)
+  return (
+    <button className="card food-today" onClick={() => navigate('food')}>
+      <span className="row" style={{ gap: 8 }}>
+        <Utensils size={17} />
+        <strong className="grow">{t('Comidas de hoy', 'Food today')}</strong>
+        <ChevronRight size={18} className="chevron" />
+      </span>
+      <span>
+        <strong className="food-today-kcal">{int(totals.kcal)}</strong>
+        <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
+      </span>
+      {goals && <Progress value={totals.kcal} total={goals.kcal} />}
+      <span className="small muted">{t('Proteína', 'Protein')} {int(totals.p)}{goals ? ` / ${int(goals.protein)}` : ''} g</span>
+    </button>
   )
 }
 

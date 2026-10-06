@@ -2,8 +2,8 @@ import { useSyncExternalStore } from 'react'
 
 // Navegación por hash: #/pestaña/pantalla/parámetro. El botón atrás del navegador funciona.
 
-export type Tab = 'home' | 'routines' | 'exercises' | 'progress' | 'profile'
-export const tabs: Tab[] = ['home', 'routines', 'exercises', 'progress', 'profile']
+export type Tab = 'home' | 'routines' | 'food' | 'progress' | 'profile'
+export const tabs: Tab[] = ['home', 'routines', 'food', 'progress', 'profile']
 
 function current(): string[] {
   const path = location.hash.replace(/^#\/?/, '')
@@ -46,5 +46,7 @@ export function back() {
 }
 
 export function currentTab(route: string[]): Tab {
+  // Ejercicios ya no es una pestaña: se abre desde Rutinas (e Inicio) y se marca Rutinas.
+  if (route[0] === 'exercises') return 'routines'
   return tabs.includes(route[0] as Tab) ? (route[0] as Tab) : 'home'
 }

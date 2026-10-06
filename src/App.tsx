@@ -1,4 +1,4 @@
-import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User } from 'lucide-react'
+import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
@@ -16,6 +16,7 @@ import { UndoToast } from './components/UndoToast'
 // conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
 const screens = {
   exercises: () => import('./screens/Exercises'),
+  food: () => import('./screens/Food'),
   friends: () => import('./screens/Friends'),
   import: () => import('./screens/Import'),
   intervals: () => import('./screens/Intervals'),
@@ -31,6 +32,7 @@ const screens = {
 }
 const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExercisesScreen })))
 const ExerciseDetailScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExerciseDetailScreen })))
+const FoodScreen = lazy(() => screens.food().then((m) => ({ default: m.FoodScreen })))
 const ImportScreen = lazy(() => screens.import().then((m) => ({ default: m.ImportScreen })))
 const FriendsScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendsScreen })))
 const FriendDetailScreen = lazy(() => screens.friends().then((m) => ({ default: m.FriendDetailScreen })))
@@ -151,6 +153,8 @@ function Screen({ route }: { route: string[] }) {
       return a ? <RoutineDetailScreen id={a} /> : <RoutinesScreen />
     case 'exercises':
       return a ? <ExerciseDetailScreen id={a} /> : <ExercisesScreen />
+    case 'food':
+      return <FoodScreen />
     case 'progress':
       if (a === 'session' && b) return <SessionDetailScreen id={b} />
       if (a === 'exercise' && b) return <ExerciseProgressScreen id={b} />
@@ -174,7 +178,7 @@ function Screen({ route }: { route: string[] }) {
 const tabItems: { id: Tab; label: () => string; icon: typeof House }[] = [
   { id: 'home', label: () => t('Inicio', 'Home'), icon: House },
   { id: 'routines', label: () => t('Rutinas', 'Routines'), icon: ClipboardList },
-  { id: 'exercises', label: () => t('Ejercicios', 'Exercises'), icon: Dumbbell },
+  { id: 'food', label: () => t('Comidas', 'Food'), icon: Utensils },
   { id: 'progress', label: () => t('Progreso', 'Progress'), icon: ChartLine },
   { id: 'profile', label: () => t('Perfil', 'Profile'), icon: User },
 ]

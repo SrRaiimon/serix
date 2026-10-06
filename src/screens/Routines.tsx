@@ -1,5 +1,5 @@
 import { BlockCard } from '../components/Block'
-import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
@@ -92,7 +92,10 @@ export function RoutinesScreen() {
 
   return (
     <div className="screen">
-      <LargeTitle title={t('Rutinas', 'Routines')} actions={<button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Nueva', 'New')}><Plus size={22} /></button>} />
+      <LargeTitle title={t('Rutinas', 'Routines')} actions={<>
+        <button className="icon-btn" onClick={() => navigate('exercises')} aria-label={t('Ejercicios', 'Exercises')}><Dumbbell size={20} /></button>
+        <button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Nueva', 'New')}><Plus size={22} /></button>
+      </>} />
       {data.routines.length === 0 ? (
         <Empty icon={ClipboardList} title={t('Aún no tienes rutinas', 'No routines yet')}
           message={t('Genera un programa según tu objetivo o crea tu propia rutina desde cero.', 'Generate a program for your goal or build your own routine from scratch.')}

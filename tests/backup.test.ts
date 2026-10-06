@@ -9,6 +9,7 @@ import { exercise, session, set } from './helpers'
 const allSettings: Required<Settings> = {
   ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
   catalogVersion: 2, block: { start: Date.UTC(2026, 0, 5), weeks: 5 }, effortRestOff: true, exerciseModes: { Pullups: { assisted: true }, Dumbbell_Lunges: { unilateral: true } }, simpleMode: true, guideHidden: true, guideProgressSeen: true, shareBodyWeight: true, friendShareAt: Date.UTC(2026, 0, 3), friendReminderOff: true, friendReminderSnooze: Date.UTC(2026, 0, 6), language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
+  nutrition: { kcal: 2600, protein: 150, carbs: 300, fat: 72, sex: 'f', age: 31, heightCm: 168, weightKg: 62.5, activity: 1.55, aim: 'gain' },
 }
 
 const sample = (): AppData => ({
@@ -27,6 +28,11 @@ const sample = (): AppData => ({
     weeks: [[1, 3000], [3, 12000]], muscles: [12, 10, 8, 4, 4, 9, 3, 3, 6], prs: [{ exerciseId: 'bench', name: 'Press', weight: 90, reps: 3, at: Date.UTC(2026, 0, 3) }], bodyWeight: 78.5,
     challenges: [{ challenge: { id: 'abc123', metric: 'sets', group: 0, target: 60, start: Date.UTC(2026, 0, 1), end: Date.UTC(2026, 0, 31), by: 'Ana' }, value: 20 }] }],
   customExercises: [{ id: 'custom-a1b2c3', name: 'Press máquina azul', muscle: 'pectorals', secondaryMuscles: ['triceps'], equipment: 'machine', tracking: 'weight_reps', notes: 'Asiento en el 4', createdAt: Date.UTC(2026, 0, 2) }],
+  nutrition: {
+    entries: [{ id: 'e1', day: '2026-01-05', meal: 'breakfast', name: 'Copos de avena', grams: 40, per100: { kcal: 367, p: 13.3, c: 57.9, f: 6.5 }, ref: { kind: 'basic', id: 'oats' }, at: Date.UTC(2026, 0, 5, 8) }],
+    foods: [{ id: 'f1', name: 'Crema de cacao', brand: 'Marca', barcode: '3017620422003', per100: { kcal: 539, p: 6.3, c: 57.5, f: 30.9 }, portion: { label: '15 g', g: 15 }, source: 'off' }],
+    meals: [{ id: 'm1', name: 'Desayuno de siempre', items: [{ name: 'Leche', grams: 250, per100: { kcal: 47, p: 3.4, c: 4.8, f: 1.6 }, ref: { kind: 'basic', id: 'milk-semi' } }] }],
+  },
   challenges: [{ id: 'rep999', metric: 'reps', exerciseId: 'Pullups', exerciseName: 'Dominadas', start: Date.UTC(2026, 0, 1), end: Date.UTC(2026, 0, 15), by: 'Yo' }],
   settings: { ...allSettings },
 })

@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer', '@fontsource-variable/archivo']
+const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer', '@fontsource-variable/archivo', 'barcode-detector', 'zxing-wasm']
 
 // Autoría que el paquete no recoge en su archivo de licencia.
 const NOTES = {
@@ -12,6 +12,11 @@ const NOTES = {
   jsqr: 'jsQR, de Cosmo Wolfe y colaboradores (https://github.com/cozmo/jsQR). Parte del código\n' +
     '(corrección de errores Reed-Solomon) está traducido de ZXing (https://github.com/zxing/zxing),\n' +
     'también con licencia Apache 2.0. Se distribuye sin cambios.',
+  'barcode-detector': 'barcode-detector, de Ze-Zheng Wu (https://github.com/Sec-ant/barcode-detector): lector de códigos\n' +
+    'de barras para los navegadores que no traen uno. Se distribuye sin cambios.',
+  'zxing-wasm': 'zxing-wasm, de Ze-Zheng Wu (https://github.com/Sec-ant/zxing-wasm). Incluye compilado a WebAssembly\n' +
+    '(zxing_reader.wasm) ZXing-C++ (https://github.com/zxing-cpp/zxing-cpp), de Axel Waggershauser y\n' +
+    'colaboradores, con licencia Apache 2.0 (texto completo en la sección de jsqr). Se distribuye sin cambios.',
 }
 
 // Texto estándar de la licencia MIT, para paquetes que la declaran solo en la cabecera del código.
@@ -76,5 +81,20 @@ parts.push(
   '',
 )
 
+parts.push(
+  '--- Datos de alimentos (Comidas) ---',
+  'Lista básica (public/foods.json): valores de la tabla de composición ANSES-CIQUAL 2020 (Agence nationale',
+  'de sécurité sanitaire de l\'alimentation, de l\'environnement et du travail, Francia), https://ciqual.anses.fr,',
+  'con la Licence Ouverte / Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/).',
+  'Se han seleccionado 125 alimentos; los nombres en español y las raciones son propios. Los valores no se han',
+  'modificado; cuando falta la energía, se calcula con los factores del Reglamento (UE) 1169/2011.',
+  '',
+  'Productos con código de barras: se consultan en Open Food Facts (https://world.openfoodfacts.org) al',
+  'escanearlos. Contiene datos de Open Food Facts, disponibles con la Open Database License (ODbL 1.0,',
+  'https://opendatacommons.org/licenses/odbl/1-0/); el contenido de cada producto, con la Database Contents',
+  'License (https://opendatacommons.org/licenses/dbcl/1-0/).',
+  '',
+)
+
 writeFileSync('public/licenses.txt', parts.join('\n'))
-console.log(`licenses.txt: ${packages.length} paquetes + catálogo de ejercicios`)
+console.log(`licenses.txt: ${packages.length} paquetes + catálogo de ejercicios + datos de alimentos`)

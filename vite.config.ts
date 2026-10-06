@@ -8,8 +8,10 @@ function serviceWorker(): Plugin {
     name: 'gym-service-worker',
     apply: 'build',
     generateBundle(_, bundle) {
-      const files = Object.keys(bundle).filter((f) => !f.endsWith('.map'))
-      const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_es.json', 'exercise_ids_v1.json', 'licenses.txt',
+      // El lector de códigos de barras (.wasm, ~1 MB) no se precarga: solo sirve con conexión (para
+      // consultar el producto) y así no lo descarga quien no lo usa.
+      const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm'))
+      const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
         'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']
       // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
       const precache = [...new Set([...statics, ...files])]
@@ -29,15 +31,18 @@ function serviceWorker(): Plugin {
 /**
  * Política de seguridad de contenidos (solo en producción: el servidor de desarrollo necesita
  * scripts en línea). Todo se carga de la propia web: si alguien lograra inyectar código de otro
- * sitio, el navegador no lo ejecutaría ni le dejaría enviar datos fuera.
+ * sitio, el navegador no lo ejecutaría ni le dejaría enviar datos fuera (salvo a Open Food Facts,
+ * que solo recibe códigos de barras).
  */
 function contentSecurityPolicy(): Plugin {
   const policy = [
     "default-src 'self'",
-    "script-src 'self'",
+    // 'wasm-unsafe-eval' solo permite compilar WebAssembly propio (el lector de códigos de barras), no eval.
+    "script-src 'self' 'wasm-unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    "connect-src 'self'",
+    // Open Food Facts: solo para consultar un producto por su código de barras (Comidas).
+    "connect-src 'self' https://world.openfoodfacts.org",
     "worker-src 'self'",
     "manifest-src 'self'",
     "object-src 'none'",
