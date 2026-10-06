@@ -1,22 +1,23 @@
 import { BlockCard } from '../components/Block'
-import { ArrowLeftRight, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, Layers, Link2, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
+import { ArrowLeftRight, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, Layers, Link2, Pencil, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
-import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, uid, weight } from '../lib/format'
+import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
 import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
-import { finishedSessions, lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine } from '../lib/store'
-import { records } from '../lib/stats'
+import { finishedSessions, lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
+import { records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
-import { startEmpty, startRoutine } from '../lib/workout'
+import { nextRoutine, previewRoutine, startEmpty, startRoutine } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { QrSheet } from '../components/Qr'
+import { RoutineMuscleMap } from '../components/MuscleMap'
 import { plural, t } from '../lib/i18n'
 
 /** Comparte rutinas por enlace (hoja del sistema en el móvil; si no hay, copia al portapapeles). */
@@ -74,6 +75,9 @@ export function RoutinesScreen() {
     const key = r.programName ?? ''
     groups.set(key, [...(groups.get(key) ?? []), r])
   }
+  const next = data.routines.length > 1 ? nextRoutine(data) : undefined
+  // El bloque arriba solo si ya está en marcha o programado; si no, es una oferta y va al final.
+  const blockOn = !!data.settings.block
   const keys = [...groups.keys()].sort((a, b) => (a === active ? -1 : b === active ? 1 : a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)))
 
   const createRoutine = () => {
@@ -97,7 +101,7 @@ export function RoutinesScreen() {
       ) : (
         <>
         {/* En modo sencillo no se ofrece, pero si ya hay un bloque se muestra para poder verlo y terminarlo. */}
-        {(!data.settings.simpleMode || data.settings.block) && <BlockCard />}
+        {blockOn && <BlockCard />}
         {keys.map((key) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="list-header">
@@ -106,10 +110,11 @@ export function RoutinesScreen() {
               {key && <button className="nav-btn" style={{ padding: 0, minHeight: 0 }} onClick={() => setProgramMenu(key)} aria-label={t('Opciones del programa', 'Program options')}><Ellipsis size={20} /></button>}
             </div>
             <div className="list">
-              {groups.get(key)!.map((r) => <RoutineRow key={r.id} routine={r} data={data} />)}
+              {groups.get(key)!.map((r) => <RoutineRow key={r.id} routine={r} data={data} next={r.id === next?.id} />)}
             </div>
           </div>
         ))}
+        {!blockOn && !data.settings.simpleMode && <BlockCard />}
         </>
       )}
 
@@ -149,21 +154,50 @@ export function RoutinesScreen() {
   )
 }
 
-function RoutineRow({ routine, data }: { routine: Routine; data: AppData }) {
+/** Fila de rutina: abre la ficha y, a la derecha, empieza directamente. La que toca, marcada. */
+function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; next: boolean }) {
   const last = lastPerformed(data, routine.id)
   return (
-    <button className="list-row" onClick={() => navigate('routines', routine.id)}>
-      <span className="grow">
+    <div className={`list-row routine-row ${next ? 'next' : ''}`}>
+      <button className="routine-main" onClick={() => navigate('routines', routine.id)}>
+        {next && <span className="routine-next">{t('Te toca hoy', 'Up next')}</span>}
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
         <span className="small muted clamp-1">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
-        <span className="small muted row" style={{ gap: 12, marginTop: 4 }}>
+        <span className="small muted row" style={{ gap: 12, marginTop: 4, flexWrap: 'wrap', rowGap: 2 }}>
           <span className="row" style={{ gap: 4 }}><Dumbbell size={13} /> {routine.exercises.length}</span>
           <span className="row" style={{ gap: 4 }}><Layers size={13} /> {plural(routineSets(routine), ['serie', 'series'], ['set', 'sets'])}</span>
           <span className="row" style={{ gap: 4 }}><Clock size={13} /> ~{routineMinutes(routine)} min</span>
-          {last && <span style={{ marginLeft: 'auto' }}>{relative(last)}</span>}
+          <span>{last ? relative(last) : t('Sin estrenar', 'Not done yet')}</span>
         </span>
-      </span>
-    </button>
+      </button>
+      {routine.exercises.length > 0 && (
+        <button className={`icon-btn routine-play ${next ? 'go' : ''}`} onClick={() => startRoutine(routine)} aria-label={t(`Empezar ${routine.name}`, `Start ${routine.name}`)}>
+          <Play size={17} fill="currentColor" />
+        </button>
+      )}
+    </div>
+  )
+}
+
+/** Lo que te propondrá la app hoy en un ejercicio: el peso de la serie más pesada y por qué. */
+function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppData['settings']['unit'] }) {
+  if (trackingOf(planned) !== 'weight_reps') return null
+  // En las máquinas asistidas el peso es la ayuda: ahí solo cuentan las repeticiones.
+  const sets = planned.sets.filter((s) => !s.warmup).map((s) => (planned.assisted ? { ...s, weight: 0 } : s))
+  const top = sets.reduce<SetEntry | undefined>((a, b) => (!a || b.weight > a.weight ? b : a), undefined)
+  if (!top || (top.weight === 0 && top.reps === 0)) return <span className="ex-last"><span className="tiny muted">{t('Primera vez', 'First time')}</span></span>
+  const auto = planned.auto
+  const why = planned.deload ? t('Descarga', 'Deload')
+    : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
+      : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
+        : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
+          : auto?.kind === 'hold' ? t('Repite el peso', 'Repeat the weight')
+            : t('Como la última vez', 'Same as last time')
+  return (
+    <span className="ex-last">
+      <strong>{top.weight > 0 ? `${weight(top.weight, unit)} × ${top.reps}` : `${top.reps} reps`}</strong>
+      <span className={`tiny ${auto?.kind === 'up' ? 'up' : 'muted'}`}>{why}</span>
+    </span>
   )
 }
 
@@ -175,9 +209,13 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const [detail, setDetail] = useState<string>()
   const [toast, showToast] = useToast()
   const [qrSheet, openQr] = useQr(showToast)
+  const catalog = useCatalog()
+  const planned = useMemo(() => (routine ? previewRoutine(routine, data) : []), [routine, data])
   if (!routine) return <><NavBar showBack /><div className="screen with-nav"><Empty icon={ClipboardList} title={t('Rutina eliminada', 'Routine deleted')} message="" /></div></>
-  const last = lastPerformed(data, routine.id)
+  const unit = data.settings.unit
+  const last = finishedSessions(data).find((s) => s.routineId === routine.id)
   const detailSlots = groupSlots(routine.exercises)
+  const muscles = routine.exercises.map((e) => ({ muscle: e.muscle, secondaryMuscles: catalog.get(e.exerciseId)?.secondaryMuscles ?? [] }))
 
   const duplicate = () => {
     update((d) => {
@@ -187,15 +225,22 @@ export function RoutineDetailScreen({ id }: { id: string }) {
 
   return (
     <>
-      <NavBar showBack title={routine.name} right={<button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones', 'Options')}><Ellipsis size={20} /></button>} />
+      <NavBar showBack right={<>
+        <button className="icon-btn" onClick={() => setEditing(true)} aria-label={t('Editar rutina', 'Edit routine')}><Pencil size={18} /></button>
+        <button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones', 'Options')}><Ellipsis size={20} /></button>
+      </>} />
       <div className="screen with-nav">
+        <header className="ex-head">
+          <h1 className="ex-title">{routine.name}</h1>
+          <span className="muted">{routine.programName ?? t('Mis rutinas', 'My routines')} · {last ? t(`Última vez ${relative(last.start).toLowerCase()}`, `Last done ${relative(last.start).toLowerCase()}`) : t('Aún sin estrenar', 'Not done yet')}</span>
+        </header>
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
           { value: routineSets(routine), label: t('Series', 'Sets') },
           { value: `~${routineMinutes(routine)}′`, label: t('Duración', 'Duration') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
-        <div className="list-header">{t('Ejercicios', 'Exercises')}</div>
+        <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Hoy toca', 'Today')}</span>}</div>
         <div className="list">
           {routine.exercises.length === 0 && (
             <button className="list-row accent" onClick={() => setEditing(true)}><Plus size={20} /> {t('Añadir ejercicios', 'Add exercises')}</button>
@@ -215,11 +260,35 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                     {e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, data.settings.unit)}` : ''}` : targetText(e)} · {slot.letter && !slot.last ? t('sin descanso', 'no rest') : `${t('descanso', 'rest')} ${rest(e.rest)}`}
                   </span>
                 </span>
+                {planned[i] && <TodayTarget planned={planned[i]} unit={unit} />}
               </button>
             )
           })}
         </div>
-        {last && <p className="small muted" style={{ margin: 0 }}>{t('Último entrenamiento', 'Last workout')}: {day(last)}</p>}
+        {routine.exercises.some((e) => e.progression) && (
+          <p className="list-footer" style={{ margin: '-8px 4px 0' }}>
+            {t('Con progresión automática, el peso sube solo cuando completas todas las repeticiones. Puedes cambiarlo durante el entrenamiento.', 'With automatic progression, the weight goes up when you complete all the reps. You can change it during the workout.')}
+          </p>
+        )}
+        {routine.exercises.length > 0 && (
+          <Card title={t('Músculos que trabaja', 'Muscles worked')}>
+            <RoutineMuscleMap exercises={muscles} label={`${t('Músculos que trabaja', 'Muscles worked')}: ${routine.name}`} />
+          </Card>
+        )}
+        {last && (
+          <>
+            <div className="list-header">{t('Última vez', 'Last time')}</div>
+            <div className="list">
+              <button className="list-row" onClick={() => navigate('progress', 'session', last.id)}>
+                <span className="grow">
+                  <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
+                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
+                </span>
+                <ChevronRight size={18} className="chevron" />
+              </button>
+            </div>
+          </>
+        )}
         <div className="bottom-action">
           <button className="btn primary block" disabled={!routine.exercises.length} onClick={() => startRoutine(routine)}>
             <Play size={19} fill="currentColor" /> {t('Empezar entrenamiento', 'Start workout')}

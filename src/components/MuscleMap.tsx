@@ -115,6 +115,22 @@ export function MuscleMap({ exercise }: { exercise: Muscles & Pick<Exercise, 'na
 }
 
 /** Series semanales a partir de las que un músculo se considera bien trabajado, poco o nada. */
+/** Músculos de varios ejercicios (una rutina): principales y secundarios de todos juntos. */
+export function RoutineMuscleMap({ exercises, label }: { exercises: Muscles[]; label: string }) {
+  const primary = new Set(exercises.map((e) => e.muscle))
+  const secondary = new Set(exercises.flatMap((e) => e.secondaryMuscles).filter((m) => !primary.has(m)))
+  const paint = (name: string): Paint => (primary.has(alias(name)) ? 'p' : secondary.has(alias(name)) ? 's' : 'm')
+  return (
+    <div className="muscle-map">
+      <Views paint={paint} label={label} />
+      <div className="mm-legend">
+        <span><i className="mm-key-primary" /> {t('Principal', 'Primary')}</span>
+        {secondary.size > 0 && <span><i className="mm-key-secondary" /> {t('Secundarios', 'Secondary')}</span>}
+      </div>
+    </div>
+  )
+}
+
 export const HEAT_LEVELS = { high: 10, medium: 4 }
 
 export function heatPaint(load: Record<string, number>): (name: string) => Paint {

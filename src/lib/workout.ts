@@ -182,6 +182,12 @@ function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
   return e
 }
 
+/** Lo que propondrá cada ejercicio al empezar la rutina (los mismos cálculos), para enseñarlo antes. */
+export function previewRoutine(routine: Routine, d: AppData): SessionExercise[] {
+  const history = finishedSessions(d)
+  return routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit)))
+}
+
 export function startRoutine(routine: Routine) {
   if (activeSession(getData())) return openWorkout()
   update((d) => {

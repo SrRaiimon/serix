@@ -2344,3 +2344,13 @@ html.scroll-locked body {
 /* Ficha: la figura, más baja para que el historial se vea sin bajar. */
 .ex-head ~ .move-figure svg, .ex-head ~ .move-figure .move-figure-placeholder { max-width: 230px; }
 textarea { resize: none; }
+
+/* MARK: Rutinas */
+.routine-row { padding-right: 14px; }
+.routine-main { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; padding: 0; color: inherit; }
+.routine-main:active { opacity: 0.6; }
+.routine-next { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.routine-next::before { content: ''; width: 8px; height: 10px; background: var(--accent); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+.routine-play { flex-shrink: 0; }
+.routine-play.go { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.ex-last .up { color: var(--text); font-weight: 700; }

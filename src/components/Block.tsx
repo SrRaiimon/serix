@@ -75,7 +75,7 @@ export function BlockCard() {
           {t(`${weeks - 1} semanas de carga + 1 de descarga.`, `${weeks - 1} loading weeks + 1 deload week.`)}{' '}
           {thisWeek ? t('Empieza esta semana.', 'Starts this week.') : t(`Empieza el lunes ${day(start).split(', ').pop()}, para no perder la primera semana.`, `Starts on Monday ${day(start).split(', ').pop()}, so the first week is not lost.`)}
         </span>
-        <button className="btn primary" onClick={() => updateSettings({ block: { start, weeks } })}>{thisWeek ? t('Empezar bloque', 'Start block') : t('Programar bloque', 'Schedule block')}</button>
+        <button className="btn secondary" onClick={() => updateSettings({ block: { start, weeks } })}>{thisWeek ? t('Empezar bloque', 'Start block') : t('Programar bloque', 'Schedule block')}</button>
       </Card>
     )
   }
