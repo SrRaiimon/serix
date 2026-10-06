@@ -104,12 +104,24 @@ function FoodTodayCard() {
         <strong className="grow">{t('Comidas de hoy', 'Food today')}</strong>
         <ChevronRight size={18} className="chevron" />
       </span>
-      <span>
-        <strong className="food-today-kcal">{int(totals.kcal)}</strong>
-        <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
-      </span>
-      {goals && <Progress value={totals.kcal} total={goals.kcal} />}
-      <span className="small muted">{t('Proteína', 'Protein')} {int(totals.p)}{goals ? ` / ${int(goals.protein)}` : ''} g</span>
+      {goals?.proteinOnly ? (
+        <>
+          <span>
+            <strong className="food-today-kcal">{int(totals.p)}</strong>
+            <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
+          </span>
+          <Progress value={totals.p} total={goals.protein} />
+        </>
+      ) : (
+        <>
+          <span>
+            <strong className="food-today-kcal">{int(totals.kcal)}</strong>
+            <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
+          </span>
+          {goals && <Progress value={totals.kcal} total={goals.kcal} />}
+          <span className="small muted">{t('Proteína', 'Protein')} {int(totals.p)}{goals ? ` / ${int(goals.protein)}` : ''} g</span>
+        </>
+      )}
     </button>
   )
 }

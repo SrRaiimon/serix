@@ -235,6 +235,7 @@ function nutritionGoals(v: unknown): NutritionGoals | undefined {
     kcal, protein, carbs, fat,
     sex: oneOf(v.sex, ['m', 'f'] as const), age: optNum(v.age, 10, 110), heightCm: optNum(v.heightCm, 100, 250),
     weightKg: optNum(v.weightKg, 25, 400), activity: optNum(v.activity, 1, 2.5), aim: oneOf(v.aim, ['lose', 'keep', 'gain'] as const),
+    proteinOnly: v.proteinOnly === true ? true : undefined,
   }
 }
 

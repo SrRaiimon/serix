@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, matches, parseOffProduct, recentFoods, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, computeGoals, dayKey, dayTotals, matches, parseOffProduct, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -100,5 +100,36 @@ test('lista básica: valores coherentes con sus calorías (factores de la UE)', 
     const calc = 4 * f.p + 4 * f.c + 9 * f.f + 2 * (f.fiber ?? 0)
     const alcohol = ['beer', 'wine'].includes(f.id)
     if (!alcohol) assert.ok(Math.abs(calc - f.kcal) <= Math.max(15, f.kcal * 0.12), `${f.id}: ${f.kcal} kcal frente a ${Math.round(calc)}`)
+  }
+})
+
+test('totales: suman lo que se ve en cada fila (sin desajustes por decimales)', () => {
+  // 3 alimentos de 100,4 kcal: cada fila muestra 100 y el día, 300 (no 301).
+  const items = [1, 2, 3].map(() => ({ grams: 100, per100: { kcal: 100.4, p: 10.04, c: 0, f: 0 } }))
+  assert.equal(dayTotals(items).kcal, 300)
+  assert.equal(Math.round(dayTotals(items).p * 10) / 10, 30)
+})
+
+test('búsqueda en Open Food Facts: solo productos con valores, sin repetir, y avisa si no responde', async () => {
+  const original = globalThis.fetch
+  let url = ''
+  const ok = (body: unknown) => (async (u: string) => { url = u; return new Response(JSON.stringify(body), { status: 200 }) }) as unknown as typeof fetch
+  const n = { 'energy-kcal_100g': 70, proteins_100g: 8, carbohydrates_100g: 4, fat_100g: 2 }
+  try {
+    globalThis.fetch = ok({ products: [
+      { code: '8480000213587', product_name_es: 'Griego ligero', brands: 'Hacendado', nutriments: n },
+      { code: '8480000213587', product_name_es: 'Repetido', nutriments: n },
+      { code: '1111111111116', product_name: 'Sin valores', nutriments: {} },
+    ] })
+    const found = await searchOff('griego ligero')
+    assert.ok(Array.isArray(found))
+    assert.deepEqual((found as { name: string }[]).map((p) => p.name), ['Griego ligero'])
+    assert.ok(url.includes('search_terms=griego%20ligero') && url.includes('tag_0=spain'))
+    globalThis.fetch = (async () => new Response('<html>no disponible</html>', { status: 503 })) as unknown as typeof fetch
+    assert.equal(await searchOff('x'), 'offline')
+    globalThis.fetch = (async () => { throw new TypeError('Failed to fetch') }) as unknown as typeof fetch
+    assert.equal(await searchOff('x'), 'offline')
+  } finally {
+    globalThis.fetch = original
   }
 })

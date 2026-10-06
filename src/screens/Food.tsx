@@ -1,11 +1,11 @@
-import { Barcode, ChevronLeft, ChevronRight, Ellipsis, Plus, Search, Target, Trash2, X } from 'lucide-react'
+import { Barcode, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, Plus, RotateCcw, Search, Target, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, parseDecimal, uid } from '../lib/format'
 import { lang, t } from '../lib/i18n'
 import {
   ACTIVITY, AIMS, amountOf, computeGoals, dayKey, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel,
-  recentFoods, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
+  recentFoods, searchOff, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
   type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
@@ -27,6 +27,7 @@ export function FoodScreen() {
   const entries = useMemo(() => data.nutrition.entries.filter((e) => e.day === day).sort((a, b) => a.at - b.at), [data.nutrition.entries, day])
   const totals = dayTotals(entries)
   const target = data.settings.nutrition
+  const proteinOnly = target?.proteinOnly === true
   const dayLabel = day === today ? t('Hoy', 'Today') : day === shiftDay(today, -1) ? t('Ayer', 'Yesterday') : longDay(fromDayKey(day))
 
   const copyFrom = (meal: MealKey, from: string) => {
@@ -49,7 +50,7 @@ export function FoodScreen() {
   return (
     <div className="screen">
       <LargeTitle title={t('Comidas', 'Food')} actions={
-        <button className="icon-btn" onClick={() => setGoals(true)} aria-label={t('Objetivo diario', 'Daily goal')}><Target size={20} /></button>
+        <button className="btn secondary btn-sm" onClick={() => setGoals(true)} aria-label={t('Objetivo diario', 'Daily goal')}><Target size={17} /> {t('Objetivo', 'Goal')}</button>
       } />
       <div className="day-switch">
         <button className="icon-btn" onClick={() => setDay(shiftDay(day, -1))} aria-label={t('Día anterior', 'Previous day')}><ChevronLeft size={20} /></button>
@@ -67,12 +68,13 @@ export function FoodScreen() {
 
       {MEALS.map((meal) => {
         const items = entries.filter((e) => e.meal === meal)
-        const kcal = dayTotals(items).kcal
+        const sums = dayTotals(items)
+        const fromYesterday = items.length ? 0 : data.nutrition.entries.filter((e) => e.day === shiftDay(day, -1) && e.meal === meal).length
         return (
           <section key={meal} className="meal">
             <div className="list-header">
               <span className="grow">{mealLabel(meal)}</span>
-              {items.length > 0 && <span>{int(kcal)} kcal</span>}
+              {items.length > 0 && <span>{proteinOnly ? t(`${g(sums.p)} g proteína`, `${g(sums.p)} g protein`) : `${int(sums.kcal)} kcal`}</span>}
               <button className="nav-btn" style={{ padding: 0, minHeight: 0 }} onClick={() => setMealMenu(meal)} aria-label={t(`Opciones de ${mealLabel(meal)}`, `${mealLabel(meal)} options`)}><Ellipsis size={20} /></button>
             </div>
             <div className="list">
@@ -82,12 +84,17 @@ export function FoodScreen() {
                   <button key={e.id} className="list-row" onClick={() => setEditing(e)}>
                     <span className="grow" style={{ minWidth: 0 }}>
                       <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
-                      <span className="small muted">{g(e.grams)} g · {t(`prot. ${g(v.p)} · hid. ${g(v.c)} · grasa ${g(v.f)}`, `prot. ${g(v.p)} · carbs ${g(v.c)} · fat ${g(v.f)}`)}</span>
+                      <span className="small muted">{proteinOnly ? `${g(e.grams)} g` : `${g(e.grams)} g · ${t(`prot. ${g(v.p)} · hid. ${g(v.c)} · grasa ${g(v.f)}`, `prot. ${g(v.p)} · carbs ${g(v.c)} · fat ${g(v.f)}`)}`}</span>
                     </span>
-                    <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>
+                    {proteinOnly ? <strong className="food-kcal">{g(v.p)}<small> g prot.</small></strong> : <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>}
                   </button>
                 )
               })}
+              {fromYesterday > 0 && (
+                <button className="list-row" onClick={() => copyFrom(meal, shiftDay(day, -1))}>
+                  <RotateCcw size={18} /> <span className="grow">{t(`Repetir lo de ayer (${fromYesterday})`, `Repeat yesterday's (${fromYesterday})`)}</span>
+                </button>
+              )}
               <button className="list-row accent" onClick={() => setAdding(meal)}><Plus size={20} /> {t('Añadir', 'Add')}</button>
             </div>
           </section>
@@ -118,7 +125,7 @@ export function FoodScreen() {
         )
       })()}
       {adding && <AddFoodSheet day={day} meal={adding} onClose={() => setAdding(undefined)} onAdded={(text) => showToast(text)} />}
-      {editing && <EntrySheet entry={editing} onClose={() => setEditing(undefined)} />}
+      {editing && <EntrySheet entry={editing} day={entries} goals={target} onClose={() => setEditing(undefined)} />}
       {goals && <GoalsSheet onClose={() => setGoals(false)} />}
       {toast}
     </div>
@@ -129,6 +136,23 @@ export function FoodScreen() {
 function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }) {
   const left = goals.kcal - totals.kcal
   const pct = (v: number, total: number) => (total > 0 ? Math.min(100, (v / total) * 100) : 0)
+  if (goals.proteinOnly) {
+    const missing = goals.protein - totals.p
+    return (
+      <div className="card food-summary">
+        <div className="food-kcal-row">
+          <span>
+            <strong className="food-big">{g(totals.p)}</strong>
+            <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
+          </span>
+          <span className="small muted">{missing > 0 ? t(`Faltan ${g(missing)} g`, `${g(missing)} g to go`) : t('Objetivo cumplido', 'Goal reached')}</span>
+        </div>
+        <div className="food-bar" role="progressbar" aria-label={t('Proteína del día', 'Protein today')} aria-valuemin={0} aria-valuemax={goals.protein} aria-valuenow={Math.round(totals.p)}>
+          <div style={{ transform: `scaleX(${pct(totals.p, goals.protein) / 100})` }} />
+        </div>
+      </div>
+    )
+  }
   const macros = [
     { label: t('Proteína', 'Protein'), value: totals.p, goal: goals.protein },
     { label: t('Hidratos', 'Carbs'), value: totals.c, goal: goals.carbs },
@@ -189,24 +213,49 @@ const fromMine = (f: MyFood): Pickable => ({
 
 type View = { kind: 'list' } | { kind: 'amount'; food: Pickable } | { kind: 'scan' } | { kind: 'create'; barcode?: string; name?: string }
 
-function AddFoodSheet({ day, meal, onClose, onAdded }: { day: string; meal: MealKey; onClose: () => void; onAdded: (text: string) => void }) {
+function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: string; meal: MealKey; onClose: () => void; onAdded: (text: string) => void }) {
   const data = useData()
   const [view, setView] = useState<View>({ kind: 'list' })
+  const [meal, setMeal] = useState(initialMeal)
   const [query, setQuery] = useState('')
   const [basic, setBasic] = useState<BasicFood[]>()
   const [basicError, setBasicError] = useState(false)
+  const [off, setOff] = useState<{ query: string; state: 'loading' | 'offline' | ScannedProduct[] }>()
+  const abort = useRef<AbortController>(null)
   useEffect(() => { loadBasicFoods().then(setBasic).catch(() => setBasicError(true)) }, [])
+  useEffect(() => () => abort.current?.abort(), [])
+  const goals = data.settings.nutrition
+  const dayEntries = data.nutrition.entries.filter((e) => e.day === day)
 
-  const add = (food: Pickable, grams: number) => {
+  const add = (food: Pickable, grams: number, close = true) => {
     update((d) => {
       d.nutrition.entries.push({ id: uid(), day, meal, name: food.name, grams, per100: food.per100, ref: food.ref, at: Date.now() })
     })
     onAdded(t(`Añadido a ${mealLabel(meal).toLowerCase()}: ${food.name}`, `Added to ${mealLabel(meal).toLowerCase()}: ${food.name}`))
-    onClose()
+    if (close) onClose()
+  }
+  /** Un producto de Open Food Facts se guarda en «Mis alimentos» (una vez) y se elige la cantidad. */
+  const pickProduct = (product: ScannedProduct) => {
+    const known = data.nutrition.foods.find((f) => f.barcode === product.barcode)
+    const food: MyFood = known ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
+    if (!known) update((d) => { d.nutrition.foods.push(food) })
+    setView({ kind: 'amount', food: fromMine(food) })
+  }
+  const searchOnline = async (text: string) => {
+    abort.current?.abort()
+    abort.current = new AbortController()
+    setOff({ query: text, state: 'loading' })
+    try {
+      setOff({ query: text, state: await searchOff(text, abort.current.signal) })
+    } catch {
+      /* cancelada */
+    }
   }
 
+  const mealPicker = <Segmented value={meal} onChange={setMeal} options={MEALS.map((m) => ({ value: m, label: mealLabel(m) }))} />
   if (view.kind === 'amount') {
-    return <AmountSheet food={view.food} title={mealLabel(meal)} onBack={() => setView({ kind: 'list' })} onClose={onClose} onSave={(grams) => add(view.food, grams)} />
+    return <AmountSheet food={view.food} title={t('Añadir', 'Add')} onBack={() => setView({ kind: 'list' })} onClose={onClose} onSave={(grams) => add(view.food, grams)}
+      dayEntries={dayEntries} goals={goals} extra={mealPicker} />
   }
   if (view.kind === 'scan') {
     return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose}
@@ -219,10 +268,19 @@ function AddFoodSheet({ day, meal, onClose, onAdded }: { day: string; meal: Meal
   }
 
   const q = query.trim()
-  const recent = recentFoods(data.nutrition.entries)
+  const proteinOnly = goals?.proteinOnly === true
+  const recent = q ? [] : recentFoods(data.nutrition.entries, 8)
   const mine = data.nutrition.foods.filter((f) => !q || matches(`${f.name} ${f.brand ?? ''}`, q))
   const saved = data.nutrition.meals.filter((m) => !q || matches(m.name, q))
   const basics = (basic ?? []).filter((f) => !q || matches(`${f.es} ${f.en}`, q))
+  const offResults = off && off.query === q && Array.isArray(off.state) ? off.state : undefined
+  const amountText = (per100: Per100, grams: number) => {
+    const v = amountOf(per100, grams)
+    return proteinOnly ? `${g(grams)} g · ${g(v.p)} g prot.` : `${g(grams)} g · ${int(v.kcal)} kcal`
+  }
+  const per100Text = (per100: Per100) => (proteinOnly
+    ? t(`100 g: ${g(per100.p)} g de proteína`, `100 g: ${g(per100.p)} g protein`)
+    : t(`100 g: ${int(per100.kcal)} kcal · ${g(per100.p)} g de proteína`, `100 g: ${int(per100.kcal)} kcal · ${g(per100.p)} g protein`))
   const addMeal = (id: string) => {
     const m = data.nutrition.meals.find((x) => x.id === id)
     if (!m) return
@@ -232,13 +290,12 @@ function AddFoodSheet({ day, meal, onClose, onAdded }: { day: string; meal: Meal
     onAdded(t(`Añadida: ${m.name}`, `Added: ${m.name}`))
     onClose()
   }
-  const row = (key: string, food: Pickable, right?: string) => (
+  const row = (key: string, food: Pickable, detail?: string) => (
     <button key={key} className="list-row" onClick={() => setView({ kind: 'amount', food })}>
-      <span className="grow" style={{ minWidth: 0 }}>
+      <span className="grow food-row-text">
         <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{food.name}</span>
-        <span className="small muted">{food.detail ? `${food.detail} · ` : ''}{t(`100 g: ${int(food.per100.kcal)} kcal · ${g(food.per100.p)} g de proteína`, `100 g: ${int(food.per100.kcal)} kcal · ${g(food.per100.p)} g protein`)}</span>
+        <span className="small muted clamp-1">{food.detail ? `${food.detail} · ` : ''}{detail ?? per100Text(food.per100)}</span>
       </span>
-      {right && <span className="small muted">{right}</span>}
     </button>
   )
 
@@ -248,34 +305,46 @@ function AddFoodSheet({ day, meal, onClose, onAdded }: { day: string; meal: Meal
       <div className="row">
         <label className="search grow">
           <Search size={18} />
-          <input type="search" placeholder={t('Buscar alimento', 'Search food')} value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input type="search" placeholder={t('Buscar alimento', 'Search food')} value={query} onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && q.length >= 3 && !basics.length && !mine.length) void searchOnline(q) }} />
           {query && <button onClick={() => setQuery('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
         </label>
         <button className="icon-btn" onClick={() => setView({ kind: 'scan' })} aria-label={t('Escanear código de barras', 'Scan barcode')}><Barcode size={20} /></button>
       </div>
 
-      {!q && recent.length > 0 && (
-        <>
-          <div className="list-header">{t('Recientes', 'Recent')}</div>
-          <div className="list">
-            {recent.map((e) => row(e.id, { name: e.name, per100: e.per100, portions: [], ref: e.ref, grams: e.grams }, `${g(e.grams)} g`))}
-          </div>
-        </>
-      )}
       {saved.length > 0 && (
         <>
           <div className="list-header">{t('Mis comidas', 'My meals')}</div>
           <div className="list">
             {saved.map((m) => {
-              const v = dayTotals(m.items.map((x) => ({ ...x, id: '', day: '', meal, at: 0 })))
+              const v = dayTotals(m.items)
               return (
                 <button key={m.id} className="list-row" onClick={() => addMeal(m.id)}>
-                  <span className="grow" style={{ minWidth: 0 }}>
+                  <span className="grow food-row-text">
                     <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{m.name}</span>
                     <span className="small muted clamp-1">{m.items.map((x) => x.name).join(', ')}</span>
                   </span>
-                  <span className="small muted">{int(v.kcal)} kcal</span>
+                  <span className="food-row-side">{proteinOnly ? `${g(v.p)} g prot.` : `${int(v.kcal)} kcal`}</span>
                 </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+      {recent.length > 0 && (
+        <>
+          <div className="list-header">{t('Recientes', 'Recent')}</div>
+          <div className="list">
+            {recent.map((e) => {
+              const food: Pickable = { name: e.name, per100: e.per100, portions: [], ref: e.ref, grams: e.grams }
+              return (
+                <div key={e.id} className="list-row quick-row">
+                  <button className="quick-main" onClick={() => setView({ kind: 'amount', food })}>
+                    <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
+                    <span className="small muted">{amountText(e.per100, e.grams)}</span>
+                  </button>
+                  <button className="icon-btn" onClick={() => add(food, e.grams, false)} aria-label={t(`Añadir ${g(e.grams)} g de ${e.name}`, `Add ${g(e.grams)} g of ${e.name}`)}><Plus size={19} /></button>
+                </div>
               )
             })}
           </div>
@@ -294,12 +363,35 @@ function AddFoodSheet({ day, meal, onClose, onAdded }: { day: string; meal: Meal
         {basic && q && basics.length === 0 && <div className="list-row small muted">{t('Sin resultados en la lista básica.', 'No results in the basic list.')}</div>}
         <button className="list-row accent" onClick={() => setView({ kind: 'create', name: q || undefined })}><Plus size={20} /> {q ? t(`Crear «${q}»`, `Create "${q}"`) : t('Crear alimento', 'Create food')}</button>
       </div>
+      {q.length >= 3 && (
+        <>
+          <div className="list-header">Open Food Facts</div>
+          <div className="list">
+            {offResults?.map((p) => (
+              <button key={p.barcode} className="list-row" onClick={() => pickProduct(p)}>
+                <span className="grow food-row-text">
+                  <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{p.name}</span>
+                  <span className="small muted clamp-1">{p.brand ? `${p.brand} · ` : ''}{per100Text(p.per100)}</span>
+                </span>
+              </button>
+            ))}
+            {offResults && offResults.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
+            {off?.query === q && off.state === 'offline' && <div className="list-row small muted">{t('Open Food Facts no responde ahora. Prueba más tarde o escanea el código.', 'Open Food Facts is not responding. Try later or scan the code.')}</div>}
+            {!(off?.query === q && off.state !== 'offline') && (
+              <button className="list-row accent" onClick={() => void searchOnline(q)}>
+                <Globe size={19} /> <span className="grow">{t(`Buscar «${q}» en Open Food Facts`, `Search "${q}" on Open Food Facts`)}<span className="small muted" style={{ display: 'block', fontWeight: 400 }}>{t('Productos envasados; solo se envía este texto', 'Packaged products; only this text is sent')}</span></span>
+              </button>
+            )}
+            {off?.query === q && off.state === 'loading' && <div className="list-row small muted">{t('Buscando…', 'Searching…')}</div>}
+          </div>
+        </>
+      )}
     </Sheet>
   )
 }
 
-/** Cantidad en gramos (con raciones de un toque) y lo que aporta. */
-function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDelete, extra }: {
+/** Cantidad en gramos (raciones de un toque, × 2 y × 3, − / +), lo que aporta y cómo queda el día. */
+function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDelete, extra, dayEntries, goals, editingId }: {
   food: Pickable
   title: string
   initialGrams?: number
@@ -308,13 +400,27 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
   onSave: (grams: number) => void
   onDelete?: () => void
   extra?: ReactNode
+  /** Lo apuntado ese día, para enseñar cómo queda tras añadirlo. */
+  dayEntries?: FoodEntry[]
+  goals?: NutritionGoals
+  /** Al editar, esa entrada no cuenta en «antes». */
+  editingId?: string
 }) {
   const start = initialGrams ?? food.grams ?? food.portions[0]?.g ?? 100
   const [text, setText] = useState(editable(start))
   const grams = parseDecimal(text) ?? 0
   const valid = grams > 0 && grams <= 5000
   const v = amountOf(food.per100, valid ? grams : 0)
-  const options = [...food.portions, ...(food.portions.some((p) => p.g === 100) ? [] : [{ label: '100 g', g: 100 }])]
+  const portion = food.portions[0]
+  const options: { label: string; g: number }[] = [
+    ...(portion ? [{ label: `${portion.label} · ${g(portion.g)} g`, g: portion.g }, { label: `× 2 · ${g(portion.g * 2)} g`, g: portion.g * 2 }, { label: `× 3 · ${g(portion.g * 3)} g`, g: portion.g * 3 }] : []),
+    ...(portion?.g === 100 ? [] : [{ label: '100 g', g: 100 }]),
+  ]
+  const step = portion && portion.g < 30 ? 5 : 10
+  const nudge = (dir: 1 | -1) => setText(editable(Math.max(0, Math.round(((valid ? grams : 0) + dir * step) / step) * step)))
+  const before = dayEntries ? dayTotals(dayEntries.filter((e) => e.id !== editingId)) : undefined
+  const after = before && valid ? { kcal: before.kcal + Math.round(v.kcal), p: before.p + v.p } : undefined
+  const proteinOnly = goals?.proteinOnly === true
   return (
     <Sheet title={title} onClose={onClose}
       left={onBack ? <button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button> : <button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}
@@ -323,33 +429,47 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
         <h2 className="ex-title" style={{ fontSize: 24 }}>{food.name}</h2>
         {food.detail && <span className="muted">{food.detail}</span>}
       </header>
-      <label className="list-row card-row amount-row">
-        <span className="grow bold">{t('Cantidad', 'Amount')}</span>
-        <input className="field" inputMode="decimal" value={text} onChange={(e) => setText(e.target.value)} aria-label={t('Cantidad en gramos', 'Amount in grams')} style={{ width: 96, textAlign: 'right' }} />
+      <div className="list-row card-row amount-row">
+        <label className="grow bold" htmlFor="food-grams">{t('Cantidad', 'Amount')}</label>
+        <button className="icon-btn" onClick={() => nudge(-1)} disabled={!valid || grams <= step} aria-label={t(`Quitar ${step} g`, `Remove ${step} g`)}><Minus size={17} /></button>
+        <input id="food-grams" className="field" inputMode="decimal" value={text} onChange={(e) => setText(e.target.value)} aria-label={t('Cantidad en gramos', 'Amount in grams')} style={{ width: 80, textAlign: 'right' }} />
         <span className="muted">g</span>
-      </label>
+        <button className="icon-btn" onClick={() => nudge(1)} aria-label={t(`Añadir ${step} g`, `Add ${step} g`)}><Plus size={17} /></button>
+      </div>
       {options.length > 0 && (
         <div className="chips">
           {options.map((p) => (
-            <button key={`${p.label}${p.g}`} className={`chip ${Math.abs(grams - p.g) < 0.05 ? 'active' : ''}`} onClick={() => setText(editable(p.g))}>
-              {p.label === '100 g' ? p.label : `${p.label} · ${g(p.g)} g`}
-            </button>
+            <button key={p.label} className={`chip ${Math.abs(grams - p.g) < 0.05 ? 'active' : ''}`} onClick={() => setText(editable(p.g))}>{p.label}</button>
           ))}
         </div>
       )}
-      <div className="stat-band food-band">
-        <div><strong>{int(v.kcal)}</strong><span>kcal</span></div>
-        <div><strong>{g(v.p)}</strong><span>{t('Proteína', 'Protein')}</span></div>
-        <div><strong>{g(v.c)}</strong><span>{t('Hidratos', 'Carbs')}</span></div>
-        <div><strong>{g(v.f)}</strong><span>{t('Grasa', 'Fat')}</span></div>
-      </div>
+      {proteinOnly ? (
+        <div className="stat-band">
+          <div><strong>{g(v.p)}</strong><span>{t('Proteína (g)', 'Protein (g)')}</span></div>
+          <div><strong>{g(grams)}</strong><span>{t('Gramos', 'Grams')}</span></div>
+        </div>
+      ) : (
+        <div className="stat-band food-band">
+          <div><strong>{int(v.kcal)}</strong><span>kcal</span></div>
+          <div><strong>{g(v.p)}</strong><span>{t('Proteína', 'Protein')}</span></div>
+          <div><strong>{g(v.c)}</strong><span>{t('Hidratos', 'Carbs')}</span></div>
+          <div><strong>{g(v.f)}</strong><span>{t('Grasa', 'Fat')}</span></div>
+        </div>
+      )}
+      {after && goals && (
+        <p className="small" style={{ margin: 0 }}>
+          {onDelete ? t('Con este cambio, hoy:', 'With this change, today:') : t('Tras añadirlo, hoy:', 'After adding it, today:')}{' '}
+          <strong>{proteinOnly ? t(`${g(after.p)} / ${int(goals.protein)} g de proteína`, `${g(after.p)} / ${int(goals.protein)} g protein`)
+            : t(`${int(after.kcal)} / ${int(goals.kcal)} kcal · proteína ${g(after.p)} / ${int(goals.protein)} g`, `${int(after.kcal)} / ${int(goals.kcal)} kcal · protein ${g(after.p)} / ${int(goals.protein)} g`)}</strong>
+        </p>
+      )}
       {extra}
       {onDelete && <button className="btn plain" style={{ color: 'var(--red-text)' }} onClick={onDelete}><Trash2 size={18} /> {t('Quitar', 'Remove')}</button>}
     </Sheet>
   )
 }
 
-function EntrySheet({ entry, onClose }: { entry: FoodEntry; onClose: () => void }) {
+function EntrySheet({ entry, day, goals, onClose }: { entry: FoodEntry; day: FoodEntry[]; goals?: NutritionGoals; onClose: () => void }) {
   const [meal, setMeal] = useState(entry.meal)
   const edit = (fn: (e: FoodEntry) => void) => update((d) => {
     const e = d.nutrition.entries.find((x) => x.id === entry.id)
@@ -357,6 +477,7 @@ function EntrySheet({ entry, onClose }: { entry: FoodEntry; onClose: () => void 
   })
   return (
     <AmountSheet food={{ name: entry.name, per100: entry.per100, portions: [], ref: entry.ref }} title={t('Editar', 'Edit')} initialGrams={entry.grams} onClose={onClose}
+      dayEntries={day} goals={goals} editingId={entry.id}
       onSave={(grams) => { edit((e) => { e.grams = grams; e.meal = meal }); onClose() }}
       onDelete={() => { onClose(); withUndo(t(`Quitado: ${entry.name}`, `Removed: ${entry.name}`), () => update((d) => { d.nutrition.entries = d.nutrition.entries.filter((x) => x.id !== entry.id) })) }}
       extra={<Segmented value={meal} onChange={setMeal} options={MEALS.map((m) => ({ value: m, label: mealLabel(m) }))} />} />
@@ -555,6 +676,7 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
   const [activity, setActivity] = useState(saved?.activity ?? 1.55)
   const [aim, setAim] = useState<Aim>(saved?.aim ?? defaultAim)
   const [manual, setManual] = useState(!!saved && saved.sex === undefined)
+  const [proteinOnly, setProteinOnly] = useState(saved?.proteinOnly === true)
   const [own, setOwn] = useState({ kcal: saved ? String(saved.kcal) : '', protein: saved ? String(saved.protein) : '', carbs: saved ? String(saved.carbs) : '', fat: saved ? String(saved.fat) : '' })
 
   const a = parseDecimal(age), h = parseDecimal(height), w = parseDecimal(weightText)
@@ -568,7 +690,7 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
   const result = manual ? ownGoals : computed
   const save = () => {
     if (!result) return
-    updateSettings({ nutrition: result })
+    updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) } })
     onClose()
   }
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
@@ -583,6 +705,11 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
     <Sheet title={t('Objetivo diario', 'Daily goal')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={<button className="btn primary block" disabled={!result} onClick={save}>{t('Guardar objetivo', 'Save goal')}</button>}>
+      <p className="food-health small" style={{ margin: 0 }}>
+        <HeartPulse size={16} />
+        <span>{t('Es una estimación, no una pauta médica. Si estás embarazada, tienes una enfermedad o tienes o has tenido un trastorno de la conducta alimentaria, consúltalo antes con un profesional sanitario.',
+          'This is an estimate, not medical advice. If you are pregnant, have an illness, or have or have had an eating disorder, talk to a health professional first.')}</span>
+      </p>
       <Segmented value={manual ? 'own' : 'calc'} onChange={(v) => setManual(v === 'own')}
         options={[{ value: 'calc', label: t('Calcularlo', 'Work it out') }, { value: 'own', label: t('Escribirlo yo', 'Set my own') }]} />
       {manual ? (
@@ -620,6 +747,13 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
           </div>
         </>
       )}
+      <label className="list-row card-row">
+        <span className="grow">
+          <span className="bold" style={{ display: 'block' }}>{t('Ver solo la proteína', 'Show protein only')}</span>
+          <span className="small muted">{t('Oculta las calorías y el resto: para comer bien sin contar.', 'Hides calories and the rest: eat well without counting.')}</span>
+        </span>
+        <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
+      </label>
       {result && (
         <div className="stat-band food-band">
           <div><strong>{int(result.kcal)}</strong><span>kcal</span></div>

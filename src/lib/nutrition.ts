@@ -78,6 +78,8 @@ export interface NutritionGoals {
   weightKg?: number
   activity?: number
   aim?: Aim
+  /** Ver solo la proteína (sin calorías ni el resto de macros), para quien no quiere contar calorías. */
+  proteinOnly?: boolean
 }
 
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
@@ -120,7 +122,21 @@ export function sum(items: Per100[]): Per100 {
 }
 
 export const entryTotals = (e: { per100: Per100; grams: number }) => amountOf(e.per100, e.grams)
-export const dayTotals = (entries: FoodEntry[]) => sum(entries.map(entryTotals))
+
+/**
+ * Totales para mostrar: cada alimento se redondea como se ve en su fila y se suman esos números, así
+ * las comidas y el día cuadran con lo que se lee (sin 1451 frente a 1452 por los decimales).
+ */
+export const dayTotals = (entries: { per100: Per100; grams: number }[]) => {
+  const parts = entries.map(entryTotals)
+  const r1 = (v: number) => Math.round(v * 10) / 10
+  return {
+    kcal: parts.reduce((n, x) => n + Math.round(x.kcal), 0),
+    p: parts.reduce((n, x) => n + r1(x.p), 0),
+    c: parts.reduce((n, x) => n + r1(x.c), 0),
+    f: parts.reduce((n, x) => n + r1(x.f), 0),
+  }
+}
 
 /** AAAA-MM-DD en hora local. */
 export function dayKey(d: Date | number = Date.now()): string {
@@ -233,6 +249,42 @@ export async function fetchOffProduct(barcode: string, signal?: AbortSignal): Pr
     if (r.status === 404) return undefined
     if (!r.ok) return 'offline'
     return parseOffProduct(barcode, await r.json(), lang())
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e
+    return 'offline'
+  }
+}
+
+/**
+ * Busca productos por nombre en Open Food Facts (solo se envía el texto). En español, solo los que se
+ * venden en España. Devuelve los que traen valores por 100 g; 'offline' si no responde.
+ */
+export async function searchOff(query: string, signal?: AbortSignal): Promise<ScannedProduct[] | 'offline'> {
+  const fields = 'code,product_name,product_name_es,product_name_en,generic_name,generic_name_es,brands,nutriments,serving_size,serving_quantity,serving_quantity_unit'
+  const country = lang() === 'es' ? '&tagtype_0=countries&tag_contains_0=contains&tag_0=spain' : ''
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=40&fields=${fields}${country}`
+  try {
+    // Su buscador a veces está saturado (503, sin cabeceras CORS: el navegador lo ve como error de red);
+    // un segundo intento al rato suele bastar.
+    let r = await fetch(url, { signal }).catch((e: Error) => { if (e.name === 'AbortError') throw e; return undefined })
+    if (!r?.ok) {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      r = await fetch(url, { signal })
+    }
+    if (!r.ok) return 'offline'
+    const data = (await r.json()) as { products?: Record<string, unknown>[] }
+    const seen = new Set<string>()
+    const out: ScannedProduct[] = []
+    for (const product of data.products ?? []) {
+      const code = typeof product.code === 'string' ? product.code : ''
+      if (!code || seen.has(code)) continue
+      const parsed = parseOffProduct(code, { product }, lang())
+      if (parsed) {
+        seen.add(code)
+        out.push(parsed)
+      }
+    }
+    return out.slice(0, 25)
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e
     return 'offline'
