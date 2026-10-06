@@ -1,11 +1,11 @@
-import { Barcode, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, Plus, RotateCcw, Search, Target, Trash2, X } from 'lucide-react'
+import { Barcode, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, parseDecimal, uid } from '../lib/format'
 import { lang, t } from '../lib/i18n'
 import {
   ACTIVITY, AIMS, amountOf, computeGoals, dayKey, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel,
-  recentFoods, searchOff, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
+  quickEntryAmount, recentFoods, searchOff, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
   type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
@@ -69,13 +69,14 @@ export function FoodScreen() {
       {MEALS.map((meal) => {
         const items = entries.filter((e) => e.meal === meal)
         const sums = dayTotals(items)
-        const fromYesterday = items.length ? 0 : data.nutrition.entries.filter((e) => e.day === shiftDay(day, -1) && e.meal === meal).length
+        const yesterdayItems = items.length ? [] : data.nutrition.entries.filter((e) => e.day === shiftDay(day, -1) && e.meal === meal)
+        const yesterdaySums = dayTotals(yesterdayItems)
         return (
           <section key={meal} className="meal">
             <div className="list-header">
               <span className="grow">{mealLabel(meal)}</span>
               {items.length > 0 && <span>{proteinOnly ? t(`${g(sums.p)} g proteína`, `${g(sums.p)} g protein`) : `${int(sums.kcal)} kcal`}</span>}
-              <button className="nav-btn" style={{ padding: 0, minHeight: 0 }} onClick={() => setMealMenu(meal)} aria-label={t(`Opciones de ${mealLabel(meal)}`, `${mealLabel(meal)} options`)}><Ellipsis size={20} /></button>
+              <button className="meal-more" onClick={() => setMealMenu(meal)} aria-label={t(`Opciones de ${mealLabel(meal)}`, `${mealLabel(meal)} options`)}><Ellipsis size={20} /></button>
             </div>
             <div className="list">
               {items.map((e) => {
@@ -84,15 +85,22 @@ export function FoodScreen() {
                   <button key={e.id} className="list-row" onClick={() => setEditing(e)}>
                     <span className="grow" style={{ minWidth: 0 }}>
                       <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
-                      <span className="small muted">{proteinOnly ? `${g(e.grams)} g` : `${g(e.grams)} g · ${t(`prot. ${g(v.p)} · hid. ${g(v.c)} · grasa ${g(v.f)}`, `prot. ${g(v.p)} · carbs ${g(v.c)} · fat ${g(v.f)}`)}`}</span>
+                      <span className="small muted">{[e.ref?.kind === 'quick' ? t('A mano', 'Manual') : `${g(e.grams)} g`, ...(proteinOnly ? [] : [t(`prot. ${g(v.p)} · hid. ${g(v.c)} · grasa ${g(v.f)}`, `prot. ${g(v.p)} · carbs ${g(v.c)} · fat ${g(v.f)}`)])].join(' · ')}</span>
                     </span>
                     {proteinOnly ? <strong className="food-kcal">{g(v.p)}<small> g prot.</small></strong> : <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>}
                   </button>
                 )
               })}
-              {fromYesterday > 0 && (
+              {yesterdayItems.length > 0 && (
                 <button className="list-row" onClick={() => copyFrom(meal, shiftDay(day, -1))}>
-                  <RotateCcw size={18} /> <span className="grow">{t(`Repetir lo de ayer (${fromYesterday})`, `Repeat yesterday's (${fromYesterday})`)}</span>
+                  <RotateCcw size={18} />
+                  <span className="grow food-row-text">
+                    <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Repetir lo de ayer', "Repeat yesterday's")}</span>
+                    <span className="small muted">
+                      {yesterdayItems.length === 1 ? yesterdayItems[0].name : t(`${yesterdayItems[0].name} y ${yesterdayItems.length - 1} más`, `${yesterdayItems[0].name} and ${yesterdayItems.length - 1} more`)}
+                      {' · '}{proteinOnly ? `${g(yesterdaySums.p)} g prot.` : `${int(yesterdaySums.kcal)} kcal`}
+                    </span>
+                  </span>
                 </button>
               )}
               <button className="list-row accent" onClick={() => setAdding(meal)}><Plus size={20} /> {t('Añadir', 'Add')}</button>
@@ -211,7 +219,7 @@ const fromMine = (f: MyFood): Pickable => ({
   ref: f.source === 'off' && f.barcode ? { kind: 'off', id: f.barcode } : { kind: 'mine', id: f.id },
 })
 
-type View = { kind: 'list' } | { kind: 'amount'; food: Pickable } | { kind: 'scan' } | { kind: 'create'; barcode?: string; name?: string }
+type View = { kind: 'list' } | { kind: 'amount'; food: Pickable } | { kind: 'scan' } | { kind: 'create'; barcode?: string; name?: string } | { kind: 'quick'; name?: string }
 
 function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: string; meal: MealKey; onClose: () => void; onAdded: (text: string) => void }) {
   const data = useData()
@@ -241,6 +249,14 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
     if (!known) update((d) => { d.nutrition.foods.push(food) })
     setView({ kind: 'amount', food: fromMine(food) })
   }
+  /** Añadir de un toque la ración del envase (y guardar el producto en «Mis alimentos»). */
+  const addProduct = (product: ScannedProduct) => {
+    if (!product.portion) return
+    const known = data.nutrition.foods.find((f) => f.barcode === product.barcode)
+    const food: MyFood = known ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
+    if (!known) update((d) => { d.nutrition.foods.push(food) })
+    add(fromMine(food), product.portion.g, false)
+  }
   const searchOnline = async (text: string) => {
     abort.current?.abort()
     abort.current = new AbortController()
@@ -262,6 +278,13 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
       onFound={(f) => setView({ kind: 'amount', food: fromMine(f) })}
       onMissing={(barcode) => setView({ kind: 'create', barcode })} />
   }
+  if (view.kind === 'quick') {
+    return <QuickEntrySheet initialName={view.name} meal={meal} onBack={() => setView({ kind: 'list' })} onClose={onClose}
+      onSave={(name, total) => {
+        const { grams, per100 } = quickEntryAmount(total)
+        add({ name, per100, portions: [], ref: { kind: 'quick', id: uid() } }, grams)
+      }} />
+  }
   if (view.kind === 'create') {
     return <MyFoodSheet barcode={view.barcode} initialName={view.name} onBack={() => setView({ kind: 'list' })} onClose={onClose}
       onSaved={(f) => setView({ kind: 'amount', food: fromMine(f) })} />
@@ -276,7 +299,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
   const offResults = off && off.query === q && Array.isArray(off.state) ? off.state : undefined
   const amountText = (per100: Per100, grams: number) => {
     const v = amountOf(per100, grams)
-    return proteinOnly ? `${g(grams)} g · ${g(v.p)} g prot.` : `${g(grams)} g · ${int(v.kcal)} kcal`
+    return proteinOnly ? `${g(grams)} g · ${g(v.p)} g prot.` : `${g(grams)} g · ${int(v.kcal)} kcal · ${g(v.p)} g prot.`
   }
   const per100Text = (per100: Per100) => (proteinOnly
     ? t(`100 g: ${g(per100.p)} g de proteína`, `100 g: ${g(per100.p)} g protein`)
@@ -319,12 +342,12 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
             {saved.map((m) => {
               const v = dayTotals(m.items)
               return (
-                <button key={m.id} className="list-row" onClick={() => addMeal(m.id)}>
+                <button key={m.id} className="list-row" onClick={() => addMeal(m.id)} aria-label={t(`Añadir ${m.name}`, `Add ${m.name}`)}>
                   <span className="grow food-row-text">
                     <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{m.name}</span>
-                    <span className="small muted clamp-1">{m.items.map((x) => x.name).join(', ')}</span>
+                    <span className="small muted">{proteinOnly ? `${g(v.p)} g prot.` : `${int(v.kcal)} kcal · ${g(v.p)} g prot.`} · {m.items.map((x) => x.name).join(', ')}</span>
                   </span>
-                  <span className="food-row-side">{proteinOnly ? `${g(v.p)} g prot.` : `${int(v.kcal)} kcal`}</span>
+                  <span className="icon-btn" aria-hidden="true"><Plus size={19} /></span>
                 </button>
               )
             })}
@@ -341,7 +364,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
                 <div key={e.id} className="list-row quick-row">
                   <button className="quick-main" onClick={() => setView({ kind: 'amount', food })}>
                     <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
-                    <span className="small muted">{amountText(e.per100, e.grams)}</span>
+                    <span className="small muted">{e.ref?.kind === 'quick' ? amountText(e.per100, e.grams).replace(/^[^·]+· /, `${t('A mano', 'Manual')} · `) : amountText(e.per100, e.grams)}</span>
                   </button>
                   <button className="icon-btn" onClick={() => add(food, e.grams, false)} aria-label={t(`Añadir ${g(e.grams)} g de ${e.name}`, `Add ${g(e.grams)} g of ${e.name}`)}><Plus size={19} /></button>
                 </div>
@@ -362,22 +385,28 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
         {basics.map((f) => row(f.id, fromBasic(f)))}
         {basic && q && basics.length === 0 && <div className="list-row small muted">{t('Sin resultados en la lista básica.', 'No results in the basic list.')}</div>}
         <button className="list-row accent" onClick={() => setView({ kind: 'create', name: q || undefined })}><Plus size={20} /> {q ? t(`Crear «${q}»`, `Create "${q}"`) : t('Crear alimento', 'Create food')}</button>
+        <button className="list-row accent" onClick={() => setView({ kind: 'quick', name: q || undefined })}><PenLine size={19} /> {t('Apuntar calorías y macros a mano', 'Log calories and macros by hand')}</button>
       </div>
       {q.length >= 3 && (
         <>
           <div className="list-header">Open Food Facts</div>
           <div className="list">
             {offResults?.map((p) => (
-              <button key={p.barcode} className="list-row" onClick={() => pickProduct(p)}>
-                <span className="grow food-row-text">
+              <div key={p.barcode} className="list-row quick-row">
+                <button className="quick-main" onClick={() => pickProduct(p)}>
                   <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{p.name}</span>
-                  <span className="small muted clamp-1">{p.brand ? `${p.brand} · ` : ''}{per100Text(p.per100)}</span>
-                </span>
-              </button>
+                  <span className="small muted">{p.brand ? `${p.brand} · ` : ''}{p.portion ? `${p.portion.label}: ${amountText(p.per100, p.portion.g).split(' · ').slice(1).join(' · ')}` : per100Text(p.per100)}</span>
+                </button>
+                {p.portion && <button className="icon-btn" onClick={() => addProduct(p)} aria-label={t(`Añadir ${p.portion.label} de ${p.name}`, `Add ${p.portion.label} of ${p.name}`)}><Plus size={19} /></button>}
+              </div>
             ))}
             {offResults && offResults.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
-            {off?.query === q && off.state === 'offline' && <div className="list-row small muted">{t('Open Food Facts no responde ahora. Prueba más tarde o escanea el código.', 'Open Food Facts is not responding. Try later or scan the code.')}</div>}
-            {!(off?.query === q && off.state !== 'offline') && (
+            {off?.query === q && off.state === 'offline' ? (
+              <div className="list-row" style={{ flexWrap: 'wrap' }}>
+                <span className="grow small">{t('Open Food Facts está saturado ahora mismo (es un servicio gratuito de voluntarios). Puede volver a fallar; si no, escanea el código.', 'Open Food Facts is overloaded right now (a free volunteer service). It may fail again; otherwise scan the barcode.')}</span>
+                <button className="btn secondary btn-sm" onClick={() => void searchOnline(q)}><RotateCcw size={16} /> {t('Reintentar', 'Try again')}</button>
+              </div>
+            ) : !(off?.query === q) && (
               <button className="list-row accent" onClick={() => void searchOnline(q)}>
                 <Globe size={19} /> <span className="grow">{t(`Buscar «${q}» en Open Food Facts`, `Search "${q}" on Open Food Facts`)}<span className="small muted" style={{ display: 'block', fontWeight: 400 }}>{t('Productos envasados; solo se envía este texto', 'Packaged products; only this text is sent')}</span></span>
               </button>
@@ -437,7 +466,7 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
         <button className="icon-btn" onClick={() => nudge(1)} aria-label={t(`Añadir ${step} g`, `Add ${step} g`)}><Plus size={17} /></button>
       </div>
       {options.length > 0 && (
-        <div className="chips">
+        <div className="chips amount-chips">
           {options.map((p) => (
             <button key={p.label} className={`chip ${Math.abs(grams - p.g) < 0.05 ? 'active' : ''}`} onClick={() => setText(editable(p.g))}>{p.label}</button>
           ))}
@@ -451,19 +480,78 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
       ) : (
         <div className="stat-band food-band">
           <div><strong>{int(v.kcal)}</strong><span>kcal</span></div>
-          <div><strong>{g(v.p)}</strong><span>{t('Proteína', 'Protein')}</span></div>
-          <div><strong>{g(v.c)}</strong><span>{t('Hidratos', 'Carbs')}</span></div>
-          <div><strong>{g(v.f)}</strong><span>{t('Grasa', 'Fat')}</span></div>
+          <div><strong>{g(v.p)}</strong><span>{t('Proteína g', 'Protein g')}</span></div>
+          <div><strong>{g(v.c)}</strong><span>{t('Hidratos g', 'Carbs g')}</span></div>
+          <div><strong>{g(v.f)}</strong><span>{t('Grasa g', 'Fat g')}</span></div>
         </div>
       )}
-      {after && goals && (
-        <p className="small" style={{ margin: 0 }}>
-          {onDelete ? t('Con este cambio, hoy:', 'With this change, today:') : t('Tras añadirlo, hoy:', 'After adding it, today:')}{' '}
-          <strong>{proteinOnly ? t(`${g(after.p)} / ${int(goals.protein)} g de proteína`, `${g(after.p)} / ${int(goals.protein)} g protein`)
-            : t(`${int(after.kcal)} / ${int(goals.kcal)} kcal · proteína ${g(after.p)} / ${int(goals.protein)} g`, `${int(after.kcal)} / ${int(goals.kcal)} kcal · protein ${g(after.p)} / ${int(goals.protein)} g`)}</strong>
-        </p>
+      {after && before && goals && (
+        <div className="after-bars" aria-label={onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}>
+          <span className="tiny muted">{onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}</span>
+          {!proteinOnly && <AfterBar label="kcal" before={before.kcal} after={after.kcal} goal={goals.kcal} format={int} />}
+          <AfterBar label={t('Proteína', 'Protein')} before={before.p} after={after.p} goal={goals.protein} format={(x) => `${g(x)} g`} />
+        </div>
       )}
       {extra}
+      {onDelete && <button className="btn plain" style={{ color: 'var(--red-text)' }} onClick={onDelete}><Trash2 size={18} /> {t('Quitar', 'Remove')}</button>}
+    </Sheet>
+  )
+}
+
+/** Barra del día: lo que ya llevas y, marcado, lo que suma este alimento. */
+function AfterBar({ label, before, after, goal, format }: { label: string; before: number; after: number; goal: number; format: (v: number) => string }) {
+  const pct = (v: number) => (goal > 0 ? Math.min(100, Math.max(0, (v / goal) * 100)) : 0)
+  return (
+    <div className="after-bar">
+      <span className="row" style={{ justifyContent: 'space-between' }}>
+        <span className="small bold">{label}</span>
+        <span className={`small ${after > goal ? 'over' : ''}`}><strong>{format(after)}</strong><span className="muted"> / {format(goal)}</span></span>
+      </span>
+      <div className={`food-bar ${after > goal ? 'over' : ''}`} aria-hidden="true">
+        <div style={{ transform: `scaleX(${pct(Math.min(before, after)) / 100})` }} />
+        <div className="after-new" style={{ left: `${pct(Math.min(before, after))}%`, width: `${Math.max(0, pct(after) - pct(Math.min(before, after)))}%` }} />
+      </div>
+    </div>
+  )
+}
+
+/** Apuntar un plato sin buscar el alimento: calorías y macros totales (p. ej. comer fuera). */
+function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, onDelete }: {
+  initialName?: string
+  initial?: Per100
+  meal: MealKey
+  onBack?: () => void
+  onClose: () => void
+  onSave: (name: string, total: Per100) => void
+  onDelete?: () => void
+}) {
+  const fmt = (v?: number) => (v === undefined ? '' : editable(Math.round(v * 10) / 10))
+  const [name, setName] = useState(initialName ?? '')
+  const [values, setValues] = useState({ kcal: fmt(initial?.kcal), p: fmt(initial?.p), c: fmt(initial?.c), f: fmt(initial?.f) })
+  const num = (x: string) => (x.trim() === '' ? 0 : parseDecimal(x))
+  const parsed = { kcal: num(values.kcal), p: num(values.p), c: num(values.c), f: num(values.f) }
+  const ok = parsed.kcal !== null && parsed.kcal > 0 && parsed.kcal <= 5000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 500)
+  const field = (key: keyof typeof values, label: string, unit: string) => (
+    <label className="list-row">
+      <span className="grow">{label}</span>
+      <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
+      <span className="muted" style={{ width: 32 }}>{unit}</span>
+    </label>
+  )
+  return (
+    <Sheet title={t('Apuntar a mano', 'Log by hand')} onClose={onClose}
+      left={onBack ? <button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button> : <button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}
+      footer={<button className="btn primary block" disabled={!ok} onClick={() => onSave(name.trim().slice(0, 120) || t(`${mealLabel(meal)} (a mano)`, `${mealLabel(meal)} (manual)`), { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! })}>{onDelete ? t('Guardar', 'Save') : t('Añadir', 'Add')}</button>}>
+      <p className="small muted" style={{ margin: 0 }}>{t('Para un plato que no está en la lista (por ejemplo, comiendo fuera): escribe el total. Solo las calorías son obligatorias.', 'For a dish that is not in the list (for example, eating out): type the total. Only calories are required.')}</p>
+      <div className="list">
+        <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Qué era (opcional)', 'What it was (optional)')} onChange={(e) => setName(e.target.value)} /></label>
+      </div>
+      <div className="list">
+        {field('kcal', t('Calorías', 'Calories'), 'kcal')}
+        {field('p', t('Proteína', 'Protein'), 'g')}
+        {field('c', t('Hidratos', 'Carbs'), 'g')}
+        {field('f', t('Grasa', 'Fat'), 'g')}
+      </div>
       {onDelete && <button className="btn plain" style={{ color: 'var(--red-text)' }} onClick={onDelete}><Trash2 size={18} /> {t('Quitar', 'Remove')}</button>}
     </Sheet>
   )
@@ -475,6 +563,13 @@ function EntrySheet({ entry, day, goals, onClose }: { entry: FoodEntry; day: Foo
     const e = d.nutrition.entries.find((x) => x.id === entry.id)
     if (e) fn(e)
   })
+  const remove = () => { onClose(); withUndo(t(`Quitado: ${entry.name}`, `Removed: ${entry.name}`), () => update((d) => { d.nutrition.entries = d.nutrition.entries.filter((x) => x.id !== entry.id) })) }
+  if (entry.ref?.kind === 'quick') {
+    return (
+      <QuickEntrySheet initialName={entry.name} initial={entryTotals(entry)} meal={entry.meal} onClose={onClose} onDelete={remove}
+        onSave={(name, total) => { const { grams, per100 } = quickEntryAmount(total); edit((e) => { e.name = name; e.grams = grams; e.per100 = per100 }); onClose() }} />
+    )
+  }
   return (
     <AmountSheet food={{ name: entry.name, per100: entry.per100, portions: [], ref: entry.ref }} title={t('Editar', 'Edit')} initialGrams={entry.grams} onClose={onClose}
       dayEntries={day} goals={goals} editingId={entry.id}
@@ -710,6 +805,13 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
         <span>{t('Es una estimación, no una pauta médica. Si estás embarazada, tienes una enfermedad o tienes o has tenido un trastorno de la conducta alimentaria, consúltalo antes con un profesional sanitario.',
           'This is an estimate, not medical advice. If you are pregnant, have an illness, or have or have had an eating disorder, talk to a health professional first.')}</span>
       </p>
+      <label className="list-row card-row">
+        <span className="grow">
+          <span className="bold" style={{ display: 'block' }}>{t('Ver solo la proteína', 'Show protein only')}</span>
+          <span className="small muted">{t('Oculta las calorías y el resto: para comer bien sin contar.', 'Hides calories and the rest: eat well without counting.')}</span>
+        </span>
+        <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
+      </label>
       <Segmented value={manual ? 'own' : 'calc'} onChange={(v) => setManual(v === 'own')}
         options={[{ value: 'calc', label: t('Calcularlo', 'Work it out') }, { value: 'own', label: t('Escribirlo yo', 'Set my own') }]} />
       {manual ? (
@@ -747,13 +849,6 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
           </div>
         </>
       )}
-      <label className="list-row card-row">
-        <span className="grow">
-          <span className="bold" style={{ display: 'block' }}>{t('Ver solo la proteína', 'Show protein only')}</span>
-          <span className="small muted">{t('Oculta las calorías y el resto: para comer bien sin contar.', 'Hides calories and the rest: eat well without counting.')}</span>
-        </span>
-        <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
-      </label>
       {result && (
         <div className="stat-band food-band">
           <div><strong>{int(result.kcal)}</strong><span>kcal</span></div>

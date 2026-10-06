@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, matches, parseOffProduct, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, computeGoals, dayKey, dayTotals, matches, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -132,4 +132,24 @@ test('búsqueda en Open Food Facts: solo productos con valores, sin repetir, y a
   } finally {
     globalThis.fetch = original
   }
+})
+
+test('resultados de Open Food Facts: lo más parecido primero', () => {
+  const items = [
+    { name: 'Tsatsiki a base de yogur griego', brand: 'Hacendado' },
+    { name: 'Turrón Yogur con Frutos Rojos', brand: 'Hacendado' },
+    { name: 'Yogur natural 0%', brand: 'Hacendado' },
+    { name: 'Yogur sabor fresa', brand: 'Hacendado' },
+  ]
+  assert.deepEqual(rankProducts(items, 'hacendado yogur').map((p) => p.name).slice(0, 2), ['Yogur natural 0%', 'Yogur sabor fresa'])
+})
+
+test('apunte a mano: los totales se guardan con valores por 100 g dentro de lo normal', () => {
+  const small = quickEntryAmount({ kcal: 450, p: 20, c: 50, f: 15 })
+  assert.deepEqual(small, { grams: 100, per100: { kcal: 450, p: 20, c: 50, f: 15 } })
+  // Un plato grande: 1400 kcal y 160 g de hidratos se reparten en 200 g para no pasar de 1000 kcal o 100 g por 100 g.
+  const big = quickEntryAmount({ kcal: 1400, p: 60, c: 160, f: 50 })
+  assert.equal(big.grams, 200)
+  assert.deepEqual(amountOf(big.per100, big.grams), { kcal: 1400, p: 60, c: 160, f: 50 })
+  assert.ok(big.per100.kcal <= 1000 && big.per100.c <= 100)
 })

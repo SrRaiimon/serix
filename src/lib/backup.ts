@@ -187,7 +187,7 @@ function per100(v: unknown): Per100 | undefined {
 
 function foodRef(v: unknown): FoodRef | undefined {
   if (!isObj(v)) return undefined
-  const kind = oneOf(v.kind, ['basic', 'off', 'mine'] as const)
+  const kind = oneOf(v.kind, ['basic', 'off', 'mine', 'quick'] as const)
   return kind && typeof v.id === 'string' ? { kind, id: v.id.slice(0, 60) } : undefined
 }
 

@@ -22,7 +22,7 @@ export const mealLabel = (m: MealKey) => ({
 export interface Per100 { kcal: number; p: number; c: number; f: number }
 
 /** De dónde sale un alimento: lista básica (id), Open Food Facts (código de barras) o propio (id). */
-export interface FoodRef { kind: 'basic' | 'off' | 'mine'; id: string }
+export interface FoodRef { kind: 'basic' | 'off' | 'mine' | 'quick'; id: string }
 
 export interface FoodEntry {
   id: string
@@ -277,18 +277,46 @@ export async function searchOff(query: string, signal?: AbortSignal): Promise<Sc
     const out: ScannedProduct[] = []
     for (const product of data.products ?? []) {
       const code = typeof product.code === 'string' ? product.code : ''
-      if (!code || seen.has(code)) continue
-      const parsed = parseOffProduct(code, { product }, lang())
-      if (parsed) {
-        seen.add(code)
-        out.push(parsed)
-      }
+      const parsed = code ? parseOffProduct(code, { product }, lang()) : undefined
+      // Sin repetir: ni el mismo código ni el mismo producto (nombre y marca) con otro código.
+      const key = parsed && `${fold(parsed.name)}|${fold(parsed.brand ?? '')}`
+      if (!parsed || seen.has(code) || seen.has(key!)) continue
+      seen.add(code)
+      seen.add(key!)
+      out.push(parsed)
     }
-    return out.slice(0, 25)
+    return rankProducts(out, query).slice(0, 25)
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e
     return 'offline'
   }
+}
+
+/**
+ * Lo más parecido a lo buscado primero: el nombre con todas las palabras (sin contar la marca), que
+ * empiece por la primera palabra y sea corto («Yogur natural» antes que «Turrón de yogur»).
+ */
+export function rankProducts<T extends { name: string; brand?: string }>(items: T[], query: string): T[] {
+  const words = fold(query).split(/\s+/).filter(Boolean)
+  const score = (p: T) => {
+    const name = fold(p.name)
+    const brand = fold(p.brand ?? '')
+    const inName = words.filter((w) => name.includes(w)).length
+    const inBrand = words.filter((w) => !name.includes(w) && brand.includes(w)).length
+    const startsWithWord = words.some((w) => !brand.includes(w) && name.startsWith(w)) ? 2 : 0
+    return inName * 3 + inBrand + startsWithWord - name.length / 100
+  }
+  return items.map((p, i) => ({ p, i, s: score(p) })).sort((a, b) => b.s - a.s || a.i - b.i).map((x) => x.p)
+}
+
+/**
+ * Un apunte rápido (calorías y macros de un plato, sin alimento): se guarda como una cantidad cuyos
+ * valores por 100 g quedan dentro de lo normal, para que la copia de seguridad lo acepte igual.
+ */
+export function quickEntryAmount(total: Per100): { grams: number; per100: Per100 } {
+  const factor = Math.max(1, Math.ceil(Math.max(total.kcal / 900, total.p / 100, total.c / 100, total.f / 100)))
+  const grams = 100 * factor
+  return { grams, per100: { kcal: total.kcal / factor, p: total.p / factor, c: total.c / factor, f: total.f / factor } }
 }
 
 /** Códigos de producto válidos (EAN-8, UPC-A, EAN-13, ITF-14), con su dígito de control. */
