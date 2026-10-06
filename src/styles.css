@@ -610,11 +610,11 @@ a.list-row:active {
 
 .bottom-action {
   position: sticky;
-  bottom: calc(var(--safe-bottom) + 72px);
+  bottom: calc(var(--safe-bottom) + 62px);
   z-index: 10;
-  /* Fondo que funde lo que pasa por debajo: el botón no se lee encima del texto. */
+  /* Fondo que funde lo que pasa por debajo (y llega hasta la barra de pestañas): el botón no se lee encima del texto. */
   margin: 0 -16px;
-  padding: 24px 16px 8px;
+  padding: 24px 16px 18px;
   background: linear-gradient(to bottom, transparent, var(--bg) 40%);
   pointer-events: none;
 }
@@ -1615,7 +1615,7 @@ a.list-row:active {
 }
 
 .app.has-active .bottom-action {
-  bottom: calc(var(--safe-bottom) + 148px);
+  bottom: calc(var(--safe-bottom) + 138px);
 }
 
 html.scroll-locked,
@@ -2383,3 +2383,9 @@ textarea { resize: none; }
 .edit-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .edit-actions .nav-btn { font-size: 15px; }
 .block-offer { display: flex; flex-direction: row; align-items: center; gap: 12px; width: 100%; text-align: left; color: inherit; }
+/* Ficha de rutina: la rampa de calentamiento a todo el ancho, bajo el ejercicio. */
+.list-row.ex-plan { flex-wrap: wrap; row-gap: 6px; }
+.list-row.ex-plan > .grow { min-width: 0; flex: 1; }
+.warmup-line { flex-basis: 100%; display: block; padding-left: 62px; font-size: 12.5px; line-height: 1.35; color: var(--text-2); }
+.warmup-line svg { vertical-align: -2px; margin-right: 3px; }
+.warmup-line strong { color: var(--text); font-weight: 600; white-space: nowrap; }

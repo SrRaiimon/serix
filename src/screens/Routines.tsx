@@ -1,17 +1,17 @@
 import { BlockCard } from '../components/Block'
-import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Ellipsis, FilePlus2, Link2, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Zap, Link as LinkIcon } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
 import { BARS } from '../lib/plates'
-import { warmupSets } from '../lib/warmup'
+import { fromFloor, warmupSets } from '../lib/warmup'
 import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { expectedMinutes, finishedSessions, lastPerformed, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
-import { records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
+import { e1rm, records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
@@ -124,7 +124,6 @@ export function RoutinesScreen() {
         <ActionSheet onClose={() => setMenu(false)} options={[
           { section: t('Programas', 'Programs'), icon: Library, label: t('Biblioteca de programas', 'Program library'), hint: t('Programas probados, por nivel y material', 'Proven programs, by level and equipment'), onSelect: () => setLibrary(true) },
           { section: t('Programas', 'Programs'), icon: WandSparkles, label: t('Generar programa', 'Generate program'), hint: t('A medida: objetivo, días y minutos', 'Tailored: goal, days and minutes'), onSelect: () => setShowGenerator(true) },
-          ...(!data.settings.simpleMode ? [{ section: t('Programas', 'Programs'), icon: Zap, label: t('Programa 5/3/1', '5/3/1 program'), hint: t('Avanzado · fuerza en los cuatro básicos', 'Advanced · strength on the four main lifts'), onSelect: () => setShow531(true) }] : []),
           { section: t('Rutina', 'Routine'), icon: FilePlus2, label: t('Nueva rutina vacía', 'New empty routine'), hint: t('Eliges tú los ejercicios', 'You pick the exercises'), onSelect: createRoutine },
           { section: t('Rutina', 'Routine'), icon: LinkIcon, label: t('Importar desde enlace', 'Import from link'), hint: t('La que te ha pasado un amigo', 'One a friend sent you'), onSelect: importFromLink },
           { section: t('Sin rutina', 'No routine'), icon: Timer, label: t('Entrenamiento libre', 'Free workout'), hint: t('Empiezas ya y añades ejercicios sobre la marcha', 'Start now and add exercises as you go'), onSelect: startEmpty },
@@ -148,7 +147,7 @@ export function RoutinesScreen() {
       )}
       {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
       {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
-      {library && <LibrarySheet onClose={() => setLibrary(false)} />}
+      {library && <LibrarySheet onClose={() => setLibrary(false)} on531={data.settings.simpleMode ? undefined : () => { setLibrary(false); setShow531(true) }} />}
       {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
       {qrSheet}
       {toast}
@@ -185,10 +184,15 @@ const BARBELL = new Set(['barbell', 'ez-bar'])
 function WarmupLine({ planned, unit, barKg }: { planned: SessionExercise; unit: AppData['settings']['unit']; barKg?: number }) {
   if (trackingOf(planned) !== 'weight_reps' || planned.assisted) return null
   const work = planned.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
-  if (work < 60) return null
-  const ramp = warmupSets(work, unit, barKg)
+  // Con barra desde 40 kg (press militar incluido); con otro material, desde 60 kg.
+  if (work < (barKg ? 40 : 60)) return null
+  const ramp = warmupSets(work, unit, barKg, fromFloor(planned.exerciseId))
   if (ramp.length < 2) return null
-  return <span className="tiny muted" style={{ display: 'block', marginTop: 2 }}>{t('Calentamiento', 'Warm-up')}: {ramp.map((w) => editable(fromKg(w.weight, unit))).join(' · ')} {unit}</span>
+  return (
+    <span className="warmup-line">
+      <Flame size={13} />{t(`Calentamiento (${unit})`, `Warm-up (${unit})`)} <strong>{ramp.map((w) => `${editable(fromKg(w.weight, unit))}×${w.reps}`).join(' · ')}</strong>
+    </span>
+  )
 }
 
 /** Lo que te propondrá la app hoy en un ejercicio: el peso de la serie más pesada y por qué. */
@@ -204,7 +208,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
       : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
         : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
           : auto?.kind === 'hold' ? t('Repite el peso', 'Repeat the weight')
-            : t('Como la última vez', 'Same as last time')
+            : t('Igual que antes', 'Same as before')
   return (
     <span className="ex-last">
       <strong>{top.weight > 0 ? `${weight(top.weight, unit)} × ${top.reps}` : `${top.reps} reps`}</strong>
@@ -229,6 +233,9 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const detailSlots = groupSlots(routine.exercises)
   const duration = expectedMinutes(data, routine)
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
+  // La serie con el mayor 1RM estimado de la última vez.
+  const bestSet = last?.exercises.flatMap((e) => workingSets(e).filter((s) => s.weight > 0 && s.reps > 0).map((s) => ({ name: e.name, weight: s.weight, reps: s.reps, e1rm: e1rm(s.weight, s.reps) })))
+    .reduce<{ name: string; weight: number; reps: number; e1rm: number } | undefined>((a, b) => (!a || b.e1rm > a.e1rm ? b : a), undefined)
   const muscles = routine.exercises.map((e) => ({ muscle: e.muscle, secondaryMuscles: catalog.get(e.exerciseId)?.secondaryMuscles ?? [] }))
 
   const duplicate = () => {
@@ -246,7 +253,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
       <div className="screen with-nav">
         <header className="ex-head">
           <h1 className="ex-title">{routine.name}</h1>
-          <span className="muted">{routine.programName ?? t('Mis rutinas', 'My routines')} · {last ? t(`Última vez ${relative(last.start).toLowerCase()}`, `Last done ${relative(last.start).toLowerCase()}`) : t('Aún sin estrenar', 'Not done yet')}</span>
+          <span className="muted">{routine.programName ?? t('Mis rutinas', 'My routines')} · <span style={{ whiteSpace: 'nowrap' }}>{last ? t(`Última vez ${relative(last.start).toLowerCase()}`, `Last done ${relative(last.start).toLowerCase()}`) : t('Aún sin estrenar', 'Not done yet')}</span></span>
         </header>
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
@@ -255,6 +262,9 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Hoy toca', 'Today')}</span>}</div>
+        {routine.exercises.some((e) => e.progression) && (
+          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('El peso sube solo cuando completas todas las repeticiones.', 'The weight goes up when you complete all the reps.')}</p>
+        )}
         <div className="list">
           {routine.exercises.length === 0 && (
             <button className="list-row accent" onClick={() => setEditing(true)}><Plus size={20} /> {t('Añadir ejercicios', 'Add exercises')}</button>
@@ -262,7 +272,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
           {routine.exercises.map((e, i) => {
             const slot = detailSlots[i]
             return (
-              <button key={i} className="list-row" onClick={() => setDetail(e.exerciseId)}
+              <button key={i} className="list-row ex-plan" onClick={() => setDetail(e.exerciseId)}
                 style={slot.letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
                 <Thumb exerciseId={e.exerciseId} size={50} />
                 <span className="grow">
@@ -272,20 +282,15 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                   </span>
                   <span className="small muted row" style={{ gap: 6, flexWrap: 'wrap', rowGap: 0 }}>
                     <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : targetText(e)}</span>
-                    <span className="row" style={{ gap: 3 }} aria-label={t('Descanso', 'Rest')}><Clock size={12} /> {slot.letter && !slot.last ? t('sin descanso', 'no rest') : rest(e.rest)}</span>
+                    <span className="row" style={{ gap: 3, whiteSpace: 'nowrap' }} aria-label={t('Descanso', 'Rest')}><Clock size={12} /> {slot.letter && !slot.last ? t('sin descanso', 'no rest') : rest(e.rest)}</span>
                   </span>
-                  {planned[i] && <WarmupLine planned={planned[i]} unit={unit} barKg={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '') ? barKg : undefined} />}
                 </span>
                 {planned[i] && <TodayTarget planned={planned[i]} unit={unit} />}
+                {planned[i] && <WarmupLine planned={planned[i]} unit={unit} barKg={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '') ? barKg : undefined} />}
               </button>
             )
           })}
         </div>
-        {routine.exercises.some((e) => e.progression) && (
-          <p className="list-footer" style={{ margin: '-8px 4px 0' }}>
-            {t('Con progresión automática, el peso sube solo cuando completas todas las repeticiones. Puedes cambiarlo durante el entrenamiento. Calienta siempre antes de las series de trabajo: en el entrenamiento, el menú de cada ejercicio te las añade.', 'With automatic progression, the weight goes up when you complete all the reps. You can change it during the workout. Always warm up before your working sets: in the workout, each exercise menu adds them for you.')}
-          </p>
-        )}
         {routine.exercises.length > 0 && (
           <Card title={t('Músculos que trabaja', 'Muscles worked')}>
             <RoutineMuscleMap exercises={muscles} label={`${t('Músculos que trabaja', 'Muscles worked')}: ${routine.name}`} />
@@ -299,6 +304,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                 <span className="grow">
                   <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
                   <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('levantadas', 'lifted')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
+                  {bestSet && <span className="small" style={{ display: 'block' }}>{t('Mejor serie', 'Best set')}: <strong>{bestSet.name} {weight(bestSet.weight, unit)} × {bestSet.reps}</strong></span>}
                 </span>
                 <ChevronRight size={18} className="chevron" />
               </button>
@@ -349,7 +355,9 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
     const tracking = defaultTracking(e)
     return {
       exerciseId: e.id, name: e.name, muscle: e.muscle,
-      sets: base?.sets ?? 3, repsMin: base?.repsMin ?? 8, repsMax: base?.repsMax ?? 12, rest: base?.rest ?? data.settings.defaultRest,
+      sets: base?.sets ?? 3, repsMin: base?.repsMin ?? 8, repsMax: base?.repsMax ?? 12,
+      // Los básicos con barra (sentadilla, peso muerto, press…) piden descansos largos: al menos 3 min.
+      rest: base?.rest ?? (BARBELL.has(e.equipment) && e.category === 'strength' && !['arms', 'core'].includes(e.bodyPart) ? Math.max(180, data.settings.defaultRest) : data.settings.defaultRest),
       tracking, ...(tracking === 'time' ? { targetSeconds: defaultTargetSeconds } : {}),
     }
   }
@@ -379,8 +387,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
   const slots = groupSlots(routine.exercises)
 
   return (
-    <Sheet title={t('Editar rutina', 'Edit routine')} onClose={onClose}
-      right={<button className="nav-btn bold" onClick={done}>{t('Listo', 'Done')}</button>}
+    <Sheet title={t('Editar rutina', 'Edit routine')} onClose={done}
       footer={<button className="btn primary block" onClick={done}>{t('Listo', 'Done')}</button>}>
       <div className="list">
         <div className="list-row"><input className="grow" style={{ fontSize: 17 }} value={routine.name} placeholder={t('Nombre de la rutina', 'Routine name')} onChange={(e) => edit((r) => { r.name = e.target.value })} /></div>
@@ -392,11 +399,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
           const open = expanded === i
           const tracking = trackingOf(e)
           const noRest = !!slots[i].letter && !slots[i].last
-          const summary = [
-            targetText(e),
-            noRest ? t('sin descanso', 'no rest') : rest(e.rest),
-            tracking === 'weight_reps' ? progressionOptions().find((o) => o.id === (e.progression ?? ''))?.label : undefined,
-          ].filter(Boolean).join(' · ')
+          const summary = `${targetText(e)} · ${noRest ? t('sin descanso', 'no rest') : t(`${rest(e.rest)} de descanso`, `${rest(e.rest)} rest`)}`
           return (
           <div key={i} className={`list-row edit-row ${open ? 'open' : ''}`} style={slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
             {slots[i].letter && slots[i].first && (
@@ -438,12 +441,8 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                   <span className="small muted" style={{ padding: '6px 0' }}>{t('Ninguno', 'None')}</span>
                 </div>
               ) : (
-                <div className="stepper">
-                  <span className="tiny muted">{slots[i].letter ? t('Tras la ronda', 'After round') : t('Descanso', 'Rest')}</span>
-                  <select className="field" value={e.rest} onChange={(ev) => edit((r) => { r.exercises[i].rest = Number(ev.target.value) })}>
-                    {restOptions.map((o) => <option key={o} value={o}>{rest(o)}</option>)}
-                  </select>
-                </div>
+                <RestStepper label={slots[i].letter ? t('Tras la ronda', 'After round') : t('Descanso', 'Rest')} value={e.rest}
+                  onChange={(v) => edit((r) => { r.exercises[i].rest = v })} />
               )}
             </div>
             {tracking === 'weight_reps' && (
@@ -482,7 +481,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
               <button className="nav-btn" onClick={() => setReplacing(i)}><ArrowLeftRight size={17} /> {t('Sustituir', 'Replace')}</button>
               {i < routine.exercises.length - 1 && !noRest && (
                 <button className="nav-btn" onClick={() => edit((r) => linkWithNext(r.exercises, i))} aria-label={t('Hacer superserie con el siguiente', 'Superset with the next one')}>
-                  <Link2 size={17} /> {t('Superserie', 'Superset')}
+                  <Link2 size={17} /> {t('Superserie con el siguiente', 'Superset with next')}
                 </button>
               )}
               {slots[i].letter && (
@@ -640,6 +639,22 @@ function GeneratorSheet({ onClose }: { onClose: () => void }) {
   )
 }
 
+/** Descanso con − / + (los mismos pasos que en el resto de la app). */
+function RestStepper({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  // Si el valor no está entre las opciones (rutinas antiguas o importadas), se parte del más cercano.
+  const index = restOptions.reduce((best, o, i) => (Math.abs(o - value) < Math.abs(restOptions[best] - value) ? i : best), 0)
+  return (
+    <div className="stepper">
+      <span className="tiny muted">{label}</span>
+      <div className="control">
+        <button disabled={index === 0 && value <= restOptions[0]} onClick={() => onChange(restOptions[Math.max(0, value > restOptions[index] ? index : index - 1)])} aria-label={`${t('Menos', 'Less')} ${label}`}><Minus size={15} strokeWidth={3} /></button>
+        <span style={{ minWidth: 52, textAlign: 'center' }}>{rest(value)}</span>
+        <button disabled={index === restOptions.length - 1 && value >= restOptions[index]} onClick={() => onChange(restOptions[Math.min(restOptions.length - 1, value < restOptions[index] ? index : index + 1)])} aria-label={`${t('Más', 'More')} ${label}`}><Plus size={15} strokeWidth={3} /></button>
+      </div>
+    </div>
+  )
+}
+
 /** Qué hace cada progresión, en una línea. */
 const progressionHelp = (p: Progression | undefined) =>
   p === 'double' ? t('Cuando llegas a las reps máximas en todas las series, sube el peso y vuelves a las mínimas.', 'When you hit the max reps on every set, the weight goes up and you go back to the min reps.')
@@ -656,7 +671,7 @@ const progressionOptions = (): { id: Progression | ''; label: string }[] => [
 
 /** Crea el programa 5/3/1 (4 días) a partir del 1RM de los cuatro básicos. */
 /** Programas listos para usar (lib/generator.ts, LIBRARY): elegir, ver y añadir. */
-function LibrarySheet({ onClose }: { onClose: () => void }) {
+function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => void }) {
   const catalog = useCatalog()
   const data = useData()
   const [chosen, setChosen] = useState<LibraryProgram>()
@@ -718,6 +733,20 @@ function LibrarySheet({ onClose }: { onClose: () => void }) {
           </button>
         ))}
       </div>
+      {on531 && (
+        <>
+          <div className="list-header">{t('Avanzado', 'Advanced')}</div>
+          <div className="list">
+            <button className="list-row" onClick={on531}>
+              <span className="grow" style={{ textAlign: 'left' }}>
+                <span className="bold" style={{ display: 'block' }}>{t('5/3/1 de Jim Wendler · 4 días', 'Jim Wendler\'s 5/3/1 · 4 days')}</span>
+                <span className="small muted clamp-2">{t('Avanzado · Fuerza en los cuatro básicos con ciclos de 4 semanas. Necesitas saber tu 1RM.', 'Advanced · Strength on the four main lifts in 4-week cycles. You need to know your 1RM.')}</span>
+              </span>
+              <ChevronRight size={18} className="muted" />
+            </button>
+          </div>
+        </>
+      )}
     </Sheet>
   )
 }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { fromKg, increment, setWeightSteps, toKg } from '../src/lib/format'
 import { availablePlates, loadBar, stepFor } from '../src/lib/plates'
-import { warmupSets } from '../src/lib/warmup'
+import { fromFloor, warmupSets } from '../src/lib/warmup'
 
 test('discos: reparte de mayor a menor', () => {
   assert.deepEqual(loadBar(100, 20, 'kg'), { perSide: [25, 15], total: 100, missing: 0 })
@@ -26,6 +26,15 @@ test('calentamiento pesado: barra sola y rampa de tres series', () => {
   assert.deepEqual(warmupSets(100, 'kg', 20), [
     { weight: 20, reps: 10 }, { weight: 50, reps: 5 }, { weight: 70, reps: 3 }, { weight: 85, reps: 1 },
   ])
+})
+
+test('peso muerto desde el suelo: la rampa empieza con discos, sin la barra sola', () => {
+  assert.deepEqual(warmupSets(130, 'kg', 20, true), [{ weight: 65, reps: 5 }, { weight: 90, reps: 3 }, { weight: 110, reps: 1 }])
+  assert.deepEqual(['Barbell_Deadlift', 'Sumo_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Barbell_Deadlift', 'Rack_Pull_with_Bands', 'Barbell_Squat'].map(fromFloor), [true, true, false, false, false, false])
+})
+
+test('calentamiento: sin series casi iguales a la anterior (50 kg con barra: 20 y luego 37,5, no 25)', () => {
+  assert.deepEqual(warmupSets(50, 'kg', 20), [{ weight: 20, reps: 10 }, { weight: 37.5, reps: 4 }])
 })
 
 test('calentamiento ligero: sin series repetidas con la barra', () => {

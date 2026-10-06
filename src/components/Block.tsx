@@ -79,13 +79,13 @@ export function BlockCard() {
     return (
       <Card title={t('Bloque de entrenamiento', 'Training block')} icon={Layers}>
         <span className="small muted">
-          {t('Unas semanas apretando cada vez un poco más y una semana suave al final (la «descarga») para recuperar. La primera semana acabas cada serie cuando aún podrías hacer 3 repeticiones más; la última de carga, cuando solo te queda 1. Se repite solo.',
-            'A few weeks pushing a little harder each time and an easy week at the end (the "deload") to recover. In the first week you stop each set when you could still do 3 more reps; in the last loading week, when only 1 is left. It repeats automatically.')}
+          {t('Semanas cada vez más duras y una suave al final para recuperar. Al principio paras cada serie con 3 repeticiones de margen; al final, con 1.',
+            'Harder weeks each time and an easy one at the end to recover. At first you stop each set with 3 reps to spare; by the end, with 1.')}
         </span>
         <Segmented value={String(weeks)} onChange={(v) => setWeeks(Number(v))}
           options={BLOCK_WEEKS.map((n) => ({ value: String(n), label: t(`${n} sem.`, `${n} wk`) }))} />
         <span className="tiny muted">
-          {t(`${weeks - 1} semanas de carga + 1 de descarga.`, `${weeks - 1} loading weeks + 1 deload week.`)}{' '}
+          {t(`${weeks - 1} semanas de carga + 1 suave. Si dudas, 5 semanas.`, `${weeks - 1} loading weeks + 1 easy week. If unsure, 5 weeks.`)}{' '}
           {thisWeek ? t('Empieza esta semana.', 'Starts this week.') : t(`Empieza el lunes ${day(start).split(', ').pop()}, para no perder la primera semana.`, `Starts on Monday ${day(start).split(', ').pop()}, so the first week is not lost.`)}
         </span>
         <button className="btn secondary" onClick={() => updateSettings({ block: { start, weeks } })}>{thisWeek ? t('Empezar bloque', 'Start block') : t('Programar bloque', 'Schedule block')}</button>
