@@ -135,6 +135,7 @@ Don't
 - No kickers or eyebrows above titles.
 - No coloured `border-left` thicker than 1px (the superset `.group-box` uses 1px `--accent`, the maximum).
 - No gradients, except the muscle-map illustration (`--mm-bg-*` panels and `.mm-key-*` legend swatches).
+- Muscles in the map, thumbnails and movement figures use a muted orange (`--mm-p*`, `--mm-s*`, `--mm-l*`, `--mm-fs*`), never the vivid `--accent`: the vivid orange stays for the primary action and the ribbon. Share images keep their own vivid palette.
 - No glass or `backdrop-filter` blur.
 - No orange for non-primary things (tags, chips, selected states, decorative icons, action rows).
 - No green or blue for "good" deltas: positive changes are ink and bold; only losses use `--red-text`.

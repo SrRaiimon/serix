@@ -1724,6 +1724,16 @@ html.scroll-locked body {
   --mm-muscle-2: #e6e8ee;
   --mm-shadow: rgba(0, 0, 0, 0.08);
   --mm-text: #6b7280;
+  /* Músculos: un naranja apagado, para que el naranja vivo quede solo para la acción principal. */
+  --mm-p1: #f2b79c;
+  --mm-p2: #e38d69;
+  --mm-p3: #cf7150;
+  --mm-s1: rgba(240, 190, 166, 0.85);
+  --mm-s2: rgba(226, 150, 118, 0.6);
+  --mm-l1: rgba(240, 196, 176, 0.6);
+  --mm-l2: rgba(228, 162, 133, 0.45);
+  --mm-fs1: #f3c1aa;
+  --mm-fs2: #e39a7a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1735,6 +1745,15 @@ html.scroll-locked body {
     --mm-muscle-2: #33373f;
     --mm-shadow: rgba(0, 0, 0, 0.45);
     --mm-text: #9aa0ab;
+    --mm-p1: #d79a80;
+    --mm-p2: #bd7558;
+    --mm-p3: #a35d43;
+    --mm-s1: rgba(201, 145, 121, 0.5);
+    --mm-s2: rgba(168, 108, 84, 0.38);
+    --mm-l1: rgba(201, 150, 128, 0.55);
+    --mm-l2: rgba(168, 112, 90, 0.42);
+    --mm-fs1: #cf9a83;
+    --mm-fs2: #b07560;
   }
 }
 
@@ -1746,7 +1765,16 @@ html.scroll-locked body {
   --mm-muscle-1: #464b56;
   --mm-muscle-2: #33373f;
   --mm-shadow: rgba(0, 0, 0, 0.45);
-  --mm-text: #9aa0ab;
+    --mm-text: #9aa0ab;
+  --mm-p1: #d79a80;
+  --mm-p2: #bd7558;
+  --mm-p3: #a35d43;
+  --mm-s1: rgba(201, 145, 121, 0.5);
+  --mm-s2: rgba(168, 108, 84, 0.38);
+  --mm-l1: rgba(201, 150, 128, 0.55);
+  --mm-l2: rgba(168, 112, 90, 0.42);
+  --mm-fs1: #cf9a83;
+  --mm-fs2: #b07560;
 }
 
 .muscle-map {
@@ -1803,15 +1831,15 @@ html.scroll-locked body {
 }
 
 .mm-key-primary {
-  background: linear-gradient(135deg, #ffa06b, #e8481f);
+  background: linear-gradient(135deg, var(--mm-p1), var(--mm-p3));
 }
 
 .mm-key-light {
-  background: linear-gradient(135deg, rgba(255, 201, 179, 0.6), rgba(255, 154, 115, 0.45));
+  background: linear-gradient(135deg, var(--mm-l1), var(--mm-l2));
 }
 
 .mm-key-secondary {
-  background: linear-gradient(135deg, rgba(255, 180, 143, 0.8), rgba(255, 122, 77, 0.6));
+  background: linear-gradient(135deg, var(--mm-s1), var(--mm-s2));
 }
 
 /* Figura de movimiento (MoveFigure): mismo estilo que el mapa muscular (silueta + paneles de músculo) */
@@ -1863,11 +1891,16 @@ html.scroll-locked body {
 }
 
 .fig-body { fill: var(--mm-body); }
-.fig-stop-p1 { stop-color: #ffa06b; }
-.fig-stop-p2 { stop-color: #ff6a3d; }
-.fig-stop-p3 { stop-color: #e8481f; }
-.fig-stop-s1 { stop-color: #ffb48f; }
-.fig-stop-s2 { stop-color: #ff7a4d; }
+.fig-stop-p1, .mm-stop-p1 { stop-color: var(--mm-p1); }
+.fig-stop-p2, .mm-stop-p2 { stop-color: var(--mm-p2); }
+.fig-stop-p3, .mm-stop-p3 { stop-color: var(--mm-p3); }
+.mm-stop-s1 { stop-color: var(--mm-s1); }
+.mm-stop-s2 { stop-color: var(--mm-s2); }
+/* La figura pone su propia opacidad a los secundarios: aquí van opacos. */
+.fig-stop-s1 { stop-color: var(--mm-fs1); }
+.fig-stop-s2 { stop-color: var(--mm-fs2); }
+.mm-stop-l1 { stop-color: var(--mm-l1); }
+.mm-stop-l2 { stop-color: var(--mm-l2); }
 .fig-stop-metal1 { stop-color: var(--fig-metal-1); }
 .fig-stop-metal2 { stop-color: var(--fig-metal-2); }
 .fig-stop-dark1 { stop-color: var(--fig-dark-1); }

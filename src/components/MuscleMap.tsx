@@ -41,17 +41,17 @@ function Defs({ id, glow }: { id: string; glow: boolean }) {
         <stop offset="1" className="mm-stop-m2" />
       </linearGradient>
       <linearGradient id={`${id}p`} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#ffa06b" />
-        <stop offset="0.55" stopColor="#ff6a3d" />
-        <stop offset="1" stopColor="#e8481f" />
+        <stop offset="0" className="mm-stop-p1" />
+        <stop offset="0.55" className="mm-stop-p2" />
+        <stop offset="1" className="mm-stop-p3" />
       </linearGradient>
       <linearGradient id={`${id}s`} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#ffb48f" stopOpacity="0.8" />
-        <stop offset="1" stopColor="#ff7a4d" stopOpacity="0.6" />
+        <stop offset="0" className="mm-stop-s1" />
+        <stop offset="1" className="mm-stop-s2" />
       </linearGradient>
       <linearGradient id={`${id}l`} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#ffb08a" stopOpacity="0.6" />
-        <stop offset="1" stopColor="#ff8a5c" stopOpacity="0.45" />
+        <stop offset="0" className="mm-stop-l1" />
+        <stop offset="1" className="mm-stop-l2" />
       </linearGradient>
       {glow && (
         <filter id={`${id}g`} x="-30%" y="-30%" width="160%" height="160%">
