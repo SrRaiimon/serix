@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, matches, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -15,6 +15,8 @@ test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteín
   const lose = computeGoals({ sex: 'f', age: 40, heightCm: 165, weightKg: 70, activity: 1.375, aim: 'lose' })
   assert.equal(lose.kcal, Math.round(((10 * 70 + 6.25 * 165 - 5 * 40 - 161) * 1.375 * 0.8) / 10) * 10)
   assert.equal(lose.protein, 154)
+  // Proteína por kilo elegida: 80 kg × 2 g.
+  assert.equal(computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'gain', proteinPerKg: 2 }).protein, 160)
 })
 
 test('cantidades y totales del día', () => {
@@ -53,7 +55,7 @@ test('Open Food Facts: valores por 100 g, nombre en el idioma de la app y ració
     },
   }
   assert.deepEqual(parseOffProduct('3017620422003', json, 'es'), {
-    barcode: '3017620422003', name: 'Crema de cacao', brand: 'Marca', per100: { kcal: 539, p: 6.3, c: 57.5, f: 30.9 }, portion: { label: '15 g', g: 15 },
+    barcode: '3017620422003', name: 'Crema de cacao', brand: 'Marca', per100: { kcal: 539, p: 6.3, c: 57.5, f: 30.9 }, portion: { label: '1 ración', g: 15 },
   })
   assert.equal(parseOffProduct('3017620422003', json, 'en')?.name, 'Cocoa spread')
   // Solo la energía en kJ (habitual en etiquetas de la UE): se pasa a kcal.
@@ -152,4 +154,20 @@ test('apunte a mano: los totales se guardan con valores por 100 g dentro de lo n
   assert.equal(big.grams, 200)
   assert.deepEqual(amountOf(big.per100, big.grams), { kcal: 1400, p: 60, c: 160, f: 50 })
   assert.ok(big.per100.kcal <= 1000 && big.per100.c <= 100)
+})
+
+test('ración de Open Food Facts: sin gramos repetidos ni textos en inglés', () => {
+  assert.equal(portionLabel('120 g'), '1 ración')
+  assert.equal(portionLabel('1 portion (100 g)'), '1 ración')
+  assert.equal(portionLabel('1 serving'), '1 ración')
+  assert.equal(portionLabel(undefined), '1 ración')
+  assert.equal(portionLabel('2 galletas (25 g)'), '2 galletas')
+  assert.equal(portionLabel('1 pincho'), '1 pincho')
+})
+
+test('valores dudosos: las kcal no cuadran con los macros', () => {
+  assert.ok(!doubtfulValues({ kcal: 64, p: 10, c: 5, f: 0.5 })) // yogur proteico
+  assert.ok(!doubtfulValues({ kcal: 539, p: 6.3, c: 57.5, f: 30.9 })) // crema de cacao
+  assert.ok(doubtfulValues({ kcal: 232, p: 7, c: 4, f: 0.5 })) // ficha mal tecleada
+  assert.ok(!doubtfulValues({ kcal: 30, p: 1, c: 3, f: 0 })) // diferencia pequeña en algo ligero
 })

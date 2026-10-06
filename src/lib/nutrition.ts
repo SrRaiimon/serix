@@ -78,9 +78,15 @@ export interface NutritionGoals {
   weightKg?: number
   activity?: number
   aim?: Aim
+  /** Gramos de proteína por kilo con los que se calculó (si no, 1,8 o 2,2 según el objetivo). */
+  proteinPerKg?: number
   /** Ver solo la proteína (sin calorías ni el resto de macros), para quien no quiere contar calorías. */
   proteinOnly?: boolean
 }
+
+/** Proteína por kilo que se puede elegir (1,6 g/kg es el mínimo con beneficio claro para ganar músculo). */
+export const PROTEIN_PER_KG = [1.6, 1.8, 2, 2.2]
+export const defaultProteinPerKg = (aim: Aim) => (aim === 'lose' ? 2.2 : 1.8)
 
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
 export const ACTIVITY = [
@@ -100,12 +106,12 @@ export const AIMS: { id: Aim; label: () => string; detail: () => string }[] = [
  * Proteína por kilo de peso (más alta al perder grasa para conservar músculo), grasa ~25 % de las
  * calorías y el resto, carbohidratos.
  */
-export function computeGoals(input: { sex: Sex; age: number; heightCm: number; weightKg: number; activity: number; aim: Aim }): NutritionGoals {
+export function computeGoals(input: { sex: Sex; age: number; heightCm: number; weightKg: number; activity: number; aim: Aim; proteinPerKg?: number }): NutritionGoals {
   const { sex, age, heightCm, weightKg, activity, aim } = input
   const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (sex === 'm' ? 5 : -161)
   const factor = aim === 'lose' ? 0.8 : aim === 'gain' ? 1.1 : 1
   const kcal = Math.round((bmr * activity * factor) / 10) * 10
-  const protein = Math.round(weightKg * (aim === 'lose' ? 2.2 : 1.8))
+  const protein = Math.round(weightKg * (input.proteinPerKg ?? defaultProteinPerKg(aim)))
   const fat = Math.round((kcal * 0.25) / 9)
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { kcal, protein, carbs, fat, ...input }
@@ -235,8 +241,29 @@ export function parseOffProduct(barcode: string, json: unknown, language: 'es' |
     brand: str(product.brands)?.split(',')[0].trim(),
     per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f) },
     ...(grams && grams > 0 && grams < 2000 && (!servingUnit || servingUnit === 'g' || servingUnit === 'ml')
-      ? { portion: { label: str(product.serving_size) ?? t('1 ración', '1 serving'), g: round1(grams) } } : {}),
+      ? { portion: { label: portionLabel(str(product.serving_size)), g: round1(grams) } } : {}),
   }
+}
+
+/**
+ * Nombre de la ración de un envase. Open Food Facts trae textos como «15 g», «1 portion (100 g)» o
+ * «2 galletas (25 g)»: se quitan los gramos (ya se muestran aparte) y, si no queda un nombre propio,
+ * se llama «1 ración».
+ */
+export function portionLabel(text?: string): string {
+  const rest = (text ?? '').replace(/\([^)]*\)/g, ' ').replace(/\b\d+([.,]\d+)?\s*(g|gr|grs|gramos|ml|cl|l)\b\.?/gi, ' ').replace(/\s+/g, ' ').trim()
+  const generic = /^(\d+([.,]\d+)?\s*)?(x\s*)?(portions?|servings?|raci[oó]n(es)?|porci[oó]n(es)?|unidad(es)?|units?|serve)?$/i
+  return !rest || generic.test(rest) ? t('1 ración', '1 serving') : rest.slice(0, 40)
+}
+
+/**
+ * Valores que no cuadran: las kcal de la etiqueta frente a las que salen de los macros (4/4/9).
+ * La fibra, los polialcoholes y el alcohol explican diferencias pequeñas; una grande suele ser un
+ * error al teclear la ficha en Open Food Facts.
+ */
+export function doubtfulValues(v: Per100): boolean {
+  const calc = 4 * v.p + 4 * v.c + 9 * v.f
+  return Math.abs(calc - v.kcal) > Math.max(40, v.kcal * 0.3)
 }
 
 const round1 = (v: number) => Math.round(v * 10) / 10
