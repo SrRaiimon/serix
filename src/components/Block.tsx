@@ -1,4 +1,4 @@
-import { Layers } from 'lucide-react'
+import { ChevronDown, Layers } from 'lucide-react'
 import { useState } from 'react'
 import { BLOCK_WEEKS, blockFocus, blockStart, blockWeek, type BlockWeek } from '../lib/block'
 import { day } from '../lib/format'
@@ -41,6 +41,7 @@ export function BlockCard() {
   const { settings } = useData()
   const [weeks, setWeeks] = useState(5)
   const [confirmEnd, setConfirmEnd] = useState(false)
+  const [open, setOpen] = useState(false)
   const w = blockWeek(settings.block)
 
   const end = () => withUndo(t('Bloque terminado', 'Block ended'), () => updateSettings({ block: undefined }))
@@ -63,11 +64,23 @@ export function BlockCard() {
   if (!settings.block || !w) {
     const start = blockStart()
     const thisWeek = start <= Date.now()
+    // Es opcional: plegado, una línea; al abrirlo, la explicación y las semanas.
+    if (!open) {
+      return (
+        <button className="card block-offer" onClick={() => setOpen(true)} aria-expanded={false}>
+          <span className="grow">
+            <strong style={{ display: 'block' }}>{t('Bloque de entrenamiento', 'Training block')}</strong>
+            <span className="small muted">{t('Opcional · semanas cada vez más duras y una suave al final', 'Optional · harder weeks and an easy one at the end')}</span>
+          </span>
+          <ChevronDown size={18} className="chevron" />
+        </button>
+      )
+    }
     return (
       <Card title={t('Bloque de entrenamiento', 'Training block')} icon={Layers}>
         <span className="small muted">
-          {t('Planifica unas semanas apretando cada vez un poco más (de 3 a 1 repeticiones en la recámara) y una semana de descarga al final para recuperar. Se repite solo.',
-            'Plan a few weeks pushing a little harder each time (from 3 down to 1 rep in reserve) and a deload week at the end to recover. It repeats automatically.')}
+          {t('Unas semanas apretando cada vez un poco más y una semana suave al final (la «descarga») para recuperar. La primera semana acabas cada serie cuando aún podrías hacer 3 repeticiones más; la última de carga, cuando solo te queda 1. Se repite solo.',
+            'A few weeks pushing a little harder each time and an easy week at the end (the "deload") to recover. In the first week you stop each set when you could still do 3 more reps; in the last loading week, when only 1 is left. It repeats automatically.')}
         </span>
         <Segmented value={String(weeks)} onChange={(v) => setWeeks(Number(v))}
           options={BLOCK_WEEKS.map((n) => ({ value: String(n), label: t(`${n} sem.`, `${n} wk`) }))} />

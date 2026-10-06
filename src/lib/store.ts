@@ -376,15 +376,30 @@ export const lastPerformed = (d: AppData, routineId: string) =>
     s.routineId === routineId && s.end !== undefined && (max === undefined || s.end > max) ? s.end : max, undefined)
 
 export const routineSets = (r: Routine) => r.exercises.reduce((n, e) => n + e.sets, 0)
-/** Duración estimada: ~40 s por serie de fuerza, el objetivo en las de tiempo y ~10 min en cardio. */
+/** Duración estimada: ~40 s por serie de fuerza, el objetivo en las de tiempo, ~10 min en cardio y la preparación. */
 export const routineMinutes = (r: Routine) =>
   Math.max(5, Math.round(r.exercises.reduce((n, e, i) => {
     const t = trackingOf(e)
     const work = t === 'time' ? (e.targetSeconds ?? 45) : t === 'distance_time' ? 600 : 40
     // En superseries y circuitos solo se descansa tras el último ejercicio de la ronda.
     const rest = e.groupId && r.exercises[i + 1]?.groupId === e.groupId ? 0 : e.rest
-    return n + e.sets * (work + rest)
+    // Más ~90 s por ejercicio para prepararlo (cargar discos, ajustar la máquina, calentar).
+    return n + e.sets * (work + rest) + 90
   }, 0) / 60))
+
+/**
+ * Duración esperada de una rutina: la mediana de las últimas veces que se hizo (sin las que se
+ * dejaron abiertas horas) y, si aún no hay, la estimación por series.
+ */
+export function expectedMinutes(d: AppData, r: Routine): { minutes: number; measured: boolean } {
+  const past = d.sessions
+    .filter((s) => s.routineId === r.id && s.end !== undefined && s.end - s.start < 3 * 3600000 && s.end - s.start > 5 * 60000)
+    .sort((a, b) => b.start - a.start).slice(0, 5)
+    .map((s) => (s.end! - s.start) / 60000).sort((a, b) => a - b)
+  if (!past.length) return { minutes: routineMinutes(r), measured: false }
+  const mid = past.length >> 1
+  return { minutes: Math.round(past.length % 2 ? past[mid] : (past[mid - 1] + past[mid]) / 2), measured: true }
+}
 
 // MARK: Deshacer
 

@@ -1,14 +1,16 @@
 import { BlockCard } from '../components/Block'
-import { ArrowLeftRight, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, Layers, Link2, Pencil, Play, Plus, RotateCcw, Trash2, Unlink, WandSparkles } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Ellipsis, FilePlus2, Link2, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Zap, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
+import { BARS } from '../lib/plates'
+import { warmupSets } from '../lib/warmup'
 import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
-import { finishedSessions, lastPerformed, routineMinutes, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
+import { expectedMinutes, finishedSessions, lastPerformed, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
 import { records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
@@ -120,12 +122,12 @@ export function RoutinesScreen() {
 
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
-          { label: t('Biblioteca de programas', 'Program library'), onSelect: () => setLibrary(true) },
-          { label: t('Generar programa', 'Generate program'), onSelect: () => setShowGenerator(true) },
-          ...(!data.settings.simpleMode ? [{ label: t('Programa 5/3/1 (fuerza)', '5/3/1 program (strength)'), onSelect: () => setShow531(true) }] : []),
-          { label: t('Nueva rutina vacía', 'New empty routine'), onSelect: createRoutine },
-          { label: t('Importar desde enlace', 'Import from link'), onSelect: importFromLink },
-          { label: t('Entrenamiento libre', 'Free workout'), onSelect: startEmpty },
+          { section: t('Programas', 'Programs'), icon: Library, label: t('Biblioteca de programas', 'Program library'), hint: t('Programas probados, por nivel y material', 'Proven programs, by level and equipment'), onSelect: () => setLibrary(true) },
+          { section: t('Programas', 'Programs'), icon: WandSparkles, label: t('Generar programa', 'Generate program'), hint: t('A medida: objetivo, días y minutos', 'Tailored: goal, days and minutes'), onSelect: () => setShowGenerator(true) },
+          ...(!data.settings.simpleMode ? [{ section: t('Programas', 'Programs'), icon: Zap, label: t('Programa 5/3/1', '5/3/1 program'), hint: t('Avanzado · fuerza en los cuatro básicos', 'Advanced · strength on the four main lifts'), onSelect: () => setShow531(true) }] : []),
+          { section: t('Rutina', 'Routine'), icon: FilePlus2, label: t('Nueva rutina vacía', 'New empty routine'), hint: t('Eliges tú los ejercicios', 'You pick the exercises'), onSelect: createRoutine },
+          { section: t('Rutina', 'Routine'), icon: LinkIcon, label: t('Importar desde enlace', 'Import from link'), hint: t('La que te ha pasado un amigo', 'One a friend sent you'), onSelect: importFromLink },
+          { section: t('Sin rutina', 'No routine'), icon: Timer, label: t('Entrenamiento libre', 'Free workout'), hint: t('Empiezas ya y añades ejercicios sobre la marcha', 'Start now and add exercises as you go'), onSelect: startEmpty },
         ]} />
       )}
       {programMenu && (
@@ -162,13 +164,11 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
       <button className="routine-main" onClick={() => navigate('routines', routine.id)}>
         {next && <span className="routine-next">{t('Te toca hoy', 'Up next')}</span>}
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
-        <span className="small muted clamp-1">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
-        <span className="small muted row" style={{ gap: 12, marginTop: 4, flexWrap: 'wrap', rowGap: 2 }}>
-          <span className="row" style={{ gap: 4 }}><Dumbbell size={13} /> {routine.exercises.length}</span>
-          <span className="row" style={{ gap: 4 }}><Layers size={13} /> {plural(routineSets(routine), ['serie', 'series'], ['set', 'sets'])}</span>
-          <span className="row" style={{ gap: 4 }}><Clock size={13} /> ~{routineMinutes(routine)} min</span>
-          <span>{last ? relative(last) : t('Sin estrenar', 'Not done yet')}</span>
+        <span className="small muted clamp-2">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
+        <span className="small routine-meta">
+          {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · {plural(routineSets(routine), ['serie', 'series'], ['set', 'sets'])} · ~{expectedMinutes(data, routine).minutes} min
         </span>
+        <span className="small muted">{last ? t(`Última vez: ${relative(last).toLowerCase()}`, `Last done: ${relative(last).toLowerCase()}`) : t('Sin estrenar', 'Not done yet')}</span>
       </button>
       {routine.exercises.length > 0 && (
         <button className={`icon-btn routine-play ${next ? 'go' : ''}`} onClick={() => startRoutine(routine)} aria-label={t(`Empezar ${routine.name}`, `Start ${routine.name}`)}>
@@ -177,6 +177,18 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
       )}
     </div>
   )
+}
+
+const BARBELL = new Set(['barbell', 'ez-bar'])
+
+/** En los ejercicios pesados, la rampa de calentamiento hasta el peso de hoy (la misma que añade el entrenamiento). */
+function WarmupLine({ planned, unit, barKg }: { planned: SessionExercise; unit: AppData['settings']['unit']; barKg?: number }) {
+  if (trackingOf(planned) !== 'weight_reps' || planned.assisted) return null
+  const work = planned.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
+  if (work < 60) return null
+  const ramp = warmupSets(work, unit, barKg)
+  if (ramp.length < 2) return null
+  return <span className="tiny muted" style={{ display: 'block', marginTop: 2 }}>{t('Calentamiento', 'Warm-up')}: {ramp.map((w) => editable(fromKg(w.weight, unit))).join(' · ')} {unit}</span>
 }
 
 /** Lo que te propondrá la app hoy en un ejercicio: el peso de la serie más pesada y por qué. */
@@ -215,6 +227,8 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const unit = data.settings.unit
   const last = finishedSessions(data).find((s) => s.routineId === routine.id)
   const detailSlots = groupSlots(routine.exercises)
+  const duration = expectedMinutes(data, routine)
+  const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
   const muscles = routine.exercises.map((e) => ({ muscle: e.muscle, secondaryMuscles: catalog.get(e.exerciseId)?.secondaryMuscles ?? [] }))
 
   const duplicate = () => {
@@ -237,7 +251,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
           { value: routineSets(routine), label: t('Series', 'Sets') },
-          { value: `~${routineMinutes(routine)}′`, label: t('Duración', 'Duration') },
+          { value: `~${duration.minutes}′`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Hoy toca', 'Today')}</span>}</div>
@@ -256,9 +270,11 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                     {slot.letter && <span className="group-badge">{slot.letter}{slot.position}</span>}
                     {e.name}
                   </span>
-                  <span className="small muted">
-                    {e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, data.settings.unit)}` : ''}` : targetText(e)} · {slot.letter && !slot.last ? t('sin descanso', 'no rest') : `${t('descanso', 'rest')} ${rest(e.rest)}`}
+                  <span className="small muted row" style={{ gap: 6, flexWrap: 'wrap', rowGap: 0 }}>
+                    <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : targetText(e)}</span>
+                    <span className="row" style={{ gap: 3 }} aria-label={t('Descanso', 'Rest')}><Clock size={12} /> {slot.letter && !slot.last ? t('sin descanso', 'no rest') : rest(e.rest)}</span>
                   </span>
+                  {planned[i] && <WarmupLine planned={planned[i]} unit={unit} barKg={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '') ? barKg : undefined} />}
                 </span>
                 {planned[i] && <TodayTarget planned={planned[i]} unit={unit} />}
               </button>
@@ -267,7 +283,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         </div>
         {routine.exercises.some((e) => e.progression) && (
           <p className="list-footer" style={{ margin: '-8px 4px 0' }}>
-            {t('Con progresión automática, el peso sube solo cuando completas todas las repeticiones. Puedes cambiarlo durante el entrenamiento.', 'With automatic progression, the weight goes up when you complete all the reps. You can change it during the workout.')}
+            {t('Con progresión automática, el peso sube solo cuando completas todas las repeticiones. Puedes cambiarlo durante el entrenamiento. Calienta siempre antes de las series de trabajo: en el entrenamiento, el menú de cada ejercicio te las añade.', 'With automatic progression, the weight goes up when you complete all the reps. You can change it during the workout. Always warm up before your working sets: in the workout, each exercise menu adds them for you.')}
           </p>
         )}
         {routine.exercises.length > 0 && (
@@ -282,7 +298,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
               <button className="list-row" onClick={() => navigate('progress', 'session', last.id)}>
                 <span className="grow">
                   <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
-                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
+                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('levantadas', 'lifted')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
                 </span>
                 <ChevronRight size={18} className="chevron" />
               </button>
@@ -322,6 +338,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
   const routine = data.routines.find((r) => r.id === id)
   const [picker, setPicker] = useState(false)
   const [replacing, setReplacing] = useState<number>()
+  const [expanded, setExpanded] = useState<number>()
   if (!routine) return null
 
   const edit = (fn: (r: Routine) => void) => update((d) => {
@@ -339,6 +356,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
   const add = (list: Exercise[]) => edit((r) => {
     r.exercises.push(...list.map((e) => planned(e)))
   })
+  const done = () => { if (!routine.name.trim()) edit((r) => { r.name = t('Rutina', 'Routine') }); onClose() }
   const setTracking = (i: number, t: Tracking) => edit((r) => {
     r.exercises[i].tracking = t
     if (t === 'time') r.exercises[i].targetSeconds ??= defaultTargetSeconds
@@ -362,46 +380,59 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
 
   return (
     <Sheet title={t('Editar rutina', 'Edit routine')} onClose={onClose}
-      right={<button className="nav-btn bold" onClick={() => { if (!routine.name.trim()) edit((r) => { r.name = t('Rutina', 'Routine') }); onClose() }}>{t('Listo', 'Done')}</button>}>
+      right={<button className="nav-btn bold" onClick={done}>{t('Listo', 'Done')}</button>}
+      footer={<button className="btn primary block" onClick={done}>{t('Listo', 'Done')}</button>}>
       <div className="list">
         <div className="list-row"><input className="grow" style={{ fontSize: 17 }} value={routine.name} placeholder={t('Nombre de la rutina', 'Routine name')} onChange={(e) => edit((r) => { r.name = e.target.value })} /></div>
         <div className="list-row"><textarea className="grow" rows={2} value={routine.notes} placeholder={t('Notas (opcional)', 'Notes (optional)')} onChange={(e) => edit((r) => { r.notes = e.target.value })} /></div>
       </div>
       <div className="list-header">{t('Ejercicios', 'Exercises')}</div>
       <div className="list">
-        {routine.exercises.map((e, i) => (
-          <div key={i} className="list-row" style={{
-            flexDirection: 'column', alignItems: 'stretch', gap: 10,
-            ...(slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : {}),
-          }}>
+        {routine.exercises.map((e, i) => {
+          const open = expanded === i
+          const tracking = trackingOf(e)
+          const noRest = !!slots[i].letter && !slots[i].last
+          const summary = [
+            targetText(e),
+            noRest ? t('sin descanso', 'no rest') : rest(e.rest),
+            tracking === 'weight_reps' ? progressionOptions().find((o) => o.id === (e.progression ?? ''))?.label : undefined,
+          ].filter(Boolean).join(' · ')
+          return (
+          <div key={i} className={`list-row edit-row ${open ? 'open' : ''}`} style={slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
             {slots[i].letter && slots[i].first && (
               <span className="group-head"><Link2 size={15} /> {groupKind(slots[i].size)} {slots[i].letter}: {t('sin descanso entre ejercicios', 'no rest between exercises')}</span>
             )}
-            <div className="row">
+            <button className="edit-head" onClick={() => setExpanded(open ? undefined : i)} aria-expanded={open}>
               <Thumb exerciseId={e.exerciseId} size={40} />
-              <span className="grow bold clamp-2" style={{ fontSize: 15 }}>
-                {slots[i].letter && <span className="group-badge">{slots[i].letter}{slots[i].position}</span>}
-                {e.name}
+              <span className="grow">
+                <span className="bold clamp-2" style={{ fontSize: 15 }}>
+                  {slots[i].letter && <span className="group-badge">{slots[i].letter}{slots[i].position}</span>}
+                  {e.name}
+                </span>
+                {!open && <span className="small muted clamp-2">{summary}</span>}
               </span>
-            </div>
-            <div className="row" style={{ alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <ChevronDown size={18} className="chevron edit-chevron" />
+            </button>
+            {open && (
+              <>
+            <div className="edit-grid">
               <Stepper label={t('Series', 'Sets')} value={e.sets} min={1} max={10} onChange={(v) => edit((r) => { r.exercises[i].sets = v })} />
-              {trackingOf(e) === 'weight_reps' && (
+              {tracking === 'weight_reps' && (
                 <>
                   <Stepper label={t('Reps mín.', 'Min reps')} value={e.repsMin} min={1} max={50} onChange={(v) => edit((r) => { r.exercises[i].repsMin = v; if (r.exercises[i].repsMax < v) r.exercises[i].repsMax = v })} />
                   <Stepper label={t('Reps máx.', 'Max reps')} value={e.repsMax} min={1} max={50} onChange={(v) => edit((r) => { r.exercises[i].repsMax = v; if (r.exercises[i].repsMin > v) r.exercises[i].repsMin = v })} />
                 </>
               )}
-              {trackingOf(e) === 'time' && (
+              {tracking === 'time' && (
                 <div className="stepper">
                   <span className="tiny muted">{t('Tiempo', 'Time')}</span>
-                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.targetSeconds ?? defaultTargetSeconds}
+                  <select className="field" value={e.targetSeconds ?? defaultTargetSeconds}
                     onChange={(ev) => edit((r) => { r.exercises[i].targetSeconds = Number(ev.target.value) })}>
                     {timeTargets.map((o) => <option key={o} value={o}>{clock(o)}</option>)}
                   </select>
                 </div>
               )}
-              {slots[i].letter && !slots[i].last ? (
+              {noRest ? (
                 <div className="stepper">
                   <span className="tiny muted">{t('Descanso', 'Rest')}</span>
                   <span className="small muted" style={{ padding: '6px 0' }}>{t('Ninguno', 'None')}</span>
@@ -409,59 +440,68 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
               ) : (
                 <div className="stepper">
                   <span className="tiny muted">{slots[i].letter ? t('Tras la ronda', 'After round') : t('Descanso', 'Rest')}</span>
-                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.rest} onChange={(ev) => edit((r) => { r.exercises[i].rest = Number(ev.target.value) })}>
+                  <select className="field" value={e.rest} onChange={(ev) => edit((r) => { r.exercises[i].rest = Number(ev.target.value) })}>
                     {restOptions.map((o) => <option key={o} value={o}>{rest(o)}</option>)}
                   </select>
                 </div>
               )}
-              {trackingOf(e) === 'weight_reps' && (
-                <div className="stepper">
-                  <span className="tiny muted">{t('Progresión', 'Progression')}</span>
-                  <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={e.progression ?? ''}
-                    onChange={(ev) => setProgression(i, (ev.target.value || undefined) as Progression | undefined)}>
-                    {progressionOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-                  </select>
-                </div>
-              )}
-              {trackingOf(e) === 'weight_reps' && e.progression === 'wave531' && (
-                <div className="stepper">
-                  <span className="tiny muted">{t('Máx. de entreno (TM)', 'Training max (TM)')}</span>
-                  <input className="field" inputMode="decimal" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700, width: 90 }}
-                    defaultValue={e.trainingMax ? editable(fromKg(e.trainingMax, data.settings.unit)) : ''} placeholder={data.settings.unit}
-                    aria-label={t('Máximo de entrenamiento', 'Training max')}
-                    onChange={(ev) => {
-                      const v = parseDecimal(ev.target.value)
-                      edit((r) => { r.exercises[i].trainingMax = v && v > 0 ? toKg(v, data.settings.unit) : undefined; r.exercises[i].tmSince = Date.now() })
-                    }} />
-                </div>
-              )}
-              <div className="stepper">
-                <span className="tiny muted">{t('Registro', 'Logging')}</span>
-                <select className="field" style={{ padding: '5px 10px', fontSize: 15, fontWeight: 700 }} value={trackingOf(e)}
-                  onChange={(ev) => setTracking(i, ev.target.value as Tracking)}>
-                  {trackingOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-                </select>
-              </div>
             </div>
-            <div className="row" style={{ justifyContent: 'flex-end', gap: 4 }}>
-              <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => setReplacing(i)} aria-label={t('Sustituir', 'Replace')}><ArrowLeftRight size={17} /> {t('Sustituir', 'Replace')}</button>
-              {i < routine.exercises.length - 1 && !(slots[i].letter && !slots[i].last) && (
-                <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => edit((r) => linkWithNext(r.exercises, i))} aria-label={t('Unir con el siguiente', 'Link with the next one')}>
-                  <Link2 size={17} /> {t('Unir', 'Link')}
+            {tracking === 'weight_reps' && (
+              <label className="edit-field">
+                <span className="grow">
+                  <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Cómo sube el peso', 'How the weight goes up')}</span>
+                  <span className="small muted">{progressionHelp(e.progression)}</span>
+                </span>
+                <select className="field" value={e.progression ?? ''} onChange={(ev) => setProgression(i, (ev.target.value || undefined) as Progression | undefined)}>
+                  {progressionOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
+              </label>
+            )}
+            {tracking === 'weight_reps' && e.progression === 'wave531' && (
+              <label className="edit-field">
+                <span className="grow bold" style={{ fontSize: 15 }}>{t('Máx. de entreno (TM)', 'Training max (TM)')}</span>
+                <input className="field" inputMode="decimal" style={{ width: 90 }}
+                  defaultValue={e.trainingMax ? editable(fromKg(e.trainingMax, data.settings.unit)) : ''} placeholder={data.settings.unit}
+                  aria-label={t('Máximo de entrenamiento', 'Training max')}
+                  onChange={(ev) => {
+                    const v = parseDecimal(ev.target.value)
+                    edit((r) => { r.exercises[i].trainingMax = v && v > 0 ? toKg(v, data.settings.unit) : undefined; r.exercises[i].tmSince = Date.now() })
+                  }} />
+              </label>
+            )}
+            <label className="edit-field">
+              <span className="grow">
+                <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Qué apuntas', 'What you log')}</span>
+                <span className="small muted">{t('En cada serie', 'On each set')}</span>
+              </span>
+              <select className="field" value={tracking} onChange={(ev) => setTracking(i, ev.target.value as Tracking)}>
+                {trackingOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select>
+            </label>
+            <div className="edit-actions">
+              <button className="nav-btn" onClick={() => setReplacing(i)}><ArrowLeftRight size={17} /> {t('Sustituir', 'Replace')}</button>
+              {i < routine.exercises.length - 1 && !noRest && (
+                <button className="nav-btn" onClick={() => edit((r) => linkWithNext(r.exercises, i))} aria-label={t('Hacer superserie con el siguiente', 'Superset with the next one')}>
+                  <Link2 size={17} /> {t('Superserie', 'Superset')}
                 </button>
               )}
               {slots[i].letter && (
-                <button className="nav-btn" style={{ fontSize: 15 }} onClick={() => edit((r) => unlink(r.exercises, i))} aria-label={t('Separar del grupo', 'Unlink from group')}>
+                <button className="nav-btn" onClick={() => edit((r) => unlink(r.exercises, i))} aria-label={t('Separar de la superserie', 'Remove from superset')}>
                   <Unlink size={17} /> {t('Separar', 'Unlink')}
                 </button>
               )}
-              <span className="grow" />
-              <button className="nav-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('Subir', 'Move up')}>↑</button>
-              <button className="nav-btn" disabled={i === routine.exercises.length - 1} onClick={() => move(i, 1)} aria-label={t('Bajar', 'Move down')}>↓</button>
-              <button className="nav-btn" style={{ color: 'var(--red-text)' }} onClick={() => withUndo(t(`Quitado: ${e.name}`, `Removed: ${e.name}`), () => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) }))} aria-label={t('Quitar', 'Remove')}><Trash2 size={18} /></button>
             </div>
+            <div className="edit-actions">
+              <button className="icon-btn" disabled={i === 0} onClick={() => { move(i, -1); setExpanded(i - 1) }} aria-label={t('Subir', 'Move up')}><ArrowUp size={18} /></button>
+              <button className="icon-btn" disabled={i === routine.exercises.length - 1} onClick={() => { move(i, 1); setExpanded(i + 1) }} aria-label={t('Bajar', 'Move down')}><ArrowDown size={18} /></button>
+              <span className="grow" />
+              <button className="nav-btn" style={{ color: 'var(--red-text)' }} onClick={() => { setExpanded(undefined); withUndo(t(`Quitado: ${e.name}`, `Removed: ${e.name}`), () => edit((r) => { r.exercises.splice(i, 1); normalizeGroups(r.exercises) })) }}><Trash2 size={17} /> {t('Quitar', 'Remove')}</button>
+            </div>
+              </>
+            )}
           </div>
-        ))}
+          )
+        })}
         <button className="list-row accent" onClick={() => setPicker(true)}><Plus size={20} /> {t('Añadir ejercicios', 'Add exercises')}</button>
       </div>
       {picker && <ExercisePicker onDone={add} onClose={() => setPicker(false)} />}
@@ -599,6 +639,13 @@ function GeneratorSheet({ onClose }: { onClose: () => void }) {
     </Sheet>
   )
 }
+
+/** Qué hace cada progresión, en una línea. */
+const progressionHelp = (p: Progression | undefined) =>
+  p === 'double' ? t('Cuando llegas a las reps máximas en todas las series, sube el peso y vuelves a las mínimas.', 'When you hit the max reps on every set, the weight goes up and you go back to the min reps.')
+    : p === 'linear' ? t('Reps fijas: si las completas todas, la próxima vez sube el peso.', 'Fixed reps: if you complete them all, the weight goes up next time.')
+      : p === 'wave531' ? t('Ciclos de 4 semanas sobre tu máximo de entrenamiento, que sube al acabar cada ciclo.', '4-week cycles on your training max, which goes up after each cycle.')
+        : t('Tú decides el peso; la app te propone el de la última vez.', 'You choose the weight; the app suggests last time\'s.')
 
 const progressionOptions = (): { id: Progression | ''; label: string }[] => [
   { id: '', label: t('Manual', 'Manual') },

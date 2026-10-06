@@ -5,7 +5,7 @@ import { addDays, clock, day, startOfDay, startOfWeek, tons } from '../lib/forma
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
-import { activeSession, finishedSessions, routineMinutes, updateSettings, useData, type Routine, type Session } from '../lib/store'
+import { activeSession, expectedMinutes, finishedSessions, updateSettings, useData, type Routine, type Session } from '../lib/store'
 import { nextRoutine, openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
@@ -87,6 +87,7 @@ export function HomeScreen() {
 }
 
 function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[] }) {
+  const data = useData()
   // Grupos de la rutina (por su músculo principal) que todavía se están recuperando.
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
@@ -101,7 +102,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
       <span className="muted">{muscleSummary(routine)}</span>
       <div className="hero-facts">
         <span className="hero-fact"><strong>{routine.exercises.length}</strong>{routine.exercises.length === 1 ? t('ejercicio', 'exercise') : t('ejercicios', 'exercises')}</span>
-        <span className="hero-fact"><strong>~{routineMinutes(routine)}</strong>{t('minutos', 'minutes')}</span>
+        <span className="hero-fact"><strong>~{expectedMinutes(data, routine).minutes}</strong>{t('minutos', 'minutes')}</span>
         <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
       </div>
       {tired.length > 0 && (

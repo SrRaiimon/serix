@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Minus, Plus, type LucideIcon } from 'lucide-react'
-import { createContext, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { createContext, Fragment, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import type { Catalog } from '../lib/catalog'
 import { createPortal } from 'react-dom'
 import { back } from '../lib/router'
@@ -211,6 +211,11 @@ export interface DialogOption {
   label: string
   destructive?: boolean
   onSelect: () => void
+  /** Opciones con icono y una línea de explicación, alineadas a la izquierda. */
+  icon?: LucideIcon
+  hint?: string
+  /** Las opciones seguidas con la misma sección van juntas, bajo su título. */
+  section?: string
 }
 
 /** Hoja de acciones (confirmaciones). */
@@ -226,10 +231,18 @@ export function ActionSheet({ title, message, options, onClose }: { title?: stri
               {message && <span className="small muted">{message}</span>}
             </div>
           )}
-          {options.map((o) => (
-            <button key={o.label} className={`option ${o.destructive ? 'destructive' : ''}`} onClick={() => { onClose(); o.onSelect() }}>
-              {o.label}
-            </button>
+          {options.map((o, i) => (
+            <Fragment key={o.label}>
+              {o.section && o.section !== options[i - 1]?.section && <div className="section">{o.section}</div>}
+              <button className={`option ${o.destructive ? 'destructive' : ''} ${o.icon ? 'rich' : ''}`} onClick={() => { onClose(); o.onSelect() }}>
+                {o.icon ? (
+                  <>
+                    <o.icon size={20} />
+                    <span className="grow"><span className="label">{o.label}</span>{o.hint && <span className="hint">{o.hint}</span>}</span>
+                  </>
+                ) : o.label}
+              </button>
+            </Fragment>
           ))}
         </div>
         <div className="group">
