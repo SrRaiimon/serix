@@ -722,7 +722,7 @@ function rirLabel(rpe: number): string {
   const left = 10 - rpe
   if (left === 0) return t('fallo', 'failure')
   if (!Number.isInteger(left)) return `${Math.floor(left)}–${Math.ceil(left)}`
-  return t(`${left} más`, `${left} left`)
+  return String(left)
 }
 
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */
@@ -746,11 +746,11 @@ function RpeRow({ value, open, onOpen, onPick }: {
       </div>
       <div className="rpe-chips">
         {rpeValues.map((v) => (
-          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`} aria-label={`RPE ${num(v)}: ${rirLabel(v)}`}
+          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`} aria-label={`RPE ${num(v)}: ${v === 10 ? t('al fallo', 'to failure') : t(`te quedaban ${rirLabel(v)}`, `${rirLabel(v)} left`)}`}
             onClick={() => onPick(value === v ? undefined : v)}><span>{num(v)}</span><small aria-hidden="true">{rirLabel(v)}</small></button>
         ))}
       </div>
-      <span className="rpe-scale">{t('Debajo, las repeticiones que aún podías hacer.', 'Below each number, the reps you still had left.')}</span>
+      <span className="rpe-scale">{t('Debajo de cada número: cuántas repeticiones más podías hacer.', 'Below each number: how many more reps you could have done.')}</span>
       {help && (
         <span className="small muted">
           {t('Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3. Es opcional; sirve para saber cuándo subir peso.',

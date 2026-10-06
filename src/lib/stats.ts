@@ -180,6 +180,8 @@ export interface ExercisePoint {
   date: number
   e1rm: number
   maxWeight: number
+  /** Repeticiones de la mejor serie con el peso máximo. */
+  repsAtMax: number
   volume: number
   /** Segundos de la serie más larga (ejercicios por tiempo o distancia). */
   maxDuration: number
@@ -196,6 +198,7 @@ export function exerciseHistory(exerciseId: string, sessions: Session[]): Exerci
       date: s.start,
       e1rm: Math.max(...sets.map((x) => e1rm(x.weight, x.reps))),
       maxWeight: Math.max(...sets.map((x) => x.weight)),
+      repsAtMax: Math.max(...sets.filter((x) => x.weight === Math.max(...sets.map((y) => y.weight))).map((x) => x.reps)),
       volume: sets.reduce((t, x) => t + x.weight * x.reps, 0),
       maxDuration: Math.max(...sets.map((x) => x.duration ?? 0)),
       maxDistance: Math.max(...sets.map((x) => x.distance ?? 0)),

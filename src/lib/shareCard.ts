@@ -4,7 +4,7 @@ import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, 
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
 import { plural, t } from './i18n'
-import { C, SANS, cardChrome, cardFooter, cardTitle, esc, rule, statBand } from './cardStyle'
+import { C, DISPLAY, SANS, cardChrome, cardFooter, cardTitle, esc, rule, statBand } from './cardStyle'
 import archivoUrl from '../assets/fonts/archivo-latin-wdth.woff2?url'
 
 // Tarjeta del entrenamiento para compartir como imagen (1080 × 1350, formato 4:5). Se dibuja como SVG
@@ -55,8 +55,8 @@ export function shareCardSVG({ session, unit, records, secondaryOf, story = fals
   const H = story ? STORY_H : POST_H
   // La historia reparte lo mismo con más aire: cifras en 2 × 2 y el mapa más grande.
   const L = story
-    ? { title: 300, band: 360, cellH: 170, cols: 2, record: 760, map: 820, mapScale: 1.5, rule: 1540, rows: 1610, step: 52 }
-    : { title: 250, band: 290, cellH: 150, cols: 4, record: 470, map: record0(records) ? 578 : 510, mapScale: MAP_SCALE, rule: 1030, rows: 1080, step: 46 }
+    ? { title: 300, band: 360, cellH: 170, cols: 2, record: 760, map: record0(records) ? 940 : 820, mapScale: record0(records) ? 1.3 : 1.5, rule: 1540, rows: 1610, step: 52 }
+    : { title: 250, band: 290, cellH: 150, cols: 4, record: 470, map: record0(records) ? 620 : 510, mapScale: record0(records) ? 0.88 : MAP_SCALE, rule: 1030, rows: 1080, step: 46 }
   const primary = new Set<string>()
   const secondary = new Set<string>()
   for (const e of session.exercises) {
@@ -93,11 +93,12 @@ export function shareCardSVG({ session, unit, records, secondaryOf, story = fals
   const more = extra > 0
     ? `<text x="80" y="${L.rows + shown.length * L.step}" font-size="24" fill="${C.text3}">${extra === 1 ? t('y 1 ejercicio más', 'and 1 more exercise') : t(`y ${extra} ejercicios más`, `and ${extra} more exercises`)}</text>`
     : ''
-  // Récord: una fila con la cinta pequeña (la única marca naranja además de la de la esquina).
+  // Récord: el protagonista cuando lo hay. Cinta pequeña, ejercicio y la marca en grande y en naranja.
   const recordRow = record
     ? `<path d="M60 ${L.record + 4}h20v32l-10-8-10 8z" fill="${C.accent}"/>
-      <text x="96" y="${L.record + 30}" font-size="30" font-weight="600" fill="${C.text}">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 28))} · ${esc(weight(record.weight, unit))} × ${record.reps}</text>
-      ${rule(L.record + 66, W)}`
+      <text x="96" y="${L.record + 30}" font-size="28" font-weight="600" fill="${C.text2}">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 34))}</text>
+      <text x="60" y="${L.record + 108}" font-family="${DISPLAY}" font-size="72" font-weight="800" fill="${C.accent}" style="font-stretch:106%">${esc(weight(record.weight, unit))} × ${record.reps}</text>
+      ${rule(L.record + 140, W)}`
     : ''
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${SANS}">

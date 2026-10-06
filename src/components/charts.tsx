@@ -1,5 +1,4 @@
 import { num, shortDay } from '../lib/format'
-import { t } from '../lib/i18n'
 
 // Gráficas SVG sencillas: barras verticales, línea y barras horizontales.
 
@@ -12,7 +11,7 @@ function niceMax(v: number) {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p
 }
 
-export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick = num, average = false }: {
+export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick = num, average = false, currentLabel }: {
   data: { label: string; value: number }[]
   height?: number
   color?: string
@@ -20,6 +19,8 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
   tick?: (v: number) => string
   /** Línea discontinua con la media de las semanas con datos. */
   average?: boolean
+  /** Etiqueta de la última barra (la semana en curso), en lugar de su fecha. */
+  currentLabel?: string
 }) {
   const pad = { l: 4, r: 46, t: 8, b: 20 }
   const max = niceMax(Math.max(...data.map((d) => d.value), 0))
@@ -53,16 +54,16 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
           <g key={i}>
             {d.value === 0 && i === data.length - 1 && (
               // Semana en curso aún vacía: una marca naranja en la base indica dónde va.
-              <>
-                <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - 4} width={bw * 0.42} height={4} rx={2} fill="var(--accent)" />
-                <text x={pad.l + i * bw + bw * 0.71} y={pad.t + ch - 10} textAnchor="end">{t('esta sem.', 'this wk')}</text>
-              </>
+              <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - 4} width={bw * 0.42} height={4} rx={2} fill="var(--accent)" />
             )}
             {d.value > 0 && (
               <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - h} width={bw * 0.42} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
             )}
-            {i % 2 === 0 && (
-              <text x={pad.l + i * bw + bw / 2} y={height - 5} textAnchor="middle">{d.label}</text>
+            {/* Una fecha de cada dos, contando desde la última para que la semana en curso siempre lleve la suya. */}
+            {(data.length - 1 - i) % 2 === 0 && (
+              <text x={pad.l + i * bw + bw / 2} y={height - 5} textAnchor="middle" className={currentLabel && i === data.length - 1 ? 'chart-current' : undefined}>
+                {currentLabel && i === data.length - 1 ? currentLabel : d.label}
+              </text>
             )}
           </g>
         )

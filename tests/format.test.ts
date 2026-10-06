@@ -46,7 +46,7 @@ test('la semana empieza en lunes', () => {
 test('volumen en toneladas a partir de 1000', () => {
   assert.equal(tons(17100, 'kg'), '17,1 t')
   assert.equal(tons(373140, 'kg'), '373,1 t')
-  assert.equal(tons(6000, 'kg'), '6 t')
+  assert.equal(tons(6000, 'kg'), '6,0 t')
   assert.equal(tons(950, 'kg'), '950 kg')
-  assert.equal(tons(10000, 'lb'), '22k lb')
+  assert.equal(tons(10000, 'lb'), '22,0k lb')
 })

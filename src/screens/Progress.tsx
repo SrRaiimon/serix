@@ -5,10 +5,10 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, tons, weight } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, shortDay, tonnes, tons, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, monthToDate, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
+import { exerciseHistory, monthToDate, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -184,7 +184,7 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     <Card title={`${t('Este mes', 'This month')} (${month})`} icon={Calendar}>
       <div className="month-grid">
         {item(t('Entrenos', 'Workouts'), 'sessions', (v) => String(v))}
-        {item(t('Volumen', 'Volume'), 'volume', (v) => (unit === 'kg' ? `${num(Math.round(v / 100) / 10)} t` : tons(v, unit)))}
+        {item(t('Volumen', 'Volume'), 'volume', (v) => tonnes(v, unit))}
         {item(t('Series efectivas', 'Working sets'), 'sets', (v) => String(v))}
         {item(t('Tiempo', 'Time'), 'time', (v) => duration(v))}
       </div>
@@ -259,7 +259,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         { value: tons(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
       ]} />
       <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average
+        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average currentLabel={t('esta sem.', 'this wk')}
           tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit === 'kg' ? 'toneladas' : 'miles de lb'} levantadas (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit === 'kg' ? 'tonnes' : 'thousands of lb'} lifted (weight × reps). The dashed line is your average.`)}</span>
       </Card>
@@ -402,6 +402,19 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
 
 type Metric = 'e1rm' | 'weight' | 'volume'
 
+/** Sesiones de más nueva a más vieja, juntando las seguidas que repiten peso, repeticiones y máximo estimado. */
+function sessionRuns(points: ExercisePoint[]): { p: ExercisePoint; from: number; to: number; count: number }[] {
+  const runs: { p: ExercisePoint; from: number; to: number; count: number }[] = []
+  for (const p of [...points].reverse()) {
+    const last = runs[runs.length - 1]
+    if (last && last.p.maxWeight === p.maxWeight && last.p.repsAtMax === p.repsAtMax && Math.abs(last.p.e1rm - p.e1rm) < 0.01) {
+      last.from = p.date
+      last.count++
+    } else runs.push({ p, from: p.date, to: p.date, count: 1 })
+  }
+  return runs
+}
+
 export function ExerciseProgressScreen({ id }: { id: string }) {
   const data = useData()
   const unit = data.settings.unit
@@ -439,18 +452,21 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
           )}
         </Card>
         <RepRecordsCard exerciseId={id} sessions={sessions} unit={unit} />
-        <div className="list-header session-head"><span>{t('Sesiones', 'Sessions')}</span><span>{t('Peso', 'Weight')}</span><span /><span>{t('Máx. est.', 'Est. max')}</span></div>
+        <div className="list-header session-head"><span>{t('Sesiones', 'Sessions')}</span><span>{t('Serie', 'Set')}</span><span>{t('Máx. est.', 'Est. max')}</span><span>{t('Cambio', 'Change')}</span></div>
         <div className="list">
-          {[...points].reverse().map((p, i, list) => {
-            // Cambio respecto a la sesión anterior de este ejercicio (la siguiente en la lista, que va de nueva a vieja).
-            const before = list[i + 1]
-            const diff = before ? fromKg(p.e1rm - before.e1rm, unit) : 0
+          {sessionRuns(points).map((run, i, runs) => {
+            // Cambio del máximo estimado respecto al grupo anterior (el siguiente en la lista, que va de nuevo a viejo).
+            const before = runs[i + 1]
+            const diff = before ? fromKg(run.p.e1rm - before.p.e1rm, unit) : 0
             return (
-              <div key={p.date} className="list-row session-row">
-                <span>{shortDay(p.date)}</span>
-                <span className="small muted">{weight(p.maxWeight, unit)}</span>
-                <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))} ${unit}` : ''}</span>
-                <span className="bold">{int(fromKg(p.e1rm, unit))} {unit}</span>
+              <div key={run.from} className="list-row session-row">
+                <span>
+                  {run.count > 1 ? `${shortDay(run.from)}–${shortDay(run.to)}` : shortDay(run.to)}
+                  {run.count > 1 && <span className="tiny muted" style={{ display: 'block' }}>{t(`${run.count} sesiones iguales`, `${run.count} same sessions`)}</span>}
+                </span>
+                <span className="small muted">{weightValue(run.p.maxWeight, unit)} × {run.p.repsAtMax}</span>
+                <span className="bold">{int(fromKg(run.p.e1rm, unit))} {unit}</span>
+                <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))} ${unit}` : '—'}</span>
               </div>
             )
           })}

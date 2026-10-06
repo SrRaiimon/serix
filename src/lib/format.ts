@@ -32,10 +32,13 @@ export const weightValue = (kg: number, unit: Unit) => num(fromKg(kg, unit))
 export const weight = (kg: number, unit: Unit) => `${weightValue(kg, unit)} ${unit}`
 export const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
 /** Volumen en toneladas a partir de 1000 (« 6 t », « 11,1 t »): el mismo formato en imágenes y resúmenes. */
-export const tons = (kg: number, unit: Unit) => {
+export const tons = (kg: number, unit: Unit) => (fromKg(kg, unit) < 1000 ? volume(kg, unit) : tonnes(kg, unit))
+
+/** Siempre en toneladas con un decimal («0,4 t»): para comparar con una cifra que ya va en toneladas. */
+export const tonnes = (kg: number, unit: Unit) => {
   const v = fromKg(kg, unit)
-  if (v < 1000) return volume(kg, unit)
-  return unit === 'kg' ? `${num(Math.round(v / 100) / 10)} t` : `${num(Math.round(v / 100) / 10)}k lb`
+  const short = (Math.round(v / 100) / 10).toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+  return unit === 'kg' ? `${short} t` : `${short}k lb`
 }
 
 

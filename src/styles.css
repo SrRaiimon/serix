@@ -1459,6 +1459,11 @@ a.list-row:active {
   font-size: 10px;
 }
 
+.chart text.chart-current {
+  fill: var(--accent-text);
+  font-weight: 700;
+}
+
 .chart .avg-line {
   stroke: var(--text);
   stroke-width: 1;
@@ -2295,9 +2300,11 @@ html.scroll-locked body {
 .week .dot.today.done { background: var(--ink); color: var(--on-ink); box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--accent); }
 .segmented { gap: 4px; }
 .share-preview.story { aspect-ratio: 9 / 16; width: 52%; }
-.session-row, .session-head { display: grid; grid-template-columns: minmax(0, 1fr) 72px 58px 74px; align-items: baseline; gap: 6px; }
+.session-row, .session-head { display: grid; grid-template-columns: minmax(0, 1fr) 60px 68px 50px; align-items: baseline; gap: 6px; }
+.session-row > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-head > span { white-space: nowrap; }
 .session-row > :not(:first-child), .session-head > :not(:first-child) { text-align: right; }
-.session-head { margin: 6px 0 -8px; padding: 0 17px; letter-spacing: 0.04em; }
+.session-head { margin: 6px 0 -8px; padding: 0 17px; letter-spacing: 0.02em; font-size: 11px; }
 .session-delta { min-width: 0; }
 .rpe-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 50px; }
 .rpe-chip small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
