@@ -2309,3 +2309,24 @@ html.scroll-locked body {
 .rpe-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 50px; }
 .rpe-chip small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
 .rpe-chip.active small { color: var(--on-ink); }
+
+/* MARK: Ejercicios */
+
+.icon-btn.on { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.fav-star { color: var(--gold); margin-left: 6px; vertical-align: 0; }
+.ex-last { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; text-align: right; }
+.ex-last strong { font-family: var(--font-display); font-size: 16px; font-weight: 800; font-stretch: 100%; white-space: nowrap; }
+.ex-head { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.ex-title { margin: 0; font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 106%; line-height: 1.08; letter-spacing: -0.01em; }
+.ex-head .btn { margin-top: 6px; }
+.ex-steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 12px; }
+.ex-steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-size: 15px; line-height: 1.4; }
+.ex-steps li::before { content: counter(step); font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.1; color: var(--text); }
+.ex-tip { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--fill); font-size: 15px; line-height: 1.4; }
+.ex-tip strong { font-weight: 800; }
+.card .stat-band.three > div { padding: 10px 12px; }
+.card .stat-band.three strong { font-size: 21px; }
+/* El buscador: un solo botón de borrar (el propio) y el aro de foco en toda la caja. */
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+.search input:focus-visible { outline: none; }
+.search:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }

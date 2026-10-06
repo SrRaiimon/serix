@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { e1rm, lastSets, monthToDate, muscleRecovery, newRecords, progressionHint, recoveryHours, records, sessionSets, sessionVolume, stall, stalls } from '../src/lib/stats'
+import { e1rm, exerciseUsage, lastSets, monthToDate, muscleRecovery, newRecords, progressionHint, recoveryHours, records, sessionSets, sessionVolume, stall, stalls } from '../src/lib/stats'
 import { DAY, T0, exercise, session, set } from './helpers'
 
 test('1RM estimado (Epley)', () => {
@@ -133,4 +133,17 @@ test('recuperación: más volumen, más horas; el último entrenamiento manda', 
   assert.equal(by.triceps.sets, 2)
   // Piernas hace 5 días: recuperadas.
   assert.equal(by.quads.ready, 1)
+})
+
+test('uso de ejercicios: última vez, sesiones y mejor serie', () => {
+  const usage = exerciseUsage([
+    session(7, [exercise('bench', [set(80, 8), set(85, 5), set(85, 6), set(100, 1, { warmup: true })])]),
+    session(0, [exercise('bench', [set(70, 10)]), exercise('row', [set(60, 8, { done: false })])]),
+  ])
+  const bench = usage.get('bench')!
+  assert.equal(bench.count, 2)
+  assert.equal(bench.last, T0 + 7 * DAY)
+  assert.equal(bench.top.weight, 85)
+  assert.equal(bench.top.reps, 6)
+  assert.equal(usage.has('row'), false)
 })

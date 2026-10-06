@@ -353,3 +353,37 @@ export function muscleRecovery(sessions: Session[], secondaryOf: (exerciseId: st
   }
   return [...result.values()]
 }
+
+// MARK: Uso de cada ejercicio
+
+export interface ExerciseUsage {
+  /** Inicio de la última sesión en que se hizo. */
+  last: number
+  /** Sesiones en que aparece. */
+  count: number
+  /** Mejor serie de esa última vez (la más pesada; a igual peso, la de más repeticiones). */
+  top: SetEntry
+  exercise: SessionExercise
+  session: string
+}
+
+/** Qué ejercicios has hecho, cuántas veces y tu mejor serie de la última vez. Sesiones de más nueva a más vieja. */
+export function exerciseUsage(sessions: Session[]): Map<string, ExerciseUsage> {
+  const usage = new Map<string, ExerciseUsage>()
+  for (const s of sessions) {
+    for (const e of s.exercises) {
+      const sets = workingSets(e)
+      if (!sets.length) continue
+      const known = usage.get(e.exerciseId)
+      if (!known) usage.set(e.exerciseId, { last: s.start, count: 1, top: bestSet(sets), exercise: e, session: s.id })
+      else if (known.session !== s.id) {
+        known.count++
+        if (s.start > known.last) Object.assign(known, { last: s.start, top: bestSet(sets), exercise: e, session: s.id })
+      }
+    }
+  }
+  return usage
+}
+
+const bestSet = (sets: SetEntry[]) =>
+  sets.reduce((a, b) => (b.weight > a.weight || (b.weight === a.weight && (b.reps > a.reps || (b.duration ?? 0) > (a.duration ?? 0))) ? b : a), sets[0])
