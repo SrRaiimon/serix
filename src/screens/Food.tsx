@@ -98,9 +98,10 @@ export function FoodScreen() {
                   <RotateCcw size={18} />
                   <span className="grow food-row-text">
                     <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Repetir lo de ayer', "Repeat yesterday's")}</span>
-                    <span className="small muted">
-                      {yesterdayItems.length === 1 ? yesterdayItems[0].name : t(`${yesterdayItems[0].name} y ${yesterdayItems.length - 1} más`, `${yesterdayItems[0].name} and ${yesterdayItems.length - 1} more`)}
-                      {' · '}{proteinOnly ? nb(`${g(yesterdaySums.p)} g prot.`) : nb(`${int(yesterdaySums.kcal)} kcal`)}
+                    <span className="small muted clamp-1" style={{ display: 'block' }}>{yesterdayItems.map((x) => x.name).join(', ')}</span>
+                    <span className="small muted" style={{ display: 'block' }}>
+                      {[t(`${yesterdayItems.length} ${yesterdayItems.length === 1 ? 'alimento' : 'alimentos'}`, `${yesterdayItems.length} ${yesterdayItems.length === 1 ? 'food' : 'foods'}`),
+                        ...(proteinOnly ? [] : [`${int(yesterdaySums.kcal)} kcal`]), `${g(yesterdaySums.p)} g prot.`].map(nb).join(' · ')}
                     </span>
                   </span>
                 </button>
@@ -274,7 +275,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
   }
   if (view.kind === 'fix') {
     return <MyFoodSheet initial={view.food} onBack={() => setView({ kind: 'amount', food: fromMine(view.food) })} onClose={onClose}
-      onSaved={(f) => setView({ kind: 'amount', food: fromMine(f) })} />
+      onSaved={(f) => { onAdded(t(`Guardado en Mis alimentos: ${f.name}`, `Saved to My foods: ${f.name}`)); setView({ kind: 'amount', food: fromMine(f) }) }} />
   }
   if (view.kind === 'scan') {
     return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose}
@@ -308,10 +309,10 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
   const quickText = (v: Per100) => [t('A mano', 'By hand'), ...(proteinOnly ? [] : [nb(`${int(v.kcal)} kcal`)]), ...(v.p > 0 || proteinOnly ? [nb(`${g(v.p)} g prot.`)] : [])].join(' · ')
   /** Lo que añade el «+»: la ración si la hay (o lo último que apuntaste), si no 100 g. */
   const quickGrams = (food: Pickable) => food.grams ?? food.portions[0]?.g ?? 100
-  /** Misma línea para todos: [marca ·] [ración ·] g · kcal · prot. (la ración, si no es justo 100 g). */
+  /** Misma línea para todos: [marca ·] [ración ·] g · kcal · prot. (la ración, solo si tiene nombre propio: «1 huevo»). */
   const detailText = (per100: Per100, grams: number, extra: { brand?: string; portion?: Portion }) => [
     extra.brand,
-    extra.portion && extra.portion.g === grams && grams !== 100 ? nb(portionLabel(extra.portion.label)) : undefined,
+    extra.portion && extra.portion.g === grams && portionLabel(extra.portion.label) !== portionLabel() ? nb(portionLabel(extra.portion.label)) : undefined,
     amountText(per100, grams),
   ].filter(Boolean).join(' · ')
   /** Fila de un alimento: el «+» añade lo que dice la línea; si sus valores no cuadran, hay que abrirlo antes. */
@@ -322,7 +323,9 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
         <span className="small muted">{detail}</span>
         {doubtful && <span className="small doubt-line"><TriangleAlert size={14} aria-hidden="true" /> {t('Las kcal no cuadran: revisa la etiqueta', 'Calories do not add up: check the label')}</span>}
       </button>
-      {!doubtful && <button className="icon-btn" onClick={onAdd} aria-label={t(`Añadir ${g(grams)} g de ${name}`, `Add ${g(grams)} g of ${name}`)}><Plus size={19} /></button>}
+      {doubtful
+        ? <button className="icon-btn plain-chevron" onClick={onOpen} aria-label={t(`Revisar ${name}`, `Review ${name}`)}><ChevronRight size={20} /></button>
+        : <button className="icon-btn" onClick={onAdd} aria-label={t(`Añadir ${g(grams)} g de ${name}`, `Add ${g(grams)} g of ${name}`)}><Plus size={19} /></button>}
     </div>
   )
   const addMeal = (id: string) => {
@@ -465,21 +468,30 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
   const before = dayEntries ? dayTotals(dayEntries.filter((e) => e.id !== editingId)) : undefined
   const after = before && valid ? { kcal: before.kcal + Math.round(v.kcal), p: before.p + v.p } : undefined
   const proteinOnly = goals?.proteinOnly === true
+  const doubtful = food.ref?.kind !== 'basic' && food.ref?.kind !== 'quick' && doubtfulValues(food.per100)
+  const saveButton = (primary: boolean, label: string) => (
+    <button className={`btn ${primary ? 'primary' : 'secondary'} block`} disabled={!valid} onClick={() => onSave(Math.round(grams * 10) / 10)}>{label}</button>
+  )
   return (
     <Sheet title={title} onClose={onClose}
       left={onBack ? <button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button> : <button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}
-      footer={<button className="btn primary block" disabled={!valid} onClick={() => onSave(Math.round(grams * 10) / 10)}>{onDelete ? t('Guardar', 'Save') : t('Añadir', 'Add')}</button>}>
+      footer={doubtful && onFix ? (
+        // Con datos que no cuadran, lo primero es corregirlos; añadir tal cual queda como segunda opción.
+        <div className="stack-buttons">
+          <button className="btn primary block" onClick={onFix}><PenLine size={18} /> {t('Corregir valores', 'Fix values')}</button>
+          {saveButton(false, t('Añadir de todos modos', 'Add anyway'))}
+        </div>
+      ) : saveButton(true, onDelete ? t('Guardar', 'Save') : t('Añadir', 'Add'))}>
       <header className="ex-head">
         <h2 className="ex-title" style={{ fontSize: 24 }}>{food.name}</h2>
         {food.detail && <span className="muted">{food.detail}</span>}
       </header>
-      {food.ref?.kind !== 'basic' && food.ref?.kind !== 'quick' && doubtfulValues(food.per100) && (
+      {doubtful && (
         <p className="food-health doubt small" style={{ margin: 0 }}>
           <TriangleAlert size={16} />
           <span className="grow">
             {t(`Estos valores no cuadran: pone ${int(food.per100.kcal)} kcal por 100 g, pero su proteína, hidratos y grasa dan unas ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)} kcal. Mira la etiqueta del envase.`,
               `These values do not add up: it says ${int(food.per100.kcal)} kcal per 100 g, but its protein, carbs and fat give about ${int(4 * food.per100.p + 4 * food.per100.c + 9 * food.per100.f)} kcal. Check the label on the pack.`)}
-            {onFix && <button className="btn secondary btn-sm" style={{ marginTop: 8 }} onClick={onFix}><PenLine size={16} /> {t('Corregir valores', 'Fix values')}</button>}
           </span>
         </p>
       )}
@@ -799,7 +811,7 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
   const field = (key: keyof typeof values, label: string, unit: string) => (
     <label className="list-row">
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
+      <input inputMode="decimal" placeholder={key === 'portion' ? t('opcional', 'optional') : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
       <span className="muted" style={{ width: 28 }}>{unit}</span>
     </label>
   )
@@ -819,6 +831,14 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
         {field('c', t('Hidratos', 'Carbs'), 'g')}
         {field('f', t('Grasa', 'Fat'), 'g')}
       </div>
+      {ok && (() => {
+        // Comprobación al escribir: las kcal frente a las que dan sus macros (lo mismo que el aviso).
+        const v = { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! }
+        const calc = int(4 * v.p + 4 * v.c + 9 * v.f)
+        return doubtfulValues(v)
+          ? <p className="small doubt-line" style={{ margin: 0 }}><TriangleAlert size={14} aria-hidden="true" /> {t(`Con estos valores salen unas ${calc} kcal, no ${int(v.kcal)}: revisa la etiqueta.`, `These values give about ${calc} kcal, not ${int(v.kcal)}: check the label.`)}</p>
+          : <p className="small muted" style={{ margin: 0 }}>{t(`Cuadra: sus macros dan unas ${calc} kcal.`, `Adds up: its macros give about ${calc} kcal.`)}</p>
+      })()}
       <div className="list-header">{t('Opcional', 'Optional')}</div>
       <div className="list">{field('portion', t('Una ración pesa', 'One serving weighs'), 'g')}</div>
     </Sheet>
@@ -936,8 +956,8 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
       )}
       {!manual && (
         <p className="list-footer" style={{ margin: 0 }}>
-          {t(`Se calcula con la fórmula de Mifflin-St Jeor y tu actividad. Proteína: ${editable(perKgValue)} g por kilo de peso. Con 1,6 g basta a la mayoría para ganar músculo; 1,8-2,2 g da margen, sobre todo si pierdes grasa (ayuda a no perder músculo). Es una estimación: si en 2-3 semanas tu peso no va como quieres, ajusta las calorías un 5-10 %.`,
-            `Calculated with the Mifflin-St Jeor formula and your activity. Protein: ${editable(perKgValue)} g per kg of body weight. 1.6 g is enough for most people to build muscle; 1.8-2.2 g gives some margin, especially when losing fat (it helps keep muscle). It is an estimate: if your weight is not moving as you want after 2-3 weeks, adjust calories by 5-10%.`)}
+          {t(`Proteína: ${editable(perKgValue)} g por kilo. Con 1,6 g basta a la mayoría; más da margen si pierdes grasa. Calorías: fórmula de Mifflin-St Jeor y tu actividad; si en 2-3 semanas tu peso no va como quieres, ajústalas un 5-10 %.`,
+            `Protein: ${editable(perKgValue)} g per kg. 1.6 g is enough for most people; more gives margin when losing fat. Calories: Mifflin-St Jeor formula and your activity; if your weight is not moving as you want after 2-3 weeks, adjust them by 5-10%.`)}
         </p>
       )}
     </Sheet>

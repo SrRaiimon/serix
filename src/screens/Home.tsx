@@ -111,6 +111,7 @@ function FoodTodayCard() {
             <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
           </span>
           <Progress value={totals.p} total={goals.protein} />
+          <span className="small muted">{totals.p < goals.protein ? t(`Te quedan ${int(goals.protein - totals.p)} g`, `${int(goals.protein - totals.p)} g left`) : t('Objetivo cumplido', 'Goal reached')}</span>
         </>
       ) : (
         <>
@@ -119,7 +120,10 @@ function FoodTodayCard() {
             <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
           </span>
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
-          <span className="small muted">{t('Proteína', 'Protein')} {int(totals.p)}{goals ? ` / ${int(goals.protein)}` : ''} g</span>
+          <span className="small muted">
+            {goals && (totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal · `, `${int(goals.kcal - totals.kcal)} kcal left · `) : t(`${int(totals.kcal - goals.kcal)} kcal de más · `, `${int(totals.kcal - goals.kcal)} kcal over · `))}
+            {t('Proteína', 'Protein')} {int(totals.p)}{goals ? ` / ${int(goals.protein)}` : ''} g
+          </span>
         </>
       )}
     </button>
