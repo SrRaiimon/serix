@@ -180,7 +180,10 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
       <div className={`food-bar ${left < 0 ? 'over' : ''}`} role="progressbar" aria-label={t('Calorías del día', 'Calories today')} aria-valuemin={0} aria-valuemax={goals.kcal} aria-valuenow={Math.round(totals.kcal)}>
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
       </div>
-      <span className={`small food-left ${left < 0 ? 'over' : 'muted'}`}>{left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}</span>
+      <span className={`small food-left ${left < 0 ? 'over' : 'muted'}`}>
+        {left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}
+        {goals.protein > totals.p ? t(` y ${g(goals.protein - totals.p)} g de proteína`, ` and ${g(goals.protein - totals.p)} g of protein`) : t(' · proteína cumplida', ' · protein reached')}
+      </span>
       <div className="food-macros">
         {macros.map((m) => (
           <div key={m.label}>
@@ -528,10 +531,19 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
           <span className="tiny muted">{doubtful ? t('Si lo añades así (datos dudosos)', 'If you add it as is (doubtful values)') : onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}</span>
           {!proteinOnly && <AfterBar label="kcal" before={before.kcal} after={after.kcal} goal={goals.kcal} format={int} />}
           <AfterBar label={t('Proteína', 'Protein')} before={before.p} after={after.p} goal={goals.protein} format={(x) => `${g(x)} g`} />
-          {/* Con datos dudosos, también el valor raro (p. ej. la grasa), para ver lo que metería. */}
-          {doubtful && !proteinOnly && (suspect === 'c' || suspect === 'f') && (
-            <AfterBar label={suspect === 'c' ? t('Hidratos', 'Carbs') : t('Grasa', 'Fat')} before={before[suspect]} after={before[suspect] + v[suspect]}
-              goal={suspect === 'c' ? goals.carbs : goals.fat} format={(x) => `${g(x)} g`} />
+          {/* Hidratos y grasa en una línea, siempre; en ámbar si se pasan o son el dato dudoso. */}
+          {!proteinOnly && (
+            <span className="small muted after-rest">
+              {([['c', t('Hidratos', 'Carbs'), goals.carbs], ['f', t('Grasa', 'Fat'), goals.fat]] as const).map(([key, label, goal], i) => {
+                const total = before[key] + v[key]
+                return (
+                  <span key={key}>
+                    {i > 0 && ' · '}
+                    <span className={total > goal || suspect === key ? 'warn' : ''}>{nb(`${label} ${g(total)} / ${int(goal)} g`)}</span>
+                  </span>
+                )
+              })}
+            </span>
           )}
         </div>
       )}
@@ -618,8 +630,10 @@ function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, 
             {examples.map((x) => (
               <button key={x.name} className="list-row" aria-pressed={values.kcal === String(x.kcal) && values.p === String(x.p)}
                 onClick={() => { setValues({ kcal: String(x.kcal), p: String(x.p), c: String(x.c), f: String(x.f) }); if (!name.trim() || name === initialName) setName(x.name) }}>
-                <span className="grow">{x.name}</span>
-                <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`]).map(nb).join(' · ')}</span>
+                <span className="grow">
+                  <span style={{ display: 'block' }}>{x.name}</span>
+                  <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`, `${x.c} g hid.`, `${x.f} g grasa`]).map(nb).join(' · ')}</span>
+                </span>
                 {values.kcal === String(x.kcal) && values.p === String(x.p) && <span className="check">✓</span>}
               </button>
             ))}
@@ -822,7 +836,7 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
   const field = (key: keyof typeof values, label: string, unit: string) => (
     <label className={`list-row ${suspect === key ? 'suspect' : ''}`}>
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder={key === 'portion' ? t('opcional', 'optional') : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} aria-invalid={suspect === key || undefined} />
+      <input inputMode="decimal" placeholder={key === 'portion' ? '—' : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} aria-invalid={suspect === key || undefined} />
       <span className="muted" style={{ width: 28 }}>{unit}</span>
     </label>
   )
@@ -962,12 +976,12 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
       )}
       {!manual && (
         <p className="list-footer" style={{ margin: 0 }}>
-          {perKg
-            ? t(`Has elegido ${editable(perKgValue)} g de proteína por kilo. Como referencia, 1,6 g basta a la mayoría y 1,8-2,2 g da margen, sobre todo si pierdes grasa.`,
-              `You chose ${editable(perKgValue)} g of protein per kg. For reference, 1.6 g is enough for most people and 1.8-2.2 g gives margin, especially when losing fat.`)
-            : t(`Proteína: ${editable(perKgValue)} g por kilo, algo más de los 1,6 g que bastan a la mayoría, para ir sobre seguro${aim === 'lose' ? ' al perder grasa' : ''}.`,
-              `Protein: ${editable(perKgValue)} g per kg, a bit above the 1.6 g that is enough for most people, to be on the safe side${aim === 'lose' ? ' when losing fat' : ''}.`)}
-          {' '}{t('Calorías: fórmula de Mifflin-St Jeor y tu actividad; si en 2-3 semanas tu peso no va como quieres, ajústalas un 5-10 %.', 'Calories: Mifflin-St Jeor formula and your activity; if your weight is not moving as you want after 2-3 weeks, adjust them by 5-10%.')}
+          {perKg ? t(`Has elegido ${editable(perKgValue)} g de proteína por kilo. `, `You chose ${editable(perKgValue)} g of protein per kg. `) : t(`Proteína: ${editable(perKgValue)} g por kilo. `, `Protein: ${editable(perKgValue)} g per kg. `)}
+          {aim === 'lose'
+            ? t('Al perder grasa, 1,8-2,2 g ayuda a no perder músculo.', 'When losing fat, 1.8-2.2 g helps keep muscle.')
+            : t('Con 1,6 g basta a la mayoría; algo más da margen.', '1.6 g is enough for most people; a bit more gives margin.')}
+          <br />
+          {t('Si en 2-3 semanas tu peso no va como quieres, ajusta las calorías un 5-10 %. (Se estiman con la fórmula de Mifflin-St Jeor.)', 'If your weight is not moving as you want after 2-3 weeks, adjust calories by 5-10%. (Estimated with the Mifflin-St Jeor formula.)')}
         </p>
       )}
     </Sheet>
