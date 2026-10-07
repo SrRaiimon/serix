@@ -5,7 +5,11 @@ const APP_CACHE = `serix-${VERSION}`
 // Lector de etiquetas (ocr/, ~6 MB): caché propia que sobrevive a las versiones de la app, para no
 // volver a descargarlo en cada publicación. Cambia de nombre solo si cambia el motor.
 const OCR_CACHE = 'serix-ocr-v1'
-const OWN_OR_LEGACY = (key) => (key.startsWith('serix-') && key !== OCR_CACHE) || key.startsWith('gym-app-') || key === 'gym-img-v1'
+// Productos de supermercado (aesan.json, ~2 MB): igual, aparte. Si cambia el archivo, cambia el número
+// aquí y en loadAesan (src/lib/nutrition.ts).
+const AESAN_CACHE = 'serix-aesan-v1'
+const KEEP = [OCR_CACHE, AESAN_CACHE]
+const OWN_OR_LEGACY = (key) => (key.startsWith('serix-') && !KEEP.includes(key)) || key.startsWith('gym-app-') || key === 'gym-img-v1'
 const PRECACHE = __PRECACHE__
 // ignoreVary: algunos servidores responden con "Vary: Origin" y los <script type="module"> se piden
 // con cabecera Origin, así que sin esto no coinciden con lo precargado y fallan sin conexión.
@@ -42,10 +46,13 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Lector de etiquetas: se guarda al descargarlo la primera vez y después funciona sin conexión.
-  if (url.pathname.includes('/ocr/')) {
+  // Lector de etiquetas, productos de supermercado y lector de códigos de barras (.wasm): se guardan al
+  // descargarlos la primera vez y después funcionan sin conexión. El .wasm cambia de nombre con cada
+  // versión, así que va en la caché de la versión (se borra con ella).
+  const keep = url.pathname.includes('/ocr/') ? OCR_CACHE : url.pathname.endsWith('/aesan.json') ? AESAN_CACHE : url.pathname.endsWith('.wasm') ? APP_CACHE : undefined
+  if (keep) {
     event.respondWith(
-      caches.open(OCR_CACHE).then((cache) => cache.match(request, MATCH).then((hit) => hit || fetch(request).then((res) => {
+      caches.open(keep).then((cache) => cache.match(request, keep === AESAN_CACHE ? { ignoreVary: true } : MATCH).then((hit) => hit || fetch(request).then((res) => {
         if (res.ok) cache.put(request, res.clone())
         return res
       }))),

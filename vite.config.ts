@@ -10,9 +10,9 @@ function serviceWorker(): Plugin {
     name: 'gym-service-worker',
     apply: 'build',
     generateBundle(_, bundle) {
-      // El lector de códigos de barras (.wasm, ~1 MB) no se precarga: solo sirve con conexión (para
-      // consultar el producto) y así no lo descarga quien no lo usa.
-      // Tampoco el lector de etiquetas (ocr/, ~6 MB): se guarda aparte la primera vez que se usa.
+      // El lector de códigos de barras (.wasm, ~1 MB), el de etiquetas (ocr/, ~6 MB) y los productos de
+      // supermercado (aesan.json, ~2 MB) no se precargan: se guardan la primera vez que se usan, así no
+      // los descarga quien no los usa (ver sw-template.js).
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm') && !f.startsWith('ocr/'))
       const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
         'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']

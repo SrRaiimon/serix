@@ -47,7 +47,8 @@ export interface MyFood {
   barcode?: string
   per100: Per100
   portion?: Portion
-  source: 'mine' | 'off'
+  /** De dónde salen los valores: tú, Open Food Facts o la base de datos de la AESAN. */
+  source: 'mine' | 'off' | 'aesan'
   /** Receta: sus ingredientes; los valores por 100 g y la ración salen de ellos. */
   recipe?: Recipe
 }
@@ -425,6 +426,64 @@ export function recentFoods(entries: FoodEntry[], max = 12): FoodEntry[] {
     if (out.length >= max) break
   }
   return out
+}
+
+// MARK: Productos de supermercado (AESAN)
+
+/**
+ * Productos vendidos en España (public/aesan.json, generado con scripts/foods/aesan.py): base de datos de
+ * la AESAN de alimentos y bebidas comercializados en 2022, reutilizable citando la fuente y la fecha. Se
+ * descarga la primera vez que se busca o se escanea (unos 800 KB) y funciona sin conexión.
+ */
+export interface AesanProduct extends ScannedProduct {
+  category: string
+  /** Nombre, marca y subcategoría sin tildes, para buscar. */
+  text: string
+}
+
+export const AESAN_SOURCE = 'AESAN, Base de datos de alimentos y bebidas comercializados en España en 2022'
+
+let aesan: Promise<{ list: AesanProduct[]; byCode: Map<string, AesanProduct> }> | undefined
+export function loadAesan() {
+  // ?v=: al cambiar el archivo se sube el número (y el de la caché en sw-template.js).
+  aesan ??= fetch(`${import.meta.env.BASE_URL}aesan.json?v=1`)
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    .then((d: { subcategories: string[]; products: (string | number)[][] }) => {
+      const list = d.products.map(([barcode, name, brand, kcal, p, c, f, sub, fiber]): AesanProduct => {
+        const category = d.subcategories[sub as number] ?? ''
+        return {
+          barcode: barcode as string, name: name as string, ...(brand && brand !== 'Sin Marca' ? { brand: brand as string } : {}),
+          per100: { kcal: kcal as number, p: p as number, c: c as number, f: f as number, ...(fiber !== undefined ? { fiber: fiber as number } : {}) },
+          category, text: fold(`${name} ${brand} ${category}`),
+        }
+      })
+      return { list, byCode: new Map(list.map((x) => [x.barcode, x])) }
+    })
+    .catch((e) => { aesan = undefined; throw e })
+  return aesan
+}
+
+/** Mismo producto con o sin el 0 inicial (un UPC-A de 12 cifras es un EAN-13 que empieza por 0). */
+export const barcodeVariants = (code: string) => [code, code.length === 12 ? `0${code}` : '', code.length === 13 && code.startsWith('0') ? code.slice(1) : ''].filter(Boolean)
+
+export async function findAesan(code: string): Promise<AesanProduct | undefined> {
+  const { byCode } = await loadAesan()
+  for (const c of barcodeVariants(code)) if (byCode.has(c)) return byCode.get(c)
+  return undefined
+}
+
+/** Productos que contienen todas las palabras; primero los que las tienen en el nombre o la marca, y los más vendidos. */
+export function searchAesan(list: AesanProduct[], query: string, max = 30): AesanProduct[] {
+  const words = fold(query).split(/\s+/).filter(Boolean)
+  if (!words.length) return []
+  const named: AesanProduct[] = [], byCategory: AesanProduct[] = []
+  for (const x of list) {
+    if (!words.every((w) => x.text.includes(w))) continue
+    const own = fold(`${x.name} ${x.brand ?? ''}`)
+    ;(words.every((w) => own.includes(w)) ? named : byCategory).push(x)
+    if (named.length >= max) break
+  }
+  return [...named, ...byCategory].slice(0, max)
 }
 
 // MARK: Lista básica

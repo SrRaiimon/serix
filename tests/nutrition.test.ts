@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, barcodeVariants, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -216,4 +216,20 @@ Proteínas/Protein/Protéines 9,1 g`
   assert.deepEqual(parseNutritionLabel('375 kcal\nGrasas 7,09\nHidratos de carbono 60 g\nProteínas 139 3,99'), { kcal: 375, f: 7, c: 60, p: 13 })
   assert.deepEqual(parseNutritionLabel('120 kcal\nGrasas 69\nHidratos de carbono 12 g\nProteínas 3 g'), { kcal: 120, f: 6, c: 12, p: 3 })
   assert.deepEqual(parseNutritionLabel('Grasas 0,49 g\nHidratos de carbono 49 g\nProteínas 19 g'), { f: 0.49, c: 49, p: 19 })
+})
+
+test('supermercados (AESAN): el archivo es válido y la búsqueda prioriza nombre y marca', () => {
+  const d = JSON.parse(readFileSync('public/aesan.json', 'utf8')) as { subcategories: string[]; products: (string | number)[][] }
+  assert.ok(d.products.length > 25000)
+  for (const p of d.products) {
+    assert.ok(validBarcode(p[0] as string) || /^\d{8,14}$/.test(p[0] as string))
+    assert.ok((p[3] as number) <= 1000 && [p[4], p[5], p[6]].every((x) => (x as number) >= 0 && (x as number) <= 100))
+    assert.ok(d.subcategories[p[7] as number] !== undefined)
+  }
+  const item = (barcode: string, name: string, brand: string, category: string): AesanProduct => ({ barcode, name, brand, category, per100: { kcal: 1, p: 0, c: 0, f: 0 }, text: fold(`${name} ${brand} ${category}`) })
+  const list = [item('1', 'Chclt rln', 'Nestle', 'Tabletas de chocolate'), item('2', 'Chocolate negro 70%', 'Valor', 'Tabletas de chocolate'), item('3', 'Yogur natural', 'Hacendado', 'Yogures')]
+  assert.deepEqual(searchAesan(list, 'chocolate').map((x) => x.barcode), ['2', '1'])
+  assert.deepEqual(searchAesan(list, 'hacendado yogur').map((x) => x.barcode), ['3'])
+  assert.deepEqual(barcodeVariants('036000291452'), ['036000291452', '0036000291452'])
+  assert.deepEqual(barcodeVariants('0036000291452'), ['0036000291452', '036000291452'])
 })

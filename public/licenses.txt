@@ -967,6 +967,15 @@ con la Licence Ouverte / Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ou
 Se han seleccionado 125 alimentos; los nombres en español y las raciones son propios. Los valores no se han
 modificado; cuando falta la energía, se calcula con los factores del Reglamento (UE) 1169/2011.
 
+Productos de supermercado (public/aesan.json): Agencia Española de Seguridad Alimentaria y Nutrición (AESAN),
+«Datos de composición de alimentos y bebidas comercializados en España en 2022», datos abiertos en
+https://www.aesan.gob.es/datos-abiertos/alimentos-y-bebidas, actualizados el 29/09/2026. Reutilizados según el
+aviso legal de la AESAN (usos comerciales y no comerciales, citando la fuente y la fecha de actualización y sin
+desnaturalizar su contenido). Los datos los recogió Kantar Worldpanel de las etiquetas en 2022 y pueden haber
+cambiado. Los valores nutricionales no se han modificado; los nombres se pasan a minúsculas, sin la marca al
+principio y sin restos de la codificación interna («(SC)», palabras repetidas). Su mención no implica
+recomendación ni respaldo de la AESAN.
+
 Productos con código de barras: se consultan en Open Food Facts (https://world.openfoodfacts.org) al
 escanearlos. Contiene datos de Open Food Facts, disponibles con la Open Database License (ODbL 1.0,
 https://opendatacommons.org/licenses/odbl/1-0/); el contenido de cada producto, con la Database Contents

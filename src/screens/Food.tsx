@@ -5,7 +5,7 @@ import { day as longDay, editable, fromKg, int, monthYear, parseDecimal, uid } f
 import { lang, locale, t } from '../lib/i18n'
 import {
   ACTIVITY, adjustGoals, AIMS, amountOf, dayFiber, weekdayOf, weekTemplate, FIBER_GOAL, recipeValues, waterGoal, type Recipe, type RecipeItem, CARRY_OVER_MAX, computeGoals, dayGoalOptions, dayKey, dayStatus, goalsForDay, trainingShift, weightAdvice, type DayGoalOptions, type WeightAdvice, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel, planFor,
-  quickEntryAmount, recentFoods, searchOff, shownGrams, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
+  quickEntryAmount, recentFoods, searchOff, AESAN_SOURCE, barcodeVariants, findAesan, loadAesan, searchAesan, type AesanProduct, shownGrams, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
   type DayPlan, type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
@@ -207,8 +207,8 @@ export function FoodScreen() {
       })}
 
       <p className="list-footer" style={{ margin: 0 }}>
-        {t('Alimentos básicos: tabla CIQUAL de la ANSES (Francia, Licence Ouverte 2.0), con las calorías calculadas como en las etiquetas de la UE. Productos con código de barras: Open Food Facts (ODbL). Son valores orientativos, no consejo médico.',
-          'Basic foods: ANSES CIQUAL table (France, Licence Ouverte 2.0), with calories calculated as on EU labels. Barcode products: Open Food Facts (ODbL). Values are approximate, not medical advice.')}
+        {t('Alimentos básicos: tabla CIQUAL de la ANSES (Francia, Licence Ouverte 2.0), con las calorías calculadas como en las etiquetas de la UE. Productos de supermercado: base de datos de alimentos y bebidas comercializados en España en 2022 de la AESAN (actualizada el 29/09/2026) y Open Food Facts (ODbL). Son valores orientativos, no consejo médico.',
+          'Basic foods: ANSES CIQUAL table (France, Licence Ouverte 2.0), with calories calculated as on EU labels. Supermarket products: AESAN database of food and drinks sold in Spain in 2022 (updated 29/09/2026) and Open Food Facts (ODbL). Values are approximate, not medical advice.')}
       </p>
 
       {dayMenu && (
@@ -568,7 +568,7 @@ const fromMine = (f: MyFood): Pickable => ({
   detail: f.brand && !fold(f.name).includes(fold(f.brand)) ? f.brand : undefined,
   per100: f.per100,
   portions: f.portion ? [f.portion] : [],
-  ref: f.source === 'off' && f.barcode ? { kind: 'off', id: f.barcode } : { kind: 'mine', id: f.id },
+  ref: f.source !== 'mine' && f.barcode ? { kind: 'off', id: f.barcode } : { kind: 'mine', id: f.id },
   source: f,
 })
 
@@ -598,11 +598,18 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
     onAdded(t(`Añadido a ${mealLabel(meal).toLowerCase()}: ${food.name}`, `Added to ${mealLabel(meal).toLowerCase()}: ${food.name}`))
     if (close) onClose()
   }
-  const productFood = (product: ScannedProduct): MyFood => data.nutrition.foods.find((f) => f.barcode === product.barcode)
-    ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source: 'off' }
-  const pickProduct = (product: ScannedProduct) => setView({ kind: 'amount', food: fromMine(productFood(product)) })
+  const productFood = (product: ScannedProduct, source: 'off' | 'aesan' = 'off'): MyFood => data.nutrition.foods.find((f) => f.barcode === product.barcode)
+    ?? { id: uid(), name: product.name, brand: product.brand, barcode: product.barcode, per100: product.per100, portion: product.portion, source }
+  const pickProduct = (product: ScannedProduct, source?: 'off' | 'aesan') => setView({ kind: 'amount', food: fromMine(productFood(product, source)) })
   /** Añadir de un toque la ración del envase. */
-  const addProduct = (product: ScannedProduct) => add(fromMine(productFood(product)), product.portion?.g ?? 100, false)
+  const addProduct = (product: ScannedProduct, source?: 'off' | 'aesan') => add(fromMine(productFood(product, source)), product.portion?.g ?? 100, false)
+  // Productos de supermercado de la AESAN: se cargan al empezar a buscar.
+  const [shops, setShops] = useState<AesanProduct[] | 'error'>()
+  const [shopsMax, setShopsMax] = useState(15)
+  useEffect(() => {
+    if (query.trim().length >= 3 && !shops) loadAesan().then((d) => setShops(d.list), () => setShops('error'))
+  }, [query, shops])
+  useEffect(() => setShopsMax(15), [query])
   const searchOnline = async (text: string) => {
     abort.current?.abort()
     abort.current = new AbortController()
@@ -767,6 +774,23 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
         <button className="list-row accent" onClick={() => setView({ kind: 'recipe', name: q || undefined })}><ChefHat size={19} /> {t('Crear una receta', 'Create a recipe')}</button>
         <button className="list-row accent" onClick={() => setView({ kind: 'quick', name: q || undefined })}><PenLine size={19} /> {t('Apuntar calorías y macros a mano', 'Log calories and macros by hand')}</button>
       </div>
+      {q.length >= 3 && (() => {
+        const mineCodes = new Set(data.nutrition.foods.map((f) => f.barcode).filter(Boolean))
+        const found = Array.isArray(shops) ? searchAesan(shops, q, 61).filter((p) => !mineCodes.has(p.barcode)) : []
+        return (
+          <>
+            <div className="list-header">{t('Supermercados en España', 'Supermarkets in Spain')}</div>
+            <div className="list">
+              {found.slice(0, shopsMax).map((p) => foodRow(p.barcode, p.name, detailText(p.per100, 100, { brand: p.brand }), doubtfulValues(p.per100), () => pickProduct(p, 'aesan'), () => addProduct(p, 'aesan'), 100))}
+              {found.length > shopsMax && <button className="list-row accent" onClick={() => setShopsMax(60)}><Plus size={19} /> {t('Ver más productos', 'Show more products')}</button>}
+              {shops === undefined && <div className="list-row small muted">{t('Cargando productos…', 'Loading products…')}</div>}
+              {shops === 'error' && <div className="list-row small muted">{t('No se han podido cargar los productos. Comprueba la conexión.', 'Could not load the products. Check your connection.')}</div>}
+              {Array.isArray(shops) && found.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
+            </div>
+            <p className="list-footer" style={{ margin: 0 }}>{t(`${AESAN_SOURCE}, actualizada el 29/09/2026 (datos de las etiquetas recogidos por Kantar Worldpanel; pueden haber cambiado). Valores por 100 g o 100 ml.`, `${AESAN_SOURCE} (Spanish Food Safety Agency), updated 29/09/2026 (label data collected by Kantar Worldpanel, may have changed). Values per 100 g or 100 ml.`)}</p>
+          </>
+        )
+      })()}
       {q.length >= 3 && (
         <>
           <div className="list-header">Open Food Facts</div>
@@ -1060,9 +1084,12 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
   const lookup = async (code: string) => {
     stop()
     // Ya lo tienes guardado: sin conexión y sin volver a preguntar.
-    const known = data.nutrition.foods.find((f) => f.barcode === code)
+    const known = data.nutrition.foods.find((f) => f.barcode && barcodeVariants(code).includes(f.barcode))
     if (known) return onFound(known)
     setState({ kind: 'looking', code })
+    // Primero la base de datos de la AESAN (productos vendidos en España; funciona sin conexión una vez cargada).
+    const shop = await findAesan(code).catch(() => undefined)
+    if (shop) return onFound({ id: uid(), name: shop.name, ...(shop.brand ? { brand: shop.brand } : {}), barcode: shop.barcode, per100: shop.per100, source: 'aesan' })
     abort.current = new AbortController()
     let product: ScannedProduct | undefined | 'offline'
     try {
@@ -1124,7 +1151,7 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
         <div className="transfer-aim barcode-aim" />
       </div>
       {state.kind === 'scanning' && <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>{t('Apunta al código de barras del envase.', 'Point at the barcode on the package.')}</p>}
-      {state.kind === 'looking' && <p className="small" style={{ margin: 0, textAlign: 'center' }}>{t(`Buscando ${state.code} en Open Food Facts…`, `Looking up ${state.code} on Open Food Facts…`)}</p>}
+      {state.kind === 'looking' && <p className="small" style={{ margin: 0, textAlign: 'center' }}>{t(`Buscando el producto ${state.code}…`, `Looking up product ${state.code}…`)}</p>}
       {state.kind === 'error' && (
         <div className="card">
           <span className="small">{state.message}</span>

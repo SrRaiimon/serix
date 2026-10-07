@@ -209,7 +209,7 @@ function myFood(v: unknown): MyFood | undefined {
   if (!values || !name) return undefined
   const portion = isObj(v.portion) && optNum(v.portion.g, 0.1, 5000) !== undefined ? { label: str(v.portion.label, '', 60), g: v.portion.g as number } : undefined
   return {
-    id: str(v.id, uid(), 50), name, per100: values, source: v.source === 'off' ? 'off' : 'mine',
+    id: str(v.id, uid(), 50), name, per100: values, source: v.source === 'off' || v.source === 'aesan' ? v.source : 'mine',
     ...(typeof v.brand === 'string' && v.brand ? { brand: v.brand.slice(0, 80) } : {}),
     ...(typeof v.barcode === 'string' && /^\d{8,14}$/.test(v.barcode) ? { barcode: v.barcode } : {}),
     ...(portion ? { portion } : {}),
