@@ -106,7 +106,7 @@ export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: str
       const f = byId.get(id)
       if (!f) break
       items.push({
-        key: id, name: en ? f.en : f.es, per100: { kcal: f.kcal, p: f.p, c: f.c, f: f.f }, ref: { kind: 'basic', id },
+        key: id, name: en ? f.en : f.es, per100: { kcal: f.kcal, p: f.p, c: f.c, f: f.f, ...(f.fiber !== undefined ? { fiber: f.fiber } : {}) }, ref: { kind: 'basic', id },
         role, g, min: min ?? g, max: max ?? g, step: units ? f.portion.g : g >= 50 ? 10 : 5,
       })
     }
@@ -144,7 +144,7 @@ export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: str
 
 export interface PlannedItem { key: string; name: string; per100: Per100; ref?: FoodRef; grams: number }
 
-const amount = (items: { per100: Per100 }[], grams: number[], k: keyof Per100) => items.reduce((n, x, i) => n + (x.per100[k] * grams[i]) / 100, 0)
+const amount = (items: { per100: Per100 }[], grams: number[], k: 'kcal' | 'p' | 'c' | 'f') => items.reduce((n, x, i) => n + (x.per100[k] * grams[i]) / 100, 0)
 
 /**
  * Cantidades del plato para unas calorías y una proteína: los alimentos «p» se ajustan a la proteína,

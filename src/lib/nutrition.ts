@@ -1,3 +1,4 @@
+import { addDays, startOfWeek } from './format'
 import { lang, t } from './i18n'
 
 // Comidas: lo que comes cada día (calorías y macronutrientes) frente a un objetivo calculado con
@@ -18,8 +19,8 @@ export const mealLabel = (m: MealKey) => ({
   dinner: t('Cena', 'Dinner'),
 })[m]
 
-/** Valores por 100 g: kilocalorías y gramos de proteína, carbohidratos y grasa. */
-export interface Per100 { kcal: number; p: number; c: number; f: number }
+/** Valores por 100 g: kilocalorías y gramos de proteína, carbohidratos y grasa (y fibra, si se sabe). */
+export interface Per100 { kcal: number; p: number; c: number; f: number; fiber?: number }
 
 /** De dónde sale un alimento: lista básica (id), Open Food Facts (código de barras) o propio (id). */
 export interface FoodRef { kind: 'basic' | 'off' | 'mine' | 'quick'; id: string }
@@ -47,6 +48,49 @@ export interface MyFood {
   per100: Per100
   portion?: Portion
   source: 'mine' | 'off'
+  /** Receta: sus ingredientes; los valores por 100 g y la ración salen de ellos. */
+  recipe?: Recipe
+}
+
+export interface RecipeItem { name: string; grams: number; per100: Per100; ref?: FoodRef }
+
+export interface Recipe {
+  items: RecipeItem[]
+  servings: number
+  /** Lo que pesa el plato ya hecho (el agua se evapora o se absorbe); si no, la suma de ingredientes. */
+  cookedG?: number
+}
+
+/** Valores de una receta: por 100 g del plato hecho, y cuánto pesa una ración. */
+export function recipeValues(r: Recipe): { per100: Per100; total: Per100; weight: number; portionG: number } {
+  const total = sum(r.items.map((i) => amountOf(i.per100, i.grams)))
+  const weight = r.cookedG && r.cookedG > 0 ? r.cookedG : r.items.reduce((n, i) => n + i.grams, 0)
+  const k = weight > 0 ? 100 / weight : 0
+  const round = (v: number) => Math.round(v * 10) / 10
+  return {
+    per100: {
+      kcal: Math.round(total.kcal * k), p: round(total.p * k), c: round(total.c * k), f: round(total.f * k),
+      ...(r.items.every((i) => i.per100.fiber !== undefined) ? { fiber: round(r.items.reduce((n, i) => n + (i.per100.fiber! * i.grams) / 100, 0) * k) } : {}),
+    },
+    total, weight, portionG: Math.round(weight / Math.max(1, r.servings)),
+  }
+}
+
+export interface WeekItem { meal: MealKey; name: string; grams: number; per100: Per100; ref?: FoodRef }
+
+/** Día de la semana de un día, con el lunes como 0. */
+export const weekdayOf = (day: string) => (fromDayKey(day).getDay() + 6) % 7
+
+/** Semana tipo a partir de la semana (lunes a domingo) que contiene `day`: los días con algo apuntado. */
+export function weekTemplate(entries: FoodEntry[], day: string): Partial<Record<number, WeekItem[]>> {
+  const monday = shiftDay(day, -weekdayOf(day))
+  const days: Partial<Record<number, WeekItem[]>> = {}
+  for (let i = 0; i < 7; i++) {
+    const items = entries.filter((e) => e.day === shiftDay(monday, i)).sort((a, b) => a.at - b.at)
+      .map(({ meal, name, grams, per100, ref }) => ({ meal, name, grams, per100, ...(ref ? { ref } : {}) }))
+    if (items.length) days[i] = items
+  }
+  return days
 }
 
 export interface SavedMeal {
@@ -64,6 +108,9 @@ export interface DayPlan {
   meals: Partial<Record<MealKey, { dish: string; removed?: string[]; skipped?: string[] }>>
 }
 
+/** Menú propuesto de un día, si lo hay. */
+export const planFor = (n: { plans?: DayPlan[] }, day: string) => n.plans?.find((p) => p.day === day)
+
 /** Lo que el generador ha aprendido de ti: platos aceptados y rechazados, y alimentos que quitas. */
 export interface PlanPrefs {
   dishes: Record<string, { yes: number; no: number }>
@@ -74,8 +121,15 @@ export interface NutritionData {
   entries: FoodEntry[]
   foods: MyFood[]
   meals: SavedMeal[]
-  plan?: DayPlan
+  /** Menús propuestos de hoy y de mañana. */
+  plans?: DayPlan[]
+  /** Vasos de agua (250 ml) de cada día. */
+  water?: Record<string, number>
+  /** Semana tipo: lo que se come cada día de la semana (0 = lunes), para volver a apuntarlo. */
+  week?: { saved: number; days: Partial<Record<number, WeekItem[]>> }
   prefs?: PlanPrefs
+  /** Días marcados a mano como de entreno (los días con entrenamiento ya cuentan solos). */
+  trainingDays?: string[]
 }
 
 export const emptyNutrition = (): NutritionData => ({ entries: [], foods: [], meals: [] })
@@ -86,19 +140,140 @@ export const emptyNutrition = (): NutritionData => ({ entries: [], foods: [], me
 export const CARRY_OVER_MAX = 0.15
 
 /**
- * Objetivo de un día. Con la compensación activada, si el día anterior te pasaste de calorías se resta
- * el exceso (como mucho un 15 % del objetivo y siempre de los hidratos; la proteína no se toca). Se
- * compara con el objetivo base del día anterior, no con el ya rebajado, para no encadenar recortes.
+ * Días de entreno y de descanso: los días que entrenas se suma un 10 % de calorías (en hidratos) y los
+ * de descanso se resta lo justo para que la semana sume lo mismo, según cuántos días entrenas. La resta
+ * nunca pasa del 15 %: si entrenas casi a diario, se suma menos. La proteína no cambia.
  */
-export function goalsForDay(goals: NutritionGoals, entries: FoodEntry[], day: string, carryOver: boolean): NutritionGoals & { carried: number } {
-  if (!carryOver || goals.proteinOnly) return { ...goals, carried: 0 }
+export function trainingShift(kcal: number, perWeek: number): { up: number; down: number } {
+  const t = Math.min(6, Math.max(1, Math.round(perWeek)))
+  const up = Math.round((kcal * Math.min(0.1, (CARRY_OVER_MAX * (7 - t)) / t)) / 10) * 10
+  return { up, down: Math.round((up * t) / (7 - t) / 10) * 10 }
+}
+
+export interface DayGoalOptions {
+  /** Restar al día siguiente lo que te pasas. */
+  carryOver: boolean
+  /** Más calorías los días de entreno: qué días entrenaste (o marcaste) y cuántos días entrenas a la semana. */
+  training?: { days: Set<string>; perWeek: number }
+}
+
+/** Objetivo base de un día: el de siempre, o el de entreno o descanso. */
+function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): NutritionGoals & { training?: boolean; shift: number } {
+  if (!opts.training || goals.proteinOnly) return { ...goals, shift: 0 }
+  const { up, down } = trainingShift(goals.kcal, opts.training.perWeek)
+  const training = opts.training.days.has(day)
+  const shift = training ? up : -down
+  return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training, shift }
+}
+
+/**
+ * Objetivo de un día: el de entreno o descanso y, con la compensación activada, menos lo que te pasaste
+ * el día anterior (como mucho un 15 % del objetivo y siempre de los hidratos; la proteína no se toca).
+ * Se compara con el objetivo base del día anterior, no con el ya rebajado, para no encadenar recortes.
+ */
+export function goalsForDay(goals: NutritionGoals, entries: FoodEntry[], day: string, opts: DayGoalOptions): NutritionGoals & { carried: number; training?: boolean; shift: number } {
+  const base = baseForDay(goals, day, opts)
+  if (!opts.carryOver || goals.proteinOnly) return { ...base, carried: 0 }
   const prev = shiftDay(day, -1)
   const eaten = entries.filter((e) => e.day === prev)
-  if (!eaten.length) return { ...goals, carried: 0 }
-  const over = dayTotals(eaten).kcal - goals.kcal
+  if (!eaten.length) return { ...base, carried: 0 }
+  const over = dayTotals(eaten).kcal - baseForDay(goals, prev, opts).kcal
   const carried = over > 0 ? Math.min(Math.round(over / 10) * 10, Math.round((goals.kcal * CARRY_OVER_MAX) / 10) * 10) : 0
-  if (!carried) return { ...goals, carried: 0 }
-  return { ...goals, kcal: goals.kcal - carried, carbs: Math.max(0, Math.round(goals.carbs - carried / 4)), carried }
+  if (!carried) return { ...base, carried: 0 }
+  return { ...base, kcal: base.kcal - carried, carbs: Math.max(0, Math.round(base.carbs - carried / 4)), carried }
+}
+
+/** Opciones del objetivo diario a partir de los datos de la app (ajustes, entrenos y días marcados). */
+export function dayGoalOptions(data: {
+  sessions: { start: number }[]
+  nutrition: { trainingDays?: string[] }
+  settings: { nutritionCarryOver?: boolean; nutritionTrainingSplit?: boolean; weeklyGoal: number }
+}): DayGoalOptions {
+  const carryOver = data.settings.nutritionCarryOver !== false
+  if (data.settings.nutritionTrainingSplit === false) return { carryOver }
+  const days = new Set(data.nutrition.trainingDays ?? [])
+  for (const s of data.sessions) days.add(dayKey(s.start))
+  return { carryOver, training: { days, perWeek: data.settings.weeklyGoal } }
+}
+
+// MARK: Semanas
+
+export interface WeekIntake {
+  start: Date
+  /** Media de calorías de los días con algo apuntado (0 si no hay ninguno). */
+  kcal: number
+  /** Días con algo apuntado. */
+  days: number
+  /** Peso medio de la semana, en kg (si te pesaste). */
+  weight?: number
+}
+
+/** Últimas semanas (lunes a domingo, la actual incluida): calorías medias y peso medio. */
+export function weeklyIntake(entries: FoodEntry[], weights: { date: number; weight?: number }[], weeks: number, now = Date.now()): WeekIntake[] {
+  const current = startOfWeek(now)
+  const byDay = new Map<string, FoodEntry[]>()
+  for (const e of entries) byDay.set(e.day, [...(byDay.get(e.day) ?? []), e])
+  return Array.from({ length: weeks }, (_, n) => {
+    const start = addDays(current, -7 * (weeks - 1 - n))
+    const end = addDays(start, 7).getTime()
+    const days = Array.from({ length: 7 }, (_, i) => byDay.get(dayKey(addDays(start, i)))).filter((d): d is FoodEntry[] => !!d?.length)
+    const w = weights.filter((m) => m.weight !== undefined && m.date >= start.getTime() && m.date < end).map((m) => m.weight!)
+    return {
+      start,
+      kcal: days.length ? Math.round(days.reduce((a, d) => a + dayTotals(d).kcal, 0) / days.length) : 0,
+      days: days.length,
+      ...(w.length ? { weight: w.reduce((a, b) => a + b, 0) / w.length } : {}),
+    }
+  })
+}
+
+// MARK: Ajuste según el peso
+
+/** Ritmo sano de cambio de peso a la semana, en % del peso, para cada objetivo. */
+export const WEIGHT_RATE: Record<Aim, [number, number]> = { lose: [-1, -0.25], keep: [-0.3, 0.3], gain: [0.1, 0.5] }
+/** Lo que se propone cambiar cada vez. */
+export const ADJUST_STEP = 150
+
+export interface WeightAdvice {
+  /** kg por semana (negativo: bajando). */
+  rate: number
+  /** % del peso por semana. */
+  pct: number
+  /** Calorías que se proponen sumar (+) o restar (−). */
+  change: number
+  /** Media de lo apuntado en esas semanas, si hay bastantes días apuntados. */
+  eaten?: number
+}
+
+/**
+ * Si en las últimas 3 semanas el peso no va al ritmo de tu objetivo, propone subir o bajar 150 kcal.
+ * Hace falta pesarse al menos 4 veces en 14 días o más (la tendencia, no un día suelto). Si has
+ * apuntado bastante comida y comes bastante más o menos de tu objetivo, no propone nada: primero hay
+ * que comer lo que marca.
+ */
+export function weightAdvice(weights: { date: number; weight?: number }[], goals: NutritionGoals, entries: FoodEntry[], now = Date.now()): WeightAdvice | undefined {
+  if (!goals.aim || goals.proteinOnly) return undefined
+  const from = now - 21 * 86400000
+  const points = weights.filter((m) => m.weight !== undefined && m.date >= from && m.date <= now).map((m) => ({ x: m.date / 86400000, y: m.weight! }))
+  if (points.length < 4) return undefined
+  const span = Math.max(...points.map((p) => p.x)) - Math.min(...points.map((p) => p.x))
+  if (span < 14) return undefined
+  // Recta de mínimos cuadrados: kg por día.
+  const mx = points.reduce((n, p) => n + p.x, 0) / points.length
+  const my = points.reduce((n, p) => n + p.y, 0) / points.length
+  const slope = points.reduce((n, p) => n + (p.x - mx) * (p.y - my), 0) / points.reduce((n, p) => n + (p.x - mx) ** 2, 0)
+  const rate = slope * 7
+  const pct = (rate / my) * 100
+  const [min, max] = WEIGHT_RATE[goals.aim]
+  const change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0
+  if (!change) return undefined
+  // ¿Comes lo que marca el objetivo? Solo con 7 días apuntados o más.
+  const fromDay = dayKey(from), today = dayKey(now)
+  const byDay = new Map<string, FoodEntry[]>()
+  for (const e of entries) if (e.day >= fromDay && e.day < today) byDay.set(e.day, [...(byDay.get(e.day) ?? []), e])
+  const eaten = byDay.size >= 7 ? Math.round([...byDay.values()].reduce((n, d) => n + dayTotals(d).kcal, 0) / byDay.size) : undefined
+  if (eaten !== undefined && Math.abs(eaten - goals.kcal) > goals.kcal * 0.1) return undefined
+  return { rate, pct, change, ...(eaten !== undefined ? { eaten } : {}) }
 }
 
 export type DayStatus = 'met' | 'over' | 'under'
@@ -133,6 +308,14 @@ export interface NutritionGoals {
   proteinPerKg?: number
   /** Ver solo la proteína (sin calorías ni el resto de macros), para quien no quiere contar calorías. */
   proteinOnly?: boolean
+  /** Calorías sumadas o restadas por el ajuste según el peso (ya incluidas en kcal; se conservan al recalcular). */
+  adjust?: number
+}
+
+/** Suma (o resta) calorías al objetivo, en hidratos, y lo apunta como ajuste. */
+export function adjustGoals(goals: NutritionGoals, change: number): NutritionGoals {
+  const adjust = (goals.adjust ?? 0) + change
+  return { ...goals, kcal: goals.kcal + change, carbs: Math.max(0, Math.round(goals.carbs + change / 4)), ...(adjust ? { adjust } : { adjust: undefined }) }
 }
 
 /** Proteína por kilo que se puede elegir (1,6 g/kg es el mínimo con beneficio claro para ganar músculo). */
@@ -171,8 +354,25 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
 /** Valores de una cantidad en gramos. */
 export function amountOf(per100: Per100, grams: number): Per100 {
   const k = grams / 100
-  return { kcal: per100.kcal * k, p: per100.p * k, c: per100.c * k, f: per100.f * k }
+  return { kcal: per100.kcal * k, p: per100.p * k, c: per100.c * k, f: per100.f * k, ...(per100.fiber !== undefined ? { fiber: per100.fiber * k } : {}) }
 }
+
+/** Fibra recomendada al día para adultos (EFSA, ingesta adecuada). */
+export const FIBER_GOAL = 25
+
+/** Fibra del día: la de los alimentos que traen el dato, y cuántos no lo traen. */
+export function dayFiber(entries: { per100: Per100; grams: number }[]): { g: number; missing: number } {
+  return {
+    g: entries.reduce((n, e) => n + ((e.per100.fiber ?? 0) * e.grams) / 100, 0),
+    missing: entries.filter((e) => e.per100.fiber === undefined).length,
+  }
+}
+
+/**
+ * Agua recomendada en vasos de 250 ml (EFSA: 2,5 l al día los hombres y 2 l las mujeres en total; un
+ * 20 % sale de la comida, el resto de lo que bebes).
+ */
+export const waterGoal = (sex?: Sex) => (sex === 'f' ? 6 : 8)
 
 export function sum(items: Per100[]): Per100 {
   return items.reduce((a, b) => ({ kcal: a.kcal + b.kcal, p: a.p + b.p, c: a.c + b.c, f: a.f + b.f }), { kcal: 0, p: 0, c: 0, f: 0 })
@@ -292,7 +492,7 @@ export function parseOffProduct(barcode: string, json: unknown, language: 'es' |
     barcode,
     name,
     brand: str(product.brands)?.split(',')[0].trim(),
-    per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f) },
+    per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f), ...(n(nut.fiber_100g) !== undefined && n(nut.fiber_100g)! <= 100 ? { fiber: round1(n(nut.fiber_100g)!) } : {}) },
     ...(grams && grams > 0 && grams < 2000 && (!servingUnit || servingUnit === 'g' || servingUnit === 'ml')
       ? { portion: { label: portionLabel(str(product.serving_size)), g: round1(grams) } } : {}),
   }
@@ -323,7 +523,7 @@ export function doubtfulValues(v: Per100): boolean {
  * El valor que más probablemente está mal cuando no cuadran: si los macros dan de más, el que más kcal
  * aporta (p. ej. 55 g de grasa en un yogur); si dan de menos, las kcal.
  */
-export function suspectValue(v: Per100): keyof Per100 | undefined {
+export function suspectValue(v: Per100): 'kcal' | 'p' | 'c' | 'f' | undefined {
   if (!doubtfulValues(v)) return undefined
   if (4 * v.p + 4 * v.c + 9 * v.f < v.kcal) return 'kcal'
   return (['p', 'c', 'f'] as const).reduce((a, b) => ((b === 'f' ? 9 : 4) * v[b] > (a === 'f' ? 9 : 4) * v[a] ? b : a))

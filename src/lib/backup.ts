@@ -6,7 +6,7 @@ import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Sess
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
-import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type SavedMeal } from './nutrition'
+import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -155,6 +155,8 @@ function settings(v: unknown): Settings {
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
     nutrition: nutritionGoals(s.nutrition),
     nutritionCarryOver: s.nutritionCarryOver === false ? false : undefined,
+    nutritionTrainingSplit: s.nutritionTrainingSplit === false ? false : undefined,
+    nutritionAdviceAt: optNum(s.nutritionAdviceAt, EPOCH_MIN, EPOCH_MAX),
   }
 }
 
@@ -183,7 +185,8 @@ function exerciseNotes(v: unknown): Record<string, string> {
 function per100(v: unknown): Per100 | undefined {
   if (!isObj(v)) return undefined
   const kcal = optNum(v.kcal, 0, 1000), p = optNum(v.p, 0, 100), c = optNum(v.c, 0, 100), f = optNum(v.f, 0, 100)
-  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f } : undefined
+  const fiber = optNum(v.fiber, 0, 100)
+  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f, ...(fiber !== undefined ? { fiber } : {}) } : undefined
 }
 
 function foodRef(v: unknown): FoodRef | undefined {
@@ -210,7 +213,20 @@ function myFood(v: unknown): MyFood | undefined {
     ...(typeof v.brand === 'string' && v.brand ? { brand: v.brand.slice(0, 80) } : {}),
     ...(typeof v.barcode === 'string' && /^\d{8,14}$/.test(v.barcode) ? { barcode: v.barcode } : {}),
     ...(portion ? { portion } : {}),
+    ...(recipe(v.recipe) ? { recipe: recipe(v.recipe) } : {}),
   }
+}
+
+function recipe(v: unknown): Recipe | undefined {
+  if (!isObj(v)) return undefined
+  const items = list(v.items, (x) => {
+    if (!isObj(x)) return undefined
+    const values = per100(x.per100), grams = optNum(x.grams, 0.1, 5000)
+    return values && grams !== undefined ? { name: str(x.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(x.ref) } : undefined
+  }, 60)
+  if (!items.length) return undefined
+  const cookedG = optNum(v.cookedG, 1, 50000)
+  return { items, servings: num(v.servings, 1, 100, 1), ...(cookedG ? { cookedG } : {}) }
 }
 
 function savedMeal(v: unknown): SavedMeal | undefined {
@@ -226,7 +242,33 @@ function savedMeal(v: unknown): SavedMeal | undefined {
 function nutrition(v: unknown): NutritionData {
   if (!isObj(v)) return { entries: [], foods: [], meals: [] }
   const prefs = planPrefs(v.prefs)
-  return { entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200), ...(prefs ? { prefs } : {}) }
+  const trainingDays = list(v.trainingDays, (x) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : undefined), 400)
+  return {
+    entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200),
+    ...(prefs ? { prefs } : {}), ...(trainingDays.length ? { trainingDays } : {}), ...(water(v.water) ? { water: water(v.water) } : {}),
+    ...(week(v.week) ? { week: week(v.week) } : {}),
+  }
+}
+
+function week(v: unknown): NutritionData['week'] {
+  if (!isObj(v) || !isObj(v.days)) return undefined
+  const days: NonNullable<NutritionData['week']>['days'] = {}
+  for (let i = 0; i < 7; i++) {
+    const items = list((v.days as Record<string, unknown>)[i], (x) => {
+      if (!isObj(x)) return undefined
+      const values = per100(x.per100), grams = optNum(x.grams, 0.1, 5000), meal = oneOf(x.meal, MEALS)
+      return values && grams !== undefined && meal ? { meal, name: str(x.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(x.ref) } : undefined
+    }, 100)
+    if (items.length) days[i] = items
+  }
+  return Object.keys(days).length ? { saved: num(v.saved, EPOCH_MIN, EPOCH_MAX, Date.now()), days } : undefined
+}
+
+function water(v: unknown): Record<string, number> | undefined {
+  if (!isObj(v)) return undefined
+  const out: Record<string, number> = {}
+  for (const [day, n] of Object.entries(v).slice(-2000)) if (/^\d{4}-\d{2}-\d{2}$/.test(day) && typeof n === 'number' && n > 0) out[day] = Math.min(40, Math.round(n))
+  return Object.keys(out).length ? out : undefined
 }
 
 /** Lo aprendido para el menú propuesto (el menú del día no se copia: se rehace). */
@@ -252,6 +294,7 @@ function nutritionGoals(v: unknown): NutritionGoals | undefined {
     weightKg: optNum(v.weightKg, 25, 400), activity: optNum(v.activity, 1, 2.5), aim: oneOf(v.aim, ['lose', 'keep', 'gain'] as const),
     proteinPerKg: optNum(v.proteinPerKg, 1, 3.5),
     proteinOnly: v.proteinOnly === true ? true : undefined,
+    adjust: optNum(v.adjust, -3000, 3000) || undefined,
   }
 }
 

@@ -11,7 +11,7 @@ function niceMax(v: number) {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p
 }
 
-export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick = num, average = false, currentLabel }: {
+export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick = num, average = false, reference, currentLabel }: {
   data: { label: string; value: number }[]
   height?: number
   color?: string
@@ -19,11 +19,13 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
   tick?: (v: number) => string
   /** Línea discontinua con la media de las semanas con datos. */
   average?: boolean
+  /** Línea discontinua en un valor fijo (p. ej. el objetivo). */
+  reference?: number
   /** Etiqueta de la última barra (la semana en curso), en lugar de su fecha. */
   currentLabel?: string
 }) {
   const pad = { l: 4, r: 46, t: 8, b: 20 }
-  const max = niceMax(Math.max(...data.map((d) => d.value), 0))
+  const max = niceMax(Math.max(...data.map((d) => d.value), reference ?? 0, 0))
   const cw = W - pad.l - pad.r
   const ch = height - pad.t - pad.b
   const bw = cw / data.length
@@ -48,6 +50,7 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
         const y = pad.t + ch - (mean / max) * ch
         return <line className="avg-line" x1={pad.l} x2={W - pad.r} y1={y} y2={y} />
       })()}
+      {reference !== undefined && <line className="avg-line" x1={pad.l} x2={W - pad.r} y1={pad.t + ch - (reference / max) * ch} y2={pad.t + ch - (reference / max) * ch} />}
       {data.map((d, i) => {
         const h = (d.value / max) * ch
         return (

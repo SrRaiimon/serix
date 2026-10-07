@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -20,6 +20,7 @@ import { balanceTip, muscleBalance } from '../lib/balance'
 import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
+import { weeklyIntake } from '../lib/nutrition'
 
 type Section = 'summary' | 'muscles' | 'history' | 'records' | 'achievements'
 let savedSection: Section = 'summary'
@@ -42,7 +43,10 @@ export function ProgressScreen() {
     <div className="screen">
       <LargeTitle title={t('Progreso', 'Progress')} />
       {sessions.length === 0 ? (
+        <>
+        <WeightFoodCard />
         <Empty icon={ChartLine} title={t('Sin datos todavía', 'No data yet')} message={t('Completa tu primer entrenamiento y aquí verás tu volumen, récords y progreso por ejercicio.', 'Finish your first workout and you will see your volume, records and progress per exercise here.')} />
+        </>
       ) : (
         <>
           <Segmented value={section} onChange={setSection} options={[
@@ -246,6 +250,47 @@ function ShareSummaryCard({ sessions, unit }: { sessions: Session[]; unit: Unit 
   )
 }
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/** Calorías y peso semana a semana: para ver si el objetivo de Comidas está funcionando. */
+function WeightFoodCard() {
+  const data = useData()
+  const unit = data.settings.unit
+  const goal = data.settings.nutrition
+  const weeks = useMemo(() => weeklyIntake(data.nutrition.entries, data.measurements, 12), [data.nutrition.entries, data.measurements])
+  const fed = weeks.filter((w) => w.days > 0)
+  const weighed = weeks.filter((w) => w.weight !== undefined)
+  if (!fed.length && weighed.length < 2) return null
+  const avg = fed.length ? Math.round(fed.reduce((a, w) => a + w.kcal * w.days, 0) / fed.reduce((a, w) => a + w.days, 0)) : 0
+  const change = weighed.length >= 2 ? weighed[weighed.length - 1].weight! - weighed[0].weight! : undefined
+  const kg = (v: number) => weight(Math.abs(v), unit)
+  return (
+    <Card title={t('Calorías y peso', 'Calories and weight')} icon={Utensils}>
+      {fed.length > 0 && (
+        <>
+          <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.kcal }))} reference={goal && !goal.proteinOnly ? goal.kcal : undefined} currentLabel={t('esta sem.', 'this wk')} />
+          <span className="small muted">{goal && !goal.proteinOnly
+            ? t(`Calorías al día (media de los días apuntados). La línea discontinua es tu objetivo, ${int(goal.kcal)} kcal.`, `Calories a day (average of logged days). The dashed line is your goal, ${int(goal.kcal)} kcal.`)
+            : t('Calorías al día (media de los días apuntados).', 'Calories a day (average of logged days).')}</span>
+        </>
+      )}
+      {weighed.length >= 2 && (
+        <>
+          <LineChart points={weighed.map((w) => ({ x: w.start.getTime(), y: fromKg(w.weight!, unit) }))} height={140} />
+          <span className="small muted">{t('Peso medio de cada semana.', 'Average weight each week.')}</span>
+        </>
+      )}
+      <span className="small">
+        {capitalize([
+          fed.length ? t(`En estas semanas comes de media ${int(avg)} kcal al día`, `Over these weeks you eat ${int(avg)} kcal a day on average`) : '',
+          change === undefined ? '' : Math.abs(change) < 0.2 ? t('tu peso se mantiene', 'your weight is stable')
+            : change < 0 ? t(`has bajado ${kg(change)}`, `you have lost ${kg(change)}`) : t(`has subido ${kg(change)}`, `you have gained ${kg(change)}`),
+        ].filter(Boolean).join(t(' y ', ' and ')) + '.')}
+      </span>
+    </Card>
+  )
+}
+
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const weeks = weekly(sessions, 12)
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
@@ -263,6 +308,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
         <span className="small muted">{t(`Últimas 12 semanas · ${unit === 'kg' ? 'toneladas' : 'miles de lb'} levantadas (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit === 'kg' ? 'tonnes' : 'thousands of lb'} lifted (weight × reps). The dashed line is your average.`)}</span>
       </Card>
+      <WeightFoodCard />
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
       <YearMap sessions={sessions} unit={unit} />

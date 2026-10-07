@@ -2527,3 +2527,10 @@ textarea { resize: none; }
 .month-key.under i { background: var(--gold); }
 .proposal-remove.icon-btn { border: 0; }
 .mday:not(.met):not(.over):not(.under) { background: transparent; color: var(--text-2); }
+.day-kind { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
+.day-kind .nav-btn { padding: 0; min-height: 32px; font-weight: 600; }
+.water-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--separator); }
+.water-icon { color: var(--blue-text); flex-shrink: 0; }
+.water-dots { display: flex; flex-wrap: wrap; gap: 3px; max-width: 62px; justify-content: flex-end; }
+.water-dots i { width: 6px; height: 10px; border-radius: 2px 2px 3px 3px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--separator); }
+.water-dots i.on { background: var(--blue-text); box-shadow: none; }
