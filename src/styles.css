@@ -2467,7 +2467,7 @@ textarea { resize: none; }
 .food-health.doubt > svg { color: var(--amber-text); }
 .food-left { margin-top: -6px; }
 .food-left.over { color: var(--red-text); font-weight: 700; }
-.after-bars.unsure .food-bar > div { opacity: 0.45; }
+.after-bars.unsure .food-bar > div { opacity: 0.7; }
 .list-row.suspect { box-shadow: inset 3px 0 0 var(--amber-text); }
 .list-row.suspect input { color: var(--amber-text); font-weight: 700; }
 .list-row input:focus-visible { border-radius: 8px; outline-offset: 4px; }
@@ -2479,7 +2479,8 @@ textarea { resize: none; }
 .amount-chips { flex-wrap: wrap; overflow: visible; }
 .after-bars { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--separator); }
 .after-bar .food-bar { position: relative; }
-.after-bar .food-bar > .after-new { position: absolute; top: 0; height: 100%; background: repeating-linear-gradient(-45deg, var(--ink) 0 3px, transparent 3px 6px); transform: none; border-radius: 0 999px 999px 0; box-shadow: inset 0 0 0 1px var(--ink); }
+/* Lo que añade este alimento: liso y en gris medio; el rayado ámbar queda solo para lo que se pasa del objetivo. */
+.after-bar .food-bar > .after-new { position: absolute; top: 0; height: 100%; background: var(--text-2); transform: none; border-radius: 0 999px 999px 0; }
 .after-delta { font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .after-bar .over { color: var(--amber-text); }
 .after-bar .food-bar.over > div:first-child { background: var(--ink); }

@@ -531,15 +531,16 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
           <span className="tiny muted">{doubtful ? t('Si lo añades así (datos dudosos)', 'If you add it as is (doubtful values)') : onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}</span>
           {!proteinOnly && <AfterBar label="kcal" before={before.kcal} after={after.kcal} goal={goals.kcal} format={int} />}
           <AfterBar label={t('Proteína', 'Protein')} before={before.p} after={after.p} goal={goals.protein} format={(x) => `${g(x)} g`} />
-          {/* Hidratos y grasa en una línea, siempre; en ámbar si se pasan o son el dato dudoso. */}
+          {/* Hidratos y grasa en una línea, siempre, con lo que suma este alimento. Ámbar si se pasan; con datos dudosos, se dice. */}
           {!proteinOnly && (
             <span className="small muted after-rest">
-              {([['c', t('Hidratos', 'Carbs'), goals.carbs], ['f', t('Grasa', 'Fat'), goals.fat]] as const).map(([key, label, goal], i) => {
+              {([['c', t('Hidratos', 'Carbs'), goals.carbs], ['f', t('Grasa', 'Fat'), goals.fat]] as const).map(([key, label, goal]) => {
                 const total = before[key] + v[key]
+                const unsure = doubtful && suspect === key
                 return (
-                  <span key={key}>
-                    {i > 0 && ' · '}
-                    <span className={total > goal || suspect === key ? 'warn' : ''}>{nb(`${label} ${g(total)} / ${int(goal)} g`)}</span>
+                  <span key={key} style={{ display: 'block' }}>
+                    <span className={!unsure && total > goal ? 'warn' : ''}>{nb(`${label} +${g(v[key])} → ${g(total)} / ${int(goal)} g`)}</span>
+                    {unsure && <span>{t(' (dato dudoso)', ' (doubtful value)')}</span>}
                   </span>
                 )
               })}
@@ -592,7 +593,7 @@ function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, 
   const field = (key: keyof typeof values, label: string, unit: string) => (
     <label className="list-row">
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder={key === (proteinOnly ? 'p' : 'kcal') ? '0' : '—'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
+      <input inputMode="decimal" placeholder="—" style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
       <span className="muted" style={{ width: 32 }}>{unit}</span>
     </label>
   )
@@ -632,7 +633,7 @@ function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, 
                 onClick={() => { setValues({ kcal: String(x.kcal), p: String(x.p), c: String(x.c), f: String(x.f) }); if (!name.trim() || name === initialName) setName(x.name) }}>
                 <span className="grow">
                   <span style={{ display: 'block' }}>{x.name}</span>
-                  <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`, `${x.c} g hid.`, `${x.f} g grasa`]).map(nb).join(' · ')}</span>
+                  <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`, `${x.c} g hidr.`, `${x.f} g grasa`]).map(nb).join(' · ')}</span>
                 </span>
                 {values.kcal === String(x.kcal) && values.p === String(x.p) && <span className="check">✓</span>}
               </button>
@@ -976,14 +977,18 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
       )}
       {!manual && (
         <p className="list-footer" style={{ margin: 0 }}>
-          {perKg ? t(`Has elegido ${editable(perKgValue)} g de proteína por kilo. `, `You chose ${editable(perKgValue)} g of protein per kg. `) : t(`Proteína: ${editable(perKgValue)} g por kilo. `, `Protein: ${editable(perKgValue)} g per kg. `)}
-          {aim === 'lose'
-            ? t('Al perder grasa, 1,8-2,2 g ayuda a no perder músculo.', 'When losing fat, 1.8-2.2 g helps keep muscle.')
-            : t('Con 1,6 g basta a la mayoría; algo más da margen.', '1.6 g is enough for most people; a bit more gives margin.')}
+          {aim === 'gain'
+            ? t('Para ganar músculo: si en 2-3 semanas no subes de peso, añade 100-200 kcal.', 'To build muscle: if your weight has not gone up after 2-3 weeks, add 100-200 kcal.')
+            : aim === 'lose'
+              ? t('Para perder grasa: si en 2-3 semanas no bajas de peso, quita 100-200 kcal.', 'To lose fat: if your weight has not gone down after 2-3 weeks, remove 100-200 kcal.')
+              : t('Para mantener: si en 2-3 semanas tu peso cambia más de 1 kg, ajusta 100-200 kcal.', 'To maintain: if your weight changes by more than 1 kg in 2-3 weeks, adjust by 100-200 kcal.')}
           <br />
-          {t('Si en 2-3 semanas tu peso no va como quieres, ajusta las calorías un 5-10 %. (Se estiman con la fórmula de Mifflin-St Jeor.)', 'If your weight is not moving as you want after 2-3 weeks, adjust calories by 5-10%. (Estimated with the Mifflin-St Jeor formula.)')}
+          {aim === 'lose'
+            ? t(`Proteína: ${editable(perKgValue)} g por kilo; al perder grasa ayuda a no perder músculo.`, `Protein: ${editable(perKgValue)} g per kg; when losing fat it helps keep muscle.`)
+            : t(`Proteína: ${editable(perKgValue)} g por kilo (con 1,6 g basta a la mayoría).`, `Protein: ${editable(perKgValue)} g per kg (1.6 g is enough for most people).`)}
         </p>
       )}
+      {!manual && <p className="tiny muted" style={{ margin: 0 }}>{t('Calorías estimadas con la fórmula de Mifflin-St Jeor.', 'Calories estimated with the Mifflin-St Jeor formula.')}</p>}
     </Sheet>
   )
 }
