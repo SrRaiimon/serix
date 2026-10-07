@@ -156,11 +156,11 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
             <strong className="food-big">{g(totals.p)}</strong>
             <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
           </span>
-          <span className="small muted">{missing > 0 ? t(`Te quedan ${g(missing)} g`, `${g(missing)} g left`) : t('Objetivo cumplido', 'Goal reached')}</span>
         </div>
         <div className="food-bar" role="progressbar" aria-label={t('Proteína del día', 'Protein today')} aria-valuemin={0} aria-valuemax={goals.protein} aria-valuenow={Math.round(totals.p)}>
           <div style={{ transform: `scaleX(${pct(totals.p, goals.protein) / 100})` }} />
         </div>
+        <span className="small muted food-left">{missing > 0 ? t(`Te quedan ${g(missing)} g`, `${g(missing)} g left`) : t('Objetivo cumplido', 'Goal reached')}</span>
       </div>
     )
   }
@@ -176,11 +176,11 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
           <strong className="food-big">{int(totals.kcal)}</strong>
           <span className="muted"> / {int(goals.kcal)} kcal</span>
         </span>
-        <span className={`small ${left < 0 ? 'over' : 'muted'}`}>{left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}</span>
       </div>
       <div className={`food-bar ${left < 0 ? 'over' : ''}`} role="progressbar" aria-label={t('Calorías del día', 'Calories today')} aria-valuemin={0} aria-valuemax={goals.kcal} aria-valuenow={Math.round(totals.kcal)}>
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
       </div>
+      <span className={`small food-left ${left < 0 ? 'over' : 'muted'}`}>{left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}</span>
       <div className="food-macros">
         {macros.map((m) => (
           <div key={m.label}>
@@ -275,7 +275,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
   }
   if (view.kind === 'fix') {
     return <MyFoodSheet initial={view.food} onBack={() => setView({ kind: 'amount', food: fromMine(view.food) })} onClose={onClose}
-      onSaved={(f) => { onAdded(t(`Guardado en Mis alimentos: ${f.name}`, `Saved to My foods: ${f.name}`)); setView({ kind: 'amount', food: fromMine(f) }) }} />
+      onSaved={(f) => { onAdded(t('Guardado en Mis alimentos', 'Saved to My foods')); setView({ kind: 'amount', food: fromMine(f) }) }} />
   }
   if (view.kind === 'scan') {
     return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose}
@@ -502,7 +502,7 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
         <span className="muted">g</span>
         <button className="icon-btn" onClick={() => nudge(1)} aria-label={t(`Añadir ${step} g`, `Add ${step} g`)}><Plus size={17} /></button>
       </div>
-      {options.length > 0 && (
+      {portion && (
         <div className="chips amount-chips">
           {options.map((p) => (
             <button key={p.label} className={`chip ${Math.abs(grams - p.g) < 0.05 ? 'active' : ''}`} onClick={() => setText(editable(p.g))}>{p.label}</button>
@@ -523,8 +523,8 @@ function AmountSheet({ food, title, initialGrams, onBack, onClose, onSave, onDel
         </div>
       )}
       {after && before && goals && (
-        <div className="after-bars" aria-label={onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}>
-          <span className="tiny muted">{onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}</span>
+        <div className={`after-bars ${doubtful ? 'unsure' : ''}`} aria-label={onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}>
+          <span className="tiny muted">{onDelete ? t('Con este cambio, hoy', 'With this change, today') : t('Tras añadirlo, hoy', 'After adding it, today')}{doubtful ? t(' (con estos datos, que no cuadran)', ' (with these values, which do not add up)') : ''}</span>
           {!proteinOnly && <AfterBar label="kcal" before={before.kcal} after={after.kcal} goal={goals.kcal} format={int} />}
           <AfterBar label={t('Proteína', 'Protein')} before={before.p} after={after.p} goal={goals.protein} format={(x) => `${g(x)} g`} />
         </div>
@@ -808,10 +808,17 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
     })
     onSaved(food)
   }
+  // Si no cuadra, el campo más sospechoso: el macro que más kcal aporta si sobran, o las kcal si faltan.
+  const check = ok ? { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! } : undefined
+  const calc = check ? 4 * check.p + 4 * check.c + 9 * check.f : 0
+  const suspect: keyof typeof values | undefined = check && doubtfulValues(check)
+    ? (calc > check.kcal ? (['p', 'c', 'f'] as const).reduce((a, b) => ((b === 'f' ? 9 : 4) * check[b] > (a === 'f' ? 9 : 4) * check[a] ? b : a)) : 'kcal')
+    : undefined
+  const labels = { kcal: t('las calorías', 'the calories'), p: t('la proteína', 'the protein'), c: t('los hidratos', 'the carbs'), f: t('la grasa', 'the fat'), portion: '' }
   const field = (key: keyof typeof values, label: string, unit: string) => (
-    <label className="list-row">
+    <label className={`list-row ${suspect === key ? 'suspect' : ''}`}>
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder={key === 'portion' ? t('opcional', 'optional') : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} />
+      <input inputMode="decimal" placeholder={key === 'portion' ? t('opcional', 'optional') : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} aria-invalid={suspect === key || undefined} />
       <span className="muted" style={{ width: 28 }}>{unit}</span>
     </label>
   )
@@ -831,15 +838,10 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
         {field('c', t('Hidratos', 'Carbs'), 'g')}
         {field('f', t('Grasa', 'Fat'), 'g')}
       </div>
-      {ok && (() => {
-        // Comprobación al escribir: las kcal frente a las que dan sus macros (lo mismo que el aviso).
-        const v = { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! }
-        const calc = int(4 * v.p + 4 * v.c + 9 * v.f)
-        return doubtfulValues(v)
-          ? <p className="small doubt-line" style={{ margin: 0 }}><TriangleAlert size={14} aria-hidden="true" /> {t(`Con estos valores salen unas ${calc} kcal, no ${int(v.kcal)}: revisa la etiqueta.`, `These values give about ${calc} kcal, not ${int(v.kcal)}: check the label.`)}</p>
-          : <p className="small muted" style={{ margin: 0 }}>{t(`Cuadra: sus macros dan unas ${calc} kcal.`, `Adds up: its macros give about ${calc} kcal.`)}</p>
-      })()}
-      <div className="list-header">{t('Opcional', 'Optional')}</div>
+      {/* Comprobación al escribir: las kcal frente a las que dan sus macros (lo mismo que el aviso). */}
+      {check && (suspect
+        ? <p className="small doubt-line" style={{ margin: 0 }}><TriangleAlert size={14} aria-hidden="true" /> {t(`Con estos valores salen unas ${int(calc)} kcal, no ${int(check.kcal)}. Revisa sobre todo ${labels[suspect]}.`, `These values give about ${int(calc)} kcal, not ${int(check.kcal)}. Check ${labels[suspect]} first.`)}</p>
+        : <p className="small muted" style={{ margin: 0 }}>{t(`Cuadra: sus macros dan unas ${int(calc)} kcal.`, `Adds up: its macros give about ${int(calc)} kcal.`)}</p>)}
       <div className="list">{field('portion', t('Una ración pesa', 'One serving weighs'), 'g')}</div>
     </Sheet>
   )
