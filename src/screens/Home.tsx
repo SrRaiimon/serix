@@ -121,8 +121,10 @@ function FoodTodayCard() {
           </span>
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
           <span className="small muted">
-            {goals && (totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal · `, `${int(goals.kcal - totals.kcal)} kcal left · `) : t(`${int(totals.kcal - goals.kcal)} kcal de más · `, `${int(totals.kcal - goals.kcal)} kcal over · `))}
-            {t('Proteína', 'Protein')} {int(totals.p)} g{goals ? ` / ${int(goals.protein)} g` : ''}
+            {goals ? [
+              totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal`, `${int(goals.kcal - totals.kcal)} kcal left`) : t(`${int(totals.kcal - goals.kcal)} kcal de más`, `${int(totals.kcal - goals.kcal)} kcal over`),
+              totals.p < goals.protein ? t(`${int(goals.protein - totals.p)} g de proteína`, `${int(goals.protein - totals.p)} g of protein`) : t('proteína cumplida', 'protein reached'),
+            ].join(totals.kcal <= goals.kcal && totals.p < goals.protein ? t(' y ', ' and ') : ' · ') : t(`Proteína ${int(totals.p)} g`, `Protein ${int(totals.p)} g`)}
           </span>
         </>
       )}

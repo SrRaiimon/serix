@@ -135,14 +135,16 @@ export const entryTotals = (e: { per100: Per100; grams: number }) => amountOf(e.
  */
 export const dayTotals = (entries: { per100: Per100; grams: number }[]) => {
   const parts = entries.map(entryTotals)
-  const r1 = (v: number) => Math.round(v * 10) / 10
   return {
     kcal: parts.reduce((n, x) => n + Math.round(x.kcal), 0),
-    p: parts.reduce((n, x) => n + r1(x.p), 0),
-    c: parts.reduce((n, x) => n + r1(x.c), 0),
-    f: parts.reduce((n, x) => n + r1(x.f), 0),
+    p: parts.reduce((n, x) => n + shownGrams(x.p), 0),
+    c: parts.reduce((n, x) => n + shownGrams(x.c), 0),
+    f: parts.reduce((n, x) => n + shownGrams(x.f), 0),
   }
 }
+
+/** Gramos como se muestran: enteros desde 10 g, con un decimal por debajo (8,3 g; 11 g). */
+export const shownGrams = (v: number) => (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10)
 
 /** AAAA-MM-DD en hora local. */
 export function dayKey(d: Date | number = Date.now()): string {
@@ -264,6 +266,16 @@ export function portionLabel(text?: string): string {
 export function doubtfulValues(v: Per100): boolean {
   const calc = 4 * v.p + 4 * v.c + 9 * v.f
   return Math.abs(calc - v.kcal) > Math.max(40, v.kcal * 0.3)
+}
+
+/**
+ * El valor que más probablemente está mal cuando no cuadran: si los macros dan de más, el que más kcal
+ * aporta (p. ej. 55 g de grasa en un yogur); si dan de menos, las kcal.
+ */
+export function suspectValue(v: Per100): keyof Per100 | undefined {
+  if (!doubtfulValues(v)) return undefined
+  if (4 * v.p + 4 * v.c + 9 * v.f < v.kcal) return 'kcal'
+  return (['p', 'c', 'f'] as const).reduce((a, b) => ((b === 'f' ? 9 : 4) * v[b] > (a === 'f' ? 9 : 4) * v[a] ? b : a))
 }
 
 const round1 = (v: number) => Math.round(v * 10) / 10

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -170,4 +170,18 @@ test('valores dudosos: las kcal no cuadran con los macros', () => {
   assert.ok(!doubtfulValues({ kcal: 539, p: 6.3, c: 57.5, f: 30.9 })) // crema de cacao
   assert.ok(doubtfulValues({ kcal: 232, p: 7, c: 4, f: 0.5 })) // ficha mal tecleada
   assert.ok(!doubtfulValues({ kcal: 30, p: 1, c: 3, f: 0 })) // diferencia pequeña en algo ligero
+})
+
+test('valores dudosos: qué cifra revisar primero', () => {
+  assert.equal(suspectValue({ kcal: 232, p: 7, c: 6.2, f: 55 }), 'f') // la grasa da de más
+  assert.equal(suspectValue({ kcal: 500, p: 5, c: 10, f: 2 }), 'kcal') // los macros dan de menos
+  assert.equal(suspectValue({ kcal: 64, p: 10, c: 5, f: 0.5 }), undefined)
+})
+
+test('totales en gramos: suman lo que se ve en cada fila (enteros desde 10 g)', () => {
+  assert.equal(shownGrams(11.2), 11)
+  assert.equal(shownGrams(8.34), 8.3)
+  // 11,2 g (se ve «11») + 5,4 g = 16,4 → el total que se ve es 16, no 17.
+  const items = [{ grams: 100, per100: { kcal: 0, p: 11.2, c: 0, f: 0 } }, { grams: 100, per100: { kcal: 0, p: 5.4, c: 0, f: 0 } }]
+  assert.equal(dayTotals(items).p, 16.4)
 })

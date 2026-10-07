@@ -2470,6 +2470,7 @@ textarea { resize: none; }
 .after-bars.unsure .food-bar > div { opacity: 0.45; }
 .list-row.suspect { box-shadow: inset 3px 0 0 var(--amber-text); }
 .list-row.suspect input { color: var(--amber-text); font-weight: 700; }
+.list-row input:focus-visible { border-radius: 8px; outline-offset: 4px; }
 .food-health.doubt .btn { display: flex; }
 .doubt-line { display: flex; align-items: center; gap: 4px; margin-top: 2px; color: var(--amber-text); font-weight: 600; }
 .doubt-line svg { flex-shrink: 0; }
