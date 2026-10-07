@@ -2,7 +2,7 @@ import { Check, ChevronRight, Compass, Users, ClipboardList, Download, Dumbbell,
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, int, startOfDay, startOfWeek, tons } from '../lib/format'
-import { dayKey, dayTotals } from '../lib/nutrition'
+import { dayKey, dayTotals, goalsForDay } from '../lib/nutrition'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -94,7 +94,8 @@ function FoodTodayCard() {
   const data = useData()
   const today = dayKey()
   const entries = data.nutrition.entries.filter((e) => e.day === today)
-  const goals = data.settings.nutrition
+  const base = data.settings.nutrition
+  const goals = base && goalsForDay(base, data.nutrition.entries, today, data.settings.nutritionCarryOver !== false)
   if (!goals && !entries.length) return null
   const totals = dayTotals(entries)
   return (

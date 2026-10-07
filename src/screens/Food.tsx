@@ -1,14 +1,15 @@
-import { Barcode, Camera, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
+import { Barcode, CalendarDays, Camera, Check, ChevronLeft, ChevronRight, Ellipsis, Shuffle, Sparkles, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
-import { day as longDay, editable, fromKg, int, parseDecimal, uid } from '../lib/format'
+import { day as longDay, editable, fromKg, int, monthYear, parseDecimal, uid } from '../lib/format'
 import { lang, t } from '../lib/i18n'
 import {
-  ACTIVITY, AIMS, amountOf, computeGoals, dayKey, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel,
+  ACTIVITY, AIMS, amountOf, CARRY_OVER_MAX, computeGoals, dayKey, dayStatus, goalsForDay, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel,
   quickEntryAmount, recentFoods, searchOff, shownGrams, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
   type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
+import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
 import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 
 // Comidas (ver lib/nutrition.ts): lo comido cada día frente a tu objetivo, por comidas.
@@ -28,8 +29,23 @@ export function FoodScreen() {
   const today = dayKey()
   const entries = useMemo(() => data.nutrition.entries.filter((e) => e.day === day).sort((a, b) => a.at - b.at), [data.nutrition.entries, day])
   const totals = dayTotals(entries)
-  const target = data.settings.nutrition
+  const baseGoals = data.settings.nutrition
+  const carryOver = data.settings.nutritionCarryOver !== false
+  const target = baseGoals && goalsForDay(baseGoals, data.nutrition.entries, day, carryOver)
   const proteinOnly = target?.proteinOnly === true
+  const [month, setMonth] = useState(false)
+  // Menú propuesto (solo hoy): platos base de la lista básica y platos tuyos.
+  const [basic, setBasic] = useState<BasicFood[]>()
+  useEffect(() => { if (baseGoals) loadBasicFoods().then(setBasic, () => {}) }, [baseGoals])
+  const dishes = useMemo(() => (basic ? buildDishes(basic, data.nutrition.entries, today) : []), [basic, data.nutrition.entries, today])
+  const plan = day === today && data.nutrition.plan?.day === today ? data.nutrition.plan : undefined
+  const pending = MEALS.filter((m) => plan?.meals[m] && !entries.some((e) => e.meal === m))
+  const targets = target ? mealTargets(target, entries, pending) : {}
+  const newPlan = () => {
+    const open = MEALS.filter((m) => !entries.some((e) => e.meal === m))
+    const all = target ? mealTargets(target, entries, open) : {}
+    update((d) => { d.nutrition.plan = makePlan(dishes, d.nutrition, today, Math.floor(Math.random() * 2 ** 31), all) })
+  }
   const dayLabel = day === today ? t('Hoy', 'Today') : day === shiftDay(today, -1) ? t('Ayer', 'Yesterday') : longDay(fromDayKey(day))
 
   const copyFrom = (meal: MealKey, from: string) => {
@@ -52,7 +68,10 @@ export function FoodScreen() {
   return (
     <div className="screen">
       <LargeTitle title={t('Comidas', 'Food')} actions={
-        <button className="btn secondary btn-sm" onClick={() => setGoals(true)} aria-label={t('Objetivo diario', 'Daily goal')}><Target size={17} /> {t('Objetivo', 'Goal')}</button>
+        <>
+          {baseGoals && <button className="icon-btn" onClick={() => setMonth(true)} aria-label={t('Resumen del mes', 'Month overview')}><CalendarDays size={20} /></button>}
+          <button className="btn secondary btn-sm" onClick={() => setGoals(true)} aria-label={t('Objetivo diario', 'Daily goal')}><Target size={17} /> {t('Objetivo', 'Goal')}</button>
+        </>
       } />
       <div className="day-switch">
         <button className="icon-btn" onClick={() => setDay(shiftDay(day, -1))} aria-label={t('Día anterior', 'Previous day')}><ChevronLeft size={20} /></button>
@@ -67,6 +86,23 @@ export function FoodScreen() {
           {entries.length > 0 && <span className="small">{t(`Hoy llevas ${int(totals.kcal)} kcal y ${g(totals.p)} g de proteína.`, `So far today: ${int(totals.kcal)} kcal and ${g(totals.p)} g of protein.`)}</span>}
         </Card>
       )}
+
+      {target && day === today && dishes.length > 0 && (plan ? (
+        <div className="plan-bar">
+          <Sparkles size={17} aria-hidden="true" />
+          <span className="grow small bold">{pending.length ? t('Menú propuesto para hoy', "Today's suggested menu") : t('Menú de hoy apuntado', "Today's menu logged")}</span>
+          <button className="nav-btn small" onClick={newPlan}>{t('Rehacer', 'Redo')}</button>
+          <button className="nav-btn small" onClick={() => update((d) => { delete d.nutrition.plan })}>{t('Quitar', 'Remove')}</button>
+        </div>
+      ) : (
+        <button className="list-row card-row plan-start" onClick={newPlan}>
+          <Sparkles size={20} aria-hidden="true" />
+          <span className="grow">
+            <span className="bold" style={{ display: 'block' }}>{t('Proponme el menú de hoy', 'Suggest a menu for today')}</span>
+            <span className="small muted">{t('Desayuno, comida, merienda y cena que cuadran con tu objetivo. Aprende de lo que apuntas y de lo que cambias.', 'Breakfast, lunch, snack and dinner that fit your goal. It learns from what you log and what you change.')}</span>
+          </span>
+        </button>
+      ))}
 
       {MEALS.map((meal) => {
         const items = entries.filter((e) => e.meal === meal)
@@ -106,6 +142,12 @@ export function FoodScreen() {
                   </span>
                 </button>
               )}
+              {plan && pending.includes(meal) && targets[meal] && (() => {
+                const slot = plan.meals[meal]!
+                const dish = dishes.find((d) => d.id === slot.dish)
+                return dish && <Proposal dish={dish} meal={meal} day={day} target={targets[meal]!} items={fitDish(dish, targets[meal]!, slot.removed)} proteinOnly={proteinOnly}
+                  others={pending.filter((m) => m !== meal).map((m) => plan.meals[m]!.dish)} dishes={dishes} onDone={showToast} />
+              })()}
               <button className="list-row accent" onClick={() => setAdding(meal)}><Plus size={20} /> {t('Añadir', 'Add')}</button>
             </div>
           </section>
@@ -138,13 +180,14 @@ export function FoodScreen() {
       {adding && <AddFoodSheet day={day} meal={adding} onClose={() => setAdding(undefined)} onAdded={(text) => showToast(text)} />}
       {editing && <EntrySheet entry={editing} day={entries} goals={target} onClose={() => setEditing(undefined)} />}
       {goals && <GoalsSheet onClose={() => setGoals(false)} />}
+      {month && baseGoals && <MonthSheet goals={baseGoals} carryOver={carryOver} onClose={() => setMonth(false)} onPick={(d) => { setDay(d); setMonth(false) }} />}
       {toast}
     </div>
   )
 }
 
 /** Calorías del día frente al objetivo y los tres macronutrientes. */
-function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }) {
+function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals & { carried?: number } }) {
   const left = goals.kcal - totals.kcal
   const pct = (v: number, total: number) => (total > 0 ? Math.min(100, (v / total) * 100) : 0)
   if (goals.proteinOnly) {
@@ -176,6 +219,7 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
           <strong className="food-big">{int(totals.kcal)}</strong>
           <span className="muted"> / {int(goals.kcal)} kcal</span>
         </span>
+        {!!goals.carried && <span className="small muted">{t(`Hoy ${int(goals.carried)} kcal menos: ayer te pasaste.`, `${int(goals.carried)} kcal less today: you went over yesterday.`)}</span>}
       </div>
       <div className={`food-bar ${left < 0 ? 'over' : ''}`} role="progressbar" aria-label={t('Calorías del día', 'Calories today')} aria-valuemin={0} aria-valuemax={goals.kcal} aria-valuenow={Math.round(totals.kcal)}>
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
@@ -194,6 +238,141 @@ function DaySummary({ totals, goals }: { totals: Per100; goals: NutritionGoals }
         ))}
       </div>
     </div>
+  )
+}
+
+// MARK: Menú propuesto
+
+/** Plato propuesto para una comida: se apunta de un toque, se cambia por otro o se le quitan alimentos. */
+function Proposal({ dish, meal, day, target, items, proteinOnly, others, dishes, onDone }: {
+  dish: Dish
+  meal: MealKey
+  day: string
+  target: { kcal: number; p: number }
+  items: ReturnType<typeof fitDish>
+  proteinOnly: boolean
+  /** Platos de las otras comidas pendientes, para no repetir el principal al cambiar. */
+  others: string[]
+  dishes: Dish[]
+  onDone: (text: string) => void
+}) {
+  const data = useData()
+  const v = dayTotals(items)
+  const accept = () => {
+    update((d) => {
+      d.nutrition.entries.push(...items.map((i, n) => ({ id: uid(), day, meal, name: i.name, grams: i.grams, per100: i.per100, ...(i.ref ? { ref: i.ref } : {}), at: Date.now() + n })))
+      d.nutrition.prefs = rateDish(d.nutrition.prefs, dish.id, true)
+    })
+    onDone(t(`${mealLabel(meal)} apuntada`, `${mealLabel(meal)} logged`))
+  }
+  const other = () => {
+    const slot = data.nutrition.plan?.meals[meal]
+    const skipped = [...(slot?.skipped ?? []), dish.id]
+    const avoid = new Set(others.map((id) => dishes.find((d) => d.id === id)?.items.find((i) => i.role === 'p')?.key).filter((k): k is string => !!k))
+    const next = pickDish(dishes, meal, { seed: data.nutrition.plan?.seed ?? 0, day, prefs: rateDish(data.nutrition.prefs, dish.id, false), usual: usualFoods(data.nutrition.entries, day)[meal], skip: skipped, avoid, target })
+    update((d) => {
+      d.nutrition.prefs = rateDish(d.nutrition.prefs, dish.id, false)
+      // Cuando ya no quedan platos sin ver, se vuelve a empezar.
+      if (d.nutrition.plan && next) d.nutrition.plan.meals[meal] = { dish: next.id, skipped: next.id === dish.id || dishes.filter((x) => x.meal === meal).every((x) => skipped.includes(x.id)) ? [] : skipped }
+    })
+  }
+  const remove = (key: string) => {
+    if (items.length <= 1) return other()
+    update((d) => {
+      const slot = d.nutrition.plan?.meals[meal]
+      if (slot) slot.removed = [...(slot.removed ?? []), key]
+      d.nutrition.prefs = rateRemoved(d.nutrition.prefs, key)
+    })
+  }
+  return (
+    <div className="proposal">
+      <div className="proposal-head">
+        <span className="grow" style={{ minWidth: 0 }}>
+          <span className="tiny muted bold proposal-kicker">{dish.mine ? t('De lo que sueles comer', 'From what you usually eat') : t('Propuesta', 'Suggestion')}</span>
+          <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{dish.mine ? items.map((i) => i.name).join(', ') : dish.name}</span>
+        </span>
+        <strong className="food-kcal">{proteinOnly ? <>{g(v.p)}<small> g prot.</small></> : <>{int(v.kcal)}<small> kcal</small></>}</strong>
+      </div>
+      <ul className="proposal-items">
+        {items.map((i) => (
+          <li key={i.key}>
+            <span className="grow" style={{ minWidth: 0 }}>{i.name} <span className="muted">{nb(`${g(i.grams)} g`)}</span></span>
+            <button className="icon-btn proposal-remove" onClick={() => remove(i.key)} aria-label={t(`Quitar ${i.name}`, `Remove ${i.name}`)}><X size={16} /></button>
+          </li>
+        ))}
+      </ul>
+      {!proteinOnly && <span className="small muted">{[`${g(v.p)} g prot.`, `${g(v.c)} g ${t('hidratos', 'carbs')}`, `${g(v.f)} g ${t('grasa', 'fat')}`].map(nb).join(' · ')}</span>}
+      <div className="proposal-actions">
+        <button className="btn primary btn-sm" onClick={accept}><Check size={17} /> {t('Apuntar', 'Log it')}</button>
+        <button className="btn secondary btn-sm" onClick={other}><Shuffle size={16} /> {t('Otra opción', 'Another option')}</button>
+      </div>
+    </div>
+  )
+}
+
+// MARK: Mes
+
+/** Calendario del mes: cada día en verde si cumpliste, rojo si te pasaste y ámbar si te quedaste corto. */
+function MonthSheet({ goals, carryOver, onClose, onPick }: { goals: NutritionGoals; carryOver: boolean; onClose: () => void; onPick: (day: string) => void }) {
+  const data = useData()
+  const today = dayKey()
+  const [first, setFirst] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
+  const byDay = useMemo(() => {
+    const m = new Map<string, FoodEntry[]>()
+    for (const e of data.nutrition.entries) m.set(e.day, [...(m.get(e.day) ?? []), e])
+    return m
+  }, [data.nutrition.entries])
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate()
+  const leading = (first.getDay() + 6) % 7
+  const days = Array.from({ length: daysInMonth }, (_, i) => dayKey(new Date(first.getFullYear(), first.getMonth(), i + 1)))
+  const info = days.map((key) => {
+    const entries = byDay.get(key)
+    // Hoy aún no ha terminado: se marca, pero no cuenta.
+    if (!entries?.length || key >= today) return { key }
+    const dayGoals = goalsForDay(goals, data.nutrition.entries, key, carryOver)
+    const totals = dayTotals(entries)
+    return { key, status: dayStatus(totals, dayGoals), diff: goals.proteinOnly ? totals.p - dayGoals.protein : totals.kcal - dayGoals.kcal }
+  })
+  const count = (s: string) => info.filter((x) => x.status === s).length
+  const label = { met: t('Cumplido', 'On target'), over: t('Te pasaste', 'Over'), under: t('Te quedaste corto', 'Under') }
+  const unit = goals.proteinOnly ? ' g' : ''
+  const sign = (n: number) => (n > 0 ? `+${int(n)}` : `−${int(-n)}`)
+  const thisMonth = first.getFullYear() === new Date().getFullYear() && first.getMonth() === new Date().getMonth()
+  return (
+    <Sheet title={t('Resumen del mes', 'Month overview')} onClose={onClose} right={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
+      <div className="card food-month">
+        <div className="row between">
+          <button className="icon-btn" onClick={() => setFirst(new Date(first.getFullYear(), first.getMonth() - 1, 1))} aria-label={t('Mes anterior', 'Previous month')}><ChevronLeft size={20} /></button>
+          <strong>{monthYear(first)}</strong>
+          <button className="icon-btn" disabled={thisMonth} onClick={() => setFirst(new Date(first.getFullYear(), first.getMonth() + 1, 1))} aria-label={t('Mes siguiente', 'Next month')}><ChevronRight size={20} /></button>
+        </div>
+        <div className="month-grid">
+          {t('LMXJVSD', 'MTWTFSS').split('').map((l, i) => <span key={i} className="tiny muted bold">{l}</span>)}
+          {Array.from({ length: leading }, (_, i) => <span key={`e${i}`} />)}
+          {info.map((x) => {
+            const n = Number(x.key.slice(8))
+            const future = x.key > today
+            return (
+              <button key={x.key} className={`mday ${x.status ?? ''} ${x.key === today ? 'today' : ''}`} disabled={future} onClick={() => onPick(x.key)}
+                aria-label={`${longDay(fromDayKey(x.key))}${x.status ? `: ${label[x.status]}` : ''}`}>
+                <span className="mday-n">{n}</span>
+                {x.status && <span className="mday-d">{x.status === 'met' ? '✓' : sign(x.diff!) + unit}</span>}
+              </button>
+            )
+          })}
+        </div>
+        <div className="month-legend">
+          {(goals.proteinOnly ? ['met', 'under'] as const : ['met', 'over', 'under'] as const).map((s) => (
+            <span key={s} className={`month-key ${s}`}><i aria-hidden="true" />{label[s]} <strong>{count(s)}</strong></span>
+          ))}
+        </div>
+      </div>
+      <p className="list-footer" style={{ margin: 0 }}>
+        {goals.proteinOnly
+          ? t('Cumplido: llegaste al 90 % de tu proteína. La cifra es lo que te faltó, en gramos.', 'On target: you reached 90% of your protein. The number is what you were short, in grams.')
+          : t('Cumplido: a menos de un 10 % de tu objetivo de calorías. La cifra es lo que te pasaste o te faltó, en kcal. Toca un día para verlo.', 'On target: within 10% of your calorie goal. The number is how far over or under you were, in kcal. Tap a day to see it.')}
+      </p>
+    </Sheet>
   )
 }
 
@@ -921,6 +1100,7 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
   const [manual, setManual] = useState(!!saved && saved.sex === undefined)
   const [proteinOnly, setProteinOnly] = useState(saved?.proteinOnly === true)
   const [perKg, setPerKg] = useState(saved?.proteinPerKg)
+  const [carry, setCarry] = useState(data.settings.nutritionCarryOver !== false)
   const perKgValue = perKg ?? defaultProteinPerKg(aim)
   const [own, setOwn] = useState({ kcal: saved ? String(saved.kcal) : '', protein: saved ? String(saved.protein) : '', carbs: saved ? String(saved.carbs) : '', fat: saved ? String(saved.fat) : '' })
 
@@ -935,7 +1115,7 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
   const result = manual ? ownGoals : computed
   const save = () => {
     if (!result) return
-    updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) } })
+    updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry })
     onClose()
   }
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
@@ -962,6 +1142,15 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
         </span>
         <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
       </label>
+      {!proteinOnly && (
+        <label className="list-row card-row">
+          <span className="grow">
+            <span className="bold" style={{ display: 'block' }}>{t('Compensar al día siguiente', 'Make up for it the next day')}</span>
+            <span className="small muted">{t(`Si un día te pasas de calorías, al siguiente se resta lo que te pasaste (como mucho un ${CARRY_OVER_MAX * 100} % del objetivo, para no comer demasiado poco).`, `If you go over your calories one day, the excess comes off the next day (at most ${CARRY_OVER_MAX * 100}% of the goal, so you don't eat too little).`)}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={carry} onChange={(e) => setCarry(e.target.checked)} />
+        </label>
+      )}
       <Segmented value={manual ? 'own' : 'calc'} onChange={(v) => setManual(v === 'own')}
         options={[{ value: 'calc', label: t('Calcularlo', 'Work it out') }, { value: 'own', label: t('Escribirlo yo', 'Set my own') }]} />
       {manual ? (

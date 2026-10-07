@@ -178,6 +178,8 @@ export interface Settings {
   backupSnoozeUntil?: number
   /** Objetivo diario de calorías y macronutrientes (Comidas). */
   nutrition?: NutritionGoals
+  /** Restar al día siguiente lo que te pasas de calorías (por defecto sí; false = no). */
+  nutritionCarryOver?: boolean
 }
 
 export interface ExerciseMode {

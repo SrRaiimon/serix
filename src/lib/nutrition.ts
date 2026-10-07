@@ -55,13 +55,64 @@ export interface SavedMeal {
   items: { name: string; grams: number; per100: Per100; ref?: FoodRef }[]
 }
 
+/** Menú propuesto para un día (ver mealPlan.ts): qué plato toca en cada comida y lo que has quitado. */
+export interface DayPlan {
+  day: string
+  /** Para que «Rehacer» dé otro menú y el mismo día salga siempre igual. */
+  seed: number
+  /** Plato de cada comida, alimentos quitados y platos descartados con «Otra opción». */
+  meals: Partial<Record<MealKey, { dish: string; removed?: string[]; skipped?: string[] }>>
+}
+
+/** Lo que el generador ha aprendido de ti: platos aceptados y rechazados, y alimentos que quitas. */
+export interface PlanPrefs {
+  dishes: Record<string, { yes: number; no: number }>
+  removed: Record<string, number>
+}
+
 export interface NutritionData {
   entries: FoodEntry[]
   foods: MyFood[]
   meals: SavedMeal[]
+  plan?: DayPlan
+  prefs?: PlanPrefs
 }
 
 export const emptyNutrition = (): NutritionData => ({ entries: [], foods: [], meals: [] })
+
+// MARK: Objetivo de cada día y resumen del mes
+
+/** Lo máximo que se resta al día siguiente, en parte del objetivo: más sería comer demasiado poco. */
+export const CARRY_OVER_MAX = 0.15
+
+/**
+ * Objetivo de un día. Con la compensación activada, si el día anterior te pasaste de calorías se resta
+ * el exceso (como mucho un 15 % del objetivo y siempre de los hidratos; la proteína no se toca). Se
+ * compara con el objetivo base del día anterior, no con el ya rebajado, para no encadenar recortes.
+ */
+export function goalsForDay(goals: NutritionGoals, entries: FoodEntry[], day: string, carryOver: boolean): NutritionGoals & { carried: number } {
+  if (!carryOver || goals.proteinOnly) return { ...goals, carried: 0 }
+  const prev = shiftDay(day, -1)
+  const eaten = entries.filter((e) => e.day === prev)
+  if (!eaten.length) return { ...goals, carried: 0 }
+  const over = dayTotals(eaten).kcal - goals.kcal
+  const carried = over > 0 ? Math.min(Math.round(over / 10) * 10, Math.round((goals.kcal * CARRY_OVER_MAX) / 10) * 10) : 0
+  if (!carried) return { ...goals, carried: 0 }
+  return { ...goals, kcal: goals.kcal - carried, carbs: Math.max(0, Math.round(goals.carbs - carried / 4)), carried }
+}
+
+export type DayStatus = 'met' | 'over' | 'under'
+
+/**
+ * Cómo fue el día: cumplido si las calorías quedan a ±10 % del objetivo, pasado o corto si no. Con
+ * «solo proteína», cumplido desde el 90 % de la proteína (no hay «pasarse»).
+ */
+export function dayStatus(totals: Per100, goals: NutritionGoals): DayStatus {
+  if (goals.proteinOnly) return totals.p >= goals.protein * 0.9 ? 'met' : 'under'
+  if (totals.kcal > goals.kcal * 1.1) return 'over'
+  if (totals.kcal < goals.kcal * 0.9) return 'under'
+  return 'met'
+}
 
 export type Sex = 'm' | 'f'
 export type Aim = 'lose' | 'keep' | 'gain'

@@ -6,7 +6,7 @@ import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Sess
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
-import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type SavedMeal } from './nutrition'
+import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -154,6 +154,7 @@ function settings(v: unknown): Settings {
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
     nutrition: nutritionGoals(s.nutrition),
+    nutritionCarryOver: s.nutritionCarryOver === false ? false : undefined,
   }
 }
 
@@ -224,7 +225,21 @@ function savedMeal(v: unknown): SavedMeal | undefined {
 
 function nutrition(v: unknown): NutritionData {
   if (!isObj(v)) return { entries: [], foods: [], meals: [] }
-  return { entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200) }
+  const prefs = planPrefs(v.prefs)
+  return { entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200), ...(prefs ? { prefs } : {}) }
+}
+
+/** Lo aprendido para el menú propuesto (el menú del día no se copia: se rehace). */
+function planPrefs(v: unknown): PlanPrefs | undefined {
+  if (!isObj(v)) return undefined
+  const dishes: PlanPrefs['dishes'] = {}, removed: PlanPrefs['removed'] = {}
+  if (isObj(v.dishes)) for (const [id, x] of Object.entries(v.dishes).slice(0, 500)) {
+    if (id.length <= 400 && isObj(x)) dishes[id] = { yes: num(x.yes, 0, 10000, 0), no: num(x.no, 0, 10000, 0) }
+  }
+  if (isObj(v.removed)) for (const [key, n] of Object.entries(v.removed).slice(0, 500)) {
+    if (key.length <= 200) removed[key] = num(n, 0, 10000, 0)
+  }
+  return Object.keys(dishes).length || Object.keys(removed).length ? { dishes, removed } : undefined
 }
 
 function nutritionGoals(v: unknown): NutritionGoals | undefined {
