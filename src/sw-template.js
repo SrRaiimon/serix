@@ -2,7 +2,10 @@
 const VERSION = '__VERSION__'
 // Prefijo propio: la primera versión (srraiimon.github.io/gymapp/) comparte dominio y usaba «gym-app-».
 const APP_CACHE = `serix-${VERSION}`
-const OWN_OR_LEGACY = (key) => key.startsWith('serix-') || key.startsWith('gym-app-') || key === 'gym-img-v1'
+// Lector de etiquetas (ocr/, ~6 MB): caché propia que sobrevive a las versiones de la app, para no
+// volver a descargarlo en cada publicación. Cambia de nombre solo si cambia el motor.
+const OCR_CACHE = 'serix-ocr-v1'
+const OWN_OR_LEGACY = (key) => (key.startsWith('serix-') && key !== OCR_CACHE) || key.startsWith('gym-app-') || key === 'gym-img-v1'
 const PRECACHE = __PRECACHE__
 // ignoreVary: algunos servidores responden con "Vary: Origin" y los <script type="module"> se piden
 // con cabecera Origin, así que sin esto no coinciden con lo precargado y fallan sin conexión.
@@ -35,6 +38,17 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       caches.match('index.html', MATCH).then((hit) => hit || fetch(request)),
+    )
+    return
+  }
+
+  // Lector de etiquetas: se guarda al descargarlo la primera vez y después funciona sin conexión.
+  if (url.pathname.includes('/ocr/')) {
+    event.respondWith(
+      caches.open(OCR_CACHE).then((cache) => cache.match(request, MATCH).then((hit) => hit || fetch(request).then((res) => {
+        if (res.ok) cache.put(request, res.clone())
+        return res
+      }))),
     )
     return
   }

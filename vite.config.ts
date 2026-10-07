@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -10,7 +12,8 @@ function serviceWorker(): Plugin {
     generateBundle(_, bundle) {
       // El lector de códigos de barras (.wasm, ~1 MB) no se precarga: solo sirve con conexión (para
       // consultar el producto) y así no lo descarga quien no lo usa.
-      const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm'))
+      // Tampoco el lector de etiquetas (ocr/, ~6 MB): se guarda aparte la primera vez que se usa.
+      const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm') && !f.startsWith('ocr/'))
       const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
         'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']
       // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
@@ -24,6 +27,39 @@ function serviceWorker(): Plugin {
           .replace('__VERSION__', version)
           .replace('__PRECACHE__', JSON.stringify(precache)),
       })
+    },
+  }
+}
+
+/**
+ * Lector de etiquetas (Comidas): el worker y el motor de Tesseract.js y los datos de español se
+ * sirven desde la propia web en ocr/, en vez de desde un CDN. Solo se descargan al usarlo.
+ */
+function ocrAssets(): Plugin {
+  const require = createRequire(import.meta.url)
+  const tesseract = dirname(require.resolve('tesseract.js/package.json'))
+  const core = dirname(createRequire(join(tesseract, 'package.json')).resolve('tesseract.js-core/package.json'))
+  const files: Record<string, string> = {
+    'ocr/worker.min.js': join(tesseract, 'dist/worker.min.js'),
+    // Tres versiones del motor según lo que admita el móvil (el worker elige una sola).
+    'ocr/core/tesseract-core-lstm.wasm.js': join(core, 'tesseract-core-lstm.wasm.js'),
+    'ocr/core/tesseract-core-simd-lstm.wasm.js': join(core, 'tesseract-core-simd-lstm.wasm.js'),
+    'ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js': join(core, 'tesseract-core-relaxedsimd-lstm.wasm.js'),
+    'ocr/lang/spa.traineddata.gz': join(dirname(require.resolve('@tesseract.js-data/spa/package.json')), '4.0.0_best_int/spa.traineddata.gz'),
+  }
+  return {
+    name: 'gym-ocr-assets',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const path = req.url?.split('?')[0].replace(/^\//, '')
+        const file = path && files[path]
+        if (!file) return next()
+        res.setHeader('Content-Type', path.endsWith('.js') ? 'text/javascript' : 'application/octet-stream')
+        res.end(readFileSync(file))
+      })
+    },
+    generateBundle() {
+      for (const [fileName, file] of Object.entries(files)) this.emitFile({ type: 'asset', fileName, source: readFileSync(file) })
     },
   }
 }
@@ -60,5 +96,5 @@ export default defineConfig({
   base: './',
   // Versión visible en Perfil y en Legal: la de package.json (se sube el último número en cada publicación).
   define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('package.json', 'utf8')).version) },
-  plugins: [react(), serviceWorker(), contentSecurityPolicy()],
+  plugins: [react(), ocrAssets(), serviceWorker(), contentSecurityPolicy()],
 })

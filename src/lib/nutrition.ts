@@ -366,3 +366,75 @@ export function validBarcode(code: string): boolean {
   const total = digits.reverse().reduce((s, d, i) => s + d * (i % 2 === 0 ? 3 : 1), 0)
   return (10 - (total % 10)) % 10 === check
 }
+
+// MARK: Etiqueta
+
+/**
+ * Valores por 100 g leídos de la tabla nutricional de un envase (texto de la foto, ver labelOcr.ts).
+ * Las etiquetas de la UE (Reglamento 1169/2011) traen siempre la columna «por 100 g» primero, así que
+ * de cada fila se toma la primera cifra. Reconoce los nombres en español, inglés, francés, alemán,
+ * italiano y portugués; las filas «de las cuales» (saturadas, azúcares) se ignoran.
+ */
+export function parseNutritionLabel(text: string): Partial<Per100> & { portion?: number } {
+  let lines = fold(text).replace(/(\d)\s*[,·]\s*(\d)/g, '$1.$2').split(/\n+/)
+  // Tesseract confunde a menudo la «g» de la unidad con un 9 pegado a una cifra con decimales («7,0 g» →
+  // «7,09»). Las etiquetas dan grasas, hidratos y proteínas con un decimal: un segundo decimal 9 sin «g»
+  // detrás es la unidad.
+  const nutrient = /gras|lipid|fat\b|fett|grass|gordur|hidrat|carbo|glucid|kohlen|protei|eiwei/
+  lines = lines.map((l) => (nutrient.test(l) ? l.replace(/(\d+\.\d)9(?!\d|\s*m?g\b)/g, '$1') : l))
+  // Cada cifra da una o dos lecturas: la literal y, si es un entero acabado en 9 sin «g» detrás («13 g» →
+  // «139»), la misma sin ese 9. Luego se elige la combinación que cuadra con las kcal.
+  const readings = (s: string): number[] | undefined => {
+    const m = s.match(/(<\s*)?(\d+(?:\.\d+)?)(\s*m?g\b)?/)
+    if (!m) return undefined
+    if (m[1]) return [0]
+    const v = Number(m[2])
+    return !m[3] && /^\d+9$/.test(m[2]) ? [v, Number(m[2].slice(0, -1))] : [v]
+  }
+  const sub = /saturad|saturat|satur|gesattig|monoinsat|polyinsat|poliinsat|trans|azucar|sugar|sucre|zucker|zuccher|acucar|polialcoh|polyol|almidon|starch|fibra|fibre|fiber|ballast/
+  const after = (line: string, re: RegExp) => {
+    const m = line.match(re)
+    return m ? line.slice((m.index ?? 0) + m[0].length) : undefined
+  }
+  const names = {
+    f: /grasas?|lipidos|fat\b|matieres grasses|fett\b|grassi|gorduras?/,
+    c: /hidratos de carbono|carbohidratos|carbohydrates?|glucides|kohlenhydrate|carboidrati/,
+    p: /proteinas?|proteins?|proteines?|eiwei(?:ss|ß)|proteine/,
+  }
+  const found: Partial<Record<'f' | 'c' | 'p', number[]>> = {}
+  for (const line of lines) {
+    if (sub.test(line)) continue
+    for (const k of ['f', 'c', 'p'] as const) {
+      if (found[k]) continue
+      const rest = after(line, names[k])
+      const r = rest === undefined ? undefined : readings(rest)
+      // Valores imposibles por 100 g: mejor dejarlos vacíos que proponer algo absurdo.
+      const ok = r?.filter((v) => v <= 100)
+      if (ok?.length) found[k] = ok
+      else if (r) found[k] = []
+    }
+  }
+  const out: Partial<Per100> & { portion?: number } = {}
+  // Energía: la primera cifra en kcal; si solo viene en kJ, se pasa a kcal (1 kcal = 4,184 kJ).
+  const flat = lines.join(' ')
+  const kcal = flat.match(/(\d+(?:\.\d+)?)\s*kcal/)
+  const kj = flat.match(/(\d+(?:\.\d+)?)\s*kj/)
+  if (kcal) out.kcal = Number(kcal[1])
+  else if (kj) out.kcal = Math.round(Number(kj[1]) / 4.184)
+  if (out.kcal !== undefined && out.kcal > 1000) delete out.kcal
+  // Elige, entre las lecturas posibles, la que más se acerca a 4·p + 4·c + 9·f = kcal (sin kcal, la literal).
+  const pick = (k: 'f' | 'c' | 'p') => {
+    const r = found[k]
+    if (!r?.length) return
+    if (r.length === 1 || out.kcal === undefined) { out[k] = r[0]; return }
+    const val = (j: 'f' | 'c' | 'p', v: number) => (j === k ? v : (out[j] ?? found[j]?.[0] ?? 0))
+    const err = (v: number) => Math.abs(4 * val('p', v) + 4 * val('c', v) + 9 * val('f', v) - out.kcal!)
+    out[k] = err(r[1]) < err(r[0]) ? r[1] : r[0]
+  }
+  for (const k of ['f', 'c', 'p'] as const) if (found[k]?.length === 1) pick(k)
+  for (const k of ['f', 'c', 'p'] as const) if ((found[k]?.length ?? 0) > 1) pick(k)
+  // Peso de la ración, si la etiqueta lo da («por ración (30 g)», «per serving 30g»).
+  const portion = flat.match(/(?:racion|porcion|serving|portion|porzione|porcao)[^\d\n]{0,15}(\d+(?:\.\d+)?)\s*(?:g|ml)\b/)
+  if (portion && Number(portion[1]) > 0 && Number(portion[1]) <= 2000) out.portion = Number(portion[1])
+  return out
+}

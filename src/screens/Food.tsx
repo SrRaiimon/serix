@@ -1,4 +1,4 @@
-import { Barcode, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
+import { Barcode, Camera, ChevronLeft, ChevronRight, Ellipsis, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, parseDecimal, uid } from '../lib/format'
@@ -357,6 +357,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
           {query && <button onClick={() => setQuery('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
         </label>
         <button className="icon-btn" onClick={() => setView({ kind: 'scan' })} aria-label={t('Escanear código de barras', 'Scan barcode')}><Barcode size={20} /></button>
+        <button className="icon-btn" onClick={() => setView({ kind: 'create', name: q || undefined })} aria-label={t('Leer la etiqueta de un envase', 'Read a pack label')}><Camera size={20} /></button>
       </div>
 
       {saved.length > 0 && (
@@ -409,6 +410,7 @@ function AddFoodSheet({ day, meal: initialMeal, onClose, onAdded }: { day: strin
         {basics.map((f) => row(f.id, fromBasic(f)))}
         {basic && q && basics.length === 0 && <div className="list-row small muted">{t('Sin resultados en la lista básica.', 'No results in the basic list.')}</div>}
         <button className="list-row accent" onClick={() => setView({ kind: 'create', name: q || undefined })}><Plus size={20} /> {q ? t(`Crear «${q}»`, `Create "${q}"`) : t('Crear alimento', 'Create food')}</button>
+        <button className="list-row accent" onClick={() => setView({ kind: 'create', name: q || undefined })}><Camera size={19} /> {t('Leer la etiqueta de un envase', 'Read a pack label')}</button>
         <button className="list-row accent" onClick={() => setView({ kind: 'quick', name: q || undefined })}><PenLine size={19} /> {t('Apuntar calorías y macros a mano', 'Log calories and macros by hand')}</button>
       </div>
       {q.length >= 3 && (
@@ -807,10 +809,26 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
 }) {
   const barcode = initial?.barcode ?? newBarcode
   const fmt = (v?: number) => (v === undefined ? '' : editable(v))
+  // Foto de la etiqueta: rellena lo que lea y se revisa con la comprobación de abajo.
+  const [reading, setReading] = useState<{ state: 'busy'; progress: number } | { state: 'done'; found: number } | { state: 'error' }>()
+  const photo = useRef<HTMLInputElement>(null)
+  const readLabel = async (file: File) => {
+    setReading({ state: 'busy', progress: 0 })
+    try {
+      const { readNutritionLabel } = await import('../lib/labelOcr')
+      const found = await readNutritionLabel(file, (progress) => setReading({ state: 'busy', progress }))
+      const keys = (['kcal', 'p', 'c', 'f'] as const).filter((k) => found[k] !== undefined)
+      setValues((v) => ({ ...v, ...Object.fromEntries(keys.map((k) => [k, editable(found[k]!)])), ...(found.portion && !v.portion ? { portion: editable(found.portion) } : {}) }))
+      setReading(keys.length ? { state: 'done', found: keys.length } : { state: 'error' })
+    } catch {
+      setReading({ state: 'error' })
+    }
+  }
   const [name, setName] = useState(initial?.name ?? initialName ?? '')
   const [values, setValues] = useState({ kcal: fmt(initial?.per100.kcal), p: fmt(initial?.per100.p), c: fmt(initial?.per100.c), f: fmt(initial?.per100.f), portion: fmt(initial?.portion?.g) })
   const parsed = { kcal: parseDecimal(values.kcal), p: parseDecimal(values.p), c: parseDecimal(values.c), f: parseDecimal(values.f) }
-  const ok = name.trim() && parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 1000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 100)
+  const valid = parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 1000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 100)
+  const ok = name.trim() && valid
   const portion = parseDecimal(values.portion)
   const save = () => {
     if (!ok) return
@@ -830,7 +848,7 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
     onSaved(food)
   }
   // Si no cuadra, el campo más sospechoso: el macro que más kcal aporta si sobran, o las kcal si faltan.
-  const check = ok ? { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! } : undefined
+  const check = valid ? { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! } : undefined
   const calc = check ? 4 * check.p + 4 * check.c + 9 * check.f : 0
   const suspect: keyof typeof values | undefined = check ? suspectValue(check) : undefined
   const labels = { kcal: t('las calorías', 'the calories'), p: t('la proteína', 'the protein'), c: t('los hidratos', 'the carbs'), f: t('la grasa', 'the fat'), portion: '' }
@@ -847,6 +865,23 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
       footer={<button className="btn primary block" disabled={!ok} onClick={save}>{t('Guardar', 'Save')}</button>}>
       {initial && <p className="small muted" style={{ margin: 0 }}>{t('Copia los valores por 100 g de la etiqueta. Se guarda en «Mis alimentos» con lo que escribas.', 'Copy the per 100 g values from the label. It is saved in "My foods" with what you type.')}</p>}
       {barcode && !initial && <p className="small muted" style={{ margin: 0 }}>{t(`El código ${barcode} no está en Open Food Facts. Copia los valores de la etiqueta y lo tendrás guardado para la próxima vez.`, `Code ${barcode} is not on Open Food Facts. Copy the values from the label and it will be saved for next time.`)}</p>}
+      <input ref={photo} type="file" accept="image/*" capture="environment" hidden
+        onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void readLabel(file) }} />
+      <button className="list-row card-row" disabled={reading?.state === 'busy'} onClick={() => photo.current?.click()}>
+        <Camera size={20} />
+        <span className="grow" style={{ textAlign: 'left' }}>
+          <span className="bold" style={{ display: 'block' }}>
+            {reading?.state === 'busy' ? t(`Leyendo la etiqueta… ${Math.round(reading.progress * 100)} %`, `Reading the label… ${Math.round(reading.progress * 100)}%`) : t('Leer la etiqueta con una foto', 'Read the label from a photo')}
+          </span>
+          <span className="small muted">
+            {reading?.state === 'done'
+              ? t(`Leídos ${reading.found} de 4 valores. Revísalos con el envase delante.`, `Read ${reading.found} of 4 values. Check them against the pack.`)
+              : reading?.state === 'error'
+                ? t('No he podido leer la tabla. Prueba con más luz, la tabla recta y de cerca, o escríbelo a mano.', 'Could not read the table. Try with more light, the table straight and close up, or type it in.')
+                : t('Haz la foto a la tabla nutricional. Se lee en el móvil: la foto no se envía a ningún sitio.', 'Photograph the nutrition table. It is read on the phone: the photo is not sent anywhere.')}
+          </span>
+        </span>
+      </button>
       <div className="list">
         <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Nombre (p. ej. «Mi batido»)', 'Name (e.g. "My shake")')} onChange={(e) => setName(e.target.value)} /></label>
       </div>

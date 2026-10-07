@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, computeGoals, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -184,4 +184,36 @@ test('totales en gramos: suman lo que se ve en cada fila (enteros desde 10 g)', 
   // 11,2 g (se ve «11») + 5,4 g = 16,4 → el total que se ve es 16, no 17.
   const items = [{ grams: 100, per100: { kcal: 0, p: 11.2, c: 0, f: 0 } }, { grams: 100, per100: { kcal: 0, p: 5.4, c: 0, f: 0 } }]
   assert.equal(dayTotals(items).p, 16.4)
+})
+
+test('etiqueta: lee la tabla nutricional por 100 g (texto de la foto)', () => {
+  const es = `INFORMACIÓN NUTRICIONAL  Por 100 g  Por ración (125 g)
+Valor energético 254 kJ / 60 kcal  318 kJ / 75 kcal
+Grasas 0,5 g 0,6 g
+de las cuales saturadas 0,3 g 0,4 g
+Hidratos de carbono 6,2 g 7,8 g
+de los cuales azúcares 6,2 g 7,8 g
+Proteínas 7,0 g 8,8 g
+Sal 0,12 g 0,15 g`
+  assert.deepEqual(parseNutritionLabel(es), { kcal: 60, f: 0.5, c: 6.2, p: 7, portion: 125 })
+  // Multilingüe, solo kJ y «<0,5»: se pasa a kcal y el menor que cuenta como 0.
+  const multi = `Energía/Energy 1046 kJ
+Grasas/Fat/Matières grasses <0,5 g
+Hidratos de carbono/Carbohydrate/Glucides 58 g
+Proteínas/Protein/Protéines 9,1 g`
+  assert.deepEqual(parseNutritionLabel(multi), { kcal: 250, f: 0, c: 58, p: 9.1 })
+  // Alemán y una cifra imposible (OCR leyó «150» en vez de «15,0»).
+  assert.deepEqual(parseNutritionLabel('Brennwert 1500 kJ / 358 kcal\nFett 150 g\nKohlenhydrate 60 g\nEiweiß 12 g'), { kcal: 358, c: 60, p: 12 })
+  assert.deepEqual(parseNutritionLabel('foto borrosa sin tabla'), {})
+  // Lectura real de Tesseract: la «g» de cada cifra sale como un 9 pegado.
+  const glued = 'Valor energético 252 kJ / 60 kcal\nGrasas 0,59\nde las cuales saturadas 0,19\nHidratos de carbono 6,29\nde los cuales azúcares 6,29\nProteínas 7,09\nSal 0,139'
+  assert.deepEqual(parseNutritionLabel(glued), { kcal: 60, f: 0.5, c: 6.2, p: 7 })
+  // Dos columnas con la «g» unas veces leída y otras no; un 9 de verdad con su unidad se respeta.
+  const twoCols = 'Energía 1580 kJ 474 kJ\n375 kcal 113 kcal\n\nGrasas 7,09 219\n\nde las cuales saturadas 1,29 0,49\n\nHidratos de carbono 60 g 18g\n\nFibra alimentaria 10g 3,09\n\nProteínas 13g 3,99'
+  assert.deepEqual(parseNutritionLabel(twoCols), { kcal: 375, f: 7, c: 60, p: 13 })
+  assert.equal(parseNutritionLabel('INFORMACIÓN NUTRICIONAL por 100 g por ración (30 g)\n' + twoCols).portion, 30)
+  // Enteros con la «g» convertida en 9: «13 g» → «139» (imposible) y «6 g» → «69» (no cuadra con las kcal).
+  assert.deepEqual(parseNutritionLabel('375 kcal\nGrasas 7,09\nHidratos de carbono 60 g\nProteínas 139 3,99'), { kcal: 375, f: 7, c: 60, p: 13 })
+  assert.deepEqual(parseNutritionLabel('120 kcal\nGrasas 69\nHidratos de carbono 12 g\nProteínas 3 g'), { kcal: 120, f: 6, c: 12, p: 3 })
+  assert.deepEqual(parseNutritionLabel('Grasas 0,49 g\nHidratos de carbono 49 g\nProteínas 19 g'), { f: 0.49, c: 49, p: 19 })
 })

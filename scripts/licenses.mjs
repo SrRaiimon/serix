@@ -3,7 +3,10 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer', '@fontsource-variable/archivo', 'barcode-detector', 'zxing-wasm']
+const packages = ['react', 'react-dom', 'scheduler', 'lucide-react', 'qrcode-generator', 'jsqr', 'immer', '@fontsource-variable/archivo', 'barcode-detector', 'zxing-wasm', 'tesseract.js', 'tesseract.js-core']
+
+// Paquetes que npm instala dentro de otro (versión que pide ese paquete).
+const DIRS = { 'tesseract.js-core': 'node_modules/tesseract.js/node_modules/tesseract.js-core' }
 
 // Autoría que el paquete no recoge en su archivo de licencia.
 const NOTES = {
@@ -14,6 +17,11 @@ const NOTES = {
     'también con licencia Apache 2.0. Se distribuye sin cambios.',
   'barcode-detector': 'barcode-detector, de Ze-Zheng Wu (https://github.com/Sec-ant/barcode-detector): lector de códigos\n' +
     'de barras para los navegadores que no traen uno. Se distribuye sin cambios.',
+  'tesseract.js': 'Tesseract.js, del proyecto naptha y sus colaboradores (https://github.com/naptha/tesseract.js):\n' +
+    'lee la tabla nutricional de una foto en el propio móvil. Se distribuye sin cambios (worker.min.js).',
+  'tesseract.js-core': 'Tesseract.js-core (https://github.com/naptha/tesseract.js-core): el motor de reconocimiento de texto\n' +
+    'Tesseract OCR (https://github.com/tesseract-ocr/tesseract, Google y colaboradores, Apache 2.0) compilado a\n' +
+    'WebAssembly. Se incluyen sin cambios las versiones «lstm» del motor.',
   'zxing-wasm': 'zxing-wasm, de Ze-Zheng Wu (https://github.com/Sec-ant/zxing-wasm). Incluye compilado a WebAssembly\n' +
     '(zxing_reader.wasm) ZXing-C++ (https://github.com/zxing-cpp/zxing-cpp), de Axel Waggershauser y\n' +
     'colaboradores, con licencia Apache 2.0 (texto completo en la sección de jsqr). Se distribuye sin cambios.',
@@ -67,7 +75,7 @@ const parts = [
 ]
 
 for (const name of packages) {
-  const dir = join('node_modules', name)
+  const dir = DIRS[name] ?? join('node_modules', name)
   const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
   parts.push(`--- ${name} ${pkg.version} (${pkg.license}) ---`, '', ...(NOTES[name] ? [NOTES[name], ''] : []), licenseText(dir, pkg), '')
 }
@@ -93,6 +101,15 @@ parts.push(
   'escanearlos. Contiene datos de Open Food Facts, disponibles con la Open Database License (ODbL 1.0,',
   'https://opendatacommons.org/licenses/odbl/1-0/); el contenido de cada producto, con la Database Contents',
   'License (https://opendatacommons.org/licenses/dbcl/1-0/).',
+  '',
+)
+
+parts.push(
+  '--- Datos de reconocimiento de texto (lector de etiquetas) ---',
+  'spa.traineddata (modelo LSTM de español, versión «best» en enteros) del paquete @tesseract.js-data/spa 1.0.0',
+  '(https://github.com/naptha/tessdata, licencia MIT según su package.json, de Balearica y jeromewu). El modelo',
+  'procede de tessdata_best de Tesseract OCR (https://github.com/tesseract-ocr/tessdata_best), de Google y',
+  'colaboradores, con licencia Apache 2.0 (texto completo en la sección de jsqr). Se distribuye sin cambios.',
   '',
 )
 
