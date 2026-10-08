@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { dayPlan, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
+import { NewsCard } from '../components/News'
 import { photoDue, weighDue } from '../lib/reminders'
 import { fillBodyweights } from '../lib/bodyweight'
 import { addDays, clock, day, int, parseDecimal, relative, startOfDay, startOfWeek, toKg, tons, uid, weight } from '../lib/format'
@@ -43,6 +44,8 @@ export function HomeScreen() {
         </div>
       </header>
 
+      <IosDataWarning />
+      {!active && <NewsCard />}
       {!active && <WeekRecapCard weekStart={weekStart} />}
 
       {!active && weighDue(data) && <WeighInCard />}
@@ -301,12 +304,39 @@ function WeekCard({ sessions, goal, weekStart, planned }: { sessions: Session[];
   )
 }
 
+/**
+ * iPhone sin instalar: Safari borra los datos de una web que no se abre en 7 días (las añadidas a la
+ * pantalla de inicio no). Va arriba y solo se aplaza unos días: perder el historial es lo peor que pasa.
+ */
+function IosDataWarning() {
+  const key = 'iosWarnUntil'
+  const read = () => { try { return Number(localStorage.getItem(key) ?? 0) } catch { return 0 } }
+  const [until, setUntil] = useState(read)
+  if (!isIOS() || isStandalone() || Date.now() < until) return null
+  const later = () => {
+    const next = Date.now() + 3 * 86400000
+    try { localStorage.setItem(key, String(next)) } catch { /* sin almacenamiento: se vuelve a ver */ }
+    setUntil(next)
+  }
+  return (
+    <div className="card ios-warning" role="alert">
+      <strong>{t('Añádela a la pantalla de inicio', 'Add it to your Home Screen')}</strong>
+      <span className="small">
+        {t('En iPhone, si usas Serix desde Safari y pasas 7 días sin abrirla, Safari puede borrar tus entrenos y comidas. Instalada no pasa.', 'On iPhone, if you use Serix in Safari and do not open it for 7 days, Safari may delete your workouts and food. Installed, it does not.')}
+      </span>
+      <span className="small">{t('Pulsa', 'Tap')} <Share size={13} style={{ verticalAlign: -2 }} /> <b>{t('Compartir', 'Share')}</b> {t('y luego', 'and then')} <b>{t('Añadir a pantalla de inicio', 'Add to Home Screen')}</b>.</span>
+      <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={later}>{t('Recordármelo luego', 'Remind me later')}</button>
+    </div>
+  )
+}
+
 function InstallBanner() {
   const canPrompt = useCanPromptInstall()
-  const [hidden, setHidden] = useState(() => localStorage.getItem('hideInstall') === '1')
-  if (hidden || isStandalone() || (!canPrompt && !isIOS())) return null
+  const [hidden, setHidden] = useState(() => { try { return localStorage.getItem('hideInstall') === '1' } catch { return false } })
+  // En iPhone se encarga IosDataWarning (arriba y con el aviso de los datos).
+  if (hidden || isStandalone() || !canPrompt) return null
   const dismiss = () => {
-    localStorage.setItem('hideInstall', '1')
+    try { localStorage.setItem('hideInstall', '1') } catch { /* se vuelve a ver la próxima vez */ }
     setHidden(true)
   }
   return (
@@ -314,11 +344,9 @@ function InstallBanner() {
       <Smartphone size={26} color="var(--text-2)" />
       <span className="grow small">
         <strong style={{ display: 'block' }}>{t('Instálala en tu móvil', 'Install it on your phone')}</strong>
-        {canPrompt ? t('Se abrirá como una app, a pantalla completa y sin conexión.', 'It opens like an app, full screen and offline.') : (
-          <>{t('Pulsa', 'Tap')} <Share size={13} style={{ verticalAlign: -2 }} /> <b>{t('Compartir', 'Share')}</b> {t('y luego', 'and then')} <b>{t('Añadir a pantalla de inicio', 'Add to Home Screen')}</b>.</>
-        )}
+        {t('Se abrirá como una app, a pantalla completa y sin conexión, y tus datos quedan mejor protegidos.', 'It opens like an app, full screen and offline, and your data is better protected.')}
       </span>
-      {canPrompt && <button className="btn small secondary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>}
+      <button className="btn small secondary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>
       <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
   )

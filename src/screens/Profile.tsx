@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -9,6 +9,8 @@ import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { fillBodyweights } from '../lib/bodyweight'
+import { sendFeedback } from '../lib/feedback'
+import { NewsSheet } from '../components/News'
 import { navyBodyFat } from '../lib/bodyfat'
 import { trainingCalendar } from '../lib/schedule'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
@@ -31,6 +33,7 @@ export function ProfileScreen() {
   const sessions = useMemo(() => finishedSessions(data), [data])
   const [confirmReset, setConfirmReset] = useState(false)
   const [toast, showToast] = useToast()
+  const [news, setNews] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const csvInput = useRef<HTMLInputElement>(null)
   const [csv, setCsv] = useState<string>()
@@ -113,6 +116,14 @@ export function ProfileScreen() {
             <option value="">{t('Automático', 'Automatic')}</option>
             <option value="light">{t('Claro', 'Light')}</option>
             <option value="dark">{t('Oscuro', 'Dark')}</option>
+          </select>
+        </label>
+        <label className="list-row">
+          <span className="grow">{t('Tamaño de la letra', 'Text size')}</span>
+          <select className="select" value={String(settings.textScale ?? 1)} onChange={(e) => updateSettings({ textScale: Number(e.target.value) > 1 ? Number(e.target.value) : undefined })}>
+            <option value="1">{t('Normal', 'Normal')}</option>
+            <option value="1.12">{t('Grande', 'Large')}</option>
+            <option value="1.25">{t('Muy grande', 'Extra large')}</option>
           </select>
         </label>
         <label className="list-row">
@@ -262,9 +273,15 @@ export function ProfileScreen() {
           'Your data is stored only on this device. Protection stops the browser from deleting it to free up space, but it is no substitute for a backup: if you delete the app, you can only recover it from an exported backup. To switch phones, use “Move to another phone”.')}
       </p>
 
+      <div className="list-header">{t('Ayuda', 'Help')}</div>
       <div className="list">
+        <Row icon={Bug} label={t('Contar un fallo', 'Report a bug')} onClick={() => void sendFeedback('bug').then((r) => r === 'copied' && showToast(t('Copiado: pégalo en un mensaje', 'Copied: paste it into a message')))} chevron={false} />
+        <Row icon={Lightbulb} label={t('Proponer una idea', 'Suggest an idea')} onClick={() => void sendFeedback('idea').then((r) => r === 'copied' && showToast(t('Copiado: pégalo en un mensaje', 'Copied: paste it into a message')))} chevron={false} />
+        <Row icon={Sparkles} label={t('Novedades', "What's new")} onClick={() => setNews(true)} />
         <Row icon={ShieldCheck} label={t('Legal y privacidad', 'Legal and privacy')} onClick={() => navigate('profile', 'legal')} />
       </div>
+      <p className="list-footer" style={{ marginTop: -8 }}>{t('Se abre el menú de compartir con un mensaje que lleva la versión y el tipo de móvil (nada de tus datos), para mandarlo a quien te pasó Serix.', 'Opens the share menu with a message containing the version and phone type (none of your data), to send to whoever gave you Serix.')}</p>
+      {news && <NewsSheet onClose={() => setNews(false)} />}
       <p className="list-footer">{t('Versión', 'Version')} {__APP_VERSION__}</p>
       <input ref={csvInput} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
         const f = e.target.files?.[0]

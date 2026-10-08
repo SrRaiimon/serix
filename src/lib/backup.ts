@@ -136,6 +136,8 @@ function settings(v: unknown): Settings {
     defaultRest: num(s.defaultRest, 0, 900, d.defaultRest), weeklyGoal: num(s.weeklyGoal, 1, 7, d.weeklyGoal),
     recapSeen: optNum(s.recapSeen, EPOCH_MIN, EPOCH_MAX),
     nutritionBurned: s.nutritionBurned === true ? true : undefined,
+    seenVersion: typeof s.seenVersion === 'string' && /^\d+\.\d+\.\d+$/.test(s.seenVersion) ? s.seenVersion : undefined,
+    textScale: s.textScale === 1.12 || s.textScale === 1.25 ? s.textScale : undefined,
     lastPhotoAt: optNum(s.lastPhotoAt, EPOCH_MIN, EPOCH_MAX), photoSnooze: optNum(s.photoSnooze, EPOCH_MIN, EPOCH_MAX),
     weighSnooze: optNum(s.weighSnooze, EPOCH_MIN, EPOCH_MAX),
     trainingTime: typeof s.trainingTime === 'string' && /^\d{2}:\d{2}$/.test(s.trainingTime) ? s.trainingTime : undefined,

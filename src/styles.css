@@ -2609,3 +2609,9 @@ textarea { resize: none; }
   .report-page * { color: #000 !important; }
   .report-page th, .report-page td { border-color: #ccc; }
 }
+
+/* Pantalla de rescate cuando algo falla (components/ErrorBoundary.tsx). */
+.rescue { gap: 12px; padding-top: 48px; }
+.rescue h1 { margin: 0; font-size: 26px; }
+.rescue p { margin: 0 0 8px; }
+.ios-warning { gap: 6px; border-color: var(--amber-text); background: color-mix(in srgb, #f08c00 10%, var(--card)); }

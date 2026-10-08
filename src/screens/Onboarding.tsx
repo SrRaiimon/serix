@@ -33,7 +33,8 @@ export function OnboardingScreen() {
     // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
     // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
     const firstTime = settings.simpleMode === undefined && getData().sessions.length === 0
-    updateSettings({ onboarded: true, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
+    // Quien empieza no tiene «novedades» que ver: ya lo estrena todo.
+    updateSettings({ onboarded: true, seenVersion: __APP_VERSION__, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
   }
 
   if (foodStep) {

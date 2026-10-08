@@ -13,6 +13,7 @@ import { activeSession, getData, loadData, useData } from './lib/store'
 import { closeSummary, nextRoutine, openWorkout, startEmpty, startRoutine, useWorkoutUI } from './lib/workout'
 import { HomeScreen } from './screens/Home'
 import { UndoToast } from './components/UndoToast'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 // El resto de pantallas se descargan al abrirlas (el service worker las guarda todas para usarlas sin
 // conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
@@ -98,7 +99,9 @@ export default function App() {
   return (
     <CatalogContext.Provider value={catalog}>
       {/* Con otro idioma se vuelve a montar todo, así ningún texto se queda en el anterior. */}
-      <Main key={language} />
+      <ErrorBoundary resetKey={language}>
+        <Main key={language} />
+      </ErrorBoundary>
     </CatalogContext.Provider>
   )
 }
@@ -142,16 +145,20 @@ function Main() {
   return (
     <div className={`app ${active && !ui.open ? 'has-active' : ''}`}>
       <main>
-        <Suspense fallback={<div className="screen" />}>
-          <Screen route={route} />
-        </Suspense>
+        <ErrorBoundary resetKey={route.join('/')}>
+          <Suspense fallback={<div className="screen" />}>
+            <Screen route={route} />
+          </Suspense>
+        </ErrorBoundary>
       </main>
       {active && !ui.open && <ActiveBar name={active.name} start={active.start} />}
       <TabBar tab={tab} />
-      <Suspense fallback={null}>
-        {active && ui.open && <WorkoutScreen session={active} />}
-        {summary && <SummarySheet session={summary} onClose={closeSummary} />}
-      </Suspense>
+      <ErrorBoundary resetKey={`${ui.open}-${ui.summaryId ?? ''}`}>
+        <Suspense fallback={null}>
+          {active && ui.open && <WorkoutScreen session={active} />}
+          {summary && <SummarySheet session={summary} onClose={closeSummary} />}
+        </Suspense>
+      </ErrorBoundary>
       <UndoToast />
     </div>
   )

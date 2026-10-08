@@ -1,4 +1,4 @@
-import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, X, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -20,6 +20,7 @@ import { balanceTip, muscleBalance } from '../lib/balance'
 import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
+import { searchSessions } from '../lib/history'
 import { blankPastSession, SessionEditSheet } from './SessionEdit'
 import { bodyweightText } from '../lib/bodyweight'
 import { weeklyIntake } from '../lib/nutrition'
@@ -434,6 +435,7 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   )
 }
 
+let savedHistoryQuery = ''
 /** Apuntar un entrenamiento que no se registró en su momento. */
 function LogPastButton() {
   const [draft, setDraft] = useState<Session>()
@@ -445,9 +447,12 @@ function LogPastButton() {
   )
 }
 
-function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+function History({ sessions: all, unit }: { sessions: Session[]; unit: Unit }) {
+  const [query, setQuery] = useState(savedHistoryQuery)
+  const search = (q: string) => { savedHistoryQuery = q; setQuery(q) }
+  const sessions = useMemo(() => searchSessions(all, query, unit), [all, query, unit])
   // Con años de historial se pintan de 50 en 50 al ir bajando (pintarlos todos de golpe se notaba).
-  const { shown, sentinel } = useProgressive(sessions, '')
+  const { shown, sentinel } = useProgressive(sessions, query)
   const total = new Map<string, number>()
   for (const s of sessions) {
     const key = monthYear(s.start)
@@ -461,6 +466,12 @@ function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   return (
     <>
       <LogPastButton />
+      <label className="search">
+        <Search size={18} />
+        <input type="search" placeholder={t('Buscar: ejercicio, nombre o peso (p. ej. 100)', 'Search: exercise, name or weight (e.g. 100)')} value={query} onChange={(e) => search(e.target.value)} aria-label={t('Buscar en el historial', 'Search history')} />
+        {query && <button onClick={() => search('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
+      </label>
+      {query.trim() && <span className="small muted">{sessions.length === 1 ? t('1 entrenamiento', '1 workout') : t(`${sessions.length} entrenamientos`, `${sessions.length} workouts`)}</span>}
       {[...months].map(([month, list]) => (
         <div key={month} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="list-header">{month} · {total.get(month)}</div>

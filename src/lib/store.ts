@@ -4,7 +4,7 @@ import { setWeightSteps, type Unit } from './format'
 import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
-import { applyTheme, type Theme } from './theme'
+import { applyTextScale, applyTheme, type Theme } from './theme'
 import type { TrainingBlock } from './block'
 import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
@@ -144,6 +144,10 @@ export interface Settings {
   nutritionBurned?: boolean
   /** Lunes (ms) de la semana en la que se cerró el resumen de la semana anterior. */
   recapSeen?: number
+  /** Última versión cuyas novedades se vieron (components/News.tsx). */
+  seenVersion?: string
+  /** Tamaño de la letra: 1 normal, 1.12 grande, 1.25 muy grande. */
+  textScale?: number
   /** Fecha de la última foto de progreso (para recordar la siguiente). */
   lastPhotoAt?: number
   /** Hasta cuándo no se recuerda hacer fotos o pesarse («Ahora no»). */
@@ -310,6 +314,7 @@ function emit() {
   // El idioma se aplica antes de avisar a la interfaz, para que se pinte ya en el nuevo.
   setLang(state.settings.language ?? systemLang())
   applyTheme(state.settings.theme)
+  applyTextScale(state.settings.textScale)
   // Los redondeos de peso de toda la app usan el salto de los discos disponibles.
   setWeightSteps({
     kg: stepFor(availablePlates('kg', state.settings.plates)),

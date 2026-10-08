@@ -16,3 +16,14 @@ export function applyTheme(theme: Theme | undefined) {
     meta.content = BAR[theme ?? own]
   })
 }
+
+/**
+ * Letra más grande (Perfil → Ajustes): se amplía toda la app con `zoom`, así crecen también los
+ * botones y los números a la vez (los tamaños de styles.css van en px).
+ */
+export function applyTextScale(scale: number | undefined) {
+  if (typeof document === 'undefined' || !document.documentElement) return
+  const root = document.documentElement
+  const value = scale && scale > 1 ? String(scale) : ''
+  if (root.style.zoom !== value) root.style.zoom = value
+}
