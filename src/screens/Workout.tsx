@@ -3,7 +3,7 @@ import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Link2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -281,9 +281,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const [plates, setPlates] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [painOpen, setPainOpen] = useState(false)
-  const { exerciseNotes, settings } = useData()
+  const data = useData()
+  const { exerciseNotes, settings } = data
   const simple = settings.simpleMode === true
   const note = exerciseNotes[exercise.exerciseId]
+  // Primer entrenamiento: se explica cómo se apunta una serie justo donde hay que hacerlo.
+  const firstEver = index === 0 && exercise.sets[0]?.id === currentSet && !finishedSessions(data).length
+  // Ejercicio nuevo sin peso puesto: una pista para elegirlo (la próxima vez ya se propone solo).
+  const weightHint = trackingOf(exercise) === 'weight_reps' && !previous.length && !exercise.assisted
+    && exercise.sets.some((x) => x.id === currentSet && !x.weight)
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
@@ -425,8 +431,20 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </span>
       )}
 
+      {firstEver && (
+        <div className="howto small">
+          <Info size={16} aria-hidden="true" />
+          <span>{t('Escribe el peso y las repeticiones que hagas y, al acabar la serie, toca el círculo ○. El descanso empieza solo.', 'Type the weight and the reps you do and, when the set is over, tap the circle ○. The rest timer starts by itself.')}</span>
+        </div>
+      )}
+      {weightHint && (
+        <span className="small muted">
+          {bodyweight ? t('Sin lastre, deja el peso en 0.', 'With no added weight, leave the weight at 0.')
+            : t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}
+        </span>
+      )}
       <div className={`set-grid set-head ${tracking}`}>
-        <span>{t('SERIE', 'SET')}</span><span>{t('ANTERIOR', 'PREVIOUS')}</span>
+        <span>{t('SERIE', 'SET')}</span><span>{t('ÚLTIMA VEZ', 'LAST TIME')}</span>
         {tracking === 'weight_reps' && <>
           {exercise.assisted
             ? <span title={t('Ayuda de la máquina', 'Machine assistance')}>{t('AYUDA', 'ASSIST')}</span>
@@ -626,7 +644,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
         aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
-      <span className="set-prev">{previous ? setShortText(previous, tracking, unit).replace(' × ', '×') : '—'}</span>
+      <span className="set-prev">{previous ? setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×') : '—'}</span>
       {tracking === 'weight_reps' && (
         <>
           <input className="set-input" inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}

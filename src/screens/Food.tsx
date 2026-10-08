@@ -114,7 +114,7 @@ export function FoodScreen() {
     <div className="screen">
       <LargeTitle title={t('Comidas', 'Food')} actions={
         <>
-          {baseGoals && <button className="icon-btn" onClick={() => setMonth(true)} aria-label={t('Resumen del mes', 'Month overview')}><CalendarDays size={20} /></button>}
+          {baseGoals && <button className="btn secondary btn-sm" onClick={() => setMonth(true)} aria-label={t('Resumen del mes', 'Month overview')}><CalendarDays size={17} /> {t('Mes', 'Month')}</button>}
           <button className="btn secondary btn-sm" onClick={() => setGoals(true)} aria-label={t('Objetivo diario', 'Daily goal')}><Target size={17} /> {t('Objetivo', 'Goal')}</button>
         </>
       } />
@@ -221,10 +221,22 @@ export function FoodScreen() {
                   others={pending.filter((m) => m !== meal).map((m) => plan!.meals[m]!.dish)} dishes={dishes} onDone={showToast} />
               )}
               <button className="list-row accent" onClick={() => setAdding(meal)}><Plus size={20} /> {t('Añadir', 'Add')}</button>
+              {items.length >= 2 && !data.nutrition.meals.some((m) => m.items.length === items.length && m.items.every((x, i) => x.name === items[i].name)) && (
+                <button className="list-row small muted" onClick={() => saveMeal(meal)}><Star size={18} aria-hidden="true" /> {t('Guardar como comida para repetirla otro día', 'Save as a meal to repeat it another day')}</button>
+              )}
             </div>
           </section>
         )
       })}
+
+      {entries.length > 0 && (
+        <div className="day-actions">
+          {day < today && <button className="btn secondary btn-sm" onClick={() => copyDay(today)}>{t('Copiar a hoy', 'Copy to today')}</button>}
+          {day === today && <button className="btn secondary btn-sm" onClick={() => copyDay(tomorrow)}>{t('Copiar a mañana', 'Copy to tomorrow')}</button>}
+          <button className="btn secondary btn-sm" onClick={() => void shareDay()}>{t('Compartir el día', 'Share the day')}</button>
+          <button className="btn secondary btn-sm" onClick={() => setDayMenu(true)}>{t('Más', 'More')}</button>
+        </div>
+      )}
 
       <p className="list-footer" style={{ margin: 0 }}>
         {t('Alimentos básicos: tabla CIQUAL de la ANSES (Francia, Licence Ouverte 2.0), con las calorías calculadas como en las etiquetas de la UE. Productos de supermercado: base de datos de alimentos y bebidas comercializados en España en 2022 de la AESAN (actualizada el 29/09/2026) y Open Food Facts (ODbL). Son valores orientativos, no consejo médico.',
@@ -811,16 +823,19 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
   return (
     <Sheet title={t(`Añadir a ${mealLabel(meal).toLowerCase()}`, `Add to ${mealLabel(meal).toLowerCase()}`)} onClose={onClose} scrollKey={q}
       left={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
-      <div className="row">
-        <label className="search grow">
-          <Search size={18} />
-          <input type="search" placeholder={t('Buscar alimento', 'Search food')} value={query} onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && q.length >= 3 && !basics.length && !mine.length) void searchOnline(q) }} />
-          {query && <button onClick={() => setQuery('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
-        </label>
-        <button className="icon-btn" onClick={() => setView({ kind: 'scan' })} aria-label={t('Escanear código de barras', 'Scan barcode')}><Barcode size={20} /></button>
-        <button className="icon-btn" onClick={() => setView({ kind: 'create', name: q || undefined })} aria-label={t('Leer la etiqueta de un envase', 'Read a pack label')}><Camera size={20} /></button>
+      <label className="search">
+        <Search size={18} />
+        <input type="search" placeholder={t('Buscar alimento', 'Search food')} value={query} onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && q.length >= 3 && !basics.length && !mine.length) void searchOnline(q) }} />
+        {query && <button onClick={() => setQuery('')} aria-label={t('Borrar', 'Clear')}><X size={18} /></button>}
+      </label>
+      <div className="food-tools">
+        <button className="btn secondary btn-sm" onClick={() => setView({ kind: 'scan' })}><Barcode size={17} aria-hidden="true" /> {t('Escanear código', 'Scan barcode')}</button>
+        <button className="btn secondary btn-sm" onClick={() => setView({ kind: 'create', name: q || undefined })}><Camera size={17} aria-hidden="true" /> {t('Leer etiqueta', 'Read label')}</button>
       </div>
+      {data.nutrition.entries.length < 5 && !q && (
+        <span className="small muted">{t('Toca el + para añadir la cantidad que pone debajo del nombre, o toca el alimento para elegir otra.', 'Tap + to add the amount shown under the name, or tap the food to choose another.')}</span>
+      )}
 
       {favorites.length > 0 && (
         <>

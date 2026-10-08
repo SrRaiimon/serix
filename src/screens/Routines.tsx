@@ -93,8 +93,7 @@ export function RoutinesScreen() {
   return (
     <div className="screen">
       <LargeTitle title={t('Rutinas', 'Routines')} actions={<>
-        <button className="icon-btn" onClick={() => navigate('exercises')} aria-label={t('Ejercicios', 'Exercises')}><Dumbbell size={20} /></button>
-        <button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Nueva', 'New')}><Plus size={22} /></button>
+        <button className="btn secondary btn-sm" onClick={() => setMenu(true)}><Plus size={17} aria-hidden="true" /> {t('Nueva', 'New')}</button>
       </>} />
       {data.routines.length === 0 ? (
         <Empty icon={ClipboardList} title={t('Aún no tienes rutinas', 'No routines yet')}
@@ -122,6 +121,16 @@ export function RoutinesScreen() {
         {!blockOn && !data.settings.simpleMode && <BlockCard />}
         </>
       )}
+      <div className="list">
+        <button className="list-row" onClick={() => navigate('exercises')}>
+          <Dumbbell size={20} aria-hidden="true" />
+          <span className="grow">
+            <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Ejercicios', 'Exercises')}</span>
+            <span className="small muted">{t('Todos los ejercicios, con cómo se hacen y qué músculos trabajan', 'Every exercise, how to do it and the muscles it works')}</span>
+          </span>
+          <ChevronRight size={18} className="muted" aria-hidden="true" />
+        </button>
+      </div>
 
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[

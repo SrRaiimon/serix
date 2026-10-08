@@ -189,8 +189,8 @@ function MonthCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
     <Card title={`${t('Este mes', 'This month')} (${month})`} icon={Calendar}>
       <div className="month-grid">
         {item(t('Entrenos', 'Workouts'), 'sessions', (v) => String(v))}
-        {item(t('Volumen', 'Volume'), 'volume', (v) => tonnes(v, unit))}
-        {item(t('Series efectivas', 'Working sets'), 'sets', (v) => String(v))}
+        {item(t('Peso movido', 'Weight moved'), 'volume', (v) => tonnes(v, unit))}
+        {item(t('Series hechas', 'Sets done'), 'sets', (v) => String(v))}
         {item(t('Tiempo', 'Time'), 'time', (v) => duration(v))}
       </div>
       <span className="small muted">
@@ -312,27 +312,40 @@ function WeightFoodCard() {
   )
 }
 
+// Recuerda si se abrieron las estadísticas de más mientras la app sigue abierta.
+let moreOpen = false
+
+/** Lo principal arriba (marcas, el mes y lo que no avanza); el resto, plegado. */
 function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const [more, setMoreState] = useState(moreOpen)
+  const setMore = (v: boolean) => { moreOpen = v; setMoreState(v) }
   const weeks = weekly(sessions, 12)
   const totalTime = sessions.reduce((t, s) => t + sessionDuration(s), 0)
   return (
     <>
       <BestLifts sessions={sessions} unit={unit} />
-      <StatBand items={[
-        { value: sessions.length, label: t('Entrenos totales', 'Total workouts') },
-        { value: hours(totalTime), label: t('Tiempo total', 'Total time') },
-        { value: streakWeeks(sessions), label: t('Semanas seguidas', 'Weeks in a row') },
-        { value: tons(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Volumen total', 'Total volume') },
-      ]} />
-      <Card title={t('Volumen semanal', 'Weekly volume')} icon={ChartColumn}>
-        <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average currentLabel={t('esta sem.', 'this wk')}
-          tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
-        <span className="small muted">{t(`Últimas 12 semanas · ${unit === 'kg' ? 'toneladas' : 'miles de lb'} levantadas (peso × repeticiones). La línea discontinua es tu media.`, `Last 12 weeks · ${unit === 'kg' ? 'tonnes' : 'thousands of lb'} lifted (weight × reps). The dashed line is your average.`)}</span>
-      </Card>
-      <WeightFoodCard />
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
-      <YearMap sessions={sessions} unit={unit} />
+      <button className="btn secondary block" onClick={() => setMore(!more)} aria-expanded={more}>
+        {more ? t('Ocultar estadísticas', 'Hide stats') : t('Más estadísticas', 'More stats')}
+      </button>
+      {more && (
+        <>
+          <StatBand items={[
+            { value: sessions.length, label: t('Entrenos totales', 'Total workouts') },
+            { value: hours(totalTime), label: t('Tiempo total', 'Total time') },
+            { value: streakWeeks(sessions), label: t('Semanas seguidas', 'Weeks in a row') },
+            { value: tons(sessions.reduce((v, s) => v + sessionVolume(s), 0), unit), label: t('Peso movido en total', 'Total weight moved') },
+          ]} />
+          <Card title={t('Peso movido cada semana', 'Weight moved each week')} icon={ChartColumn}>
+            <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: fromKg(w.volume, unit) }))} average currentLabel={t('esta sem.', 'this wk')}
+              tick={(v) => (v >= 1000 ? (unit === 'kg' ? `${num(v / 1000)} t` : `${num(v / 1000)}k`) : num(v))} />
+            <span className="small muted">{t(`Últimas 12 semanas. Es la suma de peso × repeticiones de todas tus series, en ${unit === 'kg' ? 'toneladas' : 'miles de lb'}. La línea discontinua es tu media.`, `Last 12 weeks. It adds up weight × reps of all your sets, in ${unit === 'kg' ? 'tonnes' : 'thousands of lb'}. The dashed line is your average.`)}</span>
+          </Card>
+          <WeightFoodCard />
+          <YearMap sessions={sessions} unit={unit} />
+        </>
+      )}
       <ShareSummaryCard sessions={sessions} unit={unit} />
     </>
   )
@@ -386,7 +399,7 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           </button>
         ))}
       </div>
-      <span className="small muted">{t('Máximo estimado a una repetición (1RM) según tu mejor serie, y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'Estimated one-rep max (1RM) from your best set, and how much it rose in 30 days. Tap one to see its progress.')}</span>
+      <span className="small muted">{t('El peso que podrías levantar una sola vez, calculado con tu mejor serie, y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'The weight you could lift once, worked out from your best set, and how much it rose in 30 days. Tap one to see its progress.')}</span>
     </Card>
   )
 }
@@ -398,20 +411,20 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   if (!list.length) return null
   // Los 3 primeros; el resto, al tocar «Ver todos» (con muchos, la lista tapaba el resumen).
   return (
-    <Card title={t(`Estancados (${list.length})`, `Stalled (${list.length})`)} icon={TrendingDown}>
+    <Card title={t(`Sin mejorar últimamente (${list.length})`, `Not improving lately (${list.length})`)} icon={TrendingDown}>
       {(all ? list : list.slice(0, 3)).map((x) => (
         <button key={x.exerciseId} className="row" style={{ textAlign: 'left' }} onClick={() => navigate('progress', 'exercise', x.exerciseId)}>
           <Thumb exerciseId={x.exerciseId} size={36} />
           <span className="grow">
             <span className="bold clamp-2" style={{ fontSize: 15 }}>{x.name}</span>
-            <span className="small muted">{t(`Sin mejorar en las últimas ${STALL_SESSIONS} sesiones · máx. est. ${int(fromKg(x.best, unit))} ${unit}`, `No progress in the last ${STALL_SESSIONS} sessions · est. max ${int(fromKg(x.best, unit))} ${unit}`)}</span>
+            <span className="small muted">{t(`Igual en las últimas ${STALL_SESSIONS} veces · tu marca: ${int(fromKg(x.best, unit))} ${unit}`, `Same over the last ${STALL_SESSIONS} times · your best: ${int(fromKg(x.best, unit))} ${unit}`)}</span>
           </span>
         </button>
       ))}
       {list.length > 3 && <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => setAll(!all)}>{all ? t('Ver menos', 'Show fewer') : t(`Ver todos (${list.length})`, `Show all (${list.length})`)}</button>}
       <span className="small muted">
-        {t('Pueden haber subido este mes y llevar unas sesiones parados. Al empezarlos te propondremos una descarga (menos series y −10 % de peso) o una variante.',
-          'They may have gone up this month and still be stuck for a few sessions. When you start them we will suggest a deload (fewer sets and −10% weight) or a variation.')}
+        {t('Es normal atascarse. Cuando toque uno de estos, te propondremos un día más suave (menos series y un 10 % menos de peso) o cambiarlo por un ejercicio parecido.',
+          'Getting stuck is normal. When one of these comes up we will suggest an easier day (fewer sets and 10% less weight) or swapping it for a similar exercise.')}
       </span>
     </Card>
   )

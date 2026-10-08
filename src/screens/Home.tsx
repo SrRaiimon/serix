@@ -1,4 +1,4 @@
-import { Check, ChevronRight, Compass, Users, ClipboardList, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
+import { Check, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, int, startOfDay, startOfWeek, tons } from '../lib/format'
@@ -63,16 +63,26 @@ export function HomeScreen() {
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
           { value: thisMonth.length, label: t('Este mes', 'This month') },
           thisWeek.length > 0
-            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Volumen sem.', 'Weekly volume') }
+            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Peso movido', 'Weight moved') }
             : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
 
-      <div className="grid-2">
-        <button className="quick" onClick={startEmpty}><Zap size={22} />{t('Entreno libre', 'Free workout')}</button>
-        <button className="quick" onClick={() => navigate('timer')}><Timer size={22} />{t('Temporizador', 'Timer')}</button>
-        <button className="quick" onClick={() => navigate('exercises')}><Dumbbell size={22} />{t('Ejercicios', 'Exercises')}</button>
-        <button className="quick" onClick={() => navigate('routines')}><ClipboardList size={22} />{t('Rutinas', 'Routines')}</button>
+      <div className="list">
+        {([
+          [Zap, t('Entreno libre', 'Free workout'), t('Sin rutina: añades los ejercicios sobre la marcha', 'No routine: add exercises as you go'), startEmpty],
+          [Timer, t('Temporizador', 'Timer'), t('Intervalos, Tabata, EMOM o cuenta atrás', 'Intervals, Tabata, EMOM or countdown'), () => navigate('timer')],
+          [Dumbbell, t('Ejercicios', 'Exercises'), t('Cómo se hace cada uno y qué músculos trabaja', 'How to do each one and the muscles it works'), () => navigate('exercises')],
+        ] as const).map(([Icon, title, detail, go]) => (
+          <button key={title} className="list-row" onClick={go}>
+            <Icon size={20} aria-hidden="true" />
+            <span className="grow">
+              <span className="bold" style={{ display: 'block', fontSize: 15 }}>{title}</span>
+              <span className="small muted">{detail}</span>
+            </span>
+            <ChevronRight size={18} className="muted" aria-hidden="true" />
+          </button>
+        ))}
       </div>
 
       {sessions.length > 0 && (
