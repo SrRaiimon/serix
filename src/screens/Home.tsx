@@ -318,11 +318,11 @@ function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {
   return (
     <Card title={t('Guarda una copia de tus datos', 'Back up your data')} icon={Download}>
       <span className="muted small">
-        {t(`Tus entrenamientos solo están en este móvil${lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}. Exporta una copia y guárdala (en la nube, en tu correo…) por si cambias de móvil o se borra la app.`,
-          `Your workouts are only on this phone${lastBackupAt ? ` and your last backup is from ${day(lastBackupAt)}` : ''}. Export a backup and keep it (in the cloud, in your email…) in case you switch phones or the app gets deleted.`)}
+        {t(`Tus entrenos y comidas solo están en este móvil${lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}. Guarda una copia en Drive, iCloud o tu correo por si cambias de móvil o se borra la app. Se hace en un momento.`,
+          `Your workouts and food are only on this phone${lastBackupAt ? ` and your last backup is from ${day(lastBackupAt)}` : ''}. Save a copy to Drive, iCloud or your email in case you switch phones or the app gets deleted. It only takes a moment.`)}
       </span>
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={exportBackup}>{t('Exportar copia', 'Export backup')}</button>
+        <button className="btn primary grow" onClick={() => void exportBackup()}>{t('Guardar copia', 'Save backup')}</button>
         <button className="btn secondary" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
       </div>
     </Card>

@@ -9,21 +9,41 @@ const DAY = 86400000
 export const BACKUP_EVERY_DAYS = 30
 const SNOOZE_DAYS = 14
 
-/** Descarga la copia de seguridad y apunta la fecha. */
-export function exportBackup() {
+/**
+ * Guarda la copia de seguridad y apunta la fecha. En el móvil se abre el menú de compartir para dejarla
+ * directamente en Drive, iCloud, el correo o Archivos; si no se puede, se descarga el archivo.
+ */
+export async function exportBackup(): Promise<boolean> {
+  const name = `serix-copia-${new Date().toISOString().slice(0, 10)}.json`
   const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' })
+  const file = new File([blob], name, { type: 'application/json' })
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: name })
+    } catch (e) {
+      // Cancelado: no hay copia. Otro error (p. ej. sin permiso para compartir): se descarga.
+      if ((e as Error).name === 'AbortError') return false
+      download(blob, name)
+    }
+  } else {
+    download(blob, name)
+  }
+  updateSettings({ lastBackupAt: Date.now(), backupSnoozeUntil: undefined })
+  return true
+}
+
+function download(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `serix-copia-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = name
   a.click()
   URL.revokeObjectURL(url)
-  updateSettings({ lastBackupAt: Date.now(), backupSnoozeUntil: undefined })
 }
 
-/** ¿Toca recordar la copia? Solo cuando ya hay algo que perder (3 entrenamientos o más). */
+/** ¿Toca recordar la copia? Solo cuando ya hay algo que perder: 3 entrenamientos o 5 días de comidas. */
 export function backupDue(d: AppData, finishedSessions: number, now = Date.now()): boolean {
-  if (finishedSessions < 3) return false
+  if (finishedSessions < 3 && new Set(d.nutrition.entries.map((e) => e.day)).size < 5) return false
   if (d.settings.backupSnoozeUntil && now < d.settings.backupSnoozeUntil) return false
   return !d.settings.lastBackupAt || now - d.settings.lastBackupAt > BACKUP_EVERY_DAYS * DAY
 }

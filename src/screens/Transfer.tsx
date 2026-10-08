@@ -62,7 +62,7 @@ function Sender() {
   if (frames.length > TOO_MANY) {
     return (
       <Card>
-        <p style={{ margin: 0 }}>{t(`Hay demasiados datos para pasarlos por QR (${frames.length} códigos). Usa mejor Perfil → «Exportar copia de seguridad» y abre el archivo en el otro móvil.`, `There is too much data to move by QR (${frames.length} codes). Use Profile → “Export backup” instead and open the file on the other phone.`)}</p>
+        <p style={{ margin: 0 }}>{t(`Hay demasiados datos para pasarlos por QR (${frames.length} códigos). Usa mejor Perfil → «Guardar copia de seguridad» y abre el archivo en el otro móvil.`, `There is too much data to move by QR (${frames.length} codes). Use Profile → “Save backup” instead and open the file on the other phone.`)}</p>
       </Card>
     )
   }

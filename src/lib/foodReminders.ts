@@ -40,3 +40,14 @@ export function useFoodReminders(enabled: boolean, entries: FoodEntry[]) {
     return () => window.clearTimeout(timer)
   }, [enabled, entries])
 }
+
+/** La comida que toca por la hora: hasta las 12 desayuno, hasta las 17 comida, hasta las 20:30 merienda. */
+export function mealByTime(now = new Date()): MealKey {
+  const m = now.getHours() * 60 + now.getMinutes()
+  return m < 12 * 60 ? 'breakfast' : m < 17 * 60 ? 'lunch' : m < 20 * 60 + 30 ? 'snack' : 'dinner'
+}
+
+// Acceso directo «Apuntar comida»: Comidas abre el buscador de la comida que toca al montarse.
+let pendingAdd: MealKey | undefined
+export const requestAdd = (meal: MealKey) => { pendingAdd = meal }
+export const takePendingAdd = () => { const m = pendingAdd; pendingAdd = undefined; return m }

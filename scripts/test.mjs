@@ -21,5 +21,9 @@ Object.defineProperty(globalThis, 'navigator', { value: { language: 'es-ES', lan
 const server = await createServer({ configFile: false, logLevel: 'error', server: { middlewareMode: true }, appType: 'custom', optimizeDeps: { noDiscovery: true, include: [] } })
 // Al cargar cada archivo se registran sus tests; node:test los ejecuta y fija el código de salida.
 // Vite se cierra al terminar de cargarlos: los tests no pueden hacer import() dinámicos.
-for (const f of files) await server.ssrLoadModule(`/tests/${f}`)
-await server.close()
+// Si un archivo falla al cargarse, se cierra igual (si no, el proceso se queda colgado).
+try {
+  for (const f of files) await server.ssrLoadModule(`/tests/${f}`)
+} finally {
+  await server.close()
+}

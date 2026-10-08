@@ -1,6 +1,6 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { useFoodReminders } from './lib/foodReminders'
+import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
 import { lang, t } from './lib/i18n'
@@ -105,10 +105,15 @@ function Main() {
   const route = useRoute()
   const ui = useWorkoutUI()
   const active = activeSession(data)
-  // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento.
+  // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento; #/go/food
+  // abre el buscador de la comida que toca.
   useEffect(() => {
     if (route[0] !== 'go') return
     const d = getData()
+    if (route[1] === 'food') {
+      requestAdd(mealByTime())
+      return navigate('food')
+    }
     if (route[1] === 'free') startEmpty()
     if (route[1] === 'next') {
       const routine = nextRoutine(d)

@@ -209,7 +209,7 @@ export function ProfileScreen() {
 
       <div className="list-header">{t('Tus datos', 'Your data')}</div>
       <div className="list">
-        <Row icon={Download} label={t('Exportar copia de seguridad', 'Export backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={exportBackup} chevron={false} />
+        <Row icon={Download} label={t('Guardar copia de seguridad', 'Save backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={() => void exportBackup()} chevron={false} />
         <Row icon={Upload} label={t('Importar copia de seguridad', 'Import backup')} onClick={() => fileInput.current?.click()} chevron={false} />
         <Row icon={FileUp} label={t('Importar desde Strong o Hevy', 'Import from Strong or Hevy')} onClick={() => csvInput.current?.click()} chevron={false} />
         <Row icon={Table} label={t('Exportar a hoja de cálculo (CSV)', 'Export to spreadsheet (CSV)')} chevron={false}

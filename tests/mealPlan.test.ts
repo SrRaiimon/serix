@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { dueMeals } from '../src/lib/foodReminders'
+import { dueMeals, mealByTime, requestAdd, takePendingAdd } from '../src/lib/foodReminders'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods } from '../src/lib/mealPlan'
 import { adjustGoals, computeGoals, dayFiber, recipeValues, waterGoal, dayGoalOptions, dayKey, dayStatus, dayTotals, dayText, goalsForDay, lastWeek, MEALS, trainingShift, weekdayOf, weeklyIntake, weekTemplate, weightAdvice, type BasicFood, type FoodEntry, type MealKey } from '../src/lib/nutrition'
 
@@ -242,4 +242,17 @@ test('última semana, día en texto, recordatorios y favoritos en la copia', () 
   assert.deepEqual(dueMeals([e('2026-03-16', 'lunch', 'x', 1, 0, 0)], now), ['breakfast'])
   const parsed = parseBackup(JSON.stringify({ sessions: [], routines: [], nutrition: { entries: [], foods: [], meals: [], favorites: ['basic:egg', 'off:8480000062505', 'raro'] } }))
   assert.deepEqual(parsed.nutrition.favorites, ['basic:egg', 'off:8480000062505'])
+})
+
+test('acceso directo «Apuntar comida»: la comida que toca por la hora y se usa una sola vez', () => {
+  const at = (h: number, m = 0) => new Date(2026, 9, 8, h, m)
+  assert.equal(mealByTime(at(8)), 'breakfast')
+  assert.equal(mealByTime(at(11, 59)), 'breakfast')
+  assert.equal(mealByTime(at(14)), 'lunch')
+  assert.equal(mealByTime(at(18)), 'snack')
+  assert.equal(mealByTime(at(20, 30)), 'dinner')
+  assert.equal(mealByTime(at(23)), 'dinner')
+  requestAdd('lunch')
+  assert.equal(takePendingAdd(), 'lunch')
+  assert.equal(takePendingAdd(), undefined)
 })

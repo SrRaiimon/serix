@@ -29,19 +29,6 @@
   ],
   "shortcuts": [
     {
-      "name": "Entreno libre",
-      "short_name": "Entreno libre",
-      "description": "Empezar un entrenamiento libre · Start a free workout",
-      "url": "./#/go/free",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
       "name": "Siguiente rutina",
       "short_name": "Siguiente rutina",
       "description": "Empezar la siguiente rutina del programa · Start your next routine",
@@ -55,10 +42,10 @@
       ]
     },
     {
-      "name": "Temporizador",
-      "short_name": "Temporizador",
-      "description": "Tabata, EMOM y AMRAP · Interval timers",
-      "url": "./#/timer",
+      "name": "Apuntar comida",
+      "short_name": "Apuntar comida",
+      "description": "Apuntar lo que comes ahora · Log what you eat now",
+      "url": "./#/go/food",
       "icons": [
         {
           "src": "icons/icon-192.png",
@@ -68,10 +55,23 @@
       ]
     },
     {
-      "name": "Progreso",
-      "short_name": "Progreso",
-      "description": "Tu progreso · Your progress",
-      "url": "./#/progress",
+      "name": "Entreno libre",
+      "short_name": "Entreno libre",
+      "description": "Empezar un entrenamiento libre · Start a free workout",
+      "url": "./#/go/free",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Temporizador",
+      "short_name": "Temporizador",
+      "description": "Tabata, EMOM y AMRAP · Interval timers",
+      "url": "./#/timer",
       "icons": [
         {
           "src": "icons/icon-192.png",

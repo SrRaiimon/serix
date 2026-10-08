@@ -9,7 +9,8 @@ import {
   type DayPlan, type SavedMeal, type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
-import { dueMeals, reminderTime } from '../lib/foodReminders'
+import { dueMeals, reminderTime, takePendingAdd } from '../lib/foodReminders'
+import { useRoute } from '../lib/router'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
 import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 
@@ -23,6 +24,12 @@ export function FoodScreen() {
   const data = useData()
   const [day, setDay] = useState(dayKey())
   const [adding, setAdding] = useState<MealKey>()
+  // Desde el acceso directo «Apuntar comida»: hoy, con el buscador de la comida que toca abierto.
+  const route = useRoute()
+  useEffect(() => {
+    const meal = takePendingAdd()
+    if (meal) { setDay(dayKey()); setAdding(meal) }
+  }, [route])
   const [editing, setEditing] = useState<FoodEntry>()
   const [goals, setGoals] = useState(false)
   const [mealMenu, setMealMenu] = useState<MealKey>()
@@ -1582,7 +1589,7 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
 
 // MARK: Objetivo
 
-function GoalsSheet({ onClose }: { onClose: () => void }) {
+export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const data = useData()
   const saved = data.settings.nutrition
   const lastWeight = useMemo(() => {
@@ -1640,46 +1647,6 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
         <span>{t('Es una estimación, no una pauta médica. Si estás embarazada, tienes una enfermedad o tienes o has tenido un trastorno de la conducta alimentaria, consúltalo antes con un profesional sanitario.',
           'This is an estimate, not medical advice. If you are pregnant, have an illness, or have or have had an eating disorder, talk to a health professional first.')}</span>
       </p>
-      <label className="list-row card-row">
-        <span className="grow">
-          <span className="bold" style={{ display: 'block' }}>{t('Ver solo la proteína', 'Show protein only')}</span>
-          <span className="small muted">{t('Oculta las calorías y el resto: para comer bien sin contar.', 'Hides calories and the rest: eat well without counting.')}</span>
-        </span>
-        <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
-      </label>
-      {!proteinOnly && (
-        <label className="list-row card-row">
-          <span className="grow">
-            <span className="bold" style={{ display: 'block' }}>{t('Compensar al día siguiente', 'Make up for it the next day')}</span>
-            <span className="small muted">{t(`Si un día te pasas de calorías, al siguiente se resta lo que te pasaste (como mucho un ${CARRY_OVER_MAX * 100} % del objetivo, para no comer demasiado poco).`, `If you go over your calories one day, the excess comes off the next day (at most ${CARRY_OVER_MAX * 100}% of the goal, so you don't eat too little).`)}</span>
-          </span>
-          <input type="checkbox" className="toggle" checked={carry} onChange={(e) => setCarry(e.target.checked)} />
-        </label>
-      )}
-      {!proteinOnly && (() => {
-        const perWeek = data.settings.weeklyGoal
-        const { up, down } = trainingShift(result?.kcal ?? saved?.kcal ?? 2500, perWeek)
-        return (
-          <label className="list-row card-row">
-            <span className="grow">
-              <span className="bold" style={{ display: 'block' }}>{t('Más calorías los días de entreno', 'More calories on training days')}</span>
-              <span className="small muted">{t(`Entrenando ${perWeek} días a la semana: +${up} kcal los días que entrenas y −${down} los de descanso, en hidratos. A la semana comes lo mismo.`, `Training ${perWeek} days a week: +${up} kcal on training days and −${down} on rest days, as carbs. Your weekly total stays the same.`)}</span>
-            </span>
-            <input type="checkbox" className="toggle" checked={split} onChange={(e) => setSplit(e.target.checked)} />
-          </label>
-        )
-      })()}
-      <label className="list-row card-row">
-        <span className="grow">
-          <span className="bold" style={{ display: 'block' }}>{t('Recordarme apuntar las comidas', 'Remind me to log meals')}</span>
-          <span className="small muted">{t(`Si a las ${MEALS.map(reminderTime).join(', ')} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.`,
-            `If by ${MEALS.map(reminderTime).join(', ')} you have not logged that meal, the app reminds you, with a notification if it is open in the background. It cannot remind you when closed.`)}</span>
-        </span>
-        <input type="checkbox" className="toggle" checked={remind} onChange={(e) => {
-          setRemind(e.target.checked)
-          if (e.target.checked && typeof Notification !== 'undefined' && Notification.permission === 'default') void Notification.requestPermission()
-        }} />
-      </label>
       <Segmented value={manual ? 'own' : 'calc'} onChange={(v) => setManual(v === 'own')}
         options={[{ value: 'calc', label: t('Calcularlo', 'Work it out') }, { value: 'own', label: t('Escribirlo yo', 'Set my own') }]} />
       {manual ? (
@@ -1750,6 +1717,47 @@ function GoalsSheet({ onClose }: { onClose: () => void }) {
         </p>
       )}
       {!manual && <p className="tiny muted" style={{ margin: 0 }}>{t('Calorías estimadas con la fórmula de Mifflin-St Jeor.', 'Calories estimated with the Mifflin-St Jeor formula.')}</p>}
+      <div className="list-header">{t('Opciones', 'Options')}</div>
+      <label className="list-row card-row">
+        <span className="grow">
+          <span className="bold" style={{ display: 'block' }}>{t('Ver solo la proteína', 'Show protein only')}</span>
+          <span className="small muted">{t('Oculta las calorías y el resto: para comer bien sin contar.', 'Hides calories and the rest: eat well without counting.')}</span>
+        </span>
+        <input type="checkbox" className="toggle" checked={proteinOnly} onChange={(e) => setProteinOnly(e.target.checked)} />
+      </label>
+      {!proteinOnly && (
+        <label className="list-row card-row">
+          <span className="grow">
+            <span className="bold" style={{ display: 'block' }}>{t('Compensar al día siguiente', 'Make up for it the next day')}</span>
+            <span className="small muted">{t(`Si un día te pasas de calorías, al siguiente se resta lo que te pasaste (como mucho un ${CARRY_OVER_MAX * 100} % del objetivo, para no comer demasiado poco).`, `If you go over your calories one day, the excess comes off the next day (at most ${CARRY_OVER_MAX * 100}% of the goal, so you don't eat too little).`)}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={carry} onChange={(e) => setCarry(e.target.checked)} />
+        </label>
+      )}
+      {!proteinOnly && (() => {
+        const perWeek = data.settings.weeklyGoal
+        const { up, down } = trainingShift(result?.kcal ?? saved?.kcal ?? 2500, perWeek)
+        return (
+          <label className="list-row card-row">
+            <span className="grow">
+              <span className="bold" style={{ display: 'block' }}>{t('Más calorías los días de entreno', 'More calories on training days')}</span>
+              <span className="small muted">{t(`Entrenando ${perWeek} días a la semana: +${up} kcal los días que entrenas y −${down} los de descanso, en hidratos. A la semana comes lo mismo.`, `Training ${perWeek} days a week: +${up} kcal on training days and −${down} on rest days, as carbs. Your weekly total stays the same.`)}</span>
+            </span>
+            <input type="checkbox" className="toggle" checked={split} onChange={(e) => setSplit(e.target.checked)} />
+          </label>
+        )
+      })()}
+      <label className="list-row card-row">
+        <span className="grow">
+          <span className="bold" style={{ display: 'block' }}>{t('Recordarme apuntar las comidas', 'Remind me to log meals')}</span>
+          <span className="small muted">{t(`Si a las ${MEALS.map(reminderTime).join(', ')} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.`,
+            `If by ${MEALS.map(reminderTime).join(', ')} you have not logged that meal, the app reminds you, with a notification if it is open in the background. It cannot remind you when closed.`)}</span>
+        </span>
+        <input type="checkbox" className="toggle" checked={remind} onChange={(e) => {
+          setRemind(e.target.checked)
+          if (e.target.checked && typeof Notification !== 'undefined' && Notification.permission === 'default') void Notification.requestPermission()
+        }} />
+      </label>
     </Sheet>
   )
 }

@@ -1,5 +1,5 @@
-import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Timer, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { lazy, Suspense, useState } from 'react'
 import { Card, Chip, Segmented, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, generate, goalInfo, goals, levelInfo, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
@@ -8,6 +8,8 @@ import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
 import { ProgramPreview, saveProgram } from './Routines'
 import { lang, t } from '../lib/i18n'
+
+const GoalsSheet = lazy(() => import('./Food').then((m) => ({ default: m.GoalsSheet })))
 
 const goalIcons: Record<string, LucideIcon> = { hypertrophy: Dumbbell, strength: Weight, fatLoss: Flame, general: Heart }
 const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
@@ -23,12 +25,36 @@ export function OnboardingScreen() {
   const [variation, setVariation] = useState(0)
   const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment }
 
+  // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
+  const [foodStep, setFoodStep] = useState(false)
+  const [goalsOpen, setGoalsOpen] = useState(false)
   const finish = (p?: GeneratedProgram) => {
     if (p) saveProgram(p)
     // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
     // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
     const firstTime = settings.simpleMode === undefined && getData().sessions.length === 0
     updateSettings({ onboarded: true, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
+  }
+
+  if (foodStep) {
+    return (
+      <main className="app">
+        <div className="screen" style={{ paddingTop: 48, paddingBottom: 160 }}>
+          <Utensils size={56} color="var(--accent-text)" />
+          <Header title={t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}
+            subtitle={t('Con tu peso, altura y edad calculamos las calorías y la proteína que te tocan para tu objetivo. Luego apuntas lo que comes buscando el alimento o escaneando el código de barras.',
+              'With your weight, height and age we work out the calories and protein you need for your goal. Then you log what you eat by searching or scanning the barcode.')} />
+          <span className="small muted">{t('Es opcional: lo puedes activar cuando quieras en la pestaña Comidas.', 'It is optional: you can turn it on any time in the Food tab.')}</span>
+        </div>
+        <Footer>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <button className="btn primary block" onClick={() => setGoalsOpen(true)}><Target size={18} /> {t('Sí, calcular mis calorías', 'Yes, work out my calories')}</button>
+            <button className="btn plain block" onClick={() => finish()}>{t('Solo quiero entrenar', 'I just want to train')}</button>
+          </div>
+        </Footer>
+        {goalsOpen && <Suspense fallback={null}><GoalsSheet onClose={() => finish()} /></Suspense>}
+      </main>
+    )
   }
 
   if (program) {
@@ -44,7 +70,7 @@ export function OnboardingScreen() {
         <div className="screen with-nav" style={{ paddingBottom: 120 }}>
           <ProgramPreview program={program} />
         </div>
-        <Footer><button className="btn primary block" onClick={() => finish(program)}>{t('Guardar programa', 'Save program')}</button></Footer>
+        <Footer><button className="btn primary block" onClick={() => { saveProgram(program); setProgram(undefined); setFoodStep(true) }}>{t('Guardar programa', 'Save program')}</button></Footer>
       </main>
     )
   }
