@@ -2628,3 +2628,5 @@ textarea { resize: none; }
 .goal-row .food-bar > span { display: block; height: 100%; background: var(--accent); transform-origin: left; }
 .day-routines { display: flex; flex-direction: column; gap: 6px; }
 .day-routines .select { max-width: 60%; }
+/* Filas que son enlaces (redes del creador en Perfil → Ayuda): mismo aspecto que las demás filas. */
+a.list-row { color: var(--text); text-decoration: none; }

@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, Bug, ExternalLink, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -305,7 +305,16 @@ export function ProfileScreen() {
         <Row icon={Sparkles} label={t('Novedades', "What's new")} onClick={() => setNews(true)} />
         <Row icon={ShieldCheck} label={t('Legal y privacidad', 'Legal and privacy')} onClick={() => navigate('profile', 'legal')} />
       </div>
-      <p className="list-footer" style={{ marginTop: -8 }}>{t('Se abre el menú de compartir con un mensaje que lleva la versión y el tipo de móvil (nada de tus datos), para mandarlo a quien te pasó Serix.', 'Opens the share menu with a message containing the version and phone type (none of your data), to send to whoever gave you Serix.')}</p>
+      <p className="list-footer" style={{ marginTop: -8 }}>{t('Se abre el menú de compartir con un mensaje que lleva la versión y el tipo de móvil (nada de tus datos). Mándamelo por cualquiera de estas redes:', 'Opens the share menu with a message containing the version and phone type (none of your data). Send it to me on any of these:')}</p>
+      <div className="list">
+        {CONTACT.map((c) => (
+          <a key={c.url} className="list-row" href={c.url} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={20} color="var(--text-2)" aria-hidden="true" />
+            <span className="grow">{c.name}</span>
+            <span className="muted">{c.handle}</span>
+          </a>
+        ))}
+      </div>
       {news && <NewsSheet onClose={() => setNews(false)} />}
       <p className="list-footer">{t('Versión', 'Version')} {__APP_VERSION__}</p>
       <input ref={csvInput} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
@@ -504,6 +513,13 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
     </Sheet>
   )
 }
+
+/** Dónde contactar con el creador de Serix (Perfil → Ayuda). */
+const CONTACT = [
+  { name: 'Instagram', handle: '@srraiimon', url: 'https://www.instagram.com/srraiimon/' },
+  { name: 'LinkedIn', handle: 'ramoncasañamartinez', url: 'https://www.linkedin.com/in/ramoncasa%C3%B1amartinez/' },
+  { name: 'GitHub', handle: 'SrRaiimon', url: 'https://github.com/SrRaiimon' },
+]
 
 /** Descarga el .ics con los días de entreno: el móvil lo abre con su calendario para añadirlo. */
 function addToCalendar(days: number[], time: string) {

@@ -8,6 +8,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.62',
+    items: [
+      ['Perfil → Ayuda: escríbeme por Instagram, LinkedIn o GitHub para contarme un fallo o una idea.', 'Profile → Help: message me on Instagram, LinkedIn or GitHub to report a bug or share an idea.'],
+    ],
+  },
+  {
     version: '0.0.61',
     items: [
       ['Metas de fuerza en Progreso: «100 kg en banca» con previsión de cuándo llegas.', 'Strength goals in Progress: "100 kg bench" with a forecast of when you get there.'],

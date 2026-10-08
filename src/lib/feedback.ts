@@ -2,7 +2,8 @@ import { lang, t } from './i18n'
 import { isStandalone } from './pwa'
 
 // Contar un fallo o una idea: se prepara un mensaje con la versión y el tipo de móvil (nunca tus datos)
-// y se abre el menú de compartir del móvil para mandarlo por WhatsApp, correo… a quien te pasó Serix.
+// y se abre el menú de compartir del móvil para mandarlo por Instagram, WhatsApp, correo… (en Perfil →
+// Ayuda están las redes del creador).
 // Serix no tiene servidor: no se envía nada a ningún sitio por sí solo.
 
 /** Móvil y navegador, sin nada que identifique a la persona. */
