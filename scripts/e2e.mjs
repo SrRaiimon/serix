@@ -18,8 +18,13 @@ const PORT = 4180
 const DEBUG = 9333
 const server = await preview({ configFile: 'vite.config.ts', logLevel: 'error', preview: { port: PORT, strictPort: true, host: '127.0.0.1' } })
 const profile = mkdtempSync(join(tmpdir(), 'serix-e2e-'))
+// En los servidores Linux de GitHub, Chrome no puede crear su sandbox (falta permiso para los espacios
+// de nombres de usuario): ahí se arranca sin ella. Solo abre la app local, nada de fuera.
+const linux = process.platform === 'linux'
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DEBUG}`, `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
-  '--window-size=390,844', '--lang=es-ES', 'about:blank'], { stdio: 'ignore' })
+  ...(linux ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), '--window-size=390,844', '--lang=es-ES', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] })
+let chromeLog = ''
+chrome.stderr.on('data', (b) => { chromeLog = (chromeLog + b).slice(-2000) })
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 let ws
@@ -29,10 +34,10 @@ let step = 'arrancar'
 async function main() {
   // Conectar con la pestaña.
   let target
-  for (let i = 0; i < 50 && !target; i++) {
+  for (let i = 0; i < 100 && !target; i++) {
     try { target = (await (await fetch(`http://127.0.0.1:${DEBUG}/json/list`)).json()).find((x) => x.type === 'page') } catch { await wait(200) }
   }
-  if (!target) throw new Error('Chrome no ha arrancado')
+  if (!target) throw new Error(`Chrome no ha arrancado (${CHROME})\n${chromeLog}`)
   ws = new WebSocket(target.webSocketDebuggerUrl)
   await new Promise((r, j) => { ws.onopen = r; ws.onerror = j })
   let id = 0
