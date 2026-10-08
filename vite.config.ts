@@ -14,7 +14,7 @@ function serviceWorker(): Plugin {
       // supermercado (aesan.json, ~2 MB) no se precargan: se guardan la primera vez que se usan, así no
       // los descarga quien no los usa (ver sw-template.js).
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm') && !f.startsWith('ocr/'))
-      const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
+      const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_index.json', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
         'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']
       // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
       const precache = [...new Set([...statics, ...files])]

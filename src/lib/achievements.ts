@@ -1,11 +1,12 @@
 import { startOfWeek, toKg, type Unit } from './format'
 import { e1rm, loadSets, streakWeeks } from './stats'
+import { dayKey, dayStatus, dayTotals, shiftDay, type FoodEntry, type NutritionGoals } from './nutrition'
 import type { Measurement, Session } from './store'
 
 // Logros calculados a partir del historial (no se guardan: siempre salen de los datos). Cada logro
 // sabe en qué entrenamiento se consiguió, para avisar en el resumen al terminar.
 
-export type AchievementGroup = 'consistency' | 'volume' | 'records' | 'strength' | 'variety' | 'time'
+export type AchievementGroup = 'consistency' | 'volume' | 'records' | 'strength' | 'variety' | 'time' | 'food'
 
 export interface AchievementDef {
   id: string
@@ -168,5 +169,65 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
   for (const target of [10, 50]) progress[`records-${target}`] = [recordCount, target]
   progress['variety-25'] = [exercises.size, 25]
   for (const a of states.values()) if (a.unlockedAt === undefined && progress[a.id]) a.progress = progress[a.id]
+  return [...states.values()]
+}
+
+// MARK: Comida
+
+const FOOD_DEFS: AchievementDef[] = [
+  { id: 'food-first', group: 'food', title: ['Primer día apuntado', 'First day logged'], detail: ['Apuntaste lo que comiste por primera vez.', 'You logged your food for the first time.'] },
+  ...[7, 30].map((n): AchievementDef => ({
+    id: `food-streak-${n}`, group: 'food',
+    title: [`${n} días seguidos apuntando`, `${n} days logging in a row`],
+    detail: [`Apuntaste lo que comiste ${n} días seguidos.`, `You logged your food ${n} days in a row.`],
+  })),
+  ...[10, 50].map((n): AchievementDef => ({
+    id: `food-protein-${n}`, group: 'food',
+    title: [`Proteína: ${n} días`, `Protein: ${n} days`],
+    detail: [`Llegaste a tu proteína (al menos un 90 %) ${n} días.`, `You hit your protein (at least 90%) on ${n} days.`],
+  })),
+  ...[20, 100].map((n): AchievementDef => ({
+    id: `food-target-${n}`, group: 'food',
+    title: [`En tu objetivo: ${n} días`, `On target: ${n} days`],
+    detail: [`${n} días con las calorías dentro de tu objetivo (±10 %).`, `${n} days with calories within your goal (±10%).`],
+  })),
+]
+
+/**
+ * Logros de comida a partir de los días apuntados. La proteína y las calorías se miden con el objetivo
+ * de cada día (`goalsOf`); sin objetivo, solo cuentan los de apuntar.
+ */
+export function foodAchievements(entries: FoodEntry[], goalsOf: (day: string) => NutritionGoals | undefined): AchievementState[] {
+  const states = new Map<string, AchievementState>(FOOD_DEFS.map((d) => [d.id, { ...d }]))
+  const unlock = (id: string, day: string) => {
+    const a = states.get(id)
+    if (a && a.unlockedAt === undefined) a.unlockedAt = new Date(`${day}T12:00:00`).getTime()
+  }
+  const byDay = new Map<string, FoodEntry[]>()
+  for (const e of entries) byDay.set(e.day, [...(byDay.get(e.day) ?? []), e])
+  const days = [...byDay.keys()].sort()
+  let streak = 0
+  let protein = 0
+  let target = 0
+  days.forEach((day, i) => {
+    if (i === 0) unlock('food-first', day)
+    streak = i > 0 && shiftDay(days[i - 1], 1) === day ? streak + 1 : 1
+    for (const n of [7, 30]) if (streak >= n) unlock(`food-streak-${n}`, day)
+    const goals = goalsOf(day)
+    if (!goals) return
+    const v = dayTotals(byDay.get(day)!)
+    if (v.p >= goals.protein * 0.9) protein++
+    if (!goals.proteinOnly && dayStatus(v, goals) === 'met') target++
+    for (const n of [10, 50]) if (protein >= n) unlock(`food-protein-${n}`, day)
+    for (const n of [20, 100]) if (target >= n) unlock(`food-target-${n}`, day)
+  })
+  // La racha actual: si ayer no se apuntó nada (y hoy tampoco), empieza de cero.
+  const today = dayKey()
+  const current = days.length && (days.at(-1) === today || days.at(-1) === shiftDay(today, -1)) ? streak : 0
+  const progress: Record<string, [number, number]> = {
+    'food-first': [days.length ? 1 : 0, 1], 'food-streak-7': [current, 7], 'food-streak-30': [current, 30],
+    'food-protein-10': [protein, 10], 'food-protein-50': [protein, 50], 'food-target-20': [target, 20], 'food-target-100': [target, 100],
+  }
+  for (const a of states.values()) if (a.unlockedAt === undefined) a.progress = progress[a.id]
   return [...states.values()]
 }

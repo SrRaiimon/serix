@@ -2,13 +2,14 @@ import { ArrowRightLeft, BellRing, Camera, Users, Calculator, FileUp, Table, Cal
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
-import { day, duration, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
+import { day, duration, editable, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { fillBodyweights } from '../lib/bodyweight'
+import { navyBodyFat } from '../lib/bodyfat'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
@@ -129,10 +130,30 @@ export function ProfileScreen() {
         </label>
         <label className="list-row">
           <span className="grow">{t('Objetivo semanal', 'Weekly goal')}</span>
-          <select className="select" value={settings.weeklyGoal} onChange={(e) => updateSettings({ weeklyGoal: Number(e.target.value) })}>
+          <select className="select" value={settings.weeklyGoal} disabled={!!settings.trainingDays?.length} onChange={(e) => updateSettings({ weeklyGoal: Number(e.target.value) })}>
             {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{plural(n, ['entreno', 'entrenos'], ['workout', 'workouts'])}</option>)}
           </select>
         </label>
+        <div className="list-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+          <span>
+            {t('Días de entreno', 'Training days')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Opcional. Inicio te dirá si hoy toca entrenar o descansar.', 'Optional. Home will tell you whether today is a training or a rest day.')}</span>
+          </span>
+          <div className="weekday-picker" role="group" aria-label={t('Días de entreno', 'Training days')}>
+            {t('LMXJVSD', 'MTWTFSS').split('').map((letter, i) => {
+              const days = settings.trainingDays ?? []
+              const on = days.includes(i)
+              return (
+                <button key={i} className={`chip ${on ? 'active' : ''}`} aria-pressed={on}
+                  aria-label={[t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')][i]}
+                  onClick={() => {
+                    const next = on ? days.filter((x) => x !== i) : [...days, i].sort()
+                    updateSettings({ trainingDays: next.length ? next : undefined, ...(next.length ? { weeklyGoal: next.length } : {}) })
+                  }}>{letter}</button>
+              )
+            })}
+          </div>
+        </div>
         <label className="list-row">
           <span className="grow">
             {t('Pitido al terminar el descanso', 'Beep when rest ends')}
@@ -287,6 +308,8 @@ const measureFields: { key: keyof Omit<Measurement, 'id' | 'date'>; label: strin
   { key: 'chest', get label() { return t('Pecho', 'Chest') }, unit: 'cm' },
   { key: 'arm', get label() { return t('Brazo', 'Arm') }, unit: 'cm' },
   { key: 'thigh', get label() { return t('Muslo', 'Thigh') }, unit: 'cm' },
+  { key: 'neck', get label() { return t('Cuello', 'Neck') }, unit: 'cm' },
+  { key: 'hip', get label() { return t('Cadera', 'Hip') }, unit: 'cm' },
 ]
 
 function measurementSummary(m: Measurement, unit: Unit) {
@@ -354,6 +377,10 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
   const [values, setValues] = useState<Record<string, string>>({})
   const parsed = Object.fromEntries(measureFields.map((f) => [f.key, parseDecimal(values[f.key] ?? '')]))
   const empty = Object.values(parsed).every((v) => v === null)
+  // Grasa estimada con cintura y cuello (y cadera, en mujeres), si no se escribe a mano.
+  const { nutrition } = useData().settings
+  const estimate = parsed.bodyFat === null && nutrition?.sex && nutrition.heightCm && parsed.waist && parsed.neck
+    ? navyBodyFat({ sex: nutrition.sex, heightCm: nutrition.heightCm, waist: parsed.waist, neck: parsed.neck, hip: parsed.hip ?? undefined }) : undefined
 
   const save = () => {
     update((d) => {
@@ -362,6 +389,7 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
         const v = parsed[f.key]
         if (v !== null) m[f.key] = f.key === 'weight' ? toKg(v, unit) : v
       }
+      if (m.bodyFat === undefined && estimate !== undefined) m.bodyFat = estimate
       d.measurements.push(m)
     })
     // Con el peso ya conocido, las dominadas y fondos que no lo tenían pasan a contarlo.
@@ -389,6 +417,14 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
           </label>
         ))}
       </div>
+      <p className="list-footer" style={{ margin: 0 }}>
+        {estimate !== undefined
+          ? t(`Grasa corporal estimada: ${editable(estimate)} % (fórmula de la Marina de EE. UU., con cintura y cuello${nutrition?.sex === 'f' ? ' y cadera' : ''}). Se guardará si no escribes otra. Es orientativa: puede fallar 3-4 puntos.`,
+            `Estimated body fat: ${editable(estimate)}% (US Navy formula, from waist and neck${nutrition?.sex === 'f' ? ' and hip' : ''}). It will be saved unless you type your own. It is approximate: it can be 3-4 points off.`)
+          : nutrition?.sex && nutrition.heightCm
+            ? t(`Si no sabes tu grasa corporal, apunta cintura y cuello${nutrition.sex === 'f' ? ' y cadera' : ''} (en cm) y la estimamos.`, `If you do not know your body fat, enter waist and neck${nutrition.sex === 'f' ? ' and hip' : ''} (in cm) and we will estimate it.`)
+            : t('Para estimar la grasa corporal con cintura y cuello necesitamos tu altura y sexo: ponlos en Comidas → Objetivo.', 'To estimate body fat from waist and neck we need your height and sex: set them in Food → Goal.')}
+      </p>
     </Sheet>
   )
 }

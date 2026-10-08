@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronRight, Dumbbell, ImageIcon, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
+import { BadgeCheck, ChevronRight, Dumbbell, ImageIcon, Pencil, RotateCcw, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import { day, duration, int, time, tons, volume, weight, type Unit } from '../lib/format'
@@ -9,7 +9,8 @@ import { newRecords, sessionDuration, sessionReps, sessionSets, sessionVolume, w
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
-import { saveAsRoutine } from '../lib/workout'
+import { repeatSession, saveAsRoutine } from '../lib/workout'
+import { SessionEditSheet } from './SessionEdit'
 import { plural, t } from '../lib/i18n'
 import { NewAchievements } from '../components/Achievements'
 
@@ -120,11 +121,14 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
               </span>
             </div>
             {e.sets.filter((s) => s.done).map((s) => (
-              <div key={s.id} className="row between small" style={{ paddingLeft: 48 }}>
+              <div key={s.id} style={{ display: 'contents' }}>
+              <div className="row between small" style={{ paddingLeft: 48 }}>
                 <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: 'var(--amber-text)' } : undefined}>
                   {s.warmup ? t('Calentamiento', 'Warm-up') : s.kind === 'drop' ? '↳ Drop set' : `${t('Serie', 'Set')} ${s.side === 'R' ? n : ++n}${s.side === 'L' ? t(' · izquierda', ' · left') : s.side === 'R' ? t(' · derecha', ' · right') : ''}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ` · ${t('al fallo', 'to failure')}` : ''}`}
                 </span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{e.assisted && s.weight > 0 ? `${t('ayuda', 'assist')} ${setText(s, trackingOf(e), unit)}` : setText(s, trackingOf(e), unit)}</span>
+              </div>
+              {s.note && <span className="tiny muted" style={{ paddingLeft: 48 }}>“{s.note}”</span>}
               </div>
             ))}
           </div>
@@ -224,6 +228,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
   const session = data.sessions.find((s) => s.id === id)
   const [menu, setMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [toast, showToast] = useToast()
   const records = useMemo(() => (session ? newRecords(session, finishedSessions(data)) : []), [session, data])
   const images = useShareImage(session, data.settings.unit, records)
@@ -244,8 +249,11 @@ export function SessionDetailScreen({ id }: { id: string }) {
         <Card title={t('Notas', 'Notes')} icon={StickyNote}>
           <textarea rows={2} placeholder={t('Añade una nota', 'Add a note')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
         </Card>
+        <button className="btn secondary" onClick={() => setEditing(true)}><Pencil size={18} /> {t('Editar entrenamiento', 'Edit workout')}</button>
+        <button className="btn secondary" onClick={() => repeatSession(session)}><RotateCcw size={18} /> {t('Repetir este entrenamiento', 'Repeat this workout')}</button>
         <button className="btn danger" onClick={() => setConfirmDelete(true)}><Trash2 size={18} /> {t('Eliminar entrenamiento', 'Delete workout')}</button>
       </div>
+      {editing && <SessionEditSheet session={session} onClose={() => setEditing(false)} />}
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
           { label: t('Compartir imagen', 'Share image'), onSelect: () => void shareSessionImage(images.post?.file, session.name, showToast) },

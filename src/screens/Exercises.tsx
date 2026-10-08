@@ -6,7 +6,7 @@ import { ExerciseNoteField } from '../components/ExerciseNote'
 import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
 import { RepRecordsCard } from '../components/RepRecords'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, StatBand, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
-import { emptyFilter, type Catalog, type Exercise, type ExerciseFilter } from '../lib/catalog'
+import { emptyFilter, loadSteps, type Catalog, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, int, num, relative, type Unit } from '../lib/format'
 import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
@@ -15,7 +15,7 @@ import { alternatives } from '../lib/alternatives'
 import { equipmentInfo, STAPLES } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
-import { plural, t } from '../lib/i18n'
+import { lang, plural, t } from '../lib/i18n'
 
 // Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
 const MoveFigure = lazy(() => import('../components/MoveFigure').then((m) => ({ default: m.MoveFigure })))
@@ -277,6 +277,21 @@ function AddToRoutine({ exercise, onClose, onAdded }: { exercise: Exercise; onCl
   )
 }
 
+/** Pasos del ejercicio: los propios ya van en el ejercicio; los del catálogo se cargan aparte (loadSteps). */
+function useInstructions(exercise: Exercise): string[] {
+  const [loaded, setLoaded] = useState<{ id: string; list: string[] }>()
+  useEffect(() => {
+    if (exercise.custom || exercise.instructions.length) return
+    let alive = true
+    loadSteps().then((all) => {
+      const x = all.get(exercise.id)
+      if (alive) setLoaded({ id: exercise.id, list: (lang() === 'en' && x?.en.length ? x.en : x?.es) ?? [] })
+    }).catch(() => { /* sin conexión y sin caché: la ficha sale sin pasos */ })
+    return () => { alive = false }
+  }, [exercise])
+  return exercise.custom || exercise.instructions.length ? exercise.instructions : loaded?.id === exercise.id ? loaded.list : []
+}
+
 export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercise; actions?: ReactNode }) {
   const data = useData()
   const unit = data.settings.unit
@@ -287,9 +302,10 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
   const timed = points.length > 0 && points.every((p) => p.maxWeight === 0) && points.some((p) => p.maxDuration > 0 || p.maxDistance > 0)
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
   // El último paso que empieza por «Consejo» va aparte, como nota de técnica.
-  const tipIndex = exercise.instructions.findIndex((x) => /^(consejo|tip)\s*:/i.test(x))
-  const steps = exercise.instructions.filter((_, i) => i !== tipIndex)
-  const tip = tipIndex >= 0 ? exercise.instructions[tipIndex].replace(/^(consejo|tip)\s*:\s*/i, '') : undefined
+  const instructions = useInstructions(exercise)
+  const tipIndex = instructions.findIndex((x) => /^(consejo|tip)\s*:/i.test(x))
+  const steps = instructions.filter((_, i) => i !== tipIndex)
+  const tip = tipIndex >= 0 ? instructions[tipIndex].replace(/^(consejo|tip)\s*:\s*/i, '') : undefined
   const meta = [muscleLabel(exercise.muscle), equipmentLabel(exercise.equipment), !exercise.custom && levelLabel(exercise.level)].filter(Boolean).join(' · ')
   return (
     <>

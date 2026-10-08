@@ -68,6 +68,8 @@ export interface SetEntry {
   kind?: SetKind
   /** Ejercicios a una mano o una pierna: lado izquierdo o derecho. */
   side?: 'L' | 'R'
+  /** Nota de esta serie («molestia en el hombro», «agarre ancho»). */
+  note?: string
 }
 
 /** drop = bajada de peso justo después de otra serie, amrap = máximas repeticiones, failure = al fallo. */
@@ -126,6 +128,9 @@ export interface Measurement {
   chest?: number
   arm?: number
   thigh?: number
+  /** Cuello y cadera (cm): para estimar la grasa corporal (lib/bodyfat.ts). */
+  neck?: number
+  hip?: number
 }
 
 export interface Settings {
@@ -133,6 +138,10 @@ export interface Settings {
   unit: Unit
   defaultRest: number
   weeklyGoal: number
+  /** Lunes (ms) de la semana en la que se cerró el resumen de la semana anterior. */
+  recapSeen?: number
+  /** Días fijos de entreno (0 = lunes … 6 = domingo); sin valor, solo cuenta cuántos a la semana. */
+  trainingDays?: number[]
   activeProgram: string
   onboarded: boolean
   goal: TrainingGoal

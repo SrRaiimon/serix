@@ -14,6 +14,7 @@ import { e1rm, lastSets, loadSets, progressionHint, records, repRecordBeaten, re
 import { finishedSessions, rpeOn, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
 import { addRest, adjustRestForEffort, dismissRestDone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
+import { suspicious } from '../lib/tracking'
 import { addExercises, applyDeload, discardSession, finishSession, fromSides, keepScreenOn, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
@@ -355,6 +356,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
     e.sets.push({ id: crypto.randomUUID(), weight: kg, reps: lastWorking!.reps, done: false, warmup: false, kind: 'drop' })
   })
   const prevMain = previous.filter((p) => p.kind !== 'drop')
+  const lastMax = Math.max(0, ...previous.filter((p) => !p.warmup).map((p) => p.weight))
   const prevDrops = previous.filter((p) => p.kind === 'drop')
   let drops = 0
 
@@ -482,7 +484,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell}
+            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
@@ -582,7 +584,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted }: {
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax }: {
   set: SetEntry
   current: boolean
   askRpe: boolean
@@ -600,8 +602,11 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
   onChange: (patch: Partial<SetEntry>) => void
   onDelete: () => void
   onCompleted: () => void
+  /** Mayor peso apuntado en este ejercicio la última vez (kg), para avisar de un peso imposible. */
+  lastMax: number
 }) {
   const simple = useData().settings.simpleMode === true
+  const [check, setCheck] = useState<string>()
   const [weightText, setWeightText] = useState(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')
   const [repsText, setRepsText] = useState(set.reps > 0 ? String(set.reps) : '')
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
@@ -634,10 +639,22 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
       navigator.vibrate?.(60)
       return
     }
+    // Un cero de más (800 en vez de 80) estropearía marcas y estadísticas: se pregunta antes.
+    const warning = tracking === 'weight_reps' ? suspicious(set, lastMax, unit) : undefined
+    if (warning) return setCheck(warning)
+    complete()
+  }
+  const complete = () => {
     ;(document.activeElement as HTMLElement | null)?.blur()
     onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
     navigator.vibrate?.(30)
     onCompleted()
+  }
+
+  const editNote = () => {
+    const text = prompt(t('Nota de esta serie (p. ej. «molestia en el hombro», «agarre ancho»):', 'Note for this set (e.g. "shoulder discomfort", "wide grip"):'), set.note ?? '')
+    if (text === null) return
+    onChange({ note: text.trim().slice(0, 120) || undefined })
   }
 
   const change = (patch: Partial<SetEntry>) => {
@@ -691,6 +708,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
           ...(tracking === 'weight_reps'
             ? (simple ? [] : [{ label: `${t('Tipo', 'Type')}: ${setKindLabel(set).toLowerCase()}`, onSelect: () => setKindMenu(true) }])
             : [{ label: set.warmup ? t('Marcar como serie efectiva', 'Mark as working set') : t('Marcar como calentamiento', 'Mark as warm-up'), onSelect: () => onChange({ warmup: !set.warmup }) }]),
+          { label: set.note ? t('Editar la nota', 'Edit the note') : t('Añadir una nota', 'Add a note'), onSelect: editNote },
           { label: t('Eliminar serie', 'Delete set'), destructive: true, onSelect: onDelete },
         ]} />
       )}
@@ -706,7 +724,30 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
           }))} />
       )}
       {plates && <PlatesSheet weightKg={set.weight} onClose={() => setPlates(false)} />}
+      {check && (
+        <ActionSheet title={check} onClose={() => setCheck(undefined)} options={[
+          { label: t('Sí, es correcto', 'Yes, it is right'), onSelect: complete },
+          { label: t('Corregirlo', 'Fix it'), onSelect: () => setInvalid(true) },
+        ]} />
+      )}
     </div>
+    {current && !set.done && tracking === 'weight_reps' && !set.warmup && (
+      <div className="weight-steps">
+        {[-1, 1].map((sign) => {
+          const step = increment(unit)
+          const next = Math.max(0, fromKg(set.weight, unit) + sign * step)
+          return (
+            <button key={sign} className="btn secondary btn-sm" disabled={sign < 0 && set.weight <= 0}
+              onClick={() => change({ weight: toKg(Math.round(next / step) * step, unit) })}
+              aria-label={sign > 0 ? t(`Subir ${editable(step)} ${unit}`, `Add ${editable(step)} ${unit}`) : t(`Bajar ${editable(step)} ${unit}`, `Remove ${editable(step)} ${unit}`)}>
+              {sign > 0 ? '+' : '−'}{editable(step)} {unit}
+            </button>
+          )
+        })}
+      </div>
+    )}
+    {set.note ? <button className="set-note small muted" onClick={() => editNote()}><StickyNote size={13} aria-hidden="true" /> {set.note}</button>
+      : previous?.note && !set.done && <span className="set-note small muted"><StickyNote size={13} aria-hidden="true" /> {t(`La última vez: ${previous.note}`, `Last time: ${previous.note}`)}</span>}
     {set.done && !set.warmup && (askRpe || set.rpe !== undefined) && (
       <RpeRow value={set.rpe} open={askRpe} onOpen={onAskRpe}
         onPick={(rpe) => { onChange({ rpe }); onRpeDone(); onRpePicked(rpe) }} />

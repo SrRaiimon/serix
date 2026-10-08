@@ -106,3 +106,18 @@ export function rpeMeaning(rpe: number): string {
   if (!Number.isInteger(rir)) return tr(`te quedaban ${Math.floor(rir)}-${Math.ceil(rir)} reps`, `${Math.floor(rir)}-${Math.ceil(rir)} reps left`)
   return tr(`te quedaban ${rir} reps`, `${rir} reps left`)
 }
+
+/**
+ * ¿Peso o repeticiones con pinta de error al teclear? Más del doble (y 20 kg más) que lo máximo de la
+ * última vez, más de 300 kg sin historial, o más de 100 repeticiones. Devuelve la pregunta, si hay que hacerla.
+ */
+export function suspicious(set: SetEntry, lastMax: number, unit: Unit): string | undefined {
+  const w = set.weight
+  if (w > 0 && (lastMax > 0 ? w > lastMax * 2 && w - lastMax >= 20 : w > 300)) {
+    return lastMax > 0
+      ? tr(`¿${weight(w, unit)}? La última vez lo máximo fue ${weight(lastMax, unit)}.`, `${weight(w, unit)}? Last time your top weight was ${weight(lastMax, unit)}.`)
+      : tr(`¿${weight(w, unit)}? Es muchísimo peso.`, `${weight(w, unit)}? That is a lot of weight.`)
+  }
+  if (set.reps > 100) return tr(`¿${set.reps} repeticiones?`, `${set.reps} reps?`)
+  return undefined
+}

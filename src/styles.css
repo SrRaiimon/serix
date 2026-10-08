@@ -2564,3 +2564,16 @@ textarea { resize: none; }
 .food-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .food-tools .btn { justify-content: center; }
 .day-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Editar un entrenamiento terminado. */
+.sess-field { text-align: right; max-width: 60%; font-size: 16px; background: transparent; border: 0; box-shadow: none; padding: 0; color: var(--text); }
+.edit-exercise { gap: 10px; }
+.edit-set-grid { display: grid; grid-template-columns: 40px 1fr 1fr 40px; gap: 8px; align-items: center; text-align: center; }
+.edit-set-head { font-size: 11px; font-weight: 700; color: var(--text-2); }
+.weight-steps { display: flex; gap: 8px; justify-content: flex-end; margin: -2px 0 2px; }
+.set-note { display: flex; gap: 6px; align-items: center; text-align: left; padding: 0 0 4px 48px; }
+.weekday-picker { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.weekday-picker .chip { justify-content: center; padding-left: 0; padding-right: 0; min-height: 40px; }
+/* Día de entreno previsto (Perfil → Días de entreno). */
+.week .planned .dot:not(.today) { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.recap-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }

@@ -30,9 +30,12 @@ export interface Exercise {
   tracking?: Tracking
 }
 
-/** Ejercicio tal como viene en exercises_es.json (los dos idiomas). */
+/**
+ * Ejercicio tal como viene en exercises_es.json (los dos idiomas). Al arrancar se carga
+ * exercises_index.json, igual pero sin instrucciones (ver loadSteps).
+ */
 export interface RawExercise extends Omit<Exercise, 'nameEs' | 'instructions'> {
-  instructions: string[]
+  instructions?: string[]
   instructionsEn?: string[]
 }
 
@@ -64,7 +67,7 @@ export class Catalog {
     const en = lang() === 'en'
     const list: Exercise[] = [...raw, ...custom.map(customToRaw)].map(({ instructionsEn, ...e }) => ({
       ...e, nameEs: e.name, name: en ? e.nameEn : e.name,
-      instructions: en ? (instructionsEn?.length ? instructionsEn : e.instructions) : e.instructions,
+      instructions: (en && instructionsEn?.length ? instructionsEn : e.instructions) ?? [],
     }))
     this.exercises = [...list].sort((a, b) => a.name.localeCompare(b.name, locale()))
     for (const e of list) {
@@ -145,9 +148,21 @@ export interface ExerciseFilter {
 export const emptyFilter: ExerciseFilter = { query: '', favoritesOnly: false }
 
 export async function loadCatalog(): Promise<CatalogData> {
-  const [res, legacyRes] = await Promise.all([fetch('exercises_es.json'), fetch('exercise_ids_v1.json')])
+  // El índice ligero (sin instrucciones): un 20 % del catálogo entero, para que la app abra antes.
+  const [res, legacyRes] = await Promise.all([fetch('exercises_index.json'), fetch('exercise_ids_v1.json')])
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = (await res.json()) as { exercises: RawExercise[] }
   const legacy = legacyRes.ok ? ((await legacyRes.json()) as Record<string, string>) : {}
   return { exercises: data.exercises, legacy }
+}
+
+let steps: Promise<Map<string, { es: string[]; en: string[] }>> | undefined
+
+/** Instrucciones de los ejercicios del catálogo (se descargan la primera vez que se abre una ficha). */
+export function loadSteps() {
+  steps ??= fetch('exercises_es.json')
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() as Promise<{ exercises: RawExercise[] }> })
+    .then((d) => new Map(d.exercises.map((e) => [e.id, { es: e.instructions ?? [], en: e.instructionsEn ?? [] }])))
+    .catch((e) => { steps = undefined; throw e })
+  return steps
 }

@@ -1,13 +1,15 @@
-import { Award, CalendarCheck, Clock, Dumbbell, Flame, Medal, Shapes, Trophy, type LucideIcon } from 'lucide-react'
+import { Apple, Award, CalendarCheck, Clock, Dumbbell, Flame, Medal, Shapes, Trophy, type LucideIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { shortDay, type Unit } from '../lib/format'
-import { achievements, type AchievementGroup, type AchievementState } from '../lib/achievements'
+import { achievements, foodAchievements, type AchievementGroup, type AchievementState } from '../lib/achievements'
+import { dayGoalOptions, goalsForDay } from '../lib/nutrition'
+import { useData } from '../lib/store'
 import { t } from '../lib/i18n'
 import type { Measurement, Session } from '../lib/store'
 import { Card } from './ui'
 
 const ICONS: Record<AchievementGroup, LucideIcon> = {
-  consistency: CalendarCheck, volume: Dumbbell, records: Trophy, strength: Medal, variety: Shapes, time: Clock,
+  consistency: CalendarCheck, volume: Dumbbell, records: Trophy, strength: Medal, variety: Shapes, time: Clock, food: Apple,
 }
 
 export function useAchievements(sessions: Session[], measurements: Measurement[], unit: Unit) {
@@ -39,7 +41,16 @@ function Badge({ a }: { a: AchievementState }) {
 
 /** Todos los logros: conseguidos primero (los más recientes arriba) y luego los pendientes. */
 export function AchievementsList({ sessions, measurements, unit }: { sessions: Session[]; measurements: Measurement[]; unit: Unit }) {
-  const list = useAchievements(sessions, measurements, unit)
+  const training = useAchievements(sessions, measurements, unit)
+  const data = useData()
+  // Los de comida, solo para quien la apunta o tiene objetivo.
+  const food = useMemo(() => {
+    const goals = data.settings.nutrition
+    if (!goals && !data.nutrition.entries.length) return []
+    const opts = dayGoalOptions(data)
+    return foodAchievements(data.nutrition.entries, (day) => goals && goalsForDay(goals, data.nutrition.entries, day, opts))
+  }, [data])
+  const list = [...training, ...food]
   const done = list.filter((a) => a.unlockedAt !== undefined).sort((a, b) => b.unlockedAt! - a.unlockedAt!)
   const pending = list.filter((a) => a.unlockedAt === undefined)
   return (

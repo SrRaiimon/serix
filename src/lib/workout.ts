@@ -207,6 +207,30 @@ export function startRoutine(routine: Routine) {
   openWorkout()
 }
 
+/**
+ * Empieza un entrenamiento igual que uno del historial: mismos ejercicios, número de series y
+ * superseries, con los pesos de la última vez (como al empezar una rutina).
+ */
+export function repeatSession(past: Session) {
+  if (activeSession(getData())) return openWorkout()
+  update((d) => {
+    const history = finishedSessions(d)
+    d.sessions.push({
+      id: uid(),
+      name: past.name,
+      ...(past.routineId && d.routines.some((r) => r.id === past.routineId) ? { routineId: past.routineId } : {}),
+      start: Date.now(),
+      notes: '',
+      exercises: past.exercises.map((e) => blockDeload(d, sessionExercise({
+        exerciseId: e.exerciseId, name: e.name, muscle: e.muscle, rest: e.rest, repsMin: e.repsMin, repsMax: e.repsMax,
+        sets: Math.max(1, e.sets.filter((x) => !x.warmup && x.kind !== 'drop' && x.side !== 'R').length),
+        tracking: e.tracking, targetSeconds: e.targetSeconds, groupId: e.groupId,
+      }, history))),
+    })
+  })
+  openWorkout()
+}
+
 export function startEmpty() {
   if (activeSession(getData())) return openWorkout()
   update((d) => {

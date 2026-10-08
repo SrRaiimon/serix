@@ -1,7 +1,9 @@
-import { Check, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
+import { CalendarCheck, Check, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
-import { addDays, clock, day, int, startOfDay, startOfWeek, tons } from '../lib/format'
+import { dayPlan, weekdayIndex } from '../lib/schedule'
+import { weekRecap } from '../lib/recap'
+import { addDays, clock, day, int, startOfDay, startOfWeek, tons, weight } from '../lib/format'
 import { dayGoalOptions, dayKey, dayTotals, goalsForDay, mealLabel } from '../lib/nutrition'
 import { dueMeals } from '../lib/foodReminders'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
@@ -15,7 +17,7 @@ import { RECOVERING, useRecovery } from '../components/Recovery'
 import { BlockStatus } from '../components/Block'
 import { blockWeek } from '../lib/block'
 import { SessionRow } from '../components/SessionRow'
-import { plural, t } from '../lib/i18n'
+import { locale, plural, t } from '../lib/i18n'
 import { copiedToast, shareMine, shareReminderDue } from '../lib/friends'
 
 
@@ -39,6 +41,8 @@ export function HomeScreen() {
         </div>
       </header>
 
+      {!active && <WeekRecapCard weekStart={weekStart} />}
+
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
       {shareReminderDue(data) && <FriendReminderCard friends={data.friends.length} />}
@@ -54,7 +58,7 @@ export function HomeScreen() {
         </Card>
       )}
 
-      <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} />
+      <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} />
 
       <FoodTodayCard />
 
@@ -151,12 +155,16 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   // Grupos de la rutina (por su músculo principal) que todavía se están recuperando.
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
+  const plan = dayPlan(data.settings)
+  const trainedToday = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
   return (
     <section className="hero" aria-labelledby="next-workout">
       <span className="hero-ribbon" aria-hidden="true" />
       <span className="small clamp-1 hero-meta">
         <span className="sr-only">{t('Siguiente entrenamiento', 'Next workout')}: </span>
-        {routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}
+        {plan && !trainedToday ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
+          : t(`Hoy descansas · el próximo, el ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`, `Rest day · next one on ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`))
+          : routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}
       </span>
       <h2 id="next-workout">{routine.name}</h2>
       <span className="muted">{muscleSummary(routine)}</span>
@@ -177,8 +185,32 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
           </span>
         </span>
       )}
-      <button className="btn primary start" onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
+      <button className={`btn ${plan && !plan.today && !trainedToday ? 'secondary' : 'primary'} start`} onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {plan && !plan.today && !trainedToday ? t('Empezar igualmente', 'Start anyway') : t('Empezar', 'Start')}</button>
     </section>
+  )
+}
+
+/** Los lunes y martes: cómo fue la semana pasada (entrenos, marcas, comida y peso). Se cierra hasta la próxima. */
+function WeekRecapCard({ weekStart }: { weekStart: number }) {
+  const data = useData()
+  const recap = useMemo(() => weekRecap(data, weekStart - 7 * 86400000), [data, weekStart])
+  if (weekdayIndex(Date.now()) > 1 || data.settings.recapSeen === weekStart || !recap) return null
+  const unit = data.settings.unit
+  const lines = [
+    recap.workouts >= recap.goal
+      ? t(`${recap.workouts} de ${recap.goal} entrenos: objetivo cumplido.`, `${recap.workouts} of ${recap.goal} workouts: goal reached.`)
+      : t(`${recap.workouts} de ${recap.goal} entrenos.`, `${recap.workouts} of ${recap.goal} workouts.`),
+    ...(recap.volume > 0 ? [t(`${tons(recap.volume, unit)} movidos.`, `${tons(recap.volume, unit)} moved.`)] : []),
+    ...(recap.records ? [recap.records === 1 ? t('1 marca superada.', '1 personal best.') : t(`${recap.records} marcas superadas.`, `${recap.records} personal bests.`)] : []),
+    ...(recap.food ? [t(`Comida: ${recap.food.met} de 7 días en tu objetivo, ${int(recap.food.protein)} g de proteína de media.`, `Food: ${recap.food.met} of 7 days on target, ${int(recap.food.protein)} g of protein on average.`)] : []),
+    ...(recap.weight ? [t(`Peso: ${weight(recap.weight.kg, unit)}`, `Weight: ${weight(recap.weight.kg, unit)}`)
+      + (recap.weight.change !== undefined && Math.abs(recap.weight.change) >= 0.05 ? ` (${recap.weight.change > 0 ? '+' : '−'}${weight(Math.abs(recap.weight.change), unit)})` : '') + '.'] : []),
+  ]
+  return (
+    <Card title={t('Tu semana pasada', 'Your last week')} icon={CalendarCheck}>
+      <ul className="recap-list">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
+      <button className="btn secondary" onClick={() => updateSettings({ recapSeen: weekStart })}>{t('Entendido', 'Got it')}</button>
+    </Card>
   )
 }
 
@@ -193,7 +225,7 @@ function ContinueCard({ session }: { session: Session }) {
   )
 }
 
-function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: number; weekStart: number }) {
+function WeekCard({ sessions, goal, weekStart, planned }: { sessions: Session[]; goal: number; weekStart: number; planned?: number[] }) {
   const trained = new Set(sessions.map((s) => startOfDay(s.start).getTime()))
   const today = startOfDay(Date.now()).getTime()
   const days = Array.from({ length: 7 }, (_, i) => addDays(new Date(weekStart), i))
@@ -209,7 +241,7 @@ function WeekCard({ sessions, goal, weekStart }: { sessions: Session[]; goal: nu
           const time = d.getTime()
           const state = trained.has(time) ? 'done' : time < today ? 'past' : time > today ? 'future' : ''
           return (
-            <div key={time}>
+            <div key={time} className={planned?.includes(i) && !trained.has(time) ? 'planned' : undefined}>
               <span className={`tiny bold ${time === today ? '' : 'muted'}`}>{time === today ? t('HOY', 'TODAY') : t('LMXJVSD', 'MTWTFSS')[i]}</span>
               <div className={`dot ${state} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
             </div>

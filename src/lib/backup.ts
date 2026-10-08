@@ -80,6 +80,7 @@ function setEntry(v: unknown): SetEntry | undefined {
     duration: optNum(v.duration, 0, 86400), distance: optNum(v.distance, 0, 1000), rpe: optNum(v.rpe, 1, 10),
     kind: oneOf(v.kind, SET_KINDS),
     side: v.side === 'L' || v.side === 'R' ? v.side : undefined,
+    note: typeof v.note === 'string' && v.note.trim() ? v.note.slice(0, 120) : undefined,
   }
 }
 
@@ -116,6 +117,7 @@ function measurement(v: unknown): Measurement | undefined {
     id: str(v.id, uid(), 50), date: num(v.date, EPOCH_MIN, EPOCH_MAX, Date.now()),
     weight: optNum(v.weight, 1, 500), bodyFat: optNum(v.bodyFat, 1, 80), waist: optNum(v.waist, 1, 300),
     chest: optNum(v.chest, 1, 300), arm: optNum(v.arm, 1, 150), thigh: optNum(v.thigh, 1, 200),
+    neck: optNum(v.neck, 1, 100), hip: optNum(v.hip, 1, 300),
   }
 }
 
@@ -125,6 +127,9 @@ function settings(v: unknown): Settings {
   return {
     name: str(s.name, '', 60), unit: oneOf(s.unit, ['kg', 'lb'] as const) ?? d.unit,
     defaultRest: num(s.defaultRest, 0, 900, d.defaultRest), weeklyGoal: num(s.weeklyGoal, 1, 7, d.weeklyGoal),
+    recapSeen: optNum(s.recapSeen, EPOCH_MIN, EPOCH_MAX),
+    trainingDays: Array.isArray(s.trainingDays) && s.trainingDays.length
+      ? [...new Set(s.trainingDays.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort() : undefined,
     activeProgram: str(s.activeProgram, '', 100), onboarded: true,
     goal: oneOf(s.goal, ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) ?? d.goal,
     level: oneOf(s.level, ['beginner', 'intermediate', 'advanced'] as const) ?? d.level,

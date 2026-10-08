@@ -73,6 +73,9 @@ def main(src, mapping_path):
     catalog = {'version': 2, 'source': 'Datos de ejercicios: lista de Free Exercise DB (solo nombres y clasificación)',
                'count': len(out), 'exercises': out}
     json.dump(catalog, open(os.path.join(ROOT, 'public', 'exercises_es.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    # Índice ligero (sin instrucciones) para arrancar la app; las instrucciones se cargan al abrir una ficha.
+    index = {**catalog, 'exercises': [{k: v for k, v in x.items() if k not in ('instructions', 'instructionsEn')} for x in out]}
+    json.dump(index, open(os.path.join(ROOT, 'public', 'exercises_index.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     mapping = json.load(open(mapping_path))
     ids = {x['id'] for x in out}
     assert all(v in ids for v in mapping.values())

@@ -1,4 +1,4 @@
-import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Plus, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -20,6 +20,7 @@ import { balanceTip, muscleBalance } from '../lib/balance'
 import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
+import { blankPastSession, SessionEditSheet } from './SessionEdit'
 import { bodyweightText } from '../lib/bodyweight'
 import { weeklyIntake } from '../lib/nutrition'
 
@@ -47,6 +48,7 @@ export function ProgressScreen() {
         <>
         <WeightFoodCard />
         <Empty icon={ChartLine} title={t('Sin datos todavía', 'No data yet')} message={t('Completa tu primer entrenamiento y aquí verás tu volumen, récords y progreso por ejercicio.', 'Finish your first workout and you will see your volume, records and progress per exercise here.')} />
+        <LogPastButton />
         </>
       ) : (
         <>
@@ -431,6 +433,17 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   )
 }
 
+/** Apuntar un entrenamiento que no se registró en su momento. */
+function LogPastButton() {
+  const [draft, setDraft] = useState<Session>()
+  return (
+    <>
+      <button className="btn secondary" onClick={() => setDraft(blankPastSession())}><Plus size={18} /> {t('Apuntar un entreno pasado', 'Log a past workout')}</button>
+      {draft && <SessionEditSheet session={draft} isNew onClose={() => setDraft(undefined)} />}
+    </>
+  )
+}
+
 function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   // Con años de historial se pintan de 50 en 50 al ir bajando (pintarlos todos de golpe se notaba).
   const { shown, sentinel } = useProgressive(sessions, '')
@@ -446,6 +459,7 @@ function History({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   }
   return (
     <>
+      <LogPastButton />
       {[...months].map(([month, list]) => (
         <div key={month} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div className="list-header">{month} · {total.get(month)}</div>
