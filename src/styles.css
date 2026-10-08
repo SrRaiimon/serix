@@ -2630,3 +2630,4 @@ textarea { resize: none; }
 .day-routines .select { max-width: 60%; }
 /* Filas que son enlaces (redes del creador en Perfil → Ayuda): mismo aspecto que las demás filas. */
 a.list-row { color: var(--text); text-decoration: none; }
+.feedback-kind { font-weight: 800; font-size: 17px; }

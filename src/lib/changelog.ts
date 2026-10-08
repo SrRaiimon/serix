@@ -8,9 +8,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.63',
+    items: [
+      ['Contar un fallo o proponer una idea: escríbelo y elige si me lo mandas por Instagram, LinkedIn o GitHub.', 'Report a bug or suggest an idea: write it and choose Instagram, LinkedIn or GitHub to send it to me.'],
+    ],
+  },
+  {
     version: '0.0.62',
     items: [
-      ['Perfil → Ayuda: escríbeme por Instagram, LinkedIn o GitHub para contarme un fallo o una idea.', 'Profile → Help: message me on Instagram, LinkedIn or GitHub to report a bug or share an idea.'],
+      ['Perfil → Ayuda: mis redes para contarme un fallo o una idea.', 'Profile → Help: my social links to report a bug or share an idea.'],
     ],
   },
   {

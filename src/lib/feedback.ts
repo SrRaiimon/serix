@@ -1,10 +1,19 @@
 import { lang, t } from './i18n'
 import { isStandalone } from './pwa'
 
-// Contar un fallo o una idea: se prepara un mensaje con la versión y el tipo de móvil (nunca tus datos)
-// y se abre el menú de compartir del móvil para mandarlo por Instagram, WhatsApp, correo… (en Perfil →
-// Ayuda están las redes del creador).
-// Serix no tiene servidor: no se envía nada a ningún sitio por sí solo.
+// Contar un fallo o proponer una idea al creador de Serix por sus redes (Instagram, LinkedIn o GitHub).
+// El mensaje empieza diciendo si es un FALLO o una IDEA y lleva la versión y el tipo de móvil (nunca tus
+// datos). Serix no tiene servidor: no se envía nada por sí solo, lo mandas tú desde la red que elijas.
+
+export type FeedbackKind = 'bug' | 'idea'
+
+/** Dónde contactar con el creador. */
+export const CONTACT = [
+  { id: 'instagram', name: 'Instagram', handle: '@srraiimon', profile: 'https://www.instagram.com/srraiimon/', dm: 'https://ig.me/m/srraiimon' },
+  { id: 'linkedin', name: 'LinkedIn', handle: 'ramoncasañamartinez', profile: 'https://www.linkedin.com/in/ramoncasa%C3%B1amartinez/' },
+  { id: 'github', name: 'GitHub', handle: 'SrRaiimon', profile: 'https://github.com/SrRaiimon' },
+] as const
+export type ContactId = (typeof CONTACT)[number]['id']
 
 /** Móvil y navegador, sin nada que identifique a la persona. */
 export function deviceSummary(): string {
@@ -16,23 +25,27 @@ export function deviceSummary(): string {
   return `${os} · ${browser}${isStandalone() ? ' · instalada' : ''}`
 }
 
-export function feedbackText(kind: 'bug' | 'idea' | 'crash', detail = ''): string {
-  const head = kind === 'idea' ? t('Idea para Serix', 'Idea for Serix') : t('Fallo en Serix', 'Bug in Serix')
-  return [
-    `${head} (${__APP_VERSION__} · ${deviceSummary()} · ${lang()})`,
-    '',
-    detail || (kind === 'idea' ? t('Mi idea: ', 'My idea: ') : t('Qué estaba haciendo y qué pasó: ', 'What I was doing and what happened: ')),
-  ].join('\n')
+/** Primera línea: deja claro si es un fallo o una idea. */
+export const feedbackTitle = (kind: FeedbackKind) => (kind === 'idea' ? t('💡 IDEA para Serix', '💡 IDEA for Serix') : t('🐞 FALLO en Serix', '🐞 BUG in Serix'))
+
+export function feedbackText(kind: FeedbackKind, detail: string): string {
+  return [feedbackTitle(kind), '', detail.trim(), '', `(${t('Versión', 'Version')} ${__APP_VERSION__} · ${deviceSummary()} · ${lang()})`].join('\n')
 }
 
-/** Abre el menú de compartir con el mensaje; si no hay, lo copia. Devuelve 'copied' si se copió. */
-export async function sendFeedback(kind: 'bug' | 'idea' | 'crash', detail?: string): Promise<'shared' | 'copied' | 'cancelled'> {
+/**
+ * Manda el mensaje por la red elegida. GitHub abre una incidencia nueva ya rellenada («Fallo: …» o
+ * «Idea: …»); Instagram abre el chat y LinkedIn el perfil, con el mensaje copiado para pegarlo.
+ * Se llama dentro del toque para que el navegador deje abrir la pestaña.
+ */
+export function sendTo(contact: ContactId, kind: FeedbackKind, detail: string): 'opened' | 'copied' {
   const text = feedbackText(kind, detail)
-  try {
-    if (navigator.share) { await navigator.share({ text }); return 'shared' }
-    await navigator.clipboard.writeText(text)
-    return 'copied'
-  } catch {
-    return 'cancelled'
+  const c = CONTACT.find((x) => x.id === contact)!
+  if (contact === 'github') {
+    const title = `${kind === 'idea' ? t('Idea', 'Idea') : t('Fallo', 'Bug')}: ${detail.trim().split('\n')[0].slice(0, 70)}`
+    window.open(`https://github.com/SrRaiimon/serix/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`, '_blank', 'noopener')
+    return 'opened'
   }
+  void navigator.clipboard?.writeText(text).catch(() => undefined)
+  window.open('dm' in c ? c.dm : c.profile, '_blank', 'noopener')
+  return 'copied'
 }
