@@ -7,8 +7,8 @@ import { sessionKcal } from '../lib/burn'
 import { focusFor } from '../lib/warmupRoutine'
 import { back, navigate } from '../lib/router'
 import { dayGoalOptions, dayKey, dayTotals, goalsForDay } from '../lib/nutrition'
-import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
-import { compareWithLast, newRecords, sessionDuration, type ExerciseChange, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
+import { recordCardSVG, shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
+import { compareWithLast, newRecords, records, sessionDuration, type ExerciseChange, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
@@ -86,6 +86,19 @@ function useShareImage(session: Session | undefined, unit: Unit, records: Person
     // Se regenera solo cuando cambia algo que aparece en la imagen.
   }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
   return images
+}
+
+/** Imagen de un récord para compartir (se prepara al tocar). */
+async function shareRecord(r: PersonalRecord, history: Session[], unit: Unit, showToast: (text: string) => void) {
+  const before = records(history.filter((s) => s.start < r.date - 1)).find((x) => x.exerciseId === r.exerciseId)?.e1rm
+  const set = `${r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × ${r.reps}`
+  try {
+    const blob = await svgToPng(recordCardSVG({ record: r, unit, previous: before, setText: set }))
+    const result = await shareImage(new File([blob], `serix-record-${r.exerciseId}.png`, { type: 'image/png' }), r.name)
+    if (result === 'downloaded') showToast(t('Imagen descargada', 'Image downloaded'))
+  } catch {
+    showToast(t('No se pudo preparar la imagen', 'The image could not be prepared'))
+  }
 }
 
 async function shareSessionImage(file: File | undefined, title: string, showToast: (text: string) => void) {
@@ -253,9 +266,10 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
       {records.length > 0 && (
         <Card title={records.length === 1 ? t('Nuevo récord personal', 'New personal record') : t(`${records.length} récords personales`, `${records.length} personal records`)} icon={Trophy}>
           {records.map((r) => (
-            <div key={r.exerciseId} className="row between">
-              <span className="clamp-1 small">{r.name}</span>
+            <div key={r.exerciseId} className="row between" style={{ gap: 8 }}>
+              <span className="clamp-1 small grow">{r.name}</span>
               <strong className="small">{r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × {r.reps}</strong>
+              <button className="icon-btn" onClick={() => void shareRecord(r, history, unit, showToast)} aria-label={t(`Compartir el récord de ${r.name}`, `Share the ${r.name} record`)}><Share2 size={16} /></button>
             </div>
           ))}
         </Card>

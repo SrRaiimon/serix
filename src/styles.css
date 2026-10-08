@@ -190,11 +190,16 @@ img {
 
 .large-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   padding-top: 20px;
 }
+
+/* Si el título y los botones no caben en una línea (pantallas estrechas, letra grande), los botones bajan. */
+.large-title > .grow { flex: 1 0 auto; }
+.large-title > .row { margin-left: auto; }
 
 .large-title h1 {
   font-family: var(--font-display);
@@ -2615,3 +2620,11 @@ textarea { resize: none; }
 .rescue h1 { margin: 0; font-size: 26px; }
 .rescue p { margin: 0 0 8px; }
 .ios-warning { gap: 6px; border-color: var(--amber-text); background: color-mix(in srgb, #f08c00 10%, var(--card)); }
+.chip-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.chip-row::-webkit-scrollbar { display: none; }
+/* Metas de fuerza (Progreso → Resumen). */
+.goal-row { display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; padding: 4px 0; }
+.goal-row .food-bar { display: block; }
+.goal-row .food-bar > span { display: block; height: 100%; background: var(--accent); transform-origin: left; }
+.day-routines { display: flex; flex-direction: column; gap: 6px; }
+.day-routines .select { max-width: 60%; }

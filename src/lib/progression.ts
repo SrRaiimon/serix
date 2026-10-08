@@ -1,5 +1,5 @@
 import { fromKg, increment, toKg, uid, type Unit } from './format'
-import { workingSets } from './stats'
+import { records, workingSets } from './stats'
 import type { AutoProgress, Progression, Session, SetEntry } from './store'
 
 // Progresión automática del peso al empezar una rutina.
@@ -34,6 +34,7 @@ export interface PlanInput {
   repsMin: number
   repsMax: number
   progression?: Progression
+  percent?: number
   trainingMax?: number
   tmSince?: number
 }
@@ -64,6 +65,14 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     const tm = ex.trainingMax + cycle * progressionStep(ex.muscle, unit)
     const sets = WAVE[week].map(([pct, reps], i) => blank(round(tm * pct, unit), reps, week < 3 && i === 2 ? { kind: 'amrap' } : {}))
     return { sets, auto: { kind: 'wave', week: week + 1, tm }, deload: week === 3 }
+  }
+  if (ex.progression === 'percent') {
+    // Peso = porcentaje del mejor 1RM estimado hasta hoy (si aún no hay, se pone a mano).
+    // En dominadas y fondos el máximo incluye el peso corporal: ahí el lastre se pone a mano.
+    const max = records(history).find((r) => r.exerciseId === ex.exerciseId && r.added === undefined)?.e1rm
+    if (!max || !ex.percent) return undefined
+    const reps = ex.repsMax || ex.repsMin || 5
+    return { sets: Array.from({ length: Math.max(ex.sets, 1) }, () => blank(round(max * ex.percent!, unit), reps)), auto: { kind: 'percent', pct: ex.percent, max } }
   }
   if (ex.progression !== 'double' && ex.progression !== 'linear') return undefined
   const main = last.filter((s) => s.kind !== 'drop' && s.weight > 0)

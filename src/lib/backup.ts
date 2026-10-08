@@ -2,11 +2,12 @@ import { uid } from './format'
 import { cleanBlock } from './block'
 import { cleanCustomExercise, MAX_CUSTOM_EXERCISES } from './customExercises'
 import { cleanChallenge, cleanSnapshot } from './friends'
+import type { LiftGoal } from './goals'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
-import { MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
+import { ALL_MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -29,7 +30,7 @@ const list = <T>(v: unknown, parse: (x: unknown) => T | undefined, max = 10000):
 
 const TRACKING = ['weight_reps', 'time', 'distance_time'] as const
 const SET_KINDS = ['drop', 'amrap', 'failure'] as const
-const PROGRESSIONS = ['double', 'linear', 'wave531'] as const
+const PROGRESSIONS = ['double', 'linear', 'wave531', 'percent'] as const
 
 function autoProgress(v: unknown): AutoProgress | undefined {
   if (!isObj(v)) return undefined
@@ -39,6 +40,10 @@ function autoProgress(v: unknown): AutoProgress | undefined {
     return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode } : undefined
   }
   if (v.kind === 'hold' && mode) return { kind: 'hold', mode }
+  if (v.kind === 'percent') {
+    const pct = optNum(v.pct, 0.3, 1), max = optNum(v.max, 0, 2000)
+    return pct !== undefined && max !== undefined ? { kind: 'percent', pct, max } : undefined
+  }
   if (v.kind === 'wave') {
     const week = optNum(v.week, 1, 4), tm = optNum(v.tm, 0, 2000)
     return week !== undefined && tm !== undefined ? { kind: 'wave', week: Math.round(week), tm } : undefined
@@ -59,6 +64,7 @@ function routineExercise(v: unknown): RoutineExercise | undefined {
     progression: oneOf(v.progression, PROGRESSIONS),
     trainingMax: optNum(v.trainingMax, 1, 2000),
     tmSince: optNum(v.tmSince, EPOCH_MIN, EPOCH_MAX),
+    percent: optNum(v.percent, 0.3, 1),
   }
 }
 
@@ -102,6 +108,16 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
   }
 }
 
+function liftGoal(v: unknown): LiftGoal | undefined {
+  if (!isObj(v) || typeof v.exerciseId !== 'string') return undefined
+  const kg = optNum(v.kg, 1, 1000)
+  if (!kg) return undefined
+  return {
+    id: str(v.id, uid(), 50), exerciseId: v.exerciseId.slice(0, 200), name: str(v.name, 'Ejercicio', 100), kg,
+    from: num(v.from, 0, 1000, 0), createdAt: num(v.createdAt, EPOCH_MIN, EPOCH_MAX, Date.now()), by: optNum(v.by, EPOCH_MIN, EPOCH_MAX),
+  }
+}
+
 function readiness(v: unknown): Session['readiness'] {
   if (!isObj(v)) return undefined
   const [sleep, energy, soreness] = [v.sleep, v.energy, v.soreness].map((x) => optNum(x, 1, 5))
@@ -136,10 +152,16 @@ function settings(v: unknown): Settings {
     defaultRest: num(s.defaultRest, 0, 900, d.defaultRest), weeklyGoal: num(s.weeklyGoal, 1, 7, d.weeklyGoal),
     recapSeen: optNum(s.recapSeen, EPOCH_MIN, EPOCH_MAX),
     nutritionBurned: s.nutritionBurned === true ? true : undefined,
+    mealNames: isObj(s.mealNames) ? Object.fromEntries(Object.entries(s.mealNames)
+      .filter(([k, v]) => (ALL_MEALS as string[]).includes(k) && typeof v === 'string' && v.trim()).map(([k, v]) => [k, (v as string).trim().slice(0, 24)])) : undefined,
+    meals: Array.isArray(s.meals) ? ALL_MEALS.filter((m) => (s.meals as unknown[]).includes(m)) : undefined,
+    liftGoals: Array.isArray(s.liftGoals) && s.liftGoals.length ? list(s.liftGoals, liftGoal, 30) : undefined,
     seenVersion: typeof s.seenVersion === 'string' && /^\d+\.\d+\.\d+$/.test(s.seenVersion) ? s.seenVersion : undefined,
     textScale: s.textScale === 1.12 || s.textScale === 1.25 ? s.textScale : undefined,
     lastPhotoAt: optNum(s.lastPhotoAt, EPOCH_MIN, EPOCH_MAX), photoSnooze: optNum(s.photoSnooze, EPOCH_MIN, EPOCH_MAX),
     weighSnooze: optNum(s.weighSnooze, EPOCH_MIN, EPOCH_MAX),
+    dayRoutines: isObj(s.dayRoutines) ? Object.fromEntries(Object.entries(s.dayRoutines)
+      .filter(([k, v]) => /^[0-6]$/.test(k) && typeof v === 'string').map(([k, v]) => [Number(k), (v as string).slice(0, 50)])) : undefined,
     trainingTime: typeof s.trainingTime === 'string' && /^\d{2}:\d{2}$/.test(s.trainingTime) ? s.trainingTime : undefined,
     trainingDays: Array.isArray(s.trainingDays) && s.trainingDays.length
       ? [...new Set(s.trainingDays.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort() : undefined,
@@ -217,10 +239,13 @@ function foodRef(v: unknown): FoodRef | undefined {
 
 function foodEntry(v: unknown): FoodEntry | undefined {
   if (!isObj(v) || typeof v.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v.day)) return undefined
-  const values = per100(v.per100), meal = oneOf(v.meal, MEALS), grams = optNum(v.grams, 0.1, 5000)
+  const values = per100(v.per100), meal = oneOf(v.meal, ALL_MEALS), grams = optNum(v.grams, 0.1, 5000)
   if (!values || !meal || grams === undefined) return undefined
   return { id: str(v.id, uid(), 50), day: v.day, meal, name: str(v.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(v.ref), at: num(v.at, EPOCH_MIN, EPOCH_MAX, Date.now()) }
 }
+
+/** Un alimento propio revisado (también al recibirlo por enlace, lib/foodShare.ts). */
+export const cleanMyFood = (v: unknown) => myFood(v)
 
 function myFood(v: unknown): MyFood | undefined {
   if (!isObj(v)) return undefined
@@ -278,7 +303,7 @@ function week(v: unknown): NutritionData['week'] {
   for (let i = 0; i < 7; i++) {
     const items = list((v.days as Record<string, unknown>)[i], (x) => {
       if (!isObj(x)) return undefined
-      const values = per100(x.per100), grams = optNum(x.grams, 0.1, 5000), meal = oneOf(x.meal, MEALS)
+      const values = per100(x.per100), grams = optNum(x.grams, 0.1, 5000), meal = oneOf(x.meal, ALL_MEALS)
       return values && grams !== undefined && meal ? { meal, name: str(x.name, '', 120) || t('Alimento', 'Food'), grams, per100: values, ref: foodRef(x.ref) } : undefined
     }, 100)
     if (items.length) days[i] = items

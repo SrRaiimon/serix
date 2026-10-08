@@ -52,6 +52,7 @@ interface PlannedExercise {
   targetSeconds?: number
   groupId?: string
   progression?: Progression
+  percent?: number
   trainingMax?: number
   tmSince?: number
 }
@@ -162,7 +163,22 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */
-export function nextRoutine(d: AppData): Routine | undefined {
+export function nextRoutine(d: AppData, now = Date.now()): Routine | undefined {
+  // Con una rutina asignada a cada día de entreno, toca la del próximo día (hoy, si aún no has entrenado).
+  const byDay = d.settings.dayRoutines
+  const days = d.settings.trainingDays
+  if (byDay && days?.length) {
+    const today = new Date(now)
+    const trainedToday = d.sessions.some((s) => s.end && new Date(s.start).toDateString() === today.toDateString())
+    for (let i = trainedToday ? 1 : 0; i < 8; i++) {
+      const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i)
+      const weekday = (day.getDay() + 6) % 7
+      if (!days.includes(weekday)) continue
+      const routine = d.routines.find((r) => r.id === byDay[weekday] && r.exercises.length)
+      if (routine) return routine
+      break
+    }
+  }
   const sorted = [...d.routines].sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
   const program = sorted.filter((r) => d.settings.activeProgram && r.programName === d.settings.activeProgram)
   const pool = (program.length ? program : sorted).filter((r) => r.exercises.length)

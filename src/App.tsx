@@ -29,6 +29,7 @@ const screens = {
   profile: () => import('./screens/Profile'),
   progress: () => import('./screens/Progress'),
   report: () => import('./screens/Report'),
+  foodImport: () => import('./screens/FoodImport'),
   routines: () => import('./screens/Routines'),
   session: () => import('./screens/Session'),
   transfer: () => import('./screens/Transfer'),
@@ -50,6 +51,7 @@ const MeasurementsScreen = lazy(() => screens.profile().then((m) => ({ default: 
 const CalendarScreen = lazy(() => screens.profile().then((m) => ({ default: m.CalendarScreen })))
 const OneRepMaxScreen = lazy(() => screens.profile().then((m) => ({ default: m.OneRepMaxScreen })))
 const PlatesScreen = lazy(() => screens.profile().then((m) => ({ default: m.PlatesScreen })))
+const FoodImportScreen = lazy(() => screens.foodImport().then((m) => ({ default: m.FoodImportScreen })))
 const ReportScreen = lazy(() => screens.report().then((m) => ({ default: m.ReportScreen })))
 const ProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ProgressScreen })))
 const ExerciseProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ExerciseProgressScreen })))
@@ -132,6 +134,7 @@ function Main() {
 
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
   if (route[0] === 'import' && route[1]) return <main className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></main>
+  if (route[0] === 'food-import' && route[1]) return <main className="app"><Suspense fallback={null}><FoodImportScreen code={route[1]} /></Suspense></main>
   if (route[0] === 'friend' && route[1]) return <main className="app"><Suspense fallback={null}><FriendImportScreen code={route[1]} /></Suspense></main>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>

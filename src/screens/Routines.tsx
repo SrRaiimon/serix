@@ -293,7 +293,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                     {e.name}
                   </span>
                   <span className="small muted row" style={{ gap: 6, flexWrap: 'wrap', rowGap: 0 }}>
-                    <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : targetText(e)}</span>
+                    <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : e.progression === 'percent' ? `${targetText(e)} · ${Math.round((e.percent ?? 0.75) * 100)} %` : targetText(e)}</span>
                     <span className="row" style={{ gap: 3, whiteSpace: 'nowrap' }} aria-label={t('Descanso', 'Rest')}><Clock size={12} /> {slot.letter && !slot.last ? t('sin descanso', 'no rest') : rest(e.rest)}</span>
                   </span>
                 </span>
@@ -385,6 +385,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
   const setProgression = (i: number, p: Progression | undefined) => edit((r) => {
     const ex = r.exercises[i]
     ex.progression = p
+    if (p === 'percent') ex.percent ??= 0.75
     if (p === 'wave531' && !ex.trainingMax) {
       const best = records(finishedSessions(data)).find((x) => x.exerciseId === ex.exerciseId)?.e1rm
       if (best) ex.trainingMax = toKg(Math.round(fromKg(best * 0.9, data.settings.unit) / increment(data.settings.unit)) * increment(data.settings.unit), data.settings.unit)
@@ -465,6 +466,14 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                 </span>
                 <select className="field" value={e.progression ?? ''} onChange={(ev) => setProgression(i, (ev.target.value || undefined) as Progression | undefined)}>
                   {progressionOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                </select>
+              </label>
+            )}
+            {tracking === 'weight_reps' && e.progression === 'percent' && (
+              <label className="edit-field">
+                <span className="grow bold" style={{ fontSize: 15 }}>{t('Porcentaje', 'Percentage')}</span>
+                <select className="field" value={String(e.percent ?? 0.75)} onChange={(ev) => edit((r) => { r.exercises[i].percent = Number(ev.target.value) })}>
+                  {[0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map((v) => <option key={v} value={v}>{Math.round(v * 100)} %</option>)}
                 </select>
               </label>
             )}
@@ -672,6 +681,7 @@ const progressionHelp = (p: Progression | undefined) =>
   p === 'double' ? t('Cuando llegas a las reps máximas en todas las series, sube el peso y vuelves a las mínimas.', 'When you hit the max reps on every set, the weight goes up and you go back to the min reps.')
     : p === 'linear' ? t('Reps fijas: si las completas todas, la próxima vez sube el peso.', 'Fixed reps: if you complete them all, the weight goes up next time.')
       : p === 'wave531' ? t('Ciclos de 4 semanas sobre tu máximo de entrenamiento, que sube al acabar cada ciclo.', '4-week cycles on your training max, which goes up after each cycle.')
+        : p === 'percent' ? t('El peso es un porcentaje de tu máximo estimado: cuando este sube, sube el peso.', 'The weight is a percentage of your estimated max: when it rises, so does the weight.')
         : t('Tú decides el peso; la app te propone el de la última vez.', 'You choose the weight; the app suggests last time\'s.')
 
 const progressionOptions = (): { id: Progression | ''; label: string }[] => [
@@ -679,6 +689,7 @@ const progressionOptions = (): { id: Progression | ''; label: string }[] => [
   { id: 'double', label: t('Doble progresión', 'Double progression') },
   { id: 'linear', label: t('Lineal', 'Linear') },
   { id: 'wave531', label: '5/3/1' },
+  { id: 'percent', label: t('% del máximo', '% of max') },
 ]
 
 /** Crea el programa 5/3/1 (4 días) a partir del 1RM de los cuatro básicos. */

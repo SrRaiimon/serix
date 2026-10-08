@@ -1,9 +1,9 @@
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from '../components/muscleShapes'
-import { day, tons, weight, type Unit } from './format'
+import { day, fromKg, int, tons, weight, type Unit } from './format'
 import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from './stats'
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
-import { plural, t } from './i18n'
+import { locale, plural, t } from './i18n'
 import { C, DISPLAY, SANS, cardChrome, cardFooter, cardTitle, esc, rule, statBand } from './cardStyle'
 import archivoUrl from '../assets/fonts/archivo-latin-wdth.woff2?url'
 
@@ -172,4 +172,28 @@ export async function shareImage(file: File, title: string): Promise<'shared' | 
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
   return 'downloaded'
+}
+
+// MARK: Récord
+
+/**
+ * Tarjeta de un récord (1080 × 1350): el ejercicio, la serie en grande y el máximo estimado; si se
+ * sabe, cuánto ha subido frente a la marca anterior.
+ */
+export function recordCardSVG({ record, unit, previous, setText }: { record: PersonalRecord; unit: Unit; previous?: number; setText: string }): string {
+  const H = POST_H
+  const date = new Date(record.date).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' })
+  const gain = previous && record.e1rm > previous ? `+${int(fromKg(record.e1rm - previous, unit))} ${unit}` : undefined
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  ${cardChrome(W, H, date)}
+  <text x="60" y="300" font-size="34" font-weight="700" letter-spacing="3" fill="${C.accent}">${esc(t('NUEVO RÉCORD', 'NEW RECORD'))}</text>
+  ${cardTitle(record.name.length > 26 ? `${record.name.slice(0, 25)}…` : record.name, 390, record.name.length > 18 ? 60 : 72)}
+  <text x="60" y="640" font-family="${DISPLAY}" font-size="${setText.length > 14 ? 120 : 170}" font-weight="800" fill="${C.text}" style="font-stretch:106%">${esc(setText)}</text>
+  ${rule(760, W)}
+  ${statBand(60, 820, W - 120, 190, [
+    [`${int(fromKg(record.e1rm, unit))} ${unit}`, t('Máximo estimado', 'Estimated max')],
+    [gain ?? '—', t('Más que tu marca anterior', 'Over your previous best')],
+  ], 2)}
+  ${cardFooter(W, H)}
+</svg>`
 }

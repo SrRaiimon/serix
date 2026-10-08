@@ -1,5 +1,5 @@
 import { lang } from './i18n'
-import { dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
+import { ALL_MEALS, dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
 
 // Menú del día propuesto: un plato por comida, con las cantidades ajustadas a lo que te queda del
 // objetivo. Los platos salen de una lista base (alimentos de la lista básica) y de lo que tú comes:
@@ -38,7 +38,7 @@ export interface Dish {
 }
 
 /** Reparto del objetivo del día entre las comidas. */
-export const MEAL_SPLIT: Record<MealKey, number> = { breakfast: 0.25, lunch: 0.35, snack: 0.12, dinner: 0.28 }
+export const MEAL_SPLIT: Record<MealKey, number> = { breakfast: 0.25, brunch: 0.1, lunch: 0.35, snack: 0.12, dinner: 0.28, supper: 0.08 }
 
 // Platos base: [alimento, papel, gramos, mínimo, máximo, por unidades]. Sin mínimo ni máximo, va fijo.
 type Spec = [id: string, role: Role, g: number, min?: number, max?: number, units?: boolean]
@@ -207,7 +207,7 @@ export function dishWeight(dish: Dish, prefs: PlanPrefs, usual: Map<string, numb
 
 /** Veces que has apuntado cada alimento en cada comida (últimos 60 días). */
 export function usualFoods(entries: FoodEntry[], today: string): Record<MealKey, Map<string, number>> {
-  const out = Object.fromEntries(MEALS.map((m) => [m, new Map<string, number>()])) as Record<MealKey, Map<string, number>>
+  const out = Object.fromEntries(ALL_MEALS.map((m) => [m, new Map<string, number>()])) as Record<MealKey, Map<string, number>>
   for (const group of recentMeals(entries, today))
     for (const key of new Set(group.map(itemKey))) out[group[0].meal].set(key, (out[group[0].meal].get(key) ?? 0) + 1)
   return out

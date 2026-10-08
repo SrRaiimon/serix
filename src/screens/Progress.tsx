@@ -1,15 +1,15 @@
-import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, X, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, Target, X, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
-import { Card, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
+import { ActionSheet, Card, Sheet, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, shortDay, tonnes, tons, weight, weightValue } from '../lib/format'
+import { duration, fromKg, int, monthYear, num, parseDecimal, shortDay, toKg, uid, tonnes, tons, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, newRecords, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
-import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
+import { finishedSessions, updateSettings, useData, withUndo, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
 import { SessionRow } from '../components/SessionRow'
@@ -21,6 +21,9 @@ import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
+import { goalStatus, type LiftGoal } from '../lib/goals'
+import { ExercisePicker } from './Exercises'
+import type { Exercise } from '../lib/catalog'
 import { blankPastSession, SessionEditSheet } from './SessionEdit'
 import { bodyweightText } from '../lib/bodyweight'
 import { weeklyIntake } from '../lib/nutrition'
@@ -328,6 +331,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   return (
     <>
       <BestLifts sessions={sessions} unit={unit} />
+      <GoalsCard sessions={sessions} unit={unit} />
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
       <button className="btn secondary block" onClick={() => setMore(!more)} aria-expanded={more}>
@@ -406,6 +410,92 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       </div>
       <span className="small muted">{t('El peso que podrías levantar una sola vez, calculado con tu mejor serie, y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'The weight you could lift once, worked out from your best set, and how much it rose in 30 days. Tap one to see its progress.')}</span>
     </Card>
+  )
+}
+
+/** Metas de fuerza: progreso, previsión a tu ritmo y si llegas a la fecha. */
+function GoalsCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
+  const { settings } = useData()
+  const goals = settings.liftGoals ?? []
+  const [adding, setAdding] = useState(false)
+  const [menu, setMenu] = useState<LiftGoal>()
+  const dateText = (ms: number) => new Date(ms).toLocaleDateString(locale(), { day: 'numeric', month: 'long' })
+  return (
+    <Card title={t('Tus metas', 'Your goals')} icon={Target}>
+      {goals.length === 0 && <span className="small muted">{t('Ponte una meta, por ejemplo «100 kg en press de banca», y te diremos cuándo llegarías a tu ritmo.', 'Set a goal, e.g. "100 kg bench press", and we will tell you when you would get there at your pace.')}</span>}
+      {goals.map((g) => {
+        const st = goalStatus(g, sessions)
+        return (
+          <button key={g.id} className="goal-row" onClick={() => setMenu(g)}>
+            <span className="row between">
+              <span className="bold clamp-1">{g.name} · {int(fromKg(g.kg, unit))} {unit}</span>
+              <span className="small muted">{st.doneAt ? '✓' : `${int(fromKg(st.current, unit))} ${unit}`}</span>
+            </span>
+            <span className="food-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(st.progress * 100)}>
+              <span style={{ transform: `scaleX(${st.progress})` }} />
+            </span>
+            <span className="small muted">
+              {st.doneAt ? t(`¡Conseguida el ${dateText(st.doneAt)}!`, `Achieved on ${dateText(st.doneAt)}!`)
+                : st.eta ? t(`A tu ritmo, hacia el ${dateText(st.eta)}`, `At your pace, around ${dateText(st.eta)}`) + (g.by ? (st.onTrack ? t(': llegas a tiempo.', ': on track.') : t(`; tu fecha es el ${dateText(g.by)}.`, `; your date is ${dateText(g.by)}.`)) : '.')
+                  : t('Ahora mismo no está subiendo: hacen falta unas semanas de entrenos para calcular tu ritmo.', 'Not going up right now: a few weeks of workouts are needed to work out your pace.')}
+            </span>
+          </button>
+        )
+      })}
+      <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setAdding(true)}><Plus size={16} /> {t('Añadir meta', 'Add goal')}</button>
+      <span className="tiny muted">{t('Se mide con el máximo estimado a una repetición: 85 kg × 5 ya cuentan como unos 99 kg.', 'Measured as the estimated one-rep max: 85 kg × 5 already count as about 99 kg.')}</span>
+      {adding && <GoalSheet sessions={sessions} unit={unit} onClose={() => setAdding(false)} />}
+      {menu && (
+        <ActionSheet title={menu.name} onClose={() => setMenu(undefined)} options={[
+          { label: t('Ver evolución', 'See progress'), onSelect: () => navigate('progress', 'exercise', menu.exerciseId) },
+          { label: t('Quitar la meta', 'Remove the goal'), destructive: true, onSelect: () => withUndo(t('Meta quitada', 'Goal removed'), () => updateSettings({ liftGoals: goals.filter((x) => x.id !== menu.id) })) },
+        ]} />
+      )}
+    </Card>
+  )
+}
+
+function GoalSheet({ sessions, unit, onClose }: { sessions: Session[]; unit: Unit; onClose: () => void }) {
+  const { settings } = useData()
+  const [exercise, setExercise] = useState<Exercise>()
+  const [kgText, setKgText] = useState('')
+  const [by, setBy] = useState('')
+  if (!exercise) return <ExercisePicker single title={t('Meta: elige el ejercicio', 'Goal: pick the exercise')} onClose={onClose} onDone={(list) => {
+    const e = list[0]
+    const best = records(sessions).find((r) => r.exerciseId === e.id)?.e1rm ?? 0
+    const step = unit === 'kg' ? 5 : 10
+    setKgText(String(Math.ceil((fromKg(best, unit) + step) / step) * step))
+    setExercise(e)
+  }} />
+  const value = parseDecimal(kgText)
+  const best = records(sessions).find((r) => r.exerciseId === exercise.id)?.e1rm ?? 0
+  const kg = value ? toKg(value, unit) : 0
+  const valid = kg > best && kg < 1000
+  const save = () => {
+    if (!valid) return
+    const goal: LiftGoal = { id: uid(), exerciseId: exercise.id, name: exercise.name, kg, from: best, createdAt: Date.now(), ...(by ? { by: new Date(`${by}T12:00:00`).getTime() } : {}) }
+    updateSettings({ liftGoals: [...(settings.liftGoals ?? []), goal] })
+    onClose()
+  }
+  return (
+    <Sheet title={t('Nueva meta', 'New goal')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" disabled={!valid} onClick={save}>{t('Guardar meta', 'Save goal')}</button>}>
+      <div className="list">
+        <div className="list-row"><span className="grow">{t('Ejercicio', 'Exercise')}</span><strong>{exercise.name}</strong></div>
+        <label className="list-row">
+          <span className="grow">{t('Quiero llegar a', 'I want to reach')}</span>
+          <input inputMode="decimal" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={kgText} onChange={(e) => setKgText(e.target.value)} aria-label={t('Peso de la meta', 'Goal weight')} />
+          <span className="muted">{unit}</span>
+        </label>
+        <label className="list-row">
+          <span className="grow">{t('Para (opcional)', 'By (optional)')}</span>
+          <input type="date" value={by} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
+        </label>
+      </div>
+      <span className="small muted">{best > 0
+        ? t(`Ahora tu máximo estimado es ${int(fromKg(best, unit))} ${unit}. La meta tiene que ser mayor.`, `Your estimated max is now ${int(fromKg(best, unit))} ${unit}. The goal must be higher.`)
+        : t('Aún no tienes series con peso en este ejercicio: la previsión saldrá cuando entrenes unas semanas.', 'You have no weighted sets in this exercise yet: the forecast will appear after a few weeks of training.')}</span>
+    </Sheet>
   )
 }
 

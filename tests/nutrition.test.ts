@@ -76,7 +76,7 @@ test('copias: comidas y objetivo con valores fuera de rango se descartan', () =>
       entries: [
         { id: 'ok', day: '2026-01-05', meal: 'lunch', name: 'Arroz', grams: 200, per100: { kcal: 145, p: 2.9, c: 31.8, f: 0.4 }, at: Date.UTC(2026, 0, 5) },
         { id: 'mal-dia', day: 'ayer', meal: 'lunch', name: 'X', grams: 100, per100: { kcal: 1, p: 1, c: 1, f: 1 } },
-        { id: 'mal-comida', day: '2026-01-05', meal: 'brunch', name: 'X', grams: 100, per100: { kcal: 1, p: 1, c: 1, f: 1 } },
+        { id: 'mal-comida', day: '2026-01-05', meal: 'elevenses', name: 'X', grams: 100, per100: { kcal: 1, p: 1, c: 1, f: 1 } },
         { id: 'mal-valores', day: '2026-01-05', meal: 'lunch', name: 'X', grams: 100, per100: { kcal: 5000, p: 1, c: 1, f: 1 } },
       ],
       foods: [{ id: 'f', name: '', per100: { kcal: 1, p: 1, c: 1, f: 1 } }, { id: 'g', name: 'Bien', barcode: 'abc', per100: { kcal: 100, p: 1, c: 1, f: 1 } }],

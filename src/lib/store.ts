@@ -5,10 +5,11 @@ import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
 import { applyTextScale, applyTheme, type Theme } from './theme'
+import type { LiftGoal } from './goals'
 import type { TrainingBlock } from './block'
 import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
-import { emptyNutrition, type NutritionData, type NutritionGoals } from './nutrition'
+import { emptyNutrition, setMealSettings, type MealKey, type NutritionData, type NutritionGoals } from './nutrition'
 
 // Immer no congela los datos: congelar decenas de miles de series al arrancar cuesta y la app no lo
 // necesita (los datos solo se cambian con update).
@@ -36,9 +37,11 @@ export interface RoutineExercise {
   /** 5/3/1: máximo de entrenamiento (kg) y desde cuándo cuenta (para saber la semana del ciclo). */
   trainingMax?: number
   tmSince?: number
+  /** Por porcentaje: parte de tu máximo estimado (0,8 = 80 %) con la que se calcula el peso. */
+  percent?: number
 }
 
-export type Progression = 'double' | 'linear' | 'wave531'
+export type Progression = 'double' | 'linear' | 'wave531' | 'percent'
 
 export interface Routine {
   id: string
@@ -107,6 +110,7 @@ export type AutoProgress =
   | { kind: 'up'; from: number; to: number; mode: 'double' | 'linear' }
   | { kind: 'hold'; mode: 'double' | 'linear' }
   | { kind: 'wave'; week: number; tm: number }
+  | { kind: 'percent'; pct: number; max: number }
 
 export interface Session {
   id: string
@@ -144,6 +148,11 @@ export interface Settings {
   nutritionBurned?: boolean
   /** Lunes (ms) de la semana en la que se cerró el resumen de la semana anterior. */
   recapSeen?: number
+  /** Comidas del día activas (por defecto las 4 de siempre) y nombres propios. */
+  meals?: MealKey[]
+  mealNames?: Partial<Record<MealKey, string>>
+  /** Metas de fuerza (lib/goals.ts). */
+  liftGoals?: LiftGoal[]
   /** Última versión cuyas novedades se vieron (components/News.tsx). */
   seenVersion?: string
   /** Tamaño de la letra: 1 normal, 1.12 grande, 1.25 muy grande. */
@@ -153,6 +162,8 @@ export interface Settings {
   /** Hasta cuándo no se recuerda hacer fotos o pesarse («Ahora no»). */
   photoSnooze?: number
   weighSnooze?: number
+  /** Rutina de cada día de entreno (0 = lunes … 6 = domingo → id de rutina); sin valor, van rotando. */
+  dayRoutines?: Record<number, string>
   /** Hora habitual de entrenar («18:00»), para el calendario. */
   trainingTime?: string
   /** Días fijos de entreno (0 = lunes … 6 = domingo); sin valor, solo cuenta cuántos a la semana. */
@@ -315,6 +326,7 @@ function emit() {
   setLang(state.settings.language ?? systemLang())
   applyTheme(state.settings.theme)
   applyTextScale(state.settings.textScale)
+  setMealSettings(state.settings.mealNames, state.settings.meals)
   // Los redondeos de peso de toda la app usan el salto de los discos disponibles.
   setWeightSteps({
     kg: stepFor(availablePlates('kg', state.settings.plates)),

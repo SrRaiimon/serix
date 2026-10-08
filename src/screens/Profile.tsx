@@ -1,7 +1,7 @@
 import { ArrowRightLeft, BellRing, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
-import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
+import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { day, duration, editable, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
@@ -12,6 +12,7 @@ import { fillBodyweights } from '../lib/bodyweight'
 import { sendFeedback } from '../lib/feedback'
 import { NewsSheet } from '../components/News'
 import { navyBodyFat } from '../lib/bodyfat'
+import { rollingAverage, weeklyTrend } from '../lib/reminders'
 import { trainingCalendar } from '../lib/schedule'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { restEndAt, startRest, testBeep } from '../lib/timer'
@@ -165,6 +166,30 @@ export function ProfileScreen() {
               )
             })}
           </div>
+          {!!settings.trainingDays?.length && data.routines.length > 1 && (() => {
+            const names = [t('Lunes', 'Monday'), t('Martes', 'Tuesday'), t('Miércoles', 'Wednesday'), t('Jueves', 'Thursday'), t('Viernes', 'Friday'), t('Sábado', 'Saturday'), t('Domingo', 'Sunday')]
+            const program = data.routines.filter((r) => r.programName === settings.activeProgram && r.exercises.length)
+            const options = (program.length ? program : data.routines.filter((r) => r.exercises.length)).sort((a, b) => a.order - b.order)
+            return (
+              <div className="day-routines">
+                {settings.trainingDays!.map((d) => (
+                  <label key={d} className="row" style={{ gap: 8 }}>
+                    <span className="small grow">{names[d]}</span>
+                    <select className="select" value={settings.dayRoutines?.[d] ?? ''} aria-label={t(`Rutina del ${names[d].toLowerCase()}`, `Routine on ${names[d]}`)}
+                      onChange={(e) => {
+                        const next = { ...settings.dayRoutines }
+                        if (e.target.value) next[d] = e.target.value
+                        else delete next[d]
+                        updateSettings({ dayRoutines: Object.keys(next).length ? next : undefined })
+                      }}>
+                      <option value="">{t('La que toque', 'Next in turn')}</option>
+                      {options.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            )
+          })()}
           {!!settings.trainingDays?.length && (
             <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
               <label className="row" style={{ gap: 6 }}>
@@ -350,11 +375,41 @@ function measurementSummary(m: Measurement, unit: Unit) {
     .join(' · ')
 }
 
+/** Gráfica de cualquier medida con al menos 2 registros; el peso, con su tendencia (media de 7 días). */
+function MeasureChart({ list, unit }: { list: Measurement[]; unit: Unit }) {
+  const fields = measureFields.filter((f) => list.filter((m) => m[f.key] !== undefined).length >= 2)
+  const [key, setKey] = useState(fields[0]?.key)
+  const field = fields.find((f) => f.key === key) ?? fields[0]
+  if (!field) return null
+  const isWeight = field.key === 'weight'
+  const points = list.filter((m) => m[field.key] !== undefined).map((m) => ({ x: m.date, y: isWeight ? fromKg(m.weight!, unit) : m[field.key]! })).sort((a, b) => a.x - b.x)
+  const trend = isWeight && points.length >= 3 ? rollingAverage(points) : undefined
+  const perWeek = isWeight ? weeklyTrend(points) : undefined
+  const u = field.unit ?? unit
+  const change = points[points.length - 1].y - points[0].y
+  return (
+    <Card title={field.label} icon={Scale}>
+      {fields.length > 1 && (
+        <div className="chip-row">
+          {fields.map((f) => <Chip key={f.key} label={f.label} active={f.key === field.key} onClick={() => setKey(f.key)} />)}
+        </div>
+      )}
+      <LineChart points={points} trend={trend} />
+      <span className="small muted bold">{`${change >= 0 ? '+' : ''}${num(change)} ${u} ${t('desde el', 'since')} ${shortDay(points[0].x)}`}</span>
+      {trend && (
+        <span className="small muted">
+          {t('La línea naranja es la media de 7 días: el peso sube y baja cada día por el agua y la sal, la tendencia es lo que cuenta.', 'The orange line is the 7-day average: weight goes up and down daily with water and salt; the trend is what matters.')}
+          {perWeek !== undefined && ` ${t(`Ahora: ${perWeek >= 0 ? '+' : '−'}${num(Math.abs(perWeek))} ${u} por semana.`, `Now: ${perWeek >= 0 ? '+' : '−'}${num(Math.abs(perWeek))} ${u} a week.`)}`}
+        </span>
+      )}
+    </Card>
+  )
+}
+
 export function MeasurementsScreen() {
   const data = useData()
   const unit = data.settings.unit
   const list = [...data.measurements].sort((a, b) => b.date - a.date)
-  const weights = list.filter((m) => m.weight !== undefined).reverse()
   const [adding, setAdding] = useState(false)
   const [remove, setRemove] = useState<string>()
 
@@ -367,17 +422,7 @@ export function MeasurementsScreen() {
             action={<button className="btn primary" onClick={() => setAdding(true)}>{t('Añadir medida', 'Add measurement')}</button>} />
         ) : (
           <>
-            {weights.length >= 2 && (
-              <Card title={t('Peso corporal', 'Body weight')} icon={Scale}>
-                <LineChart points={weights.map((m) => ({ x: m.date, y: fromKg(m.weight!, unit) }))} />
-                <span className="small muted bold">
-                  {(() => {
-                    const change = fromKg(weights[weights.length - 1].weight! - weights[0].weight!, unit)
-                    return `${change >= 0 ? '+' : ''}${num(change)} ${unit} ${t('desde el', 'since')} ${shortDay(weights[0].date)}`
-                  })()}
-                </span>
-              </Card>
-            )}
+            <MeasureChart list={list} unit={unit} />
             <div className="list-header">{t('Registros', 'Entries')}</div>
             <div className="list">
               {list.map((m) => (

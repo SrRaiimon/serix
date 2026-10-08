@@ -1,15 +1,17 @@
-import { Barcode, Bell, CalendarDays, Star, Camera, Check, ChefHat, Droplet, ChevronLeft, ChevronRight, Ellipsis, Shuffle, Sparkles, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
+import { Barcode, Bell, CalendarDays, Share2, Star, Camera, Check, ChefHat, Droplet, ChevronLeft, ChevronRight, Ellipsis, Shuffle, Sparkles, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, monthYear, parseDecimal, uid } from '../lib/format'
 import { lang, locale, t } from '../lib/i18n'
 import {
-  ACTIVITY, adjustGoals, AIMS, amountOf, dayText, favoriteKey, lastWeek, stem, dayFiber, dayOptional, optionals, SALT_MAX, traffic, weekdayOf, weekTemplate, FIBER_GOAL, recipeValues, waterGoal, type Recipe, type RecipeItem, CARRY_OVER_MAX, computeGoals, dayGoalOptions, dayKey, dayStatus, goalsForDay, trainingShift, weightAdvice, type DayGoalOptions, type WeightAdvice, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, mealLabel, planFor,
+  ACTIVITY, adjustGoals, AIMS, amountOf, dayText, favoriteKey, lastWeek, stem, dayFiber, dayOptional, optionals, SALT_MAX, traffic, weekdayOf, weekTemplate, FIBER_GOAL, recipeValues, waterGoal, type Recipe, type RecipeItem, CARRY_OVER_MAX, computeGoals, dayGoalOptions, dayKey, dayStatus, goalsForDay, trainingShift, weightAdvice, type DayGoalOptions, type WeightAdvice, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, ALL_MEALS, activeMeals, defaultMealLabel, mealLabel, planFor,
   quickEntryAmount, recentFoods, searchOff, AESAN_SOURCE, barcodeVariants, findAesan, loadAesan, searchAesan, type AesanProduct, shownGrams, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
   type DayPlan, type SavedMeal, type Per100, type Portion, type ScannedProduct, type Sex,
 } from '../lib/nutrition'
 import { update, updateSettings, useData, withUndo } from '../lib/store'
 import { dueMeals, reminderTime, takePendingAdd } from '../lib/foodReminders'
+import { encodeFood, foodLink } from '../lib/foodShare'
+import { shareLink } from '../lib/share'
 import { useRoute } from '../lib/router'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
 import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
@@ -62,6 +64,7 @@ export function FoodScreen() {
   })) as Partial<Record<MealKey, { dish: Dish; items: ReturnType<typeof fitDish> }>>
   const [shopping, setShopping] = useState(false)
   const [weekShopping, setWeekShopping] = useState(false)
+  const [mealsSheet, setMealsSheet] = useState(false)
   const [dayMenu, setDayMenu] = useState(false)
   // Semana tipo: el día de la semana que toca, si el día está vacío.
   const weekday = weekdayOf(day)
@@ -186,7 +189,7 @@ export function FoodScreen() {
         )
       })()}
 
-      {MEALS.map((meal) => {
+      {ALL_MEALS.filter((m) => activeMeals().includes(m) || entries.some((e) => e.meal === m)).map((meal) => {
         const items = entries.filter((e) => e.meal === meal)
         const sums = dayTotals(items)
         const yesterdayItems = items.length ? [] : data.nutrition.entries.filter((e) => e.day === shiftDay(day, -1) && e.meal === meal)
@@ -257,6 +260,7 @@ export function FoodScreen() {
           ...(entries.length && day !== tomorrow ? [{ label: t('Copiar este día a mañana', 'Copy this day to tomorrow'), onSelect: () => copyDay(tomorrow) }] : []),
           ...(entries.length ? [{ label: t('Compartir este día', 'Share this day'), onSelect: () => void shareDay() }] : []),
           { label: t('Lista de la compra de la semana', 'Shopping list for the week'), onSelect: () => setWeekShopping(true) },
+          { label: t('Elegir y renombrar las comidas', 'Choose and rename meals'), onSelect: () => setMealsSheet(true) },
           { label: t('Guardar esta semana como semana tipo', 'Save this week as my usual week'), onSelect: saveWeek },
           ...(data.nutrition.week ? [{ label: t('Borrar la semana tipo', 'Delete my usual week'), destructive: true, onSelect: () => withUndo(t('Semana tipo borrada', 'Usual week deleted'), () => update((d) => { delete d.nutrition.week })) }] : []),
         ]} />
@@ -283,6 +287,7 @@ export function FoodScreen() {
       {editing && <EntrySheet entry={editing} day={entries} goals={target} onClose={() => setEditing(undefined)} />}
       {goals && <GoalsSheet onClose={() => setGoals(false)} />}
       {shopping && <ShoppingSheet items={Object.values(proposals).flatMap((x) => x?.items ?? [])} title={day === today ? t('Compra para hoy', 'Shopping for today') : t('Compra para mañana', 'Shopping for tomorrow')} onClose={() => setShopping(false)} onCopied={() => showToast(t('Lista copiada', 'List copied'))} />}
+      {mealsSheet && <MealsSheet onClose={() => setMealsSheet(false)} />}
       {weekShopping && (() => {
         // Con semana tipo, sus 7 días; si no, lo que comiste los últimos 7 días (para repetirlo).
         const usual = data.nutrition.week
@@ -534,6 +539,57 @@ function Proposal({ dish, meal, day, target, items, proteinOnly, others, dishes,
 }
 
 /** Lista de la compra del menú propuesto: cada alimento una vez, con lo que suma en el día. */
+/** Compartir un alimento propio o una receta con un enlace (lib/foodShare.ts). */
+function ShareFoodButton({ food }: { food: MyFood }) {
+  const [copied, setCopied] = useState(false)
+  const share = async () => {
+    const link = foodLink(await encodeFood(food))
+    const r = await shareLink(food.name, link, t(`${food.name}: guárdalo en tus alimentos de Serix`, `${food.name}: save it to your Serix foods`))
+    if (r === 'copied') setCopied(true)
+  }
+  return <button className="nav-btn" onClick={() => void share()} aria-label={t(`Compartir ${food.name}`, `Share ${food.name}`)}>{copied ? t('Copiado', 'Copied') : <Share2 size={18} />}</button>
+}
+
+/** Comida a la que va un alimento: botones con 4 o menos, desplegable con más. */
+function MealPicker({ value, onChange }: { value: MealKey; onChange: (m: MealKey) => void }) {
+  const list = activeMeals().includes(value) ? activeMeals() : ALL_MEALS.filter((m) => activeMeals().includes(m) || m === value)
+  if (list.length <= 4) return <Segmented value={value} onChange={onChange} options={list.map((m) => ({ value: m, label: mealLabel(m) }))} />
+  return (
+    <select className="field" value={value} onChange={(e) => onChange(e.target.value as MealKey)} aria-label={t('Comida', 'Meal')}>
+      {list.map((m) => <option key={m} value={m}>{mealLabel(m)}</option>)}
+    </select>
+  )
+}
+
+/** Qué comidas tiene tu día (almuerzo de media mañana, recena…) y cómo se llaman. */
+function MealsSheet({ onClose }: { onClose: () => void }) {
+  const { settings } = useData()
+  const [active, setActive] = useState<MealKey[]>(activeMeals())
+  const [names, setNames] = useState<Partial<Record<MealKey, string>>>(settings.mealNames ?? {})
+  const save = () => {
+    const clean = Object.fromEntries(Object.entries(names).map(([k, v]) => [k, (v ?? '').trim().slice(0, 24)]).filter(([, v]) => v))
+    const same = active.length === MEALS.length && MEALS.every((m) => active.includes(m))
+    updateSettings({ meals: same ? undefined : ALL_MEALS.filter((m) => active.includes(m)), mealNames: Object.keys(clean).length ? clean : undefined })
+    onClose()
+  }
+  return (
+    <Sheet title={t('Tus comidas', 'Your meals')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" disabled={!active.length} onClick={save}>{t('Guardar', 'Save')}</button>}>
+      <span className="small muted">{t('Activa las que haces y ponles tu nombre. Lo que ya apuntaste no se borra: si ocultas una comida con alimentos, vuelve a salir ese día.', 'Turn on the ones you have and name them as you like. Nothing logged is deleted: if you hide a meal that has food, it still shows that day.')}</span>
+      <div className="list">
+        {ALL_MEALS.map((m) => (
+          <div key={m} className="list-row" style={{ gap: 10 }}>
+            <input type="checkbox" className="toggle" checked={active.includes(m)} aria-label={defaultMealLabel(m)}
+              onChange={(e) => setActive(e.target.checked ? [...active, m] : active.filter((x) => x !== m))} />
+            <input className="field grow" value={names[m] ?? ''} placeholder={defaultMealLabel(m)} maxLength={24} aria-label={t(`Nombre de ${defaultMealLabel(m).toLowerCase()}`, `Name for ${defaultMealLabel(m).toLowerCase()}`)}
+              onChange={(e) => setNames({ ...names, [m]: e.target.value })} />
+          </div>
+        ))}
+      </div>
+    </Sheet>
+  )
+}
+
 function ShoppingSheet({ items, title, note, onClose, onCopied }: { items: { key: string; name: string; grams: number }[]; title: string; note?: string; onClose: () => void; onCopied: () => void }) {
   const list = [...items.reduce((m, i) => m.set(i.key, { name: i.name, grams: (m.get(i.key)?.grams ?? 0) + i.grams }), new Map<string, { name: string; grams: number }>()).values()]
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -727,7 +783,7 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
     }
   }
 
-  const mealPicker = <Segmented value={meal} onChange={setMeal} options={MEALS.map((m) => ({ value: m, label: mealLabel(m) }))} />
+  const mealPicker = <MealPicker value={meal} onChange={setMeal} />
   if (view.kind === 'amount') {
     const source = view.food.source
     const recipe = source?.recipe ? source : undefined
@@ -1224,7 +1280,7 @@ function EntrySheet({ entry, day, goals, onClose }: { entry: FoodEntry; day: Foo
       dayEntries={day} goals={goals} editingId={entry.id}
       onSave={(grams) => { edit((e) => { e.grams = grams; e.meal = meal }); onClose() }}
       onDelete={() => { onClose(); withUndo(t(`Quitado: ${entry.name}`, `Removed: ${entry.name}`), () => update((d) => { d.nutrition.entries = d.nutrition.entries.filter((x) => x.id !== entry.id) })) }}
-      extra={<Segmented value={meal} onChange={setMeal} options={MEALS.map((m) => ({ value: m, label: mealLabel(m) }))} />} />
+      extra={<MealPicker value={meal} onChange={setMeal} />} />
   )
 }
 
@@ -1443,7 +1499,7 @@ function RecipeSheet({ initial, initialName, onBack, onClose, onSaved }: { initi
   }
   return (
     <Sheet title={initial ? t('Receta', 'Recipe') : t('Nueva receta', 'New recipe')} onClose={onClose}
-      left={<button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button>}
+      left={<button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button>} right={initial && <ShareFoodButton food={initial} />}
       footer={<button className="btn primary block" disabled={!ok} onClick={save}>{t('Guardar receta', 'Save recipe')}</button>}>
       <div className="list">
         <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Nombre (p. ej. «Lentejas de mi madre»)', 'Name (e.g. "Mum\'s lentils")')} onChange={(e) => setName(e.target.value)} aria-label={t('Nombre de la receta', 'Recipe name')} /></label>
@@ -1562,7 +1618,7 @@ function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack, onClos
   )
   return (
     <Sheet title={initial ? t('Corregir valores', 'Fix values') : t('Nuevo alimento', 'New food')} onClose={onClose}
-      left={<button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button>}
+      left={<button className="nav-btn" onClick={onBack}>{t('Atrás', 'Back')}</button>} right={initial && <ShareFoodButton food={initial} />}
       footer={<button className="btn primary block" disabled={!ok} onClick={save}>{t('Guardar', 'Save')}</button>}>
       {initial && <p className="small muted" style={{ margin: 0 }}>{t('Copia los valores por 100 g de la etiqueta. Se guarda en «Mis alimentos» con lo que escribas.', 'Copy the per 100 g values from the label. It is saved in "My foods" with what you type.')}</p>}
       {barcode && !initial && <p className="small muted" style={{ margin: 0 }}>{t(`El código ${barcode} no está en Open Food Facts. Copia los valores de la etiqueta y lo tendrás guardado para la próxima vez.`, `Code ${barcode} is not on Open Food Facts. Copy the values from the label and it will be saved for next time.`)}</p>}
@@ -1777,8 +1833,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
       <label className="list-row card-row">
         <span className="grow">
           <span className="bold" style={{ display: 'block' }}>{t('Recordarme apuntar las comidas', 'Remind me to log meals')}</span>
-          <span className="small muted">{t(`Si a las ${MEALS.map(reminderTime).join(', ')} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.`,
-            `If by ${MEALS.map(reminderTime).join(', ')} you have not logged that meal, the app reminds you, with a notification if it is open in the background. It cannot remind you when closed.`)}</span>
+          <span className="small muted">{t(`Si a las ${activeMeals().map(reminderTime).join(', ')} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.`,
+            `If by ${activeMeals().map(reminderTime).join(', ')} you have not logged that meal, the app reminds you, with a notification if it is open in the background. It cannot remind you when closed.`)}</span>
         </span>
         <input type="checkbox" className="toggle" checked={remind} onChange={(e) => {
           setRemind(e.target.checked)

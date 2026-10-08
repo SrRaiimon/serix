@@ -81,9 +81,13 @@ function niceStep(raw: number): number {
   return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p
 }
 
-export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBased = false }: { points: { x: number; y: number }[]; height?: number; color?: string; zeroBased?: boolean }) {
+/**
+ * Línea con sus puntos. Con `trend` (p. ej. la media de 7 días del peso), los puntos del día se pintan
+ * tenues y la tendencia, encima, en el color de acento.
+ */
+export function LineChart({ points, trend, height = 180, color = 'var(--ink)', zeroBased = false }: { points: { x: number; y: number }[]; trend?: { x: number; y: number }[]; height?: number; color?: string; zeroBased?: boolean }) {
   const pad = { l: 4, r: 40, t: 10, b: 20 }
-  const ys = points.map((p) => p.y)
+  const ys = [...points, ...(trend ?? [])].map((p) => p.y)
   let min = zeroBased ? 0 : Math.min(...ys)
   let max = Math.max(...ys)
   if (max === min) {
@@ -118,8 +122,17 @@ export function LineChart({ points, height = 180, color = 'var(--ink)', zeroBase
           </g>
         )
       })}
-      <path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
-      {points.map((p, i) => <circle key={i} cx={px(p.x)} cy={py(p.y)} r={i === points.length - 1 ? 5 : points.length > 16 ? 0 : 3} fill={i === points.length - 1 ? 'var(--accent)' : color} />)}
+      {trend ? (
+        <>
+          {points.map((p, i) => <circle key={i} cx={px(p.x)} cy={py(p.y)} r={2.5} fill={color} opacity={0.35} />)}
+          <path d={trend.map((p, i) => `${i ? 'L' : 'M'}${px(p.x).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ')} fill="none" stroke="var(--accent)" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
+        </>
+      ) : (
+        <>
+          <path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+          {points.map((p, i) => <circle key={i} cx={px(p.x)} cy={py(p.y)} r={i === points.length - 1 ? 5 : points.length > 16 ? 0 : 3} fill={i === points.length - 1 ? 'var(--accent)' : color} />)}
+        </>
+      )}
       <text x={pad.l} y={height - 5}>{shortDay(x0)}</text>
       <text x={W - pad.r} y={height - 5} textAnchor="end">{shortDay(x1)}</text>
     </svg>

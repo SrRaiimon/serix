@@ -13,14 +13,31 @@ import { lang, t } from './i18n'
 //   «Mis alimentos» para no volver a pedirlo.
 // - Mis alimentos: los que creas tú.
 
-export type MealKey = 'breakfast' | 'lunch' | 'snack' | 'dinner'
+export type MealKey = 'breakfast' | 'brunch' | 'lunch' | 'snack' | 'dinner' | 'supper'
+/** Las comidas de siempre (el menú propuesto y lo que aprende la app se hacen con estas). */
 export const MEALS: MealKey[] = ['breakfast', 'lunch', 'snack', 'dinner']
-export const mealLabel = (m: MealKey) => ({
+/** Todas, en orden del día: «almuerzo» (media mañana) y «recena» se activan en Comidas → Más. */
+export const ALL_MEALS: MealKey[] = ['breakfast', 'brunch', 'lunch', 'snack', 'dinner', 'supper']
+
+let mealNames: Partial<Record<MealKey, string>> = {}
+let activeMealList: MealKey[] = MEALS
+/** Nombres propios y comidas activas (de los ajustes; lo llama el store en cada cambio). */
+export function setMealSettings(names: Partial<Record<MealKey, string>> | undefined, active: MealKey[] | undefined) {
+  mealNames = names ?? {}
+  activeMealList = active?.length ? ALL_MEALS.filter((m) => active.includes(m)) : MEALS
+}
+/** Comidas que se ven en el día (en orden). */
+export const activeMeals = () => activeMealList
+
+export const defaultMealLabel = (m: MealKey) => ({
   breakfast: t('Desayuno', 'Breakfast'),
+  brunch: t('Almuerzo', 'Mid-morning'),
   lunch: t('Comida', 'Lunch'),
   snack: t('Merienda', 'Snack'),
   dinner: t('Cena', 'Dinner'),
+  supper: t('Recena', 'Late snack'),
 })[m]
+export const mealLabel = (m: MealKey) => mealNames[m] || defaultMealLabel(m)
 
 /** Valores por 100 g: kilocalorías y gramos de proteína, carbohidratos y grasa (y fibra, si se sabe). */
 export interface Per100 { kcal: number; p: number; c: number; f: number; fiber?: number; sugar?: number; salt?: number }
@@ -288,7 +305,7 @@ export function lastWeek(entries: FoodEntry[], goalsOf: (day: string) => Nutriti
 /** El día en texto, para compartirlo (por comidas, con cantidades y totales). */
 export function dayText(entries: FoodEntry[], title: string): string {
   const lines = [title]
-  for (const meal of MEALS) {
+  for (const meal of ALL_MEALS) {
     const items = entries.filter((e) => e.meal === meal)
     if (!items.length) continue
     lines.push('', `${mealLabel(meal)} (${dayTotals(items).kcal} kcal)`)

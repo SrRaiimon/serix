@@ -1,10 +1,10 @@
-import { CalendarCheck, Camera, Check, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
+import { CalendarCheck, Camera, Check, Flame, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { dayPlan, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
 import { NewsCard } from '../components/News'
-import { photoDue, weighDue } from '../lib/reminders'
+import { photoDue, streakAtRisk, weighDue } from '../lib/reminders'
 import { fillBodyweights } from '../lib/bodyweight'
 import { addDays, clock, day, int, parseDecimal, relative, startOfDay, startOfWeek, toKg, tons, uid, weight } from '../lib/format'
 import { dayGoalOptions, dayKey, dayTotals, goalsForDay, mealLabel } from '../lib/nutrition'
@@ -48,6 +48,16 @@ export function HomeScreen() {
       {!active && <NewsCard />}
       {!active && <WeekRecapCard weekStart={weekStart} />}
 
+      {!active && (() => {
+        const risk = streakAtRisk(sessions.map((s) => s.start), streakWeeks(sessions))
+        return risk && (
+          <Card title={t(`Tu racha de ${risk.streak} semanas está en juego`, `Your ${risk.streak}-week streak is at stake`)} icon={Flame}>
+            <span className="small muted">{risk.daysLeft === 1
+              ? t('Esta semana aún no has entrenado: hoy es el último día para mantenerla. Aunque sea un entreno corto, cuenta.', 'You have not trained this week yet: today is the last day to keep it. Even a short workout counts.')
+              : t('Esta semana aún no has entrenado: entrena hoy o mañana para mantenerla. Aunque sea un entreno corto, cuenta.', 'You have not trained this week yet: train today or tomorrow to keep it. Even a short workout counts.')}</span>
+          </Card>
+        )
+      })()}
       {!active && weighDue(data) && <WeighInCard />}
       {!active && photoDue(data) && <PhotoReminderCard />}
 

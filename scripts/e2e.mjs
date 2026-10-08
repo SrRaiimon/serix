@@ -131,8 +131,34 @@ async function main() {
     const blank = await run(() => !!document.querySelector('.rescue') || document.querySelector('main')?.textContent.trim() === '')
     check(!blank, `La pantalla ${hash} ha fallado`)
   }
+  step = 'inglés y tema claro'
+  // Mismo recorrido en inglés y con tema claro, cambiándolos desde Perfil como haría alguien.
+  await run(() => { location.hash = '#/profile' })
+  await wait(700)
+  await run(() => {
+    const pick = (value) => {
+      const select = [...document.querySelectorAll('select')].find((x) => [...x.options].some((o) => o.value === value))
+      select.value = value
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+    pick('light')
+    pick('en')
+  })
+  await wait(1200)
+  const en = await run(() => ({ lang: document.documentElement.lang, theme: document.documentElement.dataset.theme, home: document.querySelector('.tabbar')?.textContent ?? '' }))
+  check(en.lang === 'en' && en.theme === 'light' && /Home/.test(en.home), `No cambió a inglés y tema claro: ${JSON.stringify(en)}`)
+  for (const hash of ['#/', '#/routines', '#/food', '#/progress', '#/profile', '#/exercises', '#/timer', '#/progress/report', '#/profile/measurements']) {
+    await run((h) => { location.hash = h }, hash)
+    await wait(700)
+    const blank = await run(() => !!document.querySelector('.rescue') || document.querySelector('main')?.textContent.trim() === '')
+    check(!blank, `La pantalla ${hash} ha fallado en inglés`)
+    // Ningún texto en español en la barra de abajo ni en el título (un t() olvidado se vería aquí).
+    const spanish = await run(() => /Inicio|Rutinas|Comidas|Progreso|Perfil/.test(document.querySelector('.tabbar')?.textContent ?? ''))
+    check(!spanish, `Quedan textos en español en ${hash}`)
+  }
+
   check(!errors.length, `Errores en la consola:\n${errors.join('\n')}`)
-  console.log('e2e: cuestionario, entreno, comida y pantallas principales correctos')
+  console.log('e2e: cuestionario, entreno, comida y pantallas principales correctos, en español y en inglés con tema claro')
 }
 
 let failed = false

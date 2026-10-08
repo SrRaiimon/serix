@@ -795,6 +795,8 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
     : auto.kind === 'hold'
       ? t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.')
+      : auto.kind === 'percent'
+        ? t(`${Math.round(auto.pct * 100)} % de tu máximo estimado (${weight(auto.max, unit)}).`, `${Math.round(auto.pct * 100)}% of your estimated max (${weight(auto.max, unit)}).`)
       : auto.week === 4
         ? t(`5/3/1 · semana 4 de 4 (descarga) · TM ${weight(auto.tm, unit)}`, `5/3/1 · week 4 of 4 (deload) · TM ${weight(auto.tm, unit)}`)
         : t(`5/3/1 · semana ${auto.week} de 4 · TM ${weight(auto.tm, unit)} · en la última serie, todas las repeticiones que puedas con buena técnica.`,
