@@ -11,7 +11,7 @@ import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals,
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { expectedMinutes, finishedSessions, lastPerformed, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
-import { e1rm, records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
+import { e1rm, loadSets, records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
@@ -246,7 +246,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const duration = expectedMinutes(data, routine)
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
   // La serie con el mayor 1RM estimado de la última vez.
-  const bestSet = last?.exercises.flatMap((e) => workingSets(e).filter((s) => s.weight > 0 && s.reps > 0).map((s) => ({ name: e.name, weight: s.weight, reps: s.reps, e1rm: e1rm(s.weight, s.reps) })))
+  const bestSet = last?.exercises.flatMap((e) => loadSets(e).filter((s) => s.weight > 0 && s.reps > 0).map((s) => ({ name: e.name, weight: s.weight, reps: s.reps, e1rm: e1rm(s.weight, s.reps) })))
     .reduce<{ name: string; weight: number; reps: number; e1rm: number } | undefined>((a, b) => (!a || b.e1rm > a.e1rm ? b : a), undefined)
   const muscles = routine.exercises.map((e) => ({ muscle: e.muscle, secondaryMuscles: catalog.get(e.exerciseId)?.secondaryMuscles ?? [] }))
 

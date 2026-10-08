@@ -10,7 +10,7 @@ import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type Grou
 import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
-import { e1rm, lastSets, progressionHint, records, repRecordBeaten, repRecords, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
+import { e1rm, lastSets, loadSets, progressionHint, records, repRecordBeaten, repRecords, setLoad, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
 import { finishedSessions, rpeOn, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
 import { addRest, adjustRestForEffort, dismissRestDone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
@@ -21,6 +21,7 @@ import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARS } from '../lib/plates'
 import { fromFloor, warmupSets } from '../lib/warmup'
+import { BODYWEIGHT_LIFTS, bodyweightText } from '../lib/bodyweight'
 
 function editSession(id: string, fn: (s: Session) => void) {
   update((d) => {
@@ -48,24 +49,27 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const bestSoFar = (exerciseId: string) => {
     const before = bestBefore.get(exerciseId)
     if (before === undefined) return undefined
-    const today = session.exercises.filter((x) => x.exerciseId === exerciseId).flatMap(workingSets).map((x) => e1rm(x.weight, x.reps))
+    const today = session.exercises.filter((x) => x.exerciseId === exerciseId).flatMap(loadSets).map((x) => e1rm(x.weight, x.reps))
     return Math.max(before, ...today)
   }
   const onSetDone = (e: SessionExercise, set: SetEntry) => {
     const best = bestSoFar(e.exerciseId)
-    if (set.warmup || e.assisted || best === undefined || trackingOf(e) !== 'weight_reps') return
-    const value = e1rm(set.weight, set.reps)
+    if (set.warmup || (e.assisted && e.bodyweight === undefined) || best === undefined || trackingOf(e) !== 'weight_reps') return
+    // En dominadas y fondos cuenta el peso corporal; en el aviso se dice lo apuntado («tu peso + 10 kg»).
+    const load = setLoad(e, set)
+    const value = e1rm(load, set.reps)
+    const shown = e.bodyweight === undefined ? weight(set.weight, unit) : bodyweightText(e.assisted ? -set.weight : set.weight, unit)
     // Récord real de repeticiones (p. ej. el mayor peso a 5): frente al historial y a lo ya hecho hoy.
     const today = session.exercises.filter((x) => x.exerciseId === e.exerciseId).flatMap(workingSets).filter((x) => x.id !== set.id)
     const before = repRecords(e.exerciseId, [...history, { ...session, exercises: [{ ...e, sets: today }] }])
-    const repRecord = repRecordBeaten(set.weight, set.reps, before)
+    const repRecord = repRecordBeaten(load, set.reps, before)
     if (value <= best + 0.01 && repRecord !== undefined) {
-      showToast(t(`Récord de ${repRecord} repeticiones en ${e.name}: ${weight(set.weight, unit)}`, `${repRecord}-rep record on ${e.name}: ${weight(set.weight, unit)}`))
+      showToast(t(`Récord de ${repRecord} repeticiones en ${e.name}: ${shown}`, `${repRecord}-rep record on ${e.name}: ${shown}`))
       navigator.vibrate?.([60, 60, 120])
       return
     }
     if (value > best + 0.01) {
-      showToast(t(`Nuevo récord en ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${weight(set.weight, unit)} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`))
+      showToast(t(`Nuevo récord en ${e.name}: ${shown} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${shown} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`))
       navigator.vibrate?.([60, 60, 120])
     }
   }
@@ -118,7 +122,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         nextName={slots[i].letter && !slots[i].last ? session.exercises[i + 1].name : undefined}
         unit={unit}
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
-        bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight'}
+        bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(e.exerciseId)}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
@@ -436,6 +440,11 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           <Info size={16} aria-hidden="true" />
           <span>{t('Escribe el peso y las repeticiones que hagas y, al acabar la serie, toca el círculo ○. El descanso empieza solo.', 'Type the weight and the reps you do and, when the set is over, tap the circle ○. The rest timer starts by itself.')}</span>
         </div>
+      )}
+      {BODYWEIGHT_LIFTS.has(exercise.exerciseId) && exercise.bodyweight === undefined && tracking === 'weight_reps' && (
+        <button className="small muted" style={{ textAlign: 'left', textDecoration: 'underline' }} onClick={() => { minimizeWorkout(); navigate('profile', 'measurements') }}>
+          {t('Apunta tu peso en Medidas para que cuente en tus marcas de este ejercicio.', 'Log your weight in Measurements so it counts in your records for this exercise.')}
+        </button>
       )}
       {weightHint && (
         <span className="small muted">

@@ -95,6 +95,9 @@ const slots = {
   conditioning: { kind: 'conditioning', muscles: [], preferred: ['Mountain_Climbers', 'Rope_Jumping', 'One-Arm_Kettlebell_Swings', 'Box_Jump_Multiple_Response', 'Freehand_Jump_Squat', 'Battling_Ropes'] },
 } satisfies Record<string, Slot>
 
+/** Los ejercicios de siempre (los preferidos de cada hueco): al buscar salen antes que las variantes raras. */
+export const STAPLES: ReadonlySet<string> = new Set(Object.values(slots).flatMap((s) => s.preferred))
+
 type SlotName = keyof typeof slots
 type Template = { name: [es: string, en: string]; slots: [SlotName, number][] }
 

@@ -1,3 +1,4 @@
+import { fold, makeSearch } from './search'
 import { addDays, startOfWeek } from './format'
 import { lang, t } from './i18n'
 
@@ -574,9 +575,9 @@ export function loadBasicFoods(): Promise<BasicFood[]> {
   return basic
 }
 
-/** Búsqueda sin tildes ni mayúsculas: todas las palabras tienen que aparecer. */
-export const fold = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 // MARK: Búsqueda
+
+export { fold, stem } from './search'
 
 /** Palabras que significan lo mismo al buscar comida (en singular y sin tildes). */
 const SYNONYMS = [
@@ -588,37 +589,11 @@ const SYNONYMS = [
   ['cacahuete', 'mani'], ['calabacin', 'zucchini'], ['refresco', 'soda'], ['pimiento', 'morron'],
 ]
 
-/**
- * Raíz de una palabra para buscar: sin tildes y en singular («huevos» → «huevo», «panes» → «pan»,
- * «nueces» → «nuez»). Es sencilla a propósito: luego se busca como parte de la palabra.
- */
-export function stem(word: string): string {
-  const w = fold(word)
-  if (w.length > 4 && w.endsWith('ces')) return `${w.slice(0, -3)}z`
-  if (w.length > 4 && /[lnrdj]es$/.test(w)) return w.slice(0, -2)
-  if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) return w.slice(0, -1)
-  return w
-}
-
-type Term = { typed: string; alts: RegExp[] }
-const synonymCache = new Map<string, RegExp[]>()
-
+const foodSearch = makeSearch(SYNONYMS)
 /** Cada palabra buscada: lo escrito (como parte de una palabra) y sus sinónimos (como palabra entera, en singular o plural). */
-export function searchTerms(query: string): Term[] {
-  return fold(query).split(/\s+/).filter(Boolean).map((word) => {
-    const typed = stem(word)
-    let alts = synonymCache.get(typed)
-    if (!alts) {
-      const group = SYNONYMS.find((g) => g.includes(typed))
-      alts = (group ?? []).filter((x) => x !== typed).map((x) => new RegExp(`(^|[^a-z])${x}(e?s)?([^a-z]|$)`))
-      synonymCache.set(typed, alts)
-    }
-    return { typed, alts }
-  })
-}
-
+export const searchTerms = foodSearch.terms
 /** ¿El texto (ya sin tildes) tiene todas las palabras buscadas? */
-export const matchesTerms = (folded: string, terms: Term[]) => terms.every((t) => folded.includes(t.typed) || t.alts.some((r) => r.test(folded)))
+export const matchesTerms = foodSearch.matchesTerms
 
 export function matches(name: string, query: string): boolean {
   return matchesTerms(fold(name), searchTerms(query))

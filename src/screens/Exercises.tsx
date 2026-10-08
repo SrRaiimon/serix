@@ -6,13 +6,13 @@ import { ExerciseNoteField } from '../components/ExerciseNote'
 import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
 import { RepRecordsCard } from '../components/RepRecords'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, StatBand, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
-import { emptyFilter, type Exercise, type ExerciseFilter } from '../lib/catalog'
+import { emptyFilter, type Catalog, type Exercise, type ExerciseFilter } from '../lib/catalog'
 import { clock, fromKg, int, num, relative, type Unit } from '../lib/format'
 import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, exerciseUsage, type ExerciseUsage } from '../lib/stats'
 import { alternatives } from '../lib/alternatives'
-import { equipmentInfo } from '../lib/generator'
+import { equipmentInfo, STAPLES } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
 import { plural, t } from '../lib/i18n'
@@ -151,11 +151,12 @@ function useUsage() {
 const filtering = (f: ExerciseFilter) => Boolean(f.query.trim() || f.bodyPart || f.muscle || f.equipment || f.category || f.favoritesOnly)
 
 /** Al buscar, primero lo que empieza por lo escrito y lo que ya has hecho; el resto, en orden alfabético. */
-function rank(results: Exercise[], query: string, usage: Map<string, ExerciseUsage>): Exercise[] {
-  const q = query.trim().toLocaleLowerCase()
-  if (!q) return results
-  const score = (e: Exercise) => (e.name.toLocaleLowerCase().startsWith(q) ? 0 : 2) + (usage.has(e.id) ? 0 : 1)
-  return [...results].sort((a, b) => score(a) - score(b))
+/** Con texto buscado: lo que mejor encaja primero (ver Catalog.filter) y, a igualdad, los que ya haces y los de siempre. */
+function rank(catalog: Catalog, results: Exercise[], query: string, usage: Map<string, ExerciseUsage>): Exercise[] {
+  if (!query.trim()) return results
+  const relevance = catalog.relevance(query)
+  const score = new Map(results.map((e) => [e.id, relevance(e) * 4 + (usage.has(e.id) ? 0 : 2) + (STAPLES.has(e.id) ? 0 : 1)]))
+  return [...results].sort((a, b) => score.get(a.id)! - score.get(b.id)!)
 }
 
 // El filtro se conserva al volver desde la ficha de un ejercicio. La primera vez, quien no entrena en un
@@ -172,7 +173,7 @@ export function ExercisesScreen() {
     setFilterState(f)
   }
   const usage = useUsage()
-  const results = useMemo(() => rank(catalog.filter(filter, settings.favorites), filter.query, usage), [catalog, filter, settings.favorites, usage])
+  const results = useMemo(() => rank(catalog, catalog.filter(filter, settings.favorites), filter.query, usage), [catalog, filter, settings.favorites, usage])
   const { shown, sentinel } = useProgressive(results, JSON.stringify(filter))
   const [creating, setCreating] = useState(false)
   // Sin buscar ni filtrar: arriba, los que ya haces (el más reciente primero).
@@ -419,7 +420,7 @@ export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (li
   const usage = useUsage()
   // Los que ya haces, primero (sin buscar, del más reciente al más antiguo).
   const results = useMemo(() => {
-    const list = rank(catalog.filter(filter, settings.favorites), filter.query, usage)
+    const list = rank(catalog, catalog.filter(filter, settings.favorites), filter.query, usage)
     if (filter.query.trim()) return list
     const last = (e: Exercise) => usage.get(e.id)?.last ?? 0
     return [...list].sort((a, b) => last(b) - last(a))

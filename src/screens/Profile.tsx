@@ -8,6 +8,7 @@ import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
+import { fillBodyweights } from '../lib/bodyweight'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
@@ -363,6 +364,8 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
       }
       d.measurements.push(m)
     })
+    // Con el peso ya conocido, las dominadas y fondos que no lo tenían pasan a contarlo.
+    fillBodyweights()
     onClose()
   }
 

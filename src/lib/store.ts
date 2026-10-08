@@ -93,6 +93,8 @@ export interface SessionExercise {
   assisted?: boolean
   /** A una mano o una pierna: cada serie se apunta por lado (izquierdo y derecho). */
   unilateral?: boolean
+  /** Dominadas y fondos: peso corporal (kg) ese día; las estadísticas lo suman al lastre (ver bodyweight.ts). */
+  bodyweight?: number
   /** Molestia o dolor durante el ejercicio (1-10) y dónde; se avisa la próxima vez. */
   pain?: number
   painNote?: string

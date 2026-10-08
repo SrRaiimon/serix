@@ -1,5 +1,5 @@
 import { startOfWeek, toKg, type Unit } from './format'
-import { e1rm, streakWeeks, workingSets } from './stats'
+import { e1rm, loadSets, streakWeeks } from './stats'
 import type { Measurement, Session } from './store'
 
 // Logros calculados a partir del historial (no se guardan: siempre salen de los datos). Cada logro
@@ -136,7 +136,7 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
 
     const bodyWeight = bodyWeightAt(measurements, s.start)
     for (const e of s.exercises) {
-      const sets = workingSets(e)
+      const sets = loadSets(e)
       if (!sets.length) continue
       exercises.add(e.exerciseId)
       for (const x of sets) {

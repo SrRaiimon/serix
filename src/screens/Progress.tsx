@@ -20,6 +20,7 @@ import { balanceTip, muscleBalance } from '../lib/balance'
 import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
+import { bodyweightText } from '../lib/bodyweight'
 import { weeklyIntake } from '../lib/nutrition'
 
 type Section = 'summary' | 'muscles' | 'history' | 'records' | 'achievements'
@@ -469,7 +470,7 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             <Thumb exerciseId={r.exerciseId} size={44} />
             <span className="grow">
               <span className="bold clamp-2" style={{ fontSize: 15 }}>{r.name}</span>
-              <span className="small muted">{weight(r.weight, unit)} × {r.reps} · {shortDay(r.date)}</span>
+              <span className="small muted">{r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × {r.reps} · {shortDay(r.date)}</span>
             </span>
             <span style={{ textAlign: 'right' }}>
               <span className="bold" style={{ display: 'block' }}>{int(fromKg(r.e1rm, unit))} {unit}</span>

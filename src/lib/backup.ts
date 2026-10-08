@@ -94,6 +94,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     auto: autoProgress(v.auto),
     assisted: v.assisted === true ? true : undefined,
     unilateral: v.unilateral === true ? true : undefined,
+    bodyweight: optNum(v.bodyweight, 20, 400),
     pain: optNum(v.pain, 1, 10),
     painNote: typeof v.painNote === 'string' && v.painNote.trim() ? v.painNote.slice(0, 100) : undefined,
     sets: list(v.sets, setEntry, 100),

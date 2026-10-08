@@ -22,7 +22,7 @@ const sample = (): AppData => ({
   sessions: [session(0, [exercise('bench', [
     set(80, 8, { doneAt: Date.UTC(2026, 0, 5, 10, 5), rpe: 8 }),
     set(60, 8, { kind: 'drop' }), set(80, 6, { kind: 'failure' }), set(80, 9, { kind: 'amrap' }),
-  ], { deload: true, auto: { kind: 'wave', week: 4, tm: 100 }, pain: 5, painNote: 'Hombro derecho', assisted: true, unilateral: true }), exercise('row', [set(30, 10, { side: 'L' }), set(30, 10, { side: 'R' })])])],
+  ], { deload: true, auto: { kind: 'wave', week: 4, tm: 100 }, pain: 5, painNote: 'Hombro derecho', assisted: true, unilateral: true, bodyweight: 80 }), exercise('row', [set(30, 10, { side: 'L' }), set(30, 10, { side: 'R' })])])],
   measurements: [{ id: 'm1', date: Date.UTC(2026, 0, 1), weight: 80, waist: 85 }],
   exerciseNotes: { bench: 'Asiento en el 4\nagarre ancho' },
   friends: [{ name: 'Ana', at: Date.UTC(2026, 0, 4), week: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, month: { sessions: 3, volume: 12000, sets: 45, minutes: 180 }, streak: 5, total: 40, lifts: { bench: 90, squat: 120 },

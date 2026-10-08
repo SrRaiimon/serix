@@ -20,13 +20,25 @@ export const workingSets = (e: SessionExercise): SetEntry[] => {
 }
 
 /**
+ * Series efectivas con la carga real, para marcas, 1RM y peso movido: en dominadas y fondos se suma el
+ * peso corporal al lastre (o se le resta la ayuda, si es asistido). Para enseñar o copiar lo apuntado,
+ * workingSets.
+ */
+export const loadSets = (e: SessionExercise): SetEntry[] =>
+  e.bodyweight === undefined ? workingSets(e) : e.sets.filter((s) => s.done && !s.warmup).map((s) => ({ ...s, weight: setLoad(e, s) }))
+
+/** Carga real de una serie (ver loadSets). */
+export const setLoad = (e: SessionExercise, s: SetEntry): number =>
+  e.bodyweight === undefined ? (e.assisted ? 0 : s.weight) : e.assisted ? Math.max(0, e.bodyweight - s.weight) : s.weight + e.bodyweight
+
+/**
  * Cuántas series cuentan para el volumen de un músculo: en los ejercicios por lados, cada pareja
  * izquierda-derecha es una serie (cada pierna hizo una), no dos.
  */
 export const setCount = (e: SessionExercise) => workingSets(e).filter((s) => s.side !== 'R').length
 
 export const sessionVolume = (s: Session) =>
-  s.exercises.reduce((t, e) => t + workingSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
+  s.exercises.reduce((t, e) => t + loadSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
 
 export const sessionSets = (s: Session) => s.exercises.reduce((t, e) => t + setCount(e), 0)
 
@@ -42,6 +54,8 @@ export interface PersonalRecord {
   reps: number
   e1rm: number
   date: number
+  /** Dominadas y fondos: `weight` incluye el peso corporal y esto es lo apuntado (lastre; negativo si es ayuda). */
+  added?: number
 }
 
 export function records(sessions: Session[]): PersonalRecord[] {
@@ -49,11 +63,14 @@ export function records(sessions: Session[]): PersonalRecord[] {
   // En orden de fecha: si se iguala una marca, cuenta la primera vez (no la última).
   for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
     for (const e of s.exercises) {
-      for (const set of workingSets(e)) {
-        if (set.weight <= 0 || set.reps <= 0) continue
-        const value = e1rm(set.weight, set.reps)
+      // Con lo apuntado tal cual (setLoad ya resta la ayuda de las asistidas).
+      for (const set of e.sets.filter((x) => x.done && !x.warmup)) {
+        const load = setLoad(e, set)
+        if (load <= 0 || set.reps <= 0) continue
+        const value = e1rm(load, set.reps)
         if (value > (best.get(e.exerciseId)?.e1rm ?? 0)) {
-          best.set(e.exerciseId, { exerciseId: e.exerciseId, name: e.name, weight: set.weight, reps: set.reps, e1rm: value, date: set.doneAt ?? s.start })
+          best.set(e.exerciseId, { exerciseId: e.exerciseId, name: e.name, weight: load, reps: set.reps, e1rm: value, date: set.doneAt ?? s.start,
+            ...(e.bodyweight !== undefined ? { added: e.assisted ? -set.weight : set.weight } : {}) })
         }
       }
     }
@@ -80,7 +97,7 @@ export function repRecords(exerciseId: string, sessions: Session[]): (RepRecord 
   for (const s of sessions) {
     for (const e of s.exercises) {
       if (e.exerciseId !== exerciseId) continue
-      for (const x of workingSets(e)) {
+      for (const x of loadSets(e)) {
         if (x.weight <= 0) continue
         REP_TARGETS.forEach((target, i) => {
           if (x.reps >= target && x.weight > (best[i]?.weight ?? 0)) best[i] = { target, weight: x.weight, reps: x.reps, date: x.doneAt ?? s.start }
@@ -193,7 +210,7 @@ export interface ExercisePoint {
 export function exerciseHistory(exerciseId: string, sessions: Session[]): ExercisePoint[] {
   const points: ExercisePoint[] = []
   for (const s of sessions) {
-    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(workingSets)
+    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(loadSets)
     if (!sets.length) continue
     points.push({
       date: s.start,
@@ -294,7 +311,7 @@ export function stall(exerciseId: string, sessions: Session[]): Stall | undefine
   const points: { e1rm: number; deload: boolean; date: number; name: string }[] = []
   for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
     const exercises = s.exercises.filter((e) => e.exerciseId === exerciseId)
-    const sets = exercises.flatMap(workingSets).filter((x) => x.kind !== 'drop' && x.weight > 0 && x.reps > 0)
+    const sets = exercises.flatMap(loadSets).filter((x) => x.kind !== 'drop' && x.weight > 0 && x.reps > 0)
     if (!sets.length) continue
     points.push({ e1rm: Math.max(...sets.map((x) => e1rm(x.weight, x.reps))), deload: exercises.some((e) => e.deload), date: s.start, name: exercises[0].name })
   }

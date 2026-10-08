@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
 import { fromKg, increment, toKg, uid, type Unit } from './format'
 import { lastSets, workingSets } from './stats'
+import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
 import { defaultTracking, trackingOf, type Tracking } from './tracking'
 import { activeSession, finishedSessions, getData, lastPerformed, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
@@ -86,6 +87,7 @@ function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = g
   // máquinas asistidas no: progresar es quitar ayuda, y eso se decide a mano.
   const auto = trackingOf(ex) === 'weight_reps' && !mode.assisted ? plan(ex, last, history, unit) : undefined
   const sets = auto?.sets ?? prefillSets(count, last)
+  const bodyweight = BODYWEIGHT_LIFTS.has(ex.exerciseId) ? bodyweightAt(getData(), Date.now()) : undefined
   return {
     ...(mode.assisted ? { assisted: true } : {}),
     ...(mode.unilateral ? { unilateral: true } : {}),
@@ -106,6 +108,7 @@ function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = g
         : interleave(prefillSets(count, last), prefillSets(count, lastAll.filter((x) => x.side === 'R'))),
     ...(auto?.auto ? { auto: auto.auto } : {}),
     ...(auto?.deload ? { deload: true } : {}),
+    ...(bodyweight !== undefined ? { bodyweight } : {}),
   }
 }
 

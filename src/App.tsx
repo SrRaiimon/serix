@@ -1,6 +1,7 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
+import { fillBodyweights } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
 import { lang, t } from './lib/i18n'
@@ -76,6 +77,7 @@ export default function App() {
         migrateCatalog(new Catalog(c.exercises, c.legacy))
         setRaw(c)
         void autoProtect()
+        fillBodyweights()
       })
       .catch((e: unknown) => setError(t(`No se pudo cargar la app: ${String(e)}`, `The app could not load: ${String(e)}`)))
   }, [])
