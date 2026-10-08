@@ -30,6 +30,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 let ws
 const errors = []
 let step = 'arrancar'
+/** Texto de la pantalla, para entender un fallo. */
+let pageText = async () => ''
 
 async function main() {
   // Conectar con la pestaña.
@@ -58,6 +60,7 @@ async function main() {
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text)
     return r.result.value
   }
+  pageText = () => run(() => document.body.innerText.slice(0, 600))
   /** Espera a que haya un botón o enlace con ese texto y lo pulsa. */
   const click = async (text, timeout = 8000) => {
     const start = Date.now()
@@ -85,7 +88,9 @@ async function main() {
   await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` })
 
   step = 'cuestionario'
-  await click('^Empezar$', 15000)
+  // El idioma sale del sistema: en los servidores de GitHub es inglés. Se elige español, como haría alguien.
+  await click('^Español$', 15000)
+  await click('^Empezar$')
   for (let i = 0; i < 4; i++) await click('^Continuar$')
   await click('^Crear mi programa$')
   await click('^Guardar programa$')
@@ -136,6 +141,7 @@ try {
 } catch (e) {
   failed = true
   console.error(`e2e falló en «${step}»: ${e.message}`)
+  try { console.error(`Pantalla:\n${await pageText()}`) } catch { /* sin página */ }
 } finally {
   ws?.close()
   chrome.kill()
