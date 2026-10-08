@@ -3329,6 +3329,68 @@ export const FIGURES: Record<string, Figure> = {
   // @@MAPA@@
 }
 
+// Ejercicios propios de Serix (funcional y en casa, ver scripts/catalog/extra_exercises.json): usan la
+// figura del ejercicio del catálogo que más se les parece, a veces con otro material (o sin él).
+const crabWalk: Figure = {
+  // Boca arriba sobre manos y pies, con la cadera en alto: avanza una mano y el pie contrario.
+  view: 'side', work: ['arms', 'glutes', 'core'], hands: true, period: 1400, props: [],
+  frames: [
+    { torso: -62, head: -40, thigh: 70, shin: 170, thigh2: 92, shin2: 185, foot: 90, upper: 195, fore: 185, upper2: 178, fore2: 175 },
+    { torso: -62, head: -40, thigh: 92, shin: 185, thigh2: 70, shin2: 170, foot: 90, upper: 178, fore: 175, upper2: 195, fore2: 185 },
+  ],
+}
+const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
+  Wall_Ball: ['Kettlebell_Thruster', [{ type: 'ball', at: 'wrist', size: 11, front: true }]],
+  Burpee: 'Freehand_Jump_Squat',
+  Burpee_Box_Jump_Over: 'Front_Box_Jump',
+  Double_Unders: 'Rope_Jumping',
+  Toes_To_Bar: 'Hanging_Leg_Raise',
+  Knees_To_Elbows: 'Hanging_Leg_Raise',
+  Kipping_Pull_Up: 'Pullups',
+  Chest_To_Bar_Pull_Up: 'Pullups',
+  Kipping_Handstand_Push_Up: 'Handstand_Push-Ups',
+  Wall_Walk: 'Handstand_Push-Ups',
+  American_Kettlebell_Swing: 'One-Arm_Kettlebell_Swings',
+  Russian_Kettlebell_Swing: 'One-Arm_Kettlebell_Swings',
+  Barbell_Thruster: ['Kettlebell_Thruster', [{ type: 'plate', at: 'wrist', front: true, size: 22 }]],
+  Dumbbell_Thruster: ['Kettlebell_Thruster', [{ type: 'dumbbell', at: 'wrist', front: true }]],
+  Devil_Press: ['One-Arm_Kettlebell_Swings', [{ type: 'dumbbell', at: 'wrist', front: true }]],
+  Man_Maker: 'Pushups',
+  Box_Step_Over: ['Dumbbell_Step_Ups', FIGURES.Dumbbell_Step_Ups.props.filter((p) => p.type === 'box')],
+  GHD_Sit_Up: 'Jackknife_Sit-Up',
+  L_Sit: 'Hanging_Leg_Raise',
+  Rowing_Machine: 'Rowing_Stationary',
+  Assault_Bike: 'Bicycling_Stationary',
+  Ski_Erg: 'Straight-Arm_Pulldown',
+  Squat_Clean: 'Clean',
+  Hollow_Hold: 'Dead_Bug',
+  Hollow_Rock: 'Dead_Bug',
+  V_Up: 'Jackknife_Sit-Up',
+  Jumping_Jacks: 'Star_Jump',
+  High_Knees: 'Fast_Skipping',
+  Skater_Jumps: 'Lateral_Bound',
+  Wall_Sit: ['Chair_Squat', []],
+  Pike_Push_Up: 'Handstand_Push-Ups',
+  Archer_Push_Up: 'Pushups',
+  Plank_Shoulder_Taps: 'Plank',
+  Plank_Jacks: 'Mountain_Climbers',
+  Bear_Crawl: ['Bear_Crawl_Sled_Drags', []],
+  Crab_Walk: crabWalk,
+  Bird_Dog: 'Glute_Kickback',
+  Reverse_Snow_Angels: 'Superman',
+  Backpack_Row: 'Bent_Over_Two-Dumbbell_Row',
+  Towel_Door_Row: 'Inverted_Row',
+  Pistol_Squat: ['Kettlebell_Pistol_Squat', []],
+  Single_Leg_Deadlift: ['Kettlebell_One-Legged_Deadlift', []],
+  Bodyweight_Bulgarian_Split_Squat: 'Split_Squats',
+  Shuttle_Run: ['Running_Treadmill', []],
+  Shadow_Boxing: 'Fast_Skipping',
+  Sprawl: 'Freehand_Jump_Squat',
+}
+for (const [id, like] of Object.entries(SAME_AS)) {
+  FIGURES[id] = typeof like === 'string' ? FIGURES[like] : Array.isArray(like) ? { ...FIGURES[like[0]], props: like[1] } : like
+}
+
 // Ejercicios en los que se avanza (caminar, correr, arrastrar, gatear): sus pies y manos no se clavan
 // al suelo en la animación (ver plantedPoints en figureEngine.ts).
 const GAIT = /walk|run(?!ner)|jog|treadmill|crawl|drag|carry|march|sprint|skip(?!ping_rope)|inchworm|sled|yoke|farmers|conans|stair|step_mill|elliptical|bike|cycling|recumbent/i

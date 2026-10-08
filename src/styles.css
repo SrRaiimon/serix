@@ -641,6 +641,14 @@ a.list-row:active {
   display: none;
 }
 
+/* Separa en la fila de Ejercicios los estilos (funcional, en casa) de las partes del cuerpo. */
+.chips-sep {
+  flex: 0 0 1px;
+  align-self: stretch;
+  margin: 6px 2px;
+  background: var(--separator);
+}
+
 .chip {
   flex-shrink: 0;
   display: inline-flex;

@@ -745,7 +745,7 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
               <div key={g.exercise.id} className="row" style={{ gap: 10 }}>
                 <Thumb exerciseId={g.exercise.id} size={40} />
                 <span className="grow clamp-2">{g.exercise.name}</span>
-                <span className="small muted" style={{ whiteSpace: 'nowrap' }}>{g.sets} × {g.repsMin === g.repsMax ? g.repsMin : `${g.repsMin}-${g.repsMax}`}</span>
+                <span className="small muted" style={{ whiteSpace: 'nowrap' }}>{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })}</span>
               </div>
             ))}
           </Card>

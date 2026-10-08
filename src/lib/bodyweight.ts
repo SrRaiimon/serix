@@ -10,6 +10,7 @@ import { getData, update, type AppData } from './store'
 export const BODYWEIGHT_LIFTS: ReadonlySet<string> = new Set([
   'Pullups', 'Chin-Up', 'One_Arm_Chin-Up', 'V-Bar_Pullup', 'Wide-Grip_Rear_Pull-Up', 'Weighted_Pull_Ups',
   'Dips_-_Chest_Version', 'Dips_-_Triceps_Version', 'Parallel_Bar_Dip', 'Ring_Dips', 'Muscle_Up', 'Kipping_Muscle_Up',
+  'Kipping_Pull_Up', 'Chest_To_Bar_Pull_Up',
 ])
 
 /**

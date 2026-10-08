@@ -6,7 +6,7 @@ import { ExerciseNoteField } from '../components/ExerciseNote'
 import { CustomExerciseSheet } from '../components/CustomExerciseSheet'
 import { RepRecordsCard } from '../components/RepRecords'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Sheet, StatBand, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
-import { emptyFilter, loadSteps, type Catalog, type Exercise, type ExerciseFilter } from '../lib/catalog'
+import { emptyFilter, loadSteps, type Catalog, type Exercise, type ExerciseFilter, type ExerciseTag } from '../lib/catalog'
 import { clock, fromKg, int, num, relative, type Unit } from '../lib/format'
 import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLabel, levelLabel, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
@@ -26,6 +26,11 @@ export function toggleFavorite(id: string) {
     d.settings.favorites = favs.includes(id) ? favs.filter((f) => f !== id) : [...favs, id]
   })
 }
+
+const TAGS: [ExerciseTag, () => string][] = [
+  ['functional', () => t('Funcional', 'Functional')],
+  ['home', () => t('En casa', 'At home')],
+]
 
 function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (f: ExerciseFilter) => void }) {
   const catalog = useCatalog()
@@ -62,7 +67,11 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
         </div>
       )}
       <div className="chips">
-        <Chip label={t('Todos', 'All')} active={!filter.bodyPart} onClick={() => setFilter({ ...filter, bodyPart: undefined })} />
+        <Chip label={t('Todos', 'All')} active={!filter.bodyPart && !filter.tag} onClick={() => setFilter({ ...filter, bodyPart: undefined, tag: undefined })} />
+        {TAGS.map(([tag, label]) => (
+          <Chip key={tag} label={label()} active={filter.tag === tag} onClick={() => setFilter({ ...filter, tag: filter.tag === tag ? undefined : tag })} />
+        ))}
+        <span className="chips-sep" aria-hidden />
         {bodyPartOrder.map((p) => (
           <Chip key={p} label={bodyPartLabel(p)} active={filter.bodyPart === p}
             onClick={(e) => {
@@ -148,7 +157,7 @@ function useUsage() {
 }
 
 // «Con mi material» no cuenta: es la vista normal para quien entrena en casa.
-const filtering = (f: ExerciseFilter) => Boolean(f.query.trim() || f.bodyPart || f.muscle || f.equipment || f.category || f.favoritesOnly)
+const filtering = (f: ExerciseFilter) => Boolean(f.query.trim() || f.bodyPart || f.tag || f.muscle || f.equipment || f.category || f.favoritesOnly)
 
 /** Al buscar, primero lo que empieza por lo escrito y lo que ya has hecho; el resto, en orden alfabético. */
 /** Con texto buscado: lo que mejor encaja primero (ver Catalog.filter) y, a igualdad, los que ya haces y los de siempre. */

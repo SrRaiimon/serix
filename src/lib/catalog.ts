@@ -24,6 +24,10 @@ export interface Exercise {
   secondaryMuscles: string[]
   /** Pasos de ejecución en el idioma de la app (texto propio; vacío si no hay). */
   instructions: string[]
+  /** «functional» (estilo CrossFit) o «home» (para casa, con poco o ningún material). */
+  tags?: string[]
+  /** Ejercicio propio de Serix, no de Free Exercise DB (ver scripts/catalog/add_extra.py). */
+  extra?: boolean
   /** Ejercicio creado por el usuario (no del catálogo). */
   custom?: boolean
   /** Solo los propios: cómo se registra cada serie. */
@@ -105,6 +109,7 @@ export class Catalog {
       if (f.muscle && e.muscle !== f.muscle) return false
       if (f.equipment && e.equipment !== f.equipment) return false
       if (f.category && e.category !== f.category) return false
+      if (f.tag && !hasTag(e, f.tag)) return false
       if (favs && !favs.has(e.id)) return false
       if (f.allowedEquipment && !f.allowedEquipment.includes(e.equipment)) return false
       return !terms.length || exerciseSearch.matchesTerms(this.keys.get(e.id) ?? '', terms)
@@ -140,9 +145,18 @@ export interface ExerciseFilter {
   muscle?: string
   equipment?: string
   category?: string
+  /** Funcional o en casa (ver hasTag). */
+  tag?: ExerciseTag
   favoritesOnly: boolean
   /** Material con el que se pueden hacer (el de tu perfil); sin valor = todos. */
   allowedEquipment?: string[]
+}
+
+export type ExerciseTag = 'functional' | 'home'
+
+/** En casa vale todo lo de peso corporal, además de lo marcado (con mochila, toalla, comba…). */
+export function hasTag(e: Pick<Exercise, 'tags' | 'equipment'>, tag: ExerciseTag) {
+  return Boolean(e.tags?.includes(tag)) || (tag === 'home' && e.equipment === 'bodyweight')
 }
 
 export const emptyFilter: ExerciseFilter = { query: '', favoritesOnly: false }

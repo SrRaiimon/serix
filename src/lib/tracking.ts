@@ -17,10 +17,12 @@ export const trackingOptions = (): { id: Tracking; label: string }[] => [
 const DISTANCE_IDS = new Set([
   'Bicycling', 'Bicycling_Stationary', 'Elliptical_Trainer', 'Jogging_Treadmill', 'Running_Treadmill',
   'Trail_Running_Walking', 'Walking_Treadmill', 'Rowing_Stationary', 'Recumbent_Bike', 'Skating',
+  'Rowing_Machine', 'Assault_Bike', 'Ski_Erg',
 ])
 const TIME_IDS = new Set([
   'Rope_Jumping', 'Stairmaster', 'Step_Mill', 'Plank', 'Side_Bridge', 'Isometric_Chest_Squeezes',
   'Battling_Ropes', 'Stomach_Vacuum', 'Farmers_Walk',
+  'Hollow_Hold', 'L_Sit', 'Wall_Sit', 'Bear_Crawl', 'Crab_Walk', 'Jumping_Jacks', 'High_Knees', 'Plank_Jacks', 'Shadow_Boxing',
 ])
 
 export function defaultTracking(e?: Pick<Exercise, 'id' | 'category' | 'tracking'>): Tracking {

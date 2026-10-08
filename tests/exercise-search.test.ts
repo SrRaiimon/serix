@@ -32,3 +32,20 @@ test('buscar ejercicios: «press francés» (no confundir -ces con nueces → nu
   assert.ok(find('press frances').includes('Press francés'))
   assert.ok(find('press francés').includes('Press francés'))
 })
+
+test('funcional y en casa: filtros y ejercicios propios con pasos en los dos idiomas', () => {
+  const raw = (JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: (RawExercise & { extra?: boolean })[] }).exercises
+  const own = raw.filter((e) => e.extra)
+  assert.ok(own.length >= 40)
+  for (const e of own) {
+    assert.ok(e.tags?.length, `${e.id} sin etiqueta`)
+    assert.ok(e.instructions?.length && e.instructions.length === e.instructionsEn?.length, `${e.id}: pasos`)
+    assert.match(e.instructions!.at(-1)!, /^Consejo:/)
+  }
+  const functional = catalog.filter({ ...emptyFilter, tag: 'functional' }, []).map((e) => e.id)
+  for (const id of ['Wall_Ball', 'Burpee', 'Toes_To_Bar', 'Clean_and_Jerk']) assert.ok(functional.includes(id), id)
+  const home = catalog.filter({ ...emptyFilter, tag: 'home' }, [])
+  assert.ok(home.some((e) => e.id === 'Towel_Door_Row') && home.some((e) => e.id === 'Pushups'))
+  assert.ok(home.every((e) => e.equipment === 'bodyweight' || e.tags?.includes('home')))
+  assert.ok(find('burpee').length && find('wall ball')[0] === 'Lanzamiento a la pared (wall ball)')
+})

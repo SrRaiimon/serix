@@ -1,0 +1,1385 @@
+{
+ "_": "Ejercicios propios de Serix (texto escrito para la app): funcional y en casa. Los añade scripts/catalog/add_extra.py; su figura está en SAME_AS (src/lib/figures.ts).",
+ "exercises": [
+  {
+   "id": "Wall_Ball",
+   "name": "Lanzamiento a la pared (wall ball)",
+   "nameEn": "Wall Ball",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "delts",
+    "triceps"
+   ],
+   "equipment": "medicine-ball",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "De pie frente a la pared, a un paso, con el balón medicinal a la altura del pecho y los codos debajo.",
+    "Baja en sentadilla hasta que la cadera pase de las rodillas, con el pecho arriba.",
+    "Sube con fuerza y, aprovechando el impulso, lanza el balón a la diana de la pared con los brazos estirados.",
+    "Recoge el balón al caer y enlaza la siguiente sentadilla sin pararte.",
+    "Consejo: el balón sale de las piernas, no de los brazos; si cae lejos de ti, estás demasiado lejos de la pared."
+   ],
+   "instructionsEn": [
+    "Stand facing the wall, one step away, with the medicine ball at chest height and elbows underneath.",
+    "Squat down until your hips go below your knees, chest up.",
+    "Drive up hard and, using that momentum, throw the ball to the target on the wall with straight arms.",
+    "Catch the ball as it falls and flow into the next squat without stopping.",
+    "Tip: the ball is thrown by your legs, not your arms; if it lands far from you, you are too far from the wall."
+   ]
+  },
+  {
+   "id": "Burpee",
+   "name": "Burpee",
+   "nameEn": "Burpee",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "pectorals",
+    "triceps",
+    "abs"
+   ],
+   "equipment": "bodyweight",
+   "category": "plyometrics",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "De pie, agáchate y apoya las manos en el suelo delante de los pies.",
+    "Lleva los pies atrás de un salto hasta quedar en plancha y baja el pecho al suelo.",
+    "Empuja el suelo, recoge los pies junto a las manos de otro salto y ponte de pie.",
+    "Termina con un pequeño salto dando una palmada por encima de la cabeza.",
+    "Consejo: si te cuesta, quita el salto final o lleva los pies atrás de uno en uno."
+   ],
+   "instructionsEn": [
+    "From standing, crouch and put your hands on the floor in front of your feet.",
+    "Jump your feet back into a plank and lower your chest to the floor.",
+    "Push the floor away, jump your feet back to your hands and stand up.",
+    "Finish with a small jump, clapping overhead.",
+    "Tip: if it is too hard, skip the final jump or step your feet back one at a time."
+   ]
+  },
+  {
+   "id": "Burpee_Box_Jump_Over",
+   "name": "Burpee saltando el cajón",
+   "nameEn": "Burpee Box Jump-Over",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "pectorals",
+    "calves"
+   ],
+   "equipment": "other",
+   "category": "plyometrics",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Haz un burpee de cara al cajón, con el pecho al suelo.",
+    "Al levantarte, salta con los dos pies encima del cajón (o por encima de él).",
+    "Baja por el otro lado y haz el siguiente burpee de cara al cajón.",
+    "Consejo: bajar del cajón andando protege los tobillos y el tendón de Aquiles."
+   ],
+   "instructionsEn": [
+    "Do a burpee facing the box, chest to the floor.",
+    "As you stand, jump with both feet onto the box (or over it).",
+    "Come down the other side and do the next burpee facing the box.",
+    "Tip: stepping down from the box protects your ankles and Achilles tendon."
+   ]
+  },
+  {
+   "id": "Double_Unders",
+   "name": "Comba doble (double unders)",
+   "nameEn": "Double Unders",
+   "muscle": "calves",
+   "secondaryMuscles": [
+    "quads",
+    "delts",
+    "forearms"
+   ],
+   "equipment": "other",
+   "category": "cardio",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Coge la comba con los codos pegados al cuerpo y las manos a la altura de la cadera.",
+    "Salta algo más alto de lo normal, con las piernas casi estiradas, sobre la parte delantera del pie.",
+    "Gira las muñecas rápido para que la cuerda pase dos veces por debajo en cada salto.",
+    "Consejo: practica alternando saltos simples y uno doble antes de encadenar dobles."
+   ],
+   "instructionsEn": [
+    "Hold the rope with elbows close to your body and hands at hip height.",
+    "Jump a little higher than usual, legs almost straight, on the balls of your feet.",
+    "Spin your wrists fast so the rope passes under you twice on each jump.",
+    "Tip: practise alternating single jumps with one double before linking doubles."
+   ]
+  },
+  {
+   "id": "Toes_To_Bar",
+   "name": "Pies a la barra (toes to bar)",
+   "nameEn": "Toes to Bar",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "lats",
+    "forearms"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Cuélgate de la barra con las manos a la anchura de los hombros.",
+    "Haz un ligero balanceo: pecho adelante y luego piernas atrás.",
+    "Empuja la barra hacia abajo con los brazos estirados y sube las piernas hasta tocar la barra con los pies.",
+    "Baja con control y aprovecha el balanceo para la siguiente.",
+    "Consejo: si aún no llegas, empieza con rodillas a los codos."
+   ],
+   "instructionsEn": [
+    "Hang from the bar with hands shoulder-width apart.",
+    "Make a slight swing: chest forward, then legs back.",
+    "Press the bar down with straight arms and lift your legs until your feet touch the bar.",
+    "Lower with control and use the swing for the next one.",
+    "Tip: if you cannot reach yet, start with knees to elbows."
+   ]
+  },
+  {
+   "id": "Knees_To_Elbows",
+   "name": "Rodillas a los codos colgado",
+   "nameEn": "Knees to Elbows",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "lats",
+    "forearms"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Cuélgate de la barra con los brazos estirados.",
+    "Sube las rodillas hacia el pecho redondeando la espalda hasta que toquen los codos.",
+    "Baja las piernas despacio sin balancearte de más.",
+    "Consejo: aprieta el abdomen antes de subir; así no tiras solo de la cadera."
+   ],
+   "instructionsEn": [
+    "Hang from the bar with straight arms.",
+    "Bring your knees to your chest, rounding your back, until they touch your elbows.",
+    "Lower your legs slowly without swinging too much.",
+    "Tip: brace your abs before lifting so you are not just pulling with your hips."
+   ]
+  },
+  {
+   "id": "Kipping_Pull_Up",
+   "name": "Dominada con impulso (kipping)",
+   "nameEn": "Kipping Pull-Up",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "abs",
+    "upper-back"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Cuélgate con agarre prono algo más ancho que los hombros.",
+    "Balancéate: pecho adelante (arco) y luego piernas adelante (barca).",
+    "En la barca, tira de la barra con los brazos y lleva la barbilla por encima.",
+    "Empuja la barra para alejarte y enlaza el siguiente balanceo.",
+    "Consejo: antes de hacerlas con impulso, ten unas cuantas dominadas estrictas; protege los hombros."
+   ],
+   "instructionsEn": [
+    "Hang with an overhand grip a bit wider than your shoulders.",
+    "Swing: chest forward (arch), then legs forward (hollow).",
+    "In the hollow, pull the bar with your arms and bring your chin over it.",
+    "Push away from the bar and flow into the next swing.",
+    "Tip: be able to do a few strict pull-ups before kipping; it protects your shoulders."
+   ]
+  },
+  {
+   "id": "Chest_To_Bar_Pull_Up",
+   "name": "Dominada al pecho",
+   "nameEn": "Chest-to-Bar Pull-Up",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Cuélgate con agarre prono a la anchura de los hombros.",
+    "Tira llevando los codos hacia abajo y atrás hasta que el pecho toque la barra.",
+    "Baja hasta estirar los brazos del todo.",
+    "Consejo: junta los omóplatos al subir; el pecho va a la barra, no la barbilla."
+   ],
+   "instructionsEn": [
+    "Hang with an overhand grip at shoulder width.",
+    "Pull, driving your elbows down and back, until your chest touches the bar.",
+    "Lower until your arms are fully straight.",
+    "Tip: squeeze your shoulder blades on the way up; your chest goes to the bar, not your chin."
+   ]
+  },
+  {
+   "id": "Kipping_Handstand_Push_Up",
+   "name": "Flexión en pino con impulso",
+   "nameEn": "Kipping Handstand Push-Up",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "abs"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "expert",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Ponte en pino de cara a la pared, con las manos algo más abiertas que los hombros.",
+    "Baja la cabeza con control hasta una almohadilla y recoge las rodillas hacia el pecho.",
+    "Estira las piernas con fuerza hacia arriba y, a la vez, empuja con los brazos hasta estirarlos.",
+    "Consejo: domina primero las flexiones en pino estrictas y pon algo blando bajo la cabeza."
+   ],
+   "instructionsEn": [
+    "Get into a handstand facing the wall, hands a bit wider than your shoulders.",
+    "Lower your head with control onto a pad and tuck your knees to your chest.",
+    "Kick your legs up hard and, at the same time, press with your arms until straight.",
+    "Tip: master strict handstand push-ups first and put something soft under your head."
+   ]
+  },
+  {
+   "id": "Wall_Walk",
+   "name": "Subida por la pared (wall walk)",
+   "nameEn": "Wall Walk",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "abs",
+    "pectorals"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Túmbate boca abajo con los pies tocando la pared.",
+    "Ponte en plancha y sube los pies por la pared mientras acercas las manos a ella.",
+    "Llega hasta quedar casi en vertical, con la tripa cerca de la pared.",
+    "Baja deshaciendo los pasos con control.",
+    "Consejo: sube solo hasta donde puedas bajar con control."
+   ],
+   "instructionsEn": [
+    "Lie face down with your feet touching the wall.",
+    "Push up into a plank and walk your feet up the wall while walking your hands towards it.",
+    "Go until you are nearly vertical, belly close to the wall.",
+    "Walk back down with control.",
+    "Tip: only go as high as you can come down from with control."
+   ]
+  },
+  {
+   "id": "American_Kettlebell_Swing",
+   "name": "Swing americano con kettlebell",
+   "nameEn": "American Kettlebell Swing",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "delts",
+    "spine"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Pies algo más abiertos que la cadera y la kettlebell cogida con las dos manos.",
+    "Lleva la kettlebell entre las piernas echando la cadera atrás, con la espalda recta.",
+    "Extiende la cadera con fuerza y deja que la kettlebell suba hasta quedar por encima de la cabeza, con los brazos estirados.",
+    "Déjala caer de nuevo entre las piernas y repite.",
+    "Consejo: la fuerza sale de la cadera; los brazos solo guían."
+   ],
+   "instructionsEn": [
+    "Feet a bit wider than your hips, kettlebell held with both hands.",
+    "Swing the kettlebell between your legs by pushing your hips back, back straight.",
+    "Drive your hips forward hard and let the kettlebell rise overhead with straight arms.",
+    "Let it drop back between your legs and repeat.",
+    "Tip: the power comes from the hips; the arms only guide."
+   ]
+  },
+  {
+   "id": "Russian_Kettlebell_Swing",
+   "name": "Swing ruso con kettlebell",
+   "nameEn": "Russian Kettlebell Swing",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine",
+    "abs"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Pies algo más abiertos que la cadera y la kettlebell cogida con las dos manos.",
+    "Echa la cadera atrás llevando la kettlebell entre las piernas, con la espalda recta.",
+    "Extiende la cadera de golpe y aprieta glúteos: la kettlebell sube hasta la altura del pecho.",
+    "Consejo: al final de cada repetición, cuerpo recto como en una plancha de pie."
+   ],
+   "instructionsEn": [
+    "Feet a bit wider than your hips, kettlebell held with both hands.",
+    "Push your hips back, swinging the kettlebell between your legs, back straight.",
+    "Snap your hips forward and squeeze your glutes: the kettlebell rises to chest height.",
+    "Tip: at the top of each rep, your body is straight like a standing plank."
+   ]
+  },
+  {
+   "id": "Barbell_Thruster",
+   "name": "Thruster con barra",
+   "nameEn": "Barbell Thruster",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "delts",
+    "triceps",
+    "glutes"
+   ],
+   "equipment": "barbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Barra apoyada delante, sobre los hombros, con los codos altos.",
+    "Baja en sentadilla frontal hasta que la cadera pase de las rodillas.",
+    "Sube con fuerza y, sin pararte, empuja la barra hasta arriba con los brazos estirados.",
+    "Bájala a los hombros y enlaza la siguiente sentadilla.",
+    "Consejo: aprovecha el impulso de las piernas para el press; es un solo movimiento."
+   ],
+   "instructionsEn": [
+    "Bar resting across the front of your shoulders, elbows high.",
+    "Front squat down until your hips go below your knees.",
+    "Drive up hard and, without stopping, press the bar overhead to straight arms.",
+    "Bring it back to your shoulders and flow into the next squat.",
+    "Tip: use the drive from your legs for the press; it is one single movement."
+   ]
+  },
+  {
+   "id": "Dumbbell_Thruster",
+   "name": "Thruster con mancuernas",
+   "nameEn": "Dumbbell Thruster",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "delts",
+    "triceps",
+    "glutes"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Una mancuerna en cada mano a la altura de los hombros.",
+    "Baja en sentadilla manteniendo el pecho arriba.",
+    "Sube con fuerza y empuja las mancuernas por encima de la cabeza.",
+    "Consejo: no bloquees los codos de golpe arriba; baja las mancuernas con control."
+   ],
+   "instructionsEn": [
+    "A dumbbell in each hand at shoulder height.",
+    "Squat down keeping your chest up.",
+    "Drive up hard and press the dumbbells overhead.",
+    "Tip: do not snap your elbows locked at the top; lower the dumbbells with control."
+   ]
+  },
+  {
+   "id": "Devil_Press",
+   "name": "Devil press con mancuernas",
+   "nameEn": "Dumbbell Devil Press",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "delts",
+    "pectorals",
+    "hamstrings"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Con las manos en dos mancuernas en el suelo, haz un burpee bajando el pecho al suelo.",
+    "Recoge los pies junto a las manos, con la espalda recta y las mancuernas entre las piernas.",
+    "Extiende la cadera con fuerza y lleva las dos mancuernas de un solo gesto hasta encima de la cabeza.",
+    "Consejo: usa poco peso al principio; la técnica de la espalda es lo primero."
+   ],
+   "instructionsEn": [
+    "With your hands on two dumbbells on the floor, do a burpee, chest to the floor.",
+    "Jump your feet to your hands, back straight, dumbbells between your legs.",
+    "Drive your hips hard and bring both dumbbells overhead in one motion.",
+    "Tip: start light; keeping your back right comes first."
+   ]
+  },
+  {
+   "id": "Man_Maker",
+   "name": "Man maker con mancuernas",
+   "nameEn": "Dumbbell Man Maker",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "pectorals",
+    "quads",
+    "upper-back"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "En plancha con las manos sobre dos mancuernas, haz una flexión.",
+    "Rema una mancuerna y luego la otra, sin girar la cadera.",
+    "Salta con los pies hacia las manos, ponte de pie con las mancuernas a los hombros y haz un thruster.",
+    "Consejo: abre un poco los pies en la plancha para no girarte al remar."
+   ],
+   "instructionsEn": [
+    "In a plank with your hands on two dumbbells, do a push-up.",
+    "Row one dumbbell, then the other, without twisting your hips.",
+    "Jump your feet to your hands, stand with the dumbbells at your shoulders and do a thruster.",
+    "Tip: widen your feet a little in the plank so you do not twist when rowing."
+   ]
+  },
+  {
+   "id": "Box_Step_Over",
+   "name": "Paso por encima del cajón",
+   "nameEn": "Box Step-Over",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "calves"
+   ],
+   "equipment": "other",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "De pie frente al cajón.",
+    "Sube un pie y, empujando con él, sube el otro hasta quedar de pie encima.",
+    "Baja por el otro lado y repite girándote o en sentido contrario.",
+    "Consejo: empuja con la pierna de arriba, no impulses con la de abajo."
+   ],
+   "instructionsEn": [
+    "Stand facing the box.",
+    "Step one foot up and, pushing through it, bring the other up until you stand on top.",
+    "Step down the other side and repeat, turning around or going back the other way.",
+    "Tip: push with the top leg; do not bounce off the bottom one."
+   ]
+  },
+  {
+   "id": "GHD_Sit_Up",
+   "name": "Abdominal en banco GHD",
+   "nameEn": "GHD Sit-Up",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "quads"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Siéntate en el banco GHD con los pies sujetos y la cadera en el borde del apoyo.",
+    "Baja el tronco hacia atrás hasta quedar algo por debajo de la horizontal.",
+    "Sube con fuerza hasta tocar los pies con las manos.",
+    "Consejo: empieza con poco recorrido; hacer muchas de golpe puede cargar mucho los músculos."
+   ],
+   "instructionsEn": [
+    "Sit on the GHD with your feet locked and your hips at the edge of the pad.",
+    "Lower your torso back until slightly below horizontal.",
+    "Sit up hard until your hands touch your feet.",
+    "Tip: start with a short range; doing many at once can overload your muscles."
+   ]
+  },
+  {
+   "id": "L_Sit",
+   "name": "L-sit",
+   "nameEn": "L-Sit",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "quads",
+    "triceps"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Apóyate con los brazos estirados en unas paralelas, dos sillas firmes o el suelo.",
+    "Sube las piernas estiradas hasta dejarlas paralelas al suelo, formando una L.",
+    "Aguanta el tiempo marcado con los hombros bajos.",
+    "Consejo: si no aguantas con las piernas estiradas, empieza con las rodillas recogidas."
+   ],
+   "instructionsEn": [
+    "Support yourself on straight arms on parallel bars, two sturdy chairs or the floor.",
+    "Lift your straight legs until parallel to the floor, forming an L.",
+    "Hold for the set time with your shoulders down.",
+    "Tip: if you cannot hold straight legs yet, start with your knees tucked."
+   ]
+  },
+  {
+   "id": "Rowing_Machine",
+   "name": "Remo en ergómetro",
+   "nameEn": "Rowing Machine",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "quads",
+    "hamstrings",
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "machine",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Sentado con los pies atados y el tirador cogido, rodillas dobladas y brazos estirados.",
+    "Empuja primero con las piernas, luego echa el tronco algo atrás y por último tira del tirador hacia el pecho.",
+    "Vuelve en orden contrario: brazos, tronco y piernas.",
+    "Consejo: piernas, tronco, brazos al ir; brazos, tronco, piernas al volver."
+   ],
+   "instructionsEn": [
+    "Sit with your feet strapped in, handle in hand, knees bent and arms straight.",
+    "Push with your legs first, then lean back a little, and finally pull the handle to your chest.",
+    "Return in reverse order: arms, torso, legs.",
+    "Tip: legs, body, arms on the drive; arms, body, legs on the recovery."
+   ]
+  },
+  {
+   "id": "Assault_Bike",
+   "name": "Bicicleta de asalto (air bike)",
+   "nameEn": "Assault Bike (Air Bike)",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "hamstrings",
+    "delts",
+    "pectorals"
+   ],
+   "equipment": "machine",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Siéntate con el sillín a una altura en la que la rodilla quede algo doblada abajo.",
+    "Pedalea empujando y tirando a la vez de los brazos.",
+    "Cuanto más fuerte pedaleas, más resistencia hace el ventilador.",
+    "Consejo: en series cortas, sal fuerte los primeros segundos y mantén el ritmo."
+   ],
+   "instructionsEn": [
+    "Sit with the seat at a height where your knee stays slightly bent at the bottom.",
+    "Pedal while pushing and pulling the arm handles at the same time.",
+    "The harder you go, the more resistance the fan gives.",
+    "Tip: on short intervals, go hard for the first seconds and hold the pace."
+   ]
+  },
+  {
+   "id": "Ski_Erg",
+   "name": "Ergómetro de esquí",
+   "nameEn": "Ski Erg",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "triceps",
+    "abs",
+    "glutes"
+   ],
+   "equipment": "machine",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "De pie frente a la máquina, con un tirador en cada mano por encima de la cabeza.",
+    "Tira hacia abajo con los brazos casi estirados mientras flexionas un poco la cadera y las rodillas.",
+    "Vuelve a subir de forma controlada y repite con ritmo.",
+    "Consejo: el tirón empieza en la espalda y el abdomen, no solo en los brazos."
+   ],
+   "instructionsEn": [
+    "Stand facing the machine, a handle in each hand overhead.",
+    "Pull down with nearly straight arms while hinging slightly at the hips and knees.",
+    "Come back up with control and keep a steady rhythm.",
+    "Tip: the pull starts in your back and abs, not just your arms."
+   ]
+  },
+  {
+   "id": "Squat_Clean",
+   "name": "Cargada en sentadilla",
+   "nameEn": "Squat Clean",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "traps",
+    "delts"
+   ],
+   "equipment": "barbell",
+   "category": "strength",
+   "level": "expert",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Barra en el suelo, agarre algo más ancho que los hombros, espalda recta y hombros por delante de la barra.",
+    "Levanta la barra pegada al cuerpo y, al pasar las rodillas, extiende la cadera con fuerza.",
+    "Métete debajo en sentadilla frontal recibiendo la barra en los hombros, con los codos altos.",
+    "Ponte de pie con la barra en los hombros.",
+    "Consejo: aprende primero la técnica con poco peso o con un entrenador."
+   ],
+   "instructionsEn": [
+    "Bar on the floor, grip a bit wider than shoulders, back straight and shoulders over the bar.",
+    "Lift the bar close to your body and, once past the knees, drive your hips hard.",
+    "Drop under into a front squat, receiving the bar on your shoulders, elbows high.",
+    "Stand up with the bar on your shoulders.",
+    "Tip: learn the technique first with a light bar or a coach."
+   ]
+  },
+  {
+   "id": "Hollow_Hold",
+   "name": "Hollow hold (barca)",
+   "nameEn": "Hollow Hold",
+   "muscle": "abs",
+   "secondaryMuscles": [],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Túmbate boca arriba con los brazos estirados por encima de la cabeza.",
+    "Pega la zona lumbar al suelo y levanta un poco hombros y piernas estiradas.",
+    "Aguanta el tiempo marcado sin despegar la lumbar.",
+    "Consejo: si la lumbar se despega, sube más las piernas o dobla las rodillas."
+   ],
+   "instructionsEn": [
+    "Lie on your back with your arms straight overhead.",
+    "Press your lower back into the floor and lift your shoulders and straight legs slightly.",
+    "Hold for the set time without your lower back lifting.",
+    "Tip: if your lower back lifts, raise your legs higher or bend your knees."
+   ]
+  },
+  {
+   "id": "Hollow_Rock",
+   "name": "Balanceo en barca (hollow rock)",
+   "nameEn": "Hollow Rock",
+   "muscle": "abs",
+   "secondaryMuscles": [],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Colócate en la postura de barca: lumbar pegada, hombros y piernas levantados.",
+    "Sin cambiar la forma del cuerpo, balancéate adelante y atrás como una mecedora.",
+    "Consejo: el cuerpo es una pieza; el movimiento sale de mantener la tensión, no de doblar la cadera."
+   ],
+   "instructionsEn": [
+    "Get into the hollow position: lower back down, shoulders and legs up.",
+    "Without changing your body shape, rock back and forth like a rocking chair.",
+    "Tip: your body moves as one piece; the motion comes from holding tension, not bending at the hips."
+   ]
+  },
+  {
+   "id": "V_Up",
+   "name": "V-up",
+   "nameEn": "V-Up",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "quads"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Túmbate boca arriba con brazos y piernas estirados.",
+    "Sube a la vez tronco y piernas hasta tocar los pies con las manos, formando una V.",
+    "Baja despacio sin dejar caer del todo hombros y piernas.",
+    "Consejo: si no llegas a los pies, toca las espinillas."
+   ],
+   "instructionsEn": [
+    "Lie on your back with arms and legs straight.",
+    "Lift your torso and legs at the same time until your hands touch your feet, forming a V.",
+    "Lower slowly without fully dropping your shoulders and legs.",
+    "Tip: if you cannot reach your feet, touch your shins."
+   ]
+  },
+  {
+   "id": "Jumping_Jacks",
+   "name": "Saltos de tijera (jumping jacks)",
+   "nameEn": "Jumping Jacks",
+   "muscle": "calves",
+   "secondaryMuscles": [
+    "quads",
+    "delts",
+    "adductors"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "De pie con los pies juntos y los brazos a los lados.",
+    "Salta abriendo las piernas y subiendo los brazos por los lados hasta arriba.",
+    "Salta otra vez volviendo a la postura inicial.",
+    "Consejo: aterriza suave sobre la parte delantera del pie."
+   ],
+   "instructionsEn": [
+    "Stand with feet together and arms by your sides.",
+    "Jump, spreading your legs and raising your arms out to the sides overhead.",
+    "Jump again back to the start.",
+    "Tip: land softly on the balls of your feet."
+   ]
+  },
+  {
+   "id": "High_Knees",
+   "name": "Rodillas arriba en el sitio",
+   "nameEn": "High Knees",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "hamstrings",
+    "calves",
+    "abs"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "De pie, corre en el sitio subiendo cada rodilla hasta la altura de la cadera.",
+    "Mueve los brazos como al correr y mantén el tronco recto.",
+    "Consejo: rápido y ligero, pisando con la parte delantera del pie."
+   ],
+   "instructionsEn": [
+    "Standing, run in place, lifting each knee to hip height.",
+    "Pump your arms as if running and keep your torso upright.",
+    "Tip: quick and light, landing on the balls of your feet."
+   ]
+  },
+  {
+   "id": "Skater_Jumps",
+   "name": "Saltos de patinador",
+   "nameEn": "Skater Jumps",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "quads",
+    "adductors",
+    "calves"
+   ],
+   "equipment": "bodyweight",
+   "category": "plyometrics",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "Apoyado en una pierna, salta de lado hacia la otra pierna.",
+    "Aterriza sobre ella flexionando la rodilla y cruza la otra pierna por detrás.",
+    "Salta de vuelta al otro lado.",
+    "Consejo: controla el aterrizaje antes de saltar otra vez; la rodilla, hacia la punta del pie."
+   ],
+   "instructionsEn": [
+    "Standing on one leg, jump sideways onto the other leg.",
+    "Land on it with a bent knee and sweep the other leg behind.",
+    "Jump back to the other side.",
+    "Tip: control each landing before jumping again; knee in line with your toes."
+   ]
+  },
+  {
+   "id": "Wall_Sit",
+   "name": "Sentadilla isométrica en la pared",
+   "nameEn": "Wall Sit",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Apoya la espalda en una pared y baja como si te sentaras.",
+    "Quédate con los muslos paralelos al suelo y las rodillas encima de los tobillos.",
+    "Aguanta el tiempo marcado.",
+    "Consejo: si quema demasiado, sube un poco; con el tiempo baja más."
+   ],
+   "instructionsEn": [
+    "Lean your back against a wall and slide down as if sitting.",
+    "Stay with your thighs parallel to the floor and knees over your ankles.",
+    "Hold for the set time.",
+    "Tip: if it burns too much, go a little higher; go lower over time."
+   ]
+  },
+  {
+   "id": "Pike_Push_Up",
+   "name": "Flexión en pica",
+   "nameEn": "Pike Push-Up",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "pectorals"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "En el suelo, sube la cadera formando una V invertida con brazos y piernas estirados.",
+    "Dobla los codos llevando la cabeza hacia el suelo, entre las manos.",
+    "Empuja hasta estirar los brazos.",
+    "Consejo: con los pies en una silla cuesta más y se parece más a la flexión en pino."
+   ],
+   "instructionsEn": [
+    "On the floor, lift your hips into an upside-down V with arms and legs straight.",
+    "Bend your elbows, bringing your head towards the floor between your hands.",
+    "Press back up to straight arms.",
+    "Tip: with your feet on a chair it is harder and closer to a handstand push-up."
+   ]
+  },
+  {
+   "id": "Archer_Push_Up",
+   "name": "Flexión arquero",
+   "nameEn": "Archer Push-Up",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "expert",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "En plancha con las manos muy abiertas.",
+    "Baja hacia una mano doblando ese codo y dejando el otro brazo estirado.",
+    "Sube y repite hacia el otro lado.",
+    "Consejo: es el paso previo a la flexión a una mano; empieza con poco recorrido."
+   ],
+   "instructionsEn": [
+    "In a plank with your hands very wide.",
+    "Lower towards one hand, bending that elbow and keeping the other arm straight.",
+    "Push up and repeat to the other side.",
+    "Tip: it leads up to the one-arm push-up; start with a short range."
+   ]
+  },
+  {
+   "id": "Plank_Shoulder_Taps",
+   "name": "Plancha con toques de hombro",
+   "nameEn": "Plank Shoulder Taps",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts",
+    "pectorals"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "En plancha con los brazos estirados y los pies algo separados.",
+    "Toca el hombro contrario con una mano sin girar la cadera.",
+    "Apóyala y cambia de mano.",
+    "Consejo: cuanto más juntos los pies, más difícil no girarte."
+   ],
+   "instructionsEn": [
+    "In a plank with straight arms and feet a little apart.",
+    "Tap the opposite shoulder with one hand without twisting your hips.",
+    "Put it down and switch hands.",
+    "Tip: the closer your feet, the harder it is not to rotate."
+   ]
+  },
+  {
+   "id": "Plank_Jacks",
+   "name": "Plancha con saltos",
+   "nameEn": "Plank Jacks",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts",
+    "adductors"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "En plancha con los brazos estirados.",
+    "Salta abriendo los pies y vuelve a juntarlos, como unos saltos de tijera tumbado.",
+    "Consejo: la cadera quieta, a la altura de los hombros."
+   ],
+   "instructionsEn": [
+    "In a plank with straight arms.",
+    "Jump your feet apart and back together, like jumping jacks in a plank.",
+    "Tip: keep your hips still, level with your shoulders."
+   ]
+  },
+  {
+   "id": "Bear_Crawl",
+   "name": "Gateo del oso",
+   "nameEn": "Bear Crawl",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "quads",
+    "abs",
+    "triceps"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "A cuatro patas con las rodillas levantadas un palmo del suelo.",
+    "Avanza moviendo a la vez una mano y el pie contrario, con pasos cortos.",
+    "Mantén la espalda plana y la cadera baja.",
+    "Consejo: también se puede hacer hacia atrás o de lado."
+   ],
+   "instructionsEn": [
+    "On all fours with your knees a hand above the floor.",
+    "Move forward, stepping one hand and the opposite foot together, with short steps.",
+    "Keep your back flat and hips low.",
+    "Tip: you can also go backwards or sideways."
+   ]
+  },
+  {
+   "id": "Crab_Walk",
+   "name": "Paso del cangrejo",
+   "nameEn": "Crab Walk",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "glutes",
+    "delts",
+    "abs"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Sentado en el suelo, apoya las manos detrás y los pies delante y sube la cadera.",
+    "Camina con manos y pies, hacia delante o hacia atrás, sin bajar la cadera.",
+    "Consejo: dedos de las manos hacia los pies para no cargar las muñecas."
+   ],
+   "instructionsEn": [
+    "Sitting on the floor, put your hands behind you and feet in front and lift your hips.",
+    "Walk on hands and feet, forwards or backwards, without dropping your hips.",
+    "Tip: point your fingers towards your feet to spare your wrists."
+   ]
+  },
+  {
+   "id": "Bird_Dog",
+   "name": "Bird dog (cuadrupedia alterna)",
+   "nameEn": "Bird Dog",
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "glutes",
+    "abs",
+    "delts"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "A cuatro patas, manos debajo de los hombros y rodillas debajo de la cadera.",
+    "Estira a la vez un brazo hacia delante y la pierna contraria hacia atrás.",
+    "Aguanta un momento con la espalda recta y vuelve. Alterna.",
+    "Consejo: imagina un vaso de agua en la zona lumbar: que no se caiga."
+   ],
+   "instructionsEn": [
+    "On all fours, hands under shoulders and knees under hips.",
+    "Reach one arm forward and the opposite leg back at the same time.",
+    "Hold a moment with a flat back and return. Alternate.",
+    "Tip: imagine a glass of water on your lower back: do not spill it."
+   ]
+  },
+  {
+   "id": "Reverse_Snow_Angels",
+   "name": "Ángeles de nieve boca abajo",
+   "nameEn": "Reverse Snow Angels",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "delts",
+    "spine"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Túmbate boca abajo con los brazos a los lados y las palmas hacia el suelo.",
+    "Levanta un poco brazos y pecho y lleva los brazos por los lados hasta encima de la cabeza.",
+    "Vuelve por el mismo camino sin apoyarlos.",
+    "Consejo: movimiento lento, juntando los omóplatos."
+   ],
+   "instructionsEn": [
+    "Lie face down with your arms by your sides, palms down.",
+    "Lift your arms and chest slightly and sweep your arms out to the sides overhead.",
+    "Sweep them back the same way without touching the floor.",
+    "Tip: move slowly, squeezing your shoulder blades."
+   ]
+  },
+  {
+   "id": "Backpack_Row",
+   "name": "Remo con mochila",
+   "nameEn": "Backpack Row",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "other",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Llena una mochila con libros o botellas y cógela por las asas.",
+    "Inclínate con la espalda recta y las rodillas algo dobladas.",
+    "Tira de la mochila hacia el abdomen llevando los codos atrás y bájala despacio.",
+    "Consejo: sirve también para sentadillas, peso muerto y press en casa."
+   ],
+   "instructionsEn": [
+    "Fill a backpack with books or bottles and hold it by the straps.",
+    "Lean forward with a straight back and slightly bent knees.",
+    "Pull the backpack to your belly, driving your elbows back, and lower it slowly.",
+    "Tip: it also works for squats, deadlifts and presses at home."
+   ]
+  },
+  {
+   "id": "Towel_Door_Row",
+   "name": "Remo con toalla en la puerta",
+   "nameEn": "Towel Door Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "other",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Pasa una toalla por el pomo de una puerta bien cerrada y coge un extremo con cada mano.",
+    "Con los pies cerca de la puerta, échate atrás con los brazos estirados.",
+    "Tira de ti hacia la puerta juntando los omóplatos y vuelve despacio.",
+    "Consejo: comprueba que la puerta está cerrada hacia el lado contrario al que tiras; cuanto más tumbado, más difícil."
+   ],
+   "instructionsEn": [
+    "Loop a towel around the handle of a firmly closed door and hold one end in each hand.",
+    "With your feet close to the door, lean back with straight arms.",
+    "Pull yourself towards the door, squeezing your shoulder blades, and return slowly.",
+    "Tip: check the door closes away from you; the more you lean back, the harder it is."
+   ]
+  },
+  {
+   "id": "Pistol_Squat",
+   "name": "Sentadilla pistol",
+   "nameEn": "Pistol Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "expert",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "De pie sobre una pierna con la otra estirada hacia delante.",
+    "Baja en sentadilla sobre la pierna de apoyo hasta abajo, con los brazos al frente.",
+    "Sube sin apoyar la otra pierna.",
+    "Consejo: practica bajando hasta una silla o cogido a un marco de puerta."
+   ],
+   "instructionsEn": [
+    "Stand on one leg with the other stretched out in front.",
+    "Squat all the way down on the standing leg, arms forward.",
+    "Stand up without touching down with the other leg.",
+    "Tip: practise by lowering to a chair or holding a door frame."
+   ]
+  },
+  {
+   "id": "Single_Leg_Deadlift",
+   "name": "Peso muerto a una pierna",
+   "nameEn": "Single-Leg Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De pie sobre una pierna con la rodilla algo doblada.",
+    "Inclina el tronco hacia delante mientras la otra pierna sube atrás, en línea con la espalda.",
+    "Vuelve arriba apretando el glúteo de la pierna de apoyo.",
+    "Consejo: la cadera mirando al suelo, sin abrirla hacia un lado."
+   ],
+   "instructionsEn": [
+    "Stand on one leg with the knee slightly bent.",
+    "Hinge forward while the other leg rises behind you, in line with your back.",
+    "Come back up, squeezing the glute of the standing leg.",
+    "Tip: keep your hips square to the floor, not opening to one side."
+   ]
+  },
+  {
+   "id": "Bodyweight_Bulgarian_Split_Squat",
+   "name": "Sentadilla búlgara sin peso",
+   "nameEn": "Bodyweight Bulgarian Split Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De espaldas a una silla o un sofá, apoya en él el empeine de un pie.",
+    "Baja doblando la pierna de delante hasta que el muslo quede casi paralelo al suelo.",
+    "Sube empujando con el talón de delante.",
+    "Consejo: aléjate lo bastante de la silla para que la rodilla de delante no pase mucho de la punta del pie."
+   ],
+   "instructionsEn": [
+    "With your back to a chair or sofa, rest the top of one foot on it.",
+    "Lower by bending the front leg until the thigh is nearly parallel to the floor.",
+    "Drive back up through the front heel.",
+    "Tip: stand far enough from the chair so your front knee does not go much past your toes."
+   ]
+  },
+  {
+   "id": "Shuttle_Run",
+   "name": "Carrera de ida y vuelta",
+   "nameEn": "Shuttle Run",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "hamstrings",
+    "calves",
+    "glutes"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "functional"
+   ],
+   "instructions": [
+    "Marca dos líneas a unos 10 metros.",
+    "Corre de una a otra, toca la línea con la mano y vuelve lo más rápido que puedas.",
+    "Repite las idas y vueltas marcadas.",
+    "Consejo: baja la cadera al girar; frena con pasos cortos."
+   ],
+   "instructionsEn": [
+    "Mark two lines about 10 metres apart.",
+    "Sprint from one to the other, touch the line with your hand and come back as fast as you can.",
+    "Repeat the set number of shuttles.",
+    "Tip: drop your hips when turning; brake with short steps."
+   ]
+  },
+  {
+   "id": "Shadow_Boxing",
+   "name": "Boxeo de sombra",
+   "nameEn": "Shadow Boxing",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "abs",
+    "calves"
+   ],
+   "equipment": "bodyweight",
+   "category": "cardio",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "En guardia, un pie adelantado y las manos protegiendo la cara.",
+    "Lanza golpes rectos y ganchos al aire moviéndote sobre la parte delantera de los pies.",
+    "Vuelve siempre a la guardia después de cada golpe.",
+    "Consejo: no estires del todo los codos al golpear al aire."
+   ],
+   "instructionsEn": [
+    "In a guard stance, one foot forward and hands protecting your face.",
+    "Throw straight punches and hooks at the air, moving on the balls of your feet.",
+    "Always return to your guard after each punch.",
+    "Tip: do not fully lock your elbows when punching the air."
+   ]
+  },
+  {
+   "id": "Sprawl",
+   "name": "Sprawl",
+   "nameEn": "Sprawl",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs",
+    "glutes"
+   ],
+   "equipment": "bodyweight",
+   "category": "plyometrics",
+   "level": "beginner",
+   "tags": [
+    "functional",
+    "home"
+   ],
+   "instructions": [
+    "De pie, agáchate y apoya las manos en el suelo.",
+    "Lleva los pies atrás de un salto y deja caer la cadera hacia el suelo.",
+    "Recoge los pies de otro salto y ponte de pie rápidamente.",
+    "Consejo: es un burpee sin flexión; ideal para ir rápido."
+   ],
+   "instructionsEn": [
+    "From standing, crouch and put your hands on the floor.",
+    "Jump your feet back and drop your hips towards the floor.",
+    "Jump your feet back in and stand up quickly.",
+    "Tip: it is a burpee without the push-up; great for going fast."
+   ]
+  }
+ ],
+ "tags": {
+  "functional": [
+   "Kettlebell_Thruster",
+   "Front_Box_Jump",
+   "Rope_Jumping",
+   "Muscle_Up",
+   "Kipping_Muscle_Up",
+   "Handstand_Push-Ups",
+   "One-Arm_Kettlebell_Swings",
+   "Power_Snatch",
+   "Clean",
+   "Clean_and_Jerk",
+   "Overhead_Squat",
+   "Battling_Ropes",
+   "Rowing_Stationary",
+   "Sled_Push",
+   "Mountain_Climbers",
+   "Star_Jump",
+   "Freehand_Jump_Squat",
+   "Pullups",
+   "Parallel_Bar_Dip",
+   "Ring_Dips",
+   "Barbell_Deadlift",
+   "Front_Barbell_Squat",
+   "Hang_Clean",
+   "Push_Press",
+   "Rope_Climb",
+   "Farmers_Walk",
+   "Box_Jump_Multiple_Response",
+   "Snatch",
+   "Split_Jerk",
+   "Kettlebell_Turkish_Get-Up_Lunge_style"
+  ],
+  "home": [
+   "Pushups",
+   "Bodyweight_Squat",
+   "Chair_Squat",
+   "Bench_Dips",
+   "Plank",
+   "Superman",
+   "Mountain_Climbers",
+   "Inverted_Row",
+   "Glute_Kickback",
+   "Dead_Bug",
+   "Star_Jump",
+   "Freehand_Jump_Squat",
+   "Split_Squats",
+   "Bodyweight_Walking_Lunge",
+   "Push-Ups_-_Close_Triceps_Position",
+   "Floor_Glute-Ham_Raise"
+  ]
+ }
+}

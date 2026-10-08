@@ -16,7 +16,7 @@ test('biblioteca: cada programa sale completo con el material indicado', () => {
     for (const equipment of p.equipment ? [p.equipment] : (['gym', 'dumbbells', 'bodyweight'] as const)) {
       const program = buildLibraryProgram(p, equipment, catalog)
       assert.equal(program.days.length, p.templates.length, p.id)
-      const allowed = new Set(equipmentInfo(equipment).allowed)
+      const allowed = new Set([...equipmentInfo(equipment).allowed, ...(p.extraEquipment ?? [])])
       for (const day of program.days) {
         assert.ok(day.exercises.length >= Math.min(3, p.templates[0].slots.length), `${p.id} ${equipment}: ${day.name} con ${day.exercises.length} ejercicios`)
         assert.equal(new Set(day.exercises.map((e) => e.exercise.id)).size, day.exercises.length, `${p.id}: ejercicio repetido en ${day.name}`)
@@ -24,6 +24,14 @@ test('biblioteca: cada programa sale completo con el material indicado', () => {
       }
     }
   }
+})
+
+test('funcional y HIIT en casa: usan los ejercicios propios nuevos', () => {
+  const ids = (id: string, equipment: 'gym' | 'bodyweight') => buildLibraryProgram(LIBRARY.find((x) => x.id === id)!, equipment, catalog).days.flatMap((d) => d.exercises.map((e) => e.exercise.id))
+  const box = ids('functional3', 'gym')
+  for (const id of ['Barbell_Thruster', 'Chest_To_Bar_Pull_Up', 'Rowing_Machine', 'Toes_To_Bar']) assert.ok(box.includes(id), id)
+  const home = ids('home-hiit', 'bodyweight')
+  for (const id of ['Burpee', 'Towel_Door_Row', 'Bodyweight_Bulgarian_Split_Squat', 'Hollow_Hold']) assert.ok(home.includes(id), id)
 })
 
 test('5×5: básicos con progresión lineal y accesorios sin ella', () => {

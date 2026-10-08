@@ -93,6 +93,19 @@ const slots = {
   core: { kind: 'core', muscles: ['abs'], preferred: ['Hanging_Leg_Raise', 'Dead_Bug', 'Crunches', 'Russian_Twist', 'Plank', 'Kettlebell_Windmill', 'Cable_Crunch'] },
   // Acondicionamiento: se elige por tipo (cardio o pliometría), no por músculo.
   conditioning: { kind: 'conditioning', muscles: [], preferred: ['Mountain_Climbers', 'Rope_Jumping', 'One-Arm_Kettlebell_Swings', 'Box_Jump_Multiple_Response', 'Freehand_Jump_Squat', 'Battling_Ropes'] },
+  // Funcional (estilo box): movimientos completos, gimnásticos y «motor» (remo, bici, comba).
+  fnSquat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Thruster', 'Wall_Ball', 'Front_Barbell_Squat', 'Dumbbell_Thruster', 'Kettlebell_Thruster', 'Goblet_Squat', 'Burpee'] },
+  fnHinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'American_Kettlebell_Swing', 'Squat_Clean', 'Russian_Kettlebell_Swing', 'Devil_Press', 'Single_Leg_Deadlift'] },
+  fnPull: { kind: 'compound', muscles: ['lats', 'upper-back'], match: /pull-?up|row/i, preferred: ['Chest_To_Bar_Pull_Up', 'Kipping_Pull_Up', 'Pullups', 'Bent_Over_Two-Dumbbell_Row', 'Inverted_Row'] },
+  fnPush: { kind: 'compound', muscles: ['delts', 'pectorals'], preferred: ['Push_Press', 'Handstand_Push-Ups', 'Man_Maker', 'Dumbbell_Shoulder_Press', 'Pike_Push_Up', 'Pushups'] },
+  fnCore: { kind: 'core', muscles: ['abs'], preferred: ['Toes_To_Bar', 'GHD_Sit_Up', 'Knees_To_Elbows', 'V_Up', 'Hollow_Rock', 'L_Sit'] },
+  fnEngine: { kind: 'conditioning', muscles: [], preferred: ['Rowing_Machine', 'Double_Unders', 'Assault_Bike', 'Burpee_Box_Jump_Over', 'Ski_Erg', 'Box_Step_Over', 'Burpee', 'Shuttle_Run'] },
+  // En casa sin material (o con una mochila, una toalla y una silla).
+  homeLegs: { kind: 'compound', muscles: ['quads', 'glutes', 'hamstrings'], preferred: ['Bodyweight_Bulgarian_Split_Squat', 'Single_Leg_Deadlift', 'Wall_Sit', 'Pistol_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
+  homePush: { kind: 'compound', muscles: ['pectorals', 'delts', 'triceps'], preferred: ['Pushups', 'Pike_Push_Up', 'Archer_Push_Up', 'Push-Ups_-_Close_Triceps_Position'] },
+  homePull: { kind: 'compound', muscles: ['upper-back', 'lats'], match: /row|superman|angel/i, preferred: ['Towel_Door_Row', 'Backpack_Row', 'Reverse_Snow_Angels', 'Inverted_Row', 'Superman'] },
+  homeCore: { kind: 'core', muscles: ['abs'], preferred: ['Hollow_Hold', 'Plank_Shoulder_Taps', 'Bird_Dog', 'V_Up', 'Dead_Bug', 'Plank'] },
+  hiit: { kind: 'conditioning', muscles: [], preferred: ['Burpee', 'Jumping_Jacks', 'High_Knees', 'Mountain_Climbers', 'Skater_Jumps', 'Sprawl', 'Plank_Jacks', 'Shadow_Boxing'] },
 } satisfies Record<string, Slot>
 
 /** Los ejercicios de siempre (los preferidos de cada hueco): al buscar salen antes que las variantes raras. */
@@ -211,6 +224,8 @@ export interface LibraryProgram {
   level: TrainingLevel
   /** Material fijo (programas pensados para casa); sin valor, el que elijas. */
   equipment?: EquipmentProfile
+  /** Material de más que da por hecho (cajón y comba en el box; mochila o toalla en casa). */
+  extraEquipment?: string[]
   templates: Template[]
   scheme: Record<Kind, SchemeRow>
   progression?: Progression
@@ -219,6 +234,8 @@ export interface LibraryProgram {
 const HYPERTROPHY: Record<Kind, SchemeRow> = { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] }
 const BEGINNER: Record<Kind, SchemeRow> = { compound: [3, 8, 12, 90], accessory: [2, 10, 15, 60], core: [2, 12, 15, 45], conditioning: [3, 10, 15, 45] }
 const STRENGTH_5X5: Record<Kind, SchemeRow> = { compound: [5, 5, 5, 180], accessory: [3, 8, 12, 90], core: [3, 10, 15, 60], conditioning: [3, 10, 15, 45] }
+const FUNCTIONAL: Record<Kind, SchemeRow> = { compound: [4, 6, 10, 90], accessory: [3, 10, 15, 60], core: [3, 10, 15, 45], conditioning: [4, 12, 20, 45] }
+const HIIT: Record<Kind, SchemeRow> = { compound: [3, 10, 15, 30], accessory: [3, 12, 15, 30], core: [3, 10, 20, 20], conditioning: [4, 20, 30, 20] }
 const HOME: Record<Kind, SchemeRow> = { compound: [3, 10, 15, 75], accessory: [3, 12, 20, 45], core: [3, 15, 20, 30], conditioning: [3, 30, 40, 30] }
 
 const strengthA = T(['Fuerza A', 'Strength A'], [['squat', 0], ['chestPress', 0], ['horizontalPull', 0]])
@@ -226,6 +243,11 @@ const strengthB = T(['Fuerza B', 'Strength B'], [['squat', 0], ['shoulderPress',
 const homeA = T(['Casa A', 'Home A'], [['squat', 2], ['chestPress', 1], ['horizontalPull', 2], ['shoulderPress', 1], ['lunge', 0], ['core', 0]])
 const homeB = T(['Casa B', 'Home B'], [['hinge', 2], ['inclinePress', 1], ['horizontalPull', 3], ['lateralRaise', 0], ['biceps', 1], ['triceps', 2], ['core', 1]])
 const quickA = T(['Exprés A', 'Express A'], [['squat', 0], ['chestPress', 0], ['horizontalPull', 0], ['core', 0]])
+const functionalA = T(['Funcional A', 'Functional A'], [['fnSquat', 0], ['fnPull', 0], ['fnEngine', 0], ['fnCore', 0], ['fnHinge', 1]])
+const functionalB = T(['Funcional B', 'Functional B'], [['fnHinge', 0], ['fnPush', 0], ['fnEngine', 1], ['fnCore', 1], ['fnSquat', 1]])
+const functionalC = T(['Funcional C', 'Functional C'], [['fnSquat', 2], ['fnPull', 1], ['fnPush', 1], ['fnEngine', 2], ['fnCore', 2]])
+const hiitA = T(['HIIT A', 'HIIT A'], [['homeLegs', 0], ['homePush', 0], ['hiit', 0], ['homePull', 0], ['hiit', 1], ['homeCore', 0]])
+const hiitB = T(['HIIT B', 'HIIT B'], [['homeLegs', 1], ['homePush', 1], ['hiit', 2], ['homePull', 1], ['hiit', 3], ['homeCore', 1]])
 const quickB = T(['Exprés B', 'Express B'], [['hinge', 1], ['shoulderPress', 0], ['verticalPull', 0], ['lunge', 0]])
 
 export const LIBRARY: LibraryProgram[] = [
@@ -269,11 +291,21 @@ export const LIBRARY: LibraryProgram[] = [
     description: ['Sin material: flexiones, sentadillas, zancadas, remo invertido (con una mesa) y core.', 'No equipment: push-ups, squats, lunges, inverted rows (under a table) and core.'],
     templates: [homeA, homeB, homeA], scheme: HOME,
   },
+  {
+    id: 'functional3', name: ['Funcional · 3 días', 'Functional · 3 days'], days: 3, level: 'intermediate', extraEquipment: ['other'],
+    description: ['Al estilo de un box: un básico con barra o mancuernas, gimnásticos (dominadas, pies a la barra) y un bloque de motor (remo, bici, comba). Hazlo seguido, con poco descanso.', 'Box style: a barbell or dumbbell lift, gymnastics (pull-ups, toes to bar) and an engine block (row, bike, rope). Go through it with little rest.'],
+    templates: [functionalA, functionalB, functionalC], scheme: FUNCTIONAL,
+  },
+  {
+    id: 'home-hiit', name: ['HIIT en casa · 3 días', 'Home HIIT · 3 days'], days: 3, level: 'beginner', equipment: 'bodyweight', extraEquipment: ['other'],
+    description: ['Intenso y sin material: pierna, empuje, remo con una toalla en la puerta y bloques de burpees, saltos y skipping. Unos 30 minutos.', 'Intense and equipment-free: legs, push, towel door rows and blocks of burpees, jumps and high knees. About 30 minutes.'],
+    templates: [hiitA, hiitB, hiitA], scheme: HIIT,
+  },
 ]
 
 /** Un programa de la biblioteca con los ejercicios del material indicado. */
 export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog): GeneratedProgram {
-  const allowed = new Set(equipmentInfo(p.equipment ?? equipment).allowed)
+  const allowed = new Set([...equipmentInfo(p.equipment ?? equipment).allowed, ...(p.extraEquipment ?? [])])
   const days = p.templates.map((template, index) => {
     const used = new Set<string>()
     const exercises: GeneratedExercise[] = []
