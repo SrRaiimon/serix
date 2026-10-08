@@ -1,6 +1,6 @@
 import { Barcode, Bell, CalendarDays, Share2, Star, Camera, Check, ChefHat, Droplet, ChevronLeft, ChevronRight, Ellipsis, Shuffle, Sparkles, Globe, HeartPulse, Minus, PenLine, Plus, RotateCcw, Search, Target, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ActionSheet, Card, LargeTitle, Segmented, Sheet, useToast } from '../components/ui'
+import { ActionSheet, Card, Chip, LargeTitle, Segmented, Sheet, useTick, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, monthYear, parseDecimal, uid } from '../lib/format'
 import { lang, locale, t } from '../lib/i18n'
 import {
@@ -11,6 +11,7 @@ import {
 import { update, updateSettings, useData, withUndo } from '../lib/store'
 import { dueMeals, reminderTime, takePendingAdd } from '../lib/foodReminders'
 import { encodeFood, foodLink } from '../lib/foodShare'
+import { FAST_PLANS, fastState, supplementStreak, toggleSupplement } from '../lib/habits'
 import { shareLink } from '../lib/share'
 import { useRoute } from '../lib/router'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
@@ -65,6 +66,8 @@ export function FoodScreen() {
   const [shopping, setShopping] = useState(false)
   const [weekShopping, setWeekShopping] = useState(false)
   const [mealsSheet, setMealsSheet] = useState(false)
+  const [habits, setHabits] = useState(false)
+  const [weekMenu, setWeekMenu] = useState(false)
   const [dayMenu, setDayMenu] = useState(false)
   // Semana tipo: el día de la semana que toca, si el día está vacío.
   const weekday = weekdayOf(day)
@@ -158,6 +161,8 @@ export function FoodScreen() {
         )
       })()}
       {day <= today && <WaterCard day={day} goal={waterGoal(baseGoals?.sex)} />}
+      {day === today && data.settings.fasting && <FastCard />}
+      {day <= today && !!data.settings.supplements?.length && <SupplementsCard day={day} onEdit={() => setHabits(true)} />}
 
       {target && canPlan && dishes.length > 0 && (plan ? (
         <div className="plan-bar">
@@ -259,8 +264,10 @@ export function FoodScreen() {
           ...(entries.length && day !== today ? [{ label: t('Copiar este día a hoy', 'Copy this day to today'), onSelect: () => copyDay(today) }] : []),
           ...(entries.length && day !== tomorrow ? [{ label: t('Copiar este día a mañana', 'Copy this day to tomorrow'), onSelect: () => copyDay(tomorrow) }] : []),
           ...(entries.length ? [{ label: t('Compartir este día', 'Share this day'), onSelect: () => void shareDay() }] : []),
+          ...(baseGoals && dishes.length ? [{ label: t('Menú de la semana', 'Menu for the week'), onSelect: () => setWeekMenu(true) }] : []),
           { label: t('Lista de la compra de la semana', 'Shopping list for the week'), onSelect: () => setWeekShopping(true) },
           { label: t('Elegir y renombrar las comidas', 'Choose and rename meals'), onSelect: () => setMealsSheet(true) },
+          { label: t('Suplementos y ayuno', 'Supplements and fasting'), onSelect: () => setHabits(true) },
           { label: t('Guardar esta semana como semana tipo', 'Save this week as my usual week'), onSelect: saveWeek },
           ...(data.nutrition.week ? [{ label: t('Borrar la semana tipo', 'Delete my usual week'), destructive: true, onSelect: () => withUndo(t('Semana tipo borrada', 'Usual week deleted'), () => update((d) => { delete d.nutrition.week })) }] : []),
         ]} />
@@ -288,6 +295,8 @@ export function FoodScreen() {
       {goals && <GoalsSheet onClose={() => setGoals(false)} />}
       {shopping && <ShoppingSheet items={Object.values(proposals).flatMap((x) => x?.items ?? [])} title={day === today ? t('Compra para hoy', 'Shopping for today') : t('Compra para mañana', 'Shopping for tomorrow')} onClose={() => setShopping(false)} onCopied={() => showToast(t('Lista copiada', 'List copied'))} />}
       {mealsSheet && <MealsSheet onClose={() => setMealsSheet(false)} />}
+      {habits && <HabitsSheet onClose={() => setHabits(false)} />}
+      {weekMenu && baseGoals && <WeekMenuSheet dishes={dishes} goals={baseGoals} opts={goalOpts} onClose={() => setWeekMenu(false)} onCopied={() => showToast(t('Lista copiada', 'List copied'))} />}
       {weekShopping && (() => {
         // Con semana tipo, sus 7 días; si no, lo que comiste los últimos 7 días (para repetirlo).
         const usual = data.nutrition.week
@@ -390,6 +399,144 @@ function DaySummary({ totals, entries, goals, day, canMark }: { totals: Per100; 
         )
       })()}
     </div>
+  )
+}
+
+/**
+ * Menú de los próximos 7 días (con el objetivo de cada día: entreno o descanso), para organizar la
+ * semana o cocinar en tuppers el domingo, con la lista de la compra de todo. Otro toque, otro menú.
+ */
+function WeekMenuSheet({ dishes, goals, opts, onClose, onCopied }: { dishes: Dish[]; goals: NutritionGoals; opts: DayGoalOptions; onClose: () => void; onCopied: () => void }) {
+  const data = useData()
+  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 2 ** 31))
+  const [shopping, setShopping] = useState(false)
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const day = shiftDay(dayKey(), i)
+    const target = goalsForDay(goals, data.nutrition.entries, day, opts)
+    const targets = mealTargets(target, [], MEALS)
+    const plan = makePlan(dishes, data.nutrition, day, seed + i, targets)
+    const meals = MEALS.flatMap((m) => {
+      const dish = dishes.find((x) => x.id === plan.meals[m]?.dish)
+      return dish && targets[m] ? [{ meal: m, dish, items: fitDish(dish, targets[m]!) }] : []
+    })
+    return { day, target, meals }
+  }), [dishes, goals, opts, seed, data.nutrition])
+  if (shopping) {
+    return <ShoppingSheet title={t('Compra para la semana', 'Shopping for the week')} items={days.flatMap((d) => d.meals.flatMap((m) => m.items))}
+      note={t('Cantidades del menú de los 7 días. El peso es el del alimento tal como se llama: «cocido» o «hecho», ya cocinado; «crudo», sin cocinar.', 'Amounts for the 7-day menu. Weights match the food name: "cooked" means after cooking, "raw" before.')}
+      onClose={() => setShopping(false)} onCopied={onCopied} />
+  }
+  return (
+    <Sheet title={t('Menú de la semana', 'Menu for the week')} onClose={onClose} right={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}
+      footer={<div className="row" style={{ gap: 8 }}>
+        <button className="btn secondary grow" onClick={() => setSeed(seed + 7)}><Shuffle size={17} /> {t('Otro menú', 'Another menu')}</button>
+        <button className="btn primary grow" onClick={() => setShopping(true)}>{t('Lista de la compra', 'Shopping list')}</button>
+      </div>}>
+      <span className="small muted">{t('Con tu objetivo de cada día. Aprende de lo que apuntas, como el menú del día; para apuntarlo, usa «Proponme el menú» cada día.', 'Based on your goal for each day. It learns from what you log, like the daily menu; to log it, use "Suggest a menu" each day.')}</span>
+      {days.map((d) => (
+        <Card key={d.day} title={`${longDay(fromDayKey(d.day))}${d.target.training ? t(' · entreno', ' · training') : ''}`}>
+          {d.meals.map((m) => (
+            <div key={m.meal} className="row between small" style={{ gap: 8, alignItems: 'flex-start' }}>
+              <span className="muted" style={{ width: 82, flexShrink: 0 }}>{mealLabel(m.meal)}</span>
+              <span className="grow">{m.items.map((i) => `${i.name} ${g(i.grams)} g`).join(', ')}</span>
+            </div>
+          ))}
+          <span className="tiny muted">{`${int(d.meals.reduce((n, m) => n + m.items.reduce((k, i) => k + (i.per100.kcal * i.grams) / 100, 0), 0))} kcal · ${t('objetivo', 'goal')} ${int(d.target.kcal)}`}</span>
+        </Card>
+      ))}
+    </Sheet>
+  )
+}
+
+/** Suplementos del día: un toque para marcar cada uno, con los días seguidos. */
+function SupplementsCard({ day, onEdit }: { day: string; onEdit: () => void }) {
+  const data = useData()
+  const log = data.nutrition.supplements
+  const taken = log?.[day] ?? []
+  return (
+    <div className="card" style={{ gap: 8 }}>
+      <div className="row between">
+        <span className="bold">{t('Suplementos', 'Supplements')}</span>
+        <button className="link-btn small muted" onClick={onEdit}>{t('Editar', 'Edit')}</button>
+      </div>
+      <div className="chip-row" style={{ flexWrap: 'wrap' }}>
+        {data.settings.supplements!.map((name) => {
+          const on = taken.includes(name)
+          const streak = supplementStreak(log, name, day)
+          return (
+            <Chip key={name} active={on} onClick={() => update((d) => { d.nutrition.supplements = toggleSupplement(d.nutrition.supplements, name, day) })}
+              label={`${on ? '✓ ' : ''}${name}${streak >= 2 ? ` · ${streak} ${t('días', 'days')}` : ''}`} />
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/** Ayuno intermitente: cuánto llevas y cuándo abres la ventana para comer. */
+function FastCard() {
+  const { settings } = useData()
+  const now = useTick(30000)
+  const f = settings.fasting!
+  const st = f.start ? fastState(f.start, f.hours, now) : undefined
+  const clock = (ms: number) => new Date(ms).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
+  const hm = (h: number) => `${Math.floor(h)} h ${String(Math.floor((h % 1) * 60)).padStart(2, '0')} min`
+  return (
+    <div className="card" style={{ gap: 8 }}>
+      <div className="row between">
+        <span className="bold">{t(`Ayuno ${f.hours}/${24 - f.hours}`, `Fasting ${f.hours}/${24 - f.hours}`)}</span>
+        {st && <span className="small muted">{st.done ? t('¡Conseguido!', 'Done!') : t(`Abres a las ${clock(st.endsAt)}`, `Window opens at ${clock(st.endsAt)}`)}</span>}
+      </div>
+      {st ? (
+        <>
+          <div className="food-bar"><div style={{ transform: `scaleX(${st.progress})`, background: st.done ? 'var(--green-text)' : undefined }} /></div>
+          <span className="small muted">{t(`Llevas ${hm(st.hours)} de ${f.hours} h.`, `${hm(st.hours)} of ${f.hours} h so far.`)}</span>
+          <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => updateSettings({ fasting: { hours: f.hours } })}>{t('Terminar el ayuno', 'End the fast')}</button>
+        </>
+      ) : (
+        <>
+          <span className="small muted">{t('Ventana para comer abierta. Al acabar tu última comida, empieza el ayuno.', 'Eating window open. After your last meal, start the fast.')}</span>
+          <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => updateSettings({ fasting: { hours: f.hours, start: Date.now() } })}>{t('Empezar el ayuno', 'Start the fast')}</button>
+        </>
+      )}
+    </div>
+  )
+}
+
+/** Qué suplementos tomas y si haces ayuno intermitente. */
+function HabitsSheet({ onClose }: { onClose: () => void }) {
+  const { settings } = useData()
+  const [list, setList] = useState<string[]>(settings.supplements ?? [])
+  const [name, setName] = useState('')
+  const [fast, setFast] = useState<number>(settings.fasting?.hours ?? 0)
+  const add = () => { const n = name.trim().slice(0, 30); if (n && !list.includes(n)) setList([...list, n]); setName('') }
+  const save = () => {
+    updateSettings({ supplements: list.length ? list : undefined, fasting: fast ? { hours: fast, start: settings.fasting?.start } : undefined })
+    onClose()
+  }
+  return (
+    <Sheet title={t('Suplementos y ayuno', 'Supplements and fasting')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" onClick={save}>{t('Guardar', 'Save')}</button>}>
+      <div className="list-header">{t('Suplementos', 'Supplements')}</div>
+      <div className="chip-row" style={{ flexWrap: 'wrap' }}>
+        {list.map((x) => <Chip key={x} label={`${x} ✕`} onClick={() => setList(list.filter((y) => y !== x))} />)}
+        {['Creatina', 'Proteína', 'Vitamina D', 'Omega 3', 'Magnesio'].filter((x) => !list.includes(x)).map((x) => <Chip key={x} label={`+ ${x}`} onClick={() => setList([...list, x])} />)}
+      </div>
+      <div className="row" style={{ gap: 8 }}>
+        <input className="field grow" value={name} maxLength={30} placeholder={t('Otro (p. ej. «Cafeína»)', 'Other (e.g. "Caffeine")')} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') add() }} aria-label={t('Nuevo suplemento', 'New supplement')} />
+        <button className="btn secondary" disabled={!name.trim()} onClick={add}>{t('Añadir', 'Add')}</button>
+      </div>
+      <span className="small muted">{t('Cada día los marcas con un toque en Comidas y ves cuántos días seguidos llevas.', 'Each day tick them with one tap in Food and see your streak.')}</span>
+      <div className="list-header">{t('Ayuno intermitente', 'Intermittent fasting')}</div>
+      <div className="chip-row" style={{ flexWrap: 'wrap' }}>
+        <Chip label={t('No', 'Off')} active={!fast} onClick={() => setFast(0)} />
+        {FAST_PLANS.map((h) => <Chip key={h} label={`${h}/${24 - h}`} active={fast === h} onClick={() => setFast(h)} />)}
+      </div>
+      <p className="food-health small" style={{ margin: 0 }}>
+        <HeartPulse size={16} />
+        <span>{t('El ayuno no es para todo el mundo: si estás embarazada, tienes diabetes, tomas medicación o tienes o has tenido un trastorno de la conducta alimentaria, consúltalo antes con un profesional sanitario.', 'Fasting is not for everyone: if you are pregnant, have diabetes, take medication, or have or have had an eating disorder, talk to a health professional first.')}</span>
+      </p>
+    </Sheet>
   )
 }
 
@@ -813,9 +960,21 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
       onSaved={(f) => { onAdded(t('Guardado en Mis alimentos', 'Saved to My foods')); setView({ kind: 'amount', food: fromMine(f) }) }} />
   }
   if (view.kind === 'scan') {
-    return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose}
+    return <ScanSheet onBack={() => setView({ kind: 'list' })} onClose={onClose} meal={meal}
       onFound={(f) => setView({ kind: 'amount', food: fromMine(f) })}
-      onMissing={(barcode) => setView({ kind: 'create', barcode })} />
+      onMissing={(barcode) => setView({ kind: 'create', barcode })}
+      onBatch={(list, log) => {
+        // Varios seguidos: se guardan en «Mis alimentos» y, si se pide, se apuntan con su ración (o 100 g).
+        update((d) => {
+          for (const f of list) {
+            if (!d.nutrition.foods.some((x) => x.id === f.id || (f.barcode && x.barcode === f.barcode))) d.nutrition.foods.push(f)
+            if (log) d.nutrition.entries.push({ id: uid(), day, meal, name: f.name, grams: f.portion?.g ?? 100, per100: f.per100, ref: fromMine(f).ref, at: Date.now() })
+          }
+        })
+        onAdded(log ? t(`Apuntados ${list.length} productos en ${mealLabel(meal).toLowerCase()}`, `Logged ${list.length} products to ${mealLabel(meal).toLowerCase()}`)
+          : t(`${list.length} productos guardados en Mis alimentos`, `${list.length} products saved to My foods`))
+        onClose()
+      }} />
   }
   if (view.kind === 'quick') {
     return <QuickEntrySheet initialName={view.name} meal={meal} onBack={() => setView({ kind: 'list' })} onClose={onClose}
@@ -1303,13 +1462,34 @@ async function barcodeDetector(): Promise<Detector> {
 
 type ScanState = { kind: 'idle' } | { kind: 'scanning' } | { kind: 'looking'; code: string } | { kind: 'error'; message: string; code?: string }
 
-function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void; onClose: () => void; onFound: (f: MyFood) => void; onMissing: (barcode: string) => void }) {
+function ScanSheet({ meal, onBack, onClose, onFound, onMissing, onBatch }: {
+  meal: MealKey; onBack: () => void; onClose: () => void; onFound: (f: MyFood) => void; onMissing: (barcode: string) => void
+  /** Varios seguidos: los productos encontrados y si apuntarlos (o solo guardarlos). */
+  onBatch: (list: MyFood[], log: boolean) => void
+}) {
   const data = useData()
   const video = useRef<HTMLVideoElement>(null)
   const stream = useRef<MediaStream>(null)
   const abort = useRef<AbortController>(null)
   const [state, setState] = useState<ScanState>({ kind: 'idle' })
   const [manual, setManual] = useState('')
+  // Escanear varios productos seguidos (al volver de la compra): no se cierra la cámara entre uno y otro.
+  const [multi, setMulti] = useState(false)
+  const [batch, setBatch] = useState<MyFood[]>([])
+  const [missing, setMissing] = useState<string[]>([])
+  const multiRef = useRef(false)
+  multiRef.current = multi
+  const found = (f: MyFood) => {
+    if (!multiRef.current) return onFound(f)
+    setBatch((b) => (b.some((x) => x.barcode === f.barcode) ? b : [...b, f]))
+    // Un momento para apartar el producto y se vuelve a escanear.
+    setTimeout(() => void start(), 900)
+  }
+  const notFound = (code: string) => {
+    if (!multiRef.current) return onMissing(code)
+    setMissing((m) => (m.includes(code) ? m : [...m, code]))
+    setTimeout(() => void start(), 900)
+  }
 
   const stop = () => {
     stream.current?.getTracks().forEach((x) => x.stop())
@@ -1321,11 +1501,11 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
     stop()
     // Ya lo tienes guardado: sin conexión y sin volver a preguntar.
     const known = data.nutrition.foods.find((f) => f.barcode && barcodeVariants(code).includes(f.barcode))
-    if (known) return onFound(known)
+    if (known) return found(known)
     setState({ kind: 'looking', code })
     // Primero la base de datos de la AESAN (productos vendidos en España; funciona sin conexión una vez cargada).
     const shop = await findAesan(code).catch(() => undefined)
-    if (shop) return onFound({ id: uid(), name: shop.name, ...(shop.brand ? { brand: shop.brand } : {}), barcode: shop.barcode, per100: shop.per100, ...(shop.portion ? { portion: shop.portion } : {}), source: 'aesan' })
+    if (shop) return found({ id: uid(), name: shop.name, ...(shop.brand ? { brand: shop.brand } : {}), barcode: shop.barcode, per100: shop.per100, ...(shop.portion ? { portion: shop.portion } : {}), source: 'aesan' })
     abort.current = new AbortController()
     let product: ScannedProduct | undefined | 'offline'
     try {
@@ -1334,9 +1514,9 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
       return
     }
     if (product === 'offline') return setState({ kind: 'error', code, message: t('No hay conexión para consultar el producto. Inténtalo de nuevo o créalo a mano.', 'No connection to look up the product. Try again or create it yourself.') })
-    if (!product) return onMissing(code)
+    if (!product) return notFound(code)
     // Se guarda en «Mis alimentos» al añadirlo (así puedes corregirlo antes si no cuadra).
-    onFound({ id: uid(), name: product.name, brand: product.brand, barcode: code, per100: product.per100, portion: product.portion, source: 'off' })
+    found({ id: uid(), name: product.name, brand: product.brand, barcode: code, per100: product.per100, portion: product.portion, source: 'off' })
   }
 
   const start = async () => {
@@ -1387,6 +1567,31 @@ function ScanSheet({ onBack, onClose, onFound, onMissing }: { onBack: () => void
         <div className="transfer-aim barcode-aim" />
       </div>
       {state.kind === 'scanning' && <p className="small muted" style={{ margin: 0, textAlign: 'center' }}>{t('Apunta al código de barras del envase.', 'Point at the barcode on the package.')}</p>}
+      <label className="list-row card-row">
+        <span className="grow">
+          <span className="bold" style={{ display: 'block' }}>{t('Varios seguidos', 'Several in a row')}</span>
+          <span className="small muted">{t('Al volver de la compra: escanea uno tras otro y al final los guardas o los apuntas todos.', 'After shopping: scan one after another and save or log them all at the end.')}</span>
+        </span>
+        <input type="checkbox" className="toggle" checked={multi} onChange={(e) => setMulti(e.target.checked)} />
+      </label>
+      {multi && (batch.length > 0 || missing.length > 0) && (
+        <div className="card" style={{ gap: 6 }}>
+          {batch.map((f) => (
+            <div key={f.barcode ?? f.id} className="row between small" style={{ gap: 8 }}>
+              <span className="clamp-1 grow">{f.name}{f.brand ? ` · ${f.brand}` : ''}</span>
+              <span className="muted">{f.portion ? `${f.portion.g} g` : '100 g'}</span>
+              <button className="icon-btn" onClick={() => setBatch(batch.filter((x) => x !== f))} aria-label={t(`Quitar ${f.name}`, `Remove ${f.name}`)}><X size={15} /></button>
+            </div>
+          ))}
+          {missing.length > 0 && <span className="small muted">{t(`Sin encontrar (créalos a mano luego): ${missing.join(', ')}`, `Not found (create them later): ${missing.join(', ')}`)}</span>}
+          {batch.length > 0 && (
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn primary grow" onClick={() => { stop(); onBatch(batch, true) }}>{t(`Apuntar ${batch.length} en ${mealLabel(meal).toLowerCase()}`, `Log ${batch.length} to ${mealLabel(meal).toLowerCase()}`)}</button>
+              <button className="btn secondary grow" onClick={() => { stop(); onBatch(batch, false) }}>{t('Solo guardarlos', 'Just save them')}</button>
+            </div>
+          )}
+        </div>
+      )}
       {state.kind === 'looking' && <p className="small" style={{ margin: 0, textAlign: 'center' }}>{t(`Buscando el producto ${state.code}…`, `Looking up product ${state.code}…`)}</p>}
       {state.kind === 'error' && (
         <div className="card">

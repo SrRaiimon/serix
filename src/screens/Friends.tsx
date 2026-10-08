@@ -1,10 +1,10 @@
 import { BellRing, ChartColumn, Flag, Medal, MessageCircle, Plus, QrCode as QrIcon, Share2, Trophy, UserMinus, UserPlus, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { QrSheet } from '../components/Qr'
-import { ActionSheet, Card, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
+import { ActionSheet, Card, Chip, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { addDays, int, relative, shortDay, startOfWeek, toKg, volume, weight, type Unit } from '../lib/format'
 import {
-  alignWeeks, challengeProgress, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
+  alignWeeks, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
   mySnapshot, newChallenge, trophyCounts, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
 } from '../lib/friends'
 import { plural, t } from '../lib/i18n'
@@ -50,11 +50,16 @@ function challengeTitle(c: Challenge, unit: Unit, exercise: (c: Challenge) => st
       return goal
         ? t(`${goal} repeticiones seguidas en ${exercise(c)}`, `${goal} reps in one set of ${exercise(c)}`)
         : t(`Más repeticiones seguidas en ${exercise(c)}`, `Most reps in one set of ${exercise(c)}`)
+    case 'logDays':
+      return goal ? t(`${goal} días apuntando la comida`, `${goal} days logging food`) : t('Más días apuntando la comida', 'Most days logging food')
+    case 'proteinDays':
+      return goal ? t(`${goal} días cumpliendo la proteína`, `${goal} days hitting protein`) : t('Más días cumpliendo la proteína', 'Most days hitting protein')
   }
 }
 
 const challengeValue = (c: Challenge, v: number, unit: Unit) =>
-  c.metric === 'volume' ? volume(v, unit) : c.metric === 'reps' ? plural(v, ['rep.', 'rep.'], ['rep', 'reps']) : int(v)
+  c.metric === 'volume' ? volume(v, unit) : c.metric === 'reps' ? plural(v, ['rep.', 'rep.'], ['rep', 'reps'])
+    : c.metric === 'logDays' || c.metric === 'proteinDays' ? plural(v, ['día', 'días'], ['day', 'days']) : int(v)
 
 function challengeWhen(c: Challenge, now = Date.now()): string {
   const status = challengeStatus(c, now)
@@ -176,7 +181,7 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
           <button className="btn primary" onClick={() => update((d) => { d.challenges.push(c) })}><UserPlus size={18} /> {t('Unirme', 'Join')}</button>
         </div>
       ))}
-      {live.map((c) => <ChallengeCard key={c.id} c={c} data={data} myValue={challengeProgress(c, sessions)} onMenu={() => setMenu(c)} />)}
+      {live.map((c) => <ChallengeCard key={c.id} c={c} data={data} myValue={challengeProgress(c, sessions, challengeFood(data))} onMenu={() => setMenu(c)} />)}
       <button className="btn secondary" onClick={onNew}><Plus size={18} /> {t('Nuevo reto', 'New challenge')}</button>
       {menu && (
         <ActionSheet title={challengeTitle(menu, unit, exercise)} onClose={() => setMenu(undefined)} options={[
@@ -197,6 +202,8 @@ const METRIC_OPTIONS: { value: ChallengeMetric; label: () => string }[] = [
   { value: 'volume', label: () => t('Peso', 'Weight') },
   { value: 'sets', label: () => t('Series', 'Sets') },
   { value: 'reps', label: () => t('Reps', 'Reps') },
+  { value: 'logDays', label: () => t('Apuntar', 'Logging') },
+  { value: 'proteinDays', label: () => t('Proteína', 'Protein') },
 ]
 
 /** Crear un reto: qué se mide, cuánto dura y un objetivo opcional. */
@@ -229,12 +236,16 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
     setTimeout(onClose, result === 'copied' ? 1500 : 0)
   }
 
-  const placeholder = metric === 'sessions' ? '12' : metric === 'volume' ? (unit === 'kg' ? '50000' : '100000') : metric === 'sets' ? '60' : '20'
+  const placeholder = metric === 'logDays' || metric === 'proteinDays' ? '20' : metric === 'sessions' ? '12' : metric === 'volume' ? (unit === 'kg' ? '50000' : '100000') : metric === 'sets' ? '60' : '20'
   return (
     <Sheet title={t('Nuevo reto', 'New challenge')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={<button className="btn primary block" disabled={!valid} onClick={() => void create()}><Share2 size={18} /> {t('Crear e invitar', 'Create and invite')}</button>}>
-      <Segmented value={metric} onChange={setMetric} options={METRIC_OPTIONS.map((o) => ({ value: o.value, label: o.label() }))} />
+      <div className="chip-row">
+        {METRIC_OPTIONS.map((o) => <Chip key={o.value} label={o.label()} active={metric === o.value} onClick={() => setMetric(o.value)} />)}
+      </div>
+      {metric === 'proteinDays' && !data.settings.nutrition && <span className="small muted">{t('Para este reto necesitas un objetivo de proteína (Comidas → Objetivo); cada uno cuenta con el suyo.', 'For this challenge you need a protein goal (Food → Goal); each person counts with their own.')}</span>}
+      {(metric === 'logDays' || metric === 'proteinDays') && <span className="small muted">{t('Cuenta los días que apuntas algo de comida' + (metric === 'proteinDays' ? ' y llegas al 90 % de tu proteína' : '') + '. Todos necesitáis tener Serix actualizada.', 'Counts the days you log food' + (metric === 'proteinDays' ? ' and reach 90% of your protein' : '') + '. Everyone needs an updated Serix.')}</span>}
       <div className="list">
         {metric === 'sets' && (
           <label className="list-row">

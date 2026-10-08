@@ -53,6 +53,7 @@ interface PlannedExercise {
   groupId?: string
   progression?: Progression
   percent?: number
+  tempo?: string
   trainingMax?: number
   tmSince?: number
 }
@@ -91,6 +92,8 @@ function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = g
   const bodyweight = BODYWEIGHT_LIFTS.has(ex.exerciseId) ? bodyweightAt(getData(), Date.now()) : undefined
   return {
     ...(mode.assisted ? { assisted: true } : {}),
+    ...(mode.perHand ? { perHand: true } : {}),
+    ...(ex.tempo ? { tempo: ex.tempo } : {}),
     ...(mode.unilateral ? { unilateral: true } : {}),
     id: uid(),
     exerciseId: ex.exerciseId,

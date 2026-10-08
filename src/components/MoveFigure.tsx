@@ -116,7 +116,8 @@ function PropShape({ prop, j, pose, ids }: { prop: Prop; j: Joints; pose: Pose; 
     case 'pad':
       return prop.size === 0 ? null : <circle cx={x} cy={y} r={prop.size ?? 8} fill={dark} />
     case 'platform': {
-      const [ex, ey] = step([x, y], angle, 10)
+      // Pegada a la suela: el pie mide unos 5 de grosor desde el tobillo y la plataforma, 3,5 de medio trazo.
+      const [ex, ey] = step([x, y], angle, 8)
       const a = step([ex, ey], angle - 90, 30)
       const b = step([ex, ey], angle + 90, 30)
       return <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="fig-platform" />

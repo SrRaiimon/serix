@@ -1,3 +1,4 @@
+import { dayTotals, type FoodEntry } from './nutrition'
 import { normalize } from './catalog'
 import { addDays, startOfDay, startOfWeek } from './format'
 import { t } from './i18n'
@@ -12,7 +13,7 @@ import { finishedSessions, getData, updateSettings, type AppData, type Session }
 // Los retos con objetivo y fecha viajan dentro del mismo resumen: quien lo crea lo comparte con el
 // suyo, cada uno calcula su progreso en su móvil y lo manda en su siguiente resumen.
 
-export type ChallengeMetric = 'sessions' | 'volume' | 'sets' | 'reps'
+export type ChallengeMetric = 'sessions' | 'volume' | 'sets' | 'reps' | 'logDays' | 'proteinDays'
 
 export interface Challenge {
   id: string
@@ -94,9 +95,24 @@ const CHALLENGE_GRACE = 14 * 86400000
 
 // MARK: Retos
 
-/** Progreso propio en un reto, calculado con el historial. */
-export function challengeProgress(c: Challenge, sessions: Session[]): number {
+/** Lo de comida que necesitan los retos de comida: lo apuntado y tu objetivo de proteína. */
+export interface ChallengeFood { entries: FoodEntry[]; protein?: number }
+export const challengeFood = (d: Pick<AppData, 'nutrition' | 'settings'>): ChallengeFood => ({ entries: d.nutrition.entries, protein: d.settings.nutrition?.protein })
+
+/** Progreso propio en un reto, calculado con el historial (y, en los de comida, con lo apuntado). */
+export function challengeProgress(c: Challenge, sessions: Session[], food?: ChallengeFood): number {
   const inRange = sessions.filter((s) => s.end !== undefined && s.start >= c.start && s.start < c.end)
+  if (c.metric === 'logDays' || c.metric === 'proteinDays') {
+    const byDay = new Map<string, FoodEntry[]>()
+    for (const e of food?.entries ?? []) {
+      const at = new Date(`${e.day}T12:00:00`).getTime()
+      if (at >= c.start && at < c.end) byDay.set(e.day, [...(byDay.get(e.day) ?? []), e])
+    }
+    if (c.metric === 'logDays') return byDay.size
+    // Días con al menos el 90 % de tu objetivo de proteína (sin objetivo, 0).
+    const goal = food?.protein
+    return goal ? [...byDay.values()].filter((list) => dayTotals(list).p >= goal * 0.9).length : 0
+  }
   switch (c.metric) {
     case 'sessions':
       return inRange.length
@@ -160,7 +176,7 @@ export function settleChallenges(d: AppData, sessions: Session[], now = Date.now
   let changed = false
   const next = d.challenges.map((c) => {
     if (challengeStatus(c, now) !== 'finished' || (c.final && now > c.end + CHALLENGE_GRACE)) return c
-    const live = standings(c, d.settings.name.trim() || t('Sin nombre', 'No name'), challengeProgress(c, sessions), d.friends, now)
+    const live = standings(c, d.settings.name.trim() || t('Sin nombre', 'No name'), challengeProgress(c, sessions, challengeFood(d)), d.friends, now)
     const rows = new Map<string, FinalRow>()
     const key = (r: { name: string; me?: boolean }) => (r.me ? '\u0000me' : friendKey(r.name))
     for (const r of c.final ?? []) rows.set(key(r), r)
@@ -298,7 +314,7 @@ export function mySnapshot(data: AppData, sessions: Session[], now = Date.now())
     weeks: weeksHistory(sessions, now),
     muscles: muscleSets(sessions, now),
     prs: recentRecords(sessions, now),
-    challenges: liveChallenges(data.challenges, now).map((c) => ({ challenge: c, value: challengeProgress(c, sessions) })),
+    challenges: liveChallenges(data.challenges, now).map((c) => ({ challenge: c, value: challengeProgress(c, sessions, challengeFood(data)) })),
   }
   const trophies = trophyCounts(settleChallenges(data, sessions, now) ?? data.challenges)
   if (trophies.some((n) => n > 0)) snapshot.trophies = trophies
@@ -337,7 +353,7 @@ const stats = (v: unknown): FriendStats => {
   const a = Array.isArray(v) ? v : []
   return { sessions: int(a[0], 1000), volume: int(a[1], 1e8), sets: int(a[2], 100000), minutes: int(a[3], 1e6) }
 }
-const METRICS: ChallengeMetric[] = ['sessions', 'volume', 'sets', 'reps']
+const METRICS: ChallengeMetric[] = ['sessions', 'volume', 'sets', 'reps', 'logDays', 'proteinDays']
 
 /** Reto válido (o `undefined`): fechas razonables, como mucho 1 año, y campos acotados. */
 export function cleanChallenge(v: unknown): Challenge | undefined {

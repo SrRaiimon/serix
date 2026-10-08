@@ -142,7 +142,7 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
                 <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: 'var(--amber-text)' } : undefined}>
                   {s.warmup ? t('Calentamiento', 'Warm-up') : s.kind === 'drop' ? '↳ Drop set' : `${t('Serie', 'Set')} ${s.side === 'R' ? n : ++n}${s.side === 'L' ? t(' · izquierda', ' · left') : s.side === 'R' ? t(' · derecha', ' · right') : ''}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ` · ${t('al fallo', 'to failure')}` : ''}`}
                 </span>
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{e.assisted && s.weight > 0 ? `${t('ayuda', 'assist')} ${setText(s, trackingOf(e), unit)}` : setText(s, trackingOf(e), unit)}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{e.assisted && s.weight > 0 ? `${t('ayuda', 'assist')} ${setText(s, trackingOf(e), unit)}` : setText(s, trackingOf(e), unit)}{e.perHand && s.weight > 0 ? t(' c/u', ' each') : ''}</span>
               </div>
               {s.note && <span className="tiny muted" style={{ paddingLeft: 48 }}>“{s.note}”</span>}
               </div>

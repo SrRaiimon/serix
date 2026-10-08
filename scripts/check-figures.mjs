@@ -1,7 +1,7 @@
 // Comprobación automática de las figuras de movimiento (se ejecuta en `npm run build`).
 //
 // - Todos los ejercicios del catálogo tienen figura y todas las figuras son de ejercicios que existen.
-// - Las posturas extremas de la animación son las definidas.
+// - Las posturas extremas de la animación son las definidas (salvo el pie de atrás clavado de las zancadas).
 // - En ningún instante de la animación una articulación atraviesa el suelo.
 // - A mitad de movimiento la figura no «crece» (señal de que un brazo o una pierna da la vuelta por
 //   el camino largo, como pasaba con los ángulos de signo distinto).
@@ -12,7 +12,7 @@ import { createServer } from 'vite'
 
 const server = await createServer({ configFile: false, logLevel: 'error', server: { middlewareMode: true }, appType: 'custom', optimizeDeps: { noDiscovery: true, include: [] } })
 const { FIGURES, FLOOR } = await server.ssrLoadModule('/src/lib/figures.ts')
-const { place, poseAt } = await server.ssrLoadModule('/src/lib/figureEngine.ts')
+const { place, poseAt, plantedPoints } = await server.ssrLoadModule('/src/lib/figureEngine.ts')
 await server.close()
 
 const verbose = process.argv.includes('--verbose')
@@ -46,9 +46,12 @@ const seen = new Map()
 for (const [id, f] of Object.entries(FIGURES)) if (!seen.has(f)) seen.set(f, id)
 let worstFloor = -Infinity, worstGrowth = 0
 for (const [f, id] of seen) {
+  // Las piernas con el pie de atrás clavado (zancadas) cambian a propósito en la postura final.
+  const pinned = new Set(plantedPoints(f).filter((x) => x.moved).flatMap((x) => [x.limb.a, x.limb.b]))
   f.frames.forEach((frame, i) => {
     const got = poseAt(f, i)
     for (const k of ANGLES) {
+      if (i === 1 && pinned.has(k)) continue
       const a = resolve(frame, k), b = resolve(got, k)
       if (a !== undefined && b !== undefined && !sameAngle(a, b)) errors.push(`${id}: la postura ${i ? 'final' : 'inicial'} no coincide en ${k} (${a} → ${b})`)
     }

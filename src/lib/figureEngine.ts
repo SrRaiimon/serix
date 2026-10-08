@@ -200,7 +200,105 @@ export function fitViewBox(figure: Figure): string {
 
 /** Postura de la animación en el instante t (0 = inicial, 1 = final). */
 export function poseAt(figure: Figure, t: number): Pose {
-  return withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep), t)
+  const pose = withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep), t)
+  // Los apoyos se corrigen también en la postura final (en la inicial ya están en su sitio).
+  return t <= 0 ? pose : planted(figure, pose, t)
+}
+
+// MARK: Apoyos fijos
+
+interface Limb { root: keyof Joints; mid: keyof Joints; end: keyof Joints; tip?: keyof Joints; a: keyof Pose; b: keyof Pose; far: boolean }
+
+/**
+ * Cada brazo y pierna: articulación de la raíz, del medio y del extremo, con sus campos de ángulo. En la
+ * vista de frente el lado lejano va reflejado (ángulos con el signo cambiado).
+ */
+export const LIMBS: Limb[] = [
+  { root: 'hip', mid: 'knee', end: 'ankle', tip: 'toe', a: 'thigh', b: 'shin', far: false },
+  { root: 'hip2', mid: 'knee2', end: 'ankle2', tip: 'toe2', a: 'thigh2', b: 'shin2', far: true },
+  { root: 'shoulder', mid: 'elbow', end: 'wrist', a: 'upper', b: 'fore', far: false },
+  { root: 'shoulder2', mid: 'elbow2', end: 'wrist2', a: 'upper2', b: 'fore2', far: true },
+]
+
+/** Distancia a la que un pie o una mano «está en el mismo sitio» en las dos posturas, y «apoya en el suelo». */
+const SAME_SPOT = 8
+const ON_FLOOR = 14
+const angleOf = (from: Pt, to: Pt) => (Math.atan2(to[0] - from[0], -(to[1] - from[1])) * 180) / Math.PI
+const dist = (a: Pt, b: Pt) => Math.hypot(a[0] - b[0], a[1] - b[1])
+
+interface Fix { limb: Limb; point: keyof Joints; from: Pt; to: Pt; moved: boolean }
+const fixCache = new WeakMap<Figure, Fix[]>()
+
+/**
+ * Qué extremos no deben patinar en una figura:
+ * - en las figuras con `pinBack` (zancadas, sentadilla búlgara), el pie de atrás que toca el suelo en las
+ *   dos posturas aunque en sitios distintos: se queda en el de la postura inicial (`moved`);
+ * - los que están en el mismo sitio en las dos posturas (manos en el suelo o en un agarre fijo): siguen
+ *   la recta entre los dos puntos, sin hacer arcos.
+ * El pie cercano de perfil ya lo deja fijo la colocación (place), así que no se toca.
+ */
+export function plantedPoints(figure: Figure): Fix[] {
+  const cached = fixCache.get(figure)
+  if (cached) return cached
+  const [j0, j1] = [place(figure, figure.frames[0]), place(figure, figure.frames[1])]
+  const floor = (p: Pt) => FLOOR - p[1] < ON_FLOOR
+  const fixes: Fix[] = []
+  if (!figure.arc && !figure.turn) {
+    for (const limb of LIMBS) {
+      const isLeg = !!limb.tip
+      if (isLeg && !limb.far && figure.view === 'side' && !figure.anchor) continue
+      const points = (isLeg ? [limb.tip!, limb.end] : [limb.end]) as (keyof Joints)[]
+      const still = points.find((k) => dist(j0[k], j1[k]) < SAME_SPOT)
+      if (still) { fixes.push({ limb, point: still, from: j0[still], to: j1[still], moved: false }); continue }
+      // Solo en las figuras que lo piden (zancadas, sentadilla búlgara): en otras la pierna de atrás es la
+      // que trabaja y se mueve (patada de glúteo, tijera de halterofilia).
+      const grounded = isLeg && limb.far && figure.pinBack ? points.find((k) => floor(j0[k]) && floor(j1[k])) : undefined
+      if (grounded) fixes.push({ limb, point: grounded, from: j0[grounded], to: j0[grounded], moved: true })
+    }
+  }
+  fixCache.set(figure, fixes)
+  return fixes
+}
+
+/**
+ * Con solo dos posturas, mover cada articulación por su cuenta hace que un pie o una mano que no debería
+ * moverse (el pie de atrás en una sentadilla búlgara, las manos en unas flexiones) patine o haga un
+ * arco. Aquí se fijan y la rodilla o el codo se recolocan para llegar (cinemática inversa de dos
+ * segmentos, doblando hacia el mismo lado). Si lo que apoya es la punta del pie, el pie mantiene su ángulo.
+ */
+function planted(figure: Figure, pose: Pose, t: number): Pose {
+  // En la postura final solo se corrigen los apoyos que estaban en otro sitio; los demás ya coinciden.
+  const fixes = plantedPoints(figure).filter((f) => t < 1 || f.moved)
+  if (!fixes.length) return pose
+  const out: Record<string, number> = { ...(pose as unknown as Record<string, number>) }
+  const sign = (limb: Limb) => (figure.view === 'front' && limb.far ? -1 : 1)
+  // Dos pasadas: al recolocar una pierna puede cambiar lo que toca el suelo (y con ello la colocación).
+  for (let pass = 0; pass < 2; pass++) {
+    const j = place(figure, out as unknown as Pose)
+    for (const { limb, point, from, to } of fixes) {
+      const target: Pt = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]
+      const root = j[limb.root]
+      const goal: Pt = point === limb.end ? target : [target[0] - (j[point][0] - j[limb.end][0]), target[1] - (j[point][1] - j[limb.end][1])]
+      const solved = twoBone(root, j[limb.mid], goal, dist(root, j[limb.mid]), dist(j[limb.mid], j[limb.end]))
+      if (!solved) continue
+      out[limb.a] = sign(limb) * angleOf(root, solved.mid)
+      out[limb.b] = sign(limb) * angleOf(solved.mid, solved.end)
+    }
+  }
+  return out as unknown as Pose
+}
+
+/** Codo o rodilla para llegar de `root` a `target` con dos segmentos, doblando hacia el lado de `bend`. */
+function twoBone(root: Pt, bend: Pt, target: Pt, l1: number, l2: number): { mid: Pt; end: Pt } | undefined {
+  if (l1 < 1 || l2 < 1) return undefined
+  const dx = target[0] - root[0], dy = target[1] - root[1]
+  const d = Math.min(l1 + l2 - 0.01, Math.max(Math.abs(l1 - l2) + 0.01, Math.hypot(dx, dy)))
+  const base = Math.atan2(dy, dx)
+  const a = Math.acos(Math.min(1, Math.max(-1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d))))
+  // El mismo lado que la postura sin corregir (para que la rodilla no se doble al revés).
+  const side = Math.sign(dx * (bend[1] - root[1]) - dy * (bend[0] - root[0])) || 1
+  const ang = base + side * a
+  return { mid: [root[0] + l1 * Math.cos(ang), root[1] + l1 * Math.sin(ang)], end: [root[0] + d * Math.cos(base), root[1] + d * Math.sin(base)] }
 }
 
 /** En los saltos, la figura describe un arco entre las dos posturas. */

@@ -65,6 +65,7 @@ function routineExercise(v: unknown): RoutineExercise | undefined {
     trainingMax: optNum(v.trainingMax, 1, 2000),
     tmSince: optNum(v.tmSince, EPOCH_MIN, EPOCH_MAX),
     percent: optNum(v.percent, 0.3, 1),
+    tempo: cleanTempo(v.tempo),
   }
 }
 
@@ -101,6 +102,8 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     auto: autoProgress(v.auto),
     assisted: v.assisted === true ? true : undefined,
     unilateral: v.unilateral === true ? true : undefined,
+    perHand: v.perHand === true ? true : undefined,
+    tempo: cleanTempo(v.tempo),
     bodyweight: optNum(v.bodyweight, 20, 400),
     pain: optNum(v.pain, 1, 10),
     painNote: typeof v.painNote === 'string' && v.painNote.trim() ? v.painNote.slice(0, 100) : undefined,
@@ -117,6 +120,9 @@ function liftGoal(v: unknown): LiftGoal | undefined {
     from: num(v.from, 0, 1000, 0), createdAt: num(v.createdAt, EPOCH_MIN, EPOCH_MAX, Date.now()), by: optNum(v.by, EPOCH_MIN, EPOCH_MAX),
   }
 }
+
+/** Tempo «3-1-1» o «4-0-1-0» (segundos de 0 a 9). */
+const cleanTempo = (v: unknown) => (typeof v === 'string' && /^\d-\d-\d(-\d)?$/.test(v.trim()) ? v.trim() : undefined)
 
 function readiness(v: unknown): Session['readiness'] {
   if (!isObj(v)) return undefined
@@ -155,6 +161,9 @@ function settings(v: unknown): Settings {
     mealNames: isObj(s.mealNames) ? Object.fromEntries(Object.entries(s.mealNames)
       .filter(([k, v]) => (ALL_MEALS as string[]).includes(k) && typeof v === 'string' && v.trim()).map(([k, v]) => [k, (v as string).trim().slice(0, 24)])) : undefined,
     meals: Array.isArray(s.meals) ? ALL_MEALS.filter((m) => (s.meals as unknown[]).includes(m)) : undefined,
+    supplements: Array.isArray(s.supplements) && s.supplements.length
+      ? s.supplements.filter((x): x is string => typeof x === 'string' && !!x.trim()).map((x) => x.trim().slice(0, 30)).slice(0, 12) : undefined,
+    fasting: isObj(s.fasting) && optNum(s.fasting.hours, 10, 24) ? { hours: Math.round(s.fasting.hours as number), start: optNum(s.fasting.start, EPOCH_MIN, EPOCH_MAX) } : undefined,
     liftGoals: Array.isArray(s.liftGoals) && s.liftGoals.length ? list(s.liftGoals, liftGoal, 30) : undefined,
     seenVersion: typeof s.seenVersion === 'string' && /^\d+\.\d+\.\d+$/.test(s.seenVersion) ? s.seenVersion : undefined,
     textScale: s.textScale === 1.12 || s.textScale === 1.25 ? s.textScale : undefined,
@@ -207,7 +216,7 @@ function exerciseModes(v: unknown): Settings['exerciseModes'] {
   const modes: NonNullable<Settings['exerciseModes']> = {}
   for (const [id, m] of Object.entries(v).slice(0, 2000)) {
     if (!isObj(m) || id.length > 200) continue
-    const mode = { ...(m.assisted === true ? { assisted: true } : {}), ...(m.unilateral === true ? { unilateral: true } : {}) }
+    const mode = { ...(m.assisted === true ? { assisted: true } : {}), ...(m.unilateral === true ? { unilateral: true } : {}), ...(m.perHand === true ? { perHand: true } : {}) }
     if (Object.keys(mode).length) modes[id] = mode
   }
   return Object.keys(modes).length ? modes : undefined
@@ -294,7 +303,19 @@ function nutrition(v: unknown): NutritionData {
     ...(prefs ? { prefs } : {}), ...(trainingDays.length ? { trainingDays } : {}), ...(water(v.water) ? { water: water(v.water) } : {}),
     ...(week(v.week) ? { week: week(v.week) } : {}),
     ...(favs.length ? { favorites: favs } : {}),
+    ...(supplementLog(v.supplements) ? { supplements: supplementLog(v.supplements) } : {}),
   }
+}
+
+function supplementLog(v: unknown): Record<string, string[]> | undefined {
+  if (!isObj(v)) return undefined
+  const out: Record<string, string[]> = {}
+  for (const [day, names] of Object.entries(v).slice(-2000)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !Array.isArray(names)) continue
+    const clean = names.filter((x): x is string => typeof x === 'string' && !!x.trim()).map((x) => x.trim().slice(0, 30)).slice(0, 12)
+    if (clean.length) out[day] = clean
+  }
+  return Object.keys(out).length ? out : undefined
 }
 
 function week(v: unknown): NutritionData['week'] {

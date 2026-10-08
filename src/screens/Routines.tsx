@@ -469,6 +469,19 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                 </select>
               </label>
             )}
+            {tracking === 'weight_reps' && (
+              <label className="edit-field">
+                <span className="grow">
+                  <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t('Tempo (opcional)', 'Tempo (optional)')}</span>
+                  <span className="small muted">{t('Segundos bajando-pausa-subiendo, p. ej. 3-1-1. En el entreno, unos pitidos marcan el ritmo.', 'Seconds lowering-pause-lifting, e.g. 3-1-1. During the workout, beeps mark the pace.')}</span>
+                </span>
+                <input className="field" style={{ width: 90 }} placeholder="3-1-1" defaultValue={e.tempo ?? ''} aria-label={t('Tempo', 'Tempo')}
+                  onChange={(ev) => {
+                    const v = ev.target.value.trim()
+                    edit((r) => { r.exercises[i].tempo = /^\d-\d-\d(-\d)?$/.test(v) ? v : undefined })
+                  }} />
+              </label>
+            )}
             {tracking === 'weight_reps' && e.progression === 'percent' && (
               <label className="edit-field">
                 <span className="grow bold" style={{ fontSize: 15 }}>{t('Porcentaje', 'Percentage')}</span>

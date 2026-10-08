@@ -37,8 +37,10 @@ export const setLoad = (e: SessionExercise, s: SetEntry): number =>
  */
 export const setCount = (e: SessionExercise) => workingSets(e).filter((s) => s.side !== 'R').length
 
-export const sessionVolume = (s: Session) =>
-  s.exercises.reduce((t, e) => t + loadSets(e).reduce((v, x) => v + x.weight * x.reps, 0), 0)
+/** Peso movido de un ejercicio (peso × repeticiones); con mancuernas «por mancuerna», las dos. */
+export const exerciseVolume = (e: SessionExercise) => loadSets(e).reduce((v, x) => v + x.weight * x.reps, 0) * (e.perHand ? 2 : 1)
+
+export const sessionVolume = (s: Session) => s.exercises.reduce((t, e) => t + exerciseVolume(e), 0)
 
 export const sessionSets = (s: Session) => s.exercises.reduce((t, e) => t + setCount(e), 0)
 
@@ -210,14 +212,15 @@ export interface ExercisePoint {
 export function exerciseHistory(exerciseId: string, sessions: Session[]): ExercisePoint[] {
   const points: ExercisePoint[] = []
   for (const s of sessions) {
-    const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(loadSets)
+    const exercises = s.exercises.filter((e) => e.exerciseId === exerciseId)
+    const sets = exercises.flatMap(loadSets)
     if (!sets.length) continue
     points.push({
       date: s.start,
       e1rm: Math.max(...sets.map((x) => e1rm(x.weight, x.reps))),
       maxWeight: Math.max(...sets.map((x) => x.weight)),
       repsAtMax: Math.max(...sets.filter((x) => x.weight === Math.max(...sets.map((y) => y.weight))).map((x) => x.reps)),
-      volume: sets.reduce((t, x) => t + x.weight * x.reps, 0),
+      volume: exercises.reduce((t, e) => t + exerciseVolume(e), 0),
       maxDuration: Math.max(...sets.map((x) => x.duration ?? 0)),
       maxDistance: Math.max(...sets.map((x) => x.distance ?? 0)),
     })

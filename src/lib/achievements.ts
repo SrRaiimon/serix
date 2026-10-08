@@ -1,5 +1,5 @@
 import { startOfWeek, toKg, type Unit } from './format'
-import { e1rm, loadSets, streakWeeks } from './stats'
+import { e1rm, exerciseVolume, loadSets, streakWeeks } from './stats'
 import { dayKey, dayStatus, dayTotals, shiftDay, type FoodEntry, type NutritionGoals } from './nutrition'
 import type { Measurement, Session } from './store'
 
@@ -140,8 +140,8 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
       const sets = loadSets(e)
       if (!sets.length) continue
       exercises.add(e.exerciseId)
+      volume += exerciseVolume(e)
       for (const x of sets) {
-        volume += x.weight * x.reps
         if (x.reps <= 0 || x.weight <= 0) continue
         if (BIG3.has(e.exerciseId) && x.weight >= club[0]) unlock('club-1', s)
         if ((SQUAT.has(e.exerciseId) || DEADLIFT.has(e.exerciseId)) && x.weight >= club[1]) unlock('club-2', s)

@@ -2631,3 +2631,27 @@ textarea { resize: none; }
 /* Filas que son enlaces (redes del creador en Perfil → Ayuda): mismo aspecto que las demás filas. */
 a.list-row { color: var(--text); text-decoration: none; }
 .feedback-kind { font-weight: 800; font-size: 17px; }
+
+/* Modo foco del entreno: la serie que toca, en grande. */
+.focus-mode { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: flex; flex-direction: column; gap: 14px; padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 20px); overflow-y: auto; }
+.focus-mode h1 { margin: 0; }
+.focus-name { font-family: var(--font-display); font-size: 34px; line-height: 1.05; }
+.focus-fields { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.focus-field { display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; gap: 10px; }
+.focus-step { height: 76px; border-radius: 22px; background: var(--card); border: 1px solid var(--separator); font-size: 38px; font-weight: 700; color: var(--text); }
+.focus-value { display: flex; flex-direction: column; align-items: center; }
+.focus-value strong { font-family: var(--font-display); font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+.focus-value small { color: var(--text-2); font-size: 15px; }
+.focus-done { margin-top: auto; min-height: 76px; font-size: 24px; }
+.focus-rest { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: auto 0; }
+.focus-rest strong { font-family: var(--font-display); font-size: 88px; line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* Cámara con guía (Fotos de progreso). */
+.guided-camera { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; display: flex; flex-direction: column; gap: 10px; padding: calc(var(--safe-top) + 10px) 0 calc(var(--safe-bottom) + 16px); }
+.guided-view { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.guided-view video, .guided-ghost { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.guided-view video.mirror { transform: scaleX(-1); }
+.guided-ghost { opacity: 0.35; pointer-events: none; }
+.guided-count { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 140px; font-weight: 800; color: #fff; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6); }
+.guided-error { position: absolute; inset: auto 16px 16px; margin: 0; padding: 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.7); }
+.guided-shoot { margin: 0 16px; min-height: 64px; font-size: 20px; }

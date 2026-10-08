@@ -166,6 +166,8 @@ export interface NutritionData {
   favorites?: string[]
   /** Días marcados a mano como de entreno (los días con entrenamiento ya cuentan solos). */
   trainingDays?: string[]
+  /** Suplementos tomados cada día (lib/habits.ts). */
+  supplements?: Record<string, string[]>
 }
 
 export const emptyNutrition = (): NutritionData => ({ entries: [], foods: [], meals: [] })

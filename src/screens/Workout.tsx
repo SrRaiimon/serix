@@ -3,7 +3,7 @@ import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Maximize2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -24,6 +24,7 @@ import { BARS } from '../lib/plates'
 import { fromFloor, warmupSets } from '../lib/warmup'
 import { BODYWEIGHT_LIFTS, bodyweightText } from '../lib/bodyweight'
 import { lighten, readinessLevel, type Readiness } from '../lib/readiness'
+import { parseTempo, tempoAt } from '../lib/tempo'
 
 function editSession(id: string, fn: (s: Session) => void) {
   update((d) => {
@@ -111,6 +112,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     else runs.push([i])
   })
   const currentSet = session.exercises.flatMap((x) => x.sets).find((x) => !x.done)?.id
+  const [focus, setFocus] = useState(false)
   const block = (i: number) => {
     const e = session.exercises[i]
     return (
@@ -125,6 +127,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         unit={unit}
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
         bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(e.exerciseId)}
+        pairs={['dumbbell', 'kettlebell'].includes(catalog.get(e.exerciseId)?.equipment ?? '')}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
@@ -165,10 +168,12 @@ export function WorkoutScreen({ session }: { session: Session }) {
 
   return (
     <div className="fullscreen">
+      {focus && <FocusMode session={session} unit={unit} onClose={() => setFocus(false)} />}
       <div className="fullscreen-inner">
         <div className="nav-bar">
-          <div className="left">
+          <div className="left" style={{ gap: 6 }}>
             <button className="icon-btn" onClick={minimizeWorkout} aria-label={t('Minimizar', 'Minimize')}><ChevronDown size={22} /></button>
+            {currentSet && <button className="btn small secondary" onClick={() => setFocus(true)} aria-label={t('Modo foco: solo la serie que toca, en grande', 'Focus mode: just the current set, big')}><Maximize2 size={15} /> {t('Foco', 'Focus')}</button>}
           </div>
           <div className="title workout-clock">{clock((now - session.start) / 1000)}</div>
           <div className="right">
@@ -246,7 +251,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, pairs, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -259,6 +264,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   barbell: boolean
   /** De peso corporal: el peso apuntado es lastre. */
   bodyweight: boolean
+  /** Con mancuernas o pesas rusas (se puede apuntar el peso de cada una). */
+  pairs: boolean
   barKg: number
   previous: SetEntry[]
   /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
@@ -302,9 +309,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
     if (e) fn(e, s)
   })
   /** Asistido o por lados: en este entrenamiento y, para la próxima vez, en este ejercicio. */
-  const setMode = (change: { assisted?: boolean; unilateral?: boolean }) => {
+  const setMode = (change: { assisted?: boolean; unilateral?: boolean; perHand?: boolean }) => {
     edit((e) => {
       if (change.assisted !== undefined) e.assisted = change.assisted || undefined
+      if (change.perHand !== undefined) e.perHand = change.perHand || undefined
       if (change.unilateral !== undefined) {
         e.unilateral = change.unilateral || undefined
         // Se conservan el orden y las series ya hechas; solo cambian las pendientes.
@@ -316,6 +324,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       const mode = { ...modes[exercise.exerciseId], ...change }
       if (!mode.assisted) delete mode.assisted
       if (!mode.unilateral) delete mode.unilateral
+      if (!mode.perHand) delete mode.perHand
       if (Object.keys(mode).length) modes[exercise.exerciseId] = mode
       else delete modes[exercise.exerciseId]
       d.settings.exerciseModes = Object.keys(modes).length ? modes : undefined
@@ -374,7 +383,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             </span>
             <span className="small muted" style={{ display: 'block' }}>{muscleLabel(exercise.muscle)}</span>
             <span className="small exercise-meta">
-              {[objective, inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('descanso', 'rest')}\u00a0${rest(exercise.rest).replace(' ', '\u00a0')}`].filter(Boolean).join(' · ')}
+              {[objective, exercise.tempo ? `tempo\u00a0${exercise.tempo}` : '', inGroupWithNext ? t(`Sin descanso, sigue con ${nextName}`, `No rest, go on to ${nextName}`) : `${t('descanso', 'rest')}\u00a0${rest(exercise.rest).replace(' ', '\u00a0')}`].filter(Boolean).join(' · ')}
             </span>
           </span>
         </button>
@@ -461,7 +470,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         {tracking === 'weight_reps' && <>
           {exercise.assisted
             ? <span title={t('Ayuda de la máquina', 'Machine assistance')}>{t('AYUDA', 'ASSIST')}</span>
-            : <span title={bodyweight ? t('Lastre añadido (0 = sin peso)', 'Added weight (0 = none)') : undefined}>{bodyweight ? `+${unit.toUpperCase()}` : unit.toUpperCase()}</span>}
+            : <span title={bodyweight ? t('Lastre añadido (0 = sin peso)', 'Added weight (0 = none)') : exercise.perHand ? t('Peso de cada mancuerna', 'Weight of each dumbbell') : undefined}>{bodyweight ? `+${unit.toUpperCase()}` : exercise.perHand ? `${unit.toUpperCase()} ${t('C/U', 'EACH')}` : unit.toUpperCase()}</span>}
           <span>REPS</span>
         </>}
         {tracking === 'time' && <span>{t('TIEMPO', 'TIME')}</span>}
@@ -486,7 +495,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} unit={unit} barbell={barbell} lastMax={lastMax}
+            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
@@ -543,6 +552,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight = assistance)'),
             onSelect: () => setMode({ assisted: !exercise.assisted }),
           }] : []),
+          ...(tracking === 'weight_reps' && pairs ? [{
+            label: exercise.perHand ? t('Apuntar el peso total (las dos juntas)', 'Log the total weight (both together)') : t('Apuntar el peso de cada mancuerna', 'Log the weight of each dumbbell'),
+            onSelect: () => setMode({ perHand: !exercise.perHand }),
+          }] : []),
           { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
           ...(index < total - 1 && !inGroupWithNext && !simple ? [{
             label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
@@ -586,7 +599,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds }: {
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
   set: SetEntry
   current: boolean
   askRpe: boolean
@@ -608,6 +621,8 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
   lastMax: number
   /** Objetivo de las series por tiempo (s), para la cuenta atrás. */
   targetSeconds: number
+  /** Tempo de las repeticiones («3-1-1»), para marcar el ritmo. */
+  tempo?: string
 }) {
   const simple = useData().settings.simpleMode === true
   const [check, setCheck] = useState<string>()
@@ -735,6 +750,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
         ]} />
       )}
     </div>
+    {current && !set.done && tracking === 'weight_reps' && tempo && <TempoPlayer tempo={tempo} />}
     {current && !set.done && tracking === 'time' && (
       <SetCountdown seconds={set.duration || targetSeconds}
         onStop={(done) => change({ duration: done })}
@@ -899,6 +915,109 @@ function ReadinessCheck({ session, unit }: { session: Session; unit: Unit }) {
         </div>
       )}
       {level === 'high' && <span className="small" style={{ color: 'var(--green-text)' }}>{t('Buen día para ir a por una marca.', 'A good day to go for a personal best.')}</span>}
+    </div>
+  )
+}
+
+/**
+ * Modo foco: solo la serie que toca, a pantalla completa y con botones grandes (manos sudadas, móvil en
+ * el suelo). «Hecha» pulsa el mismo botón de la serie en la lista, así el descanso, el RPE y los avisos
+ * de récord funcionan igual que siempre.
+ */
+function FocusMode({ session, unit, onClose }: { session: Session; unit: Unit; onClose: () => void }) {
+  useScrollLock()
+  const timer = useRestTimer()
+  const now = useTick(250)
+  const exercise = session.exercises.find((e) => e.sets.some((x) => !x.done))
+  const set = exercise?.sets.find((x) => !x.done)
+  const step = increment(unit)
+  const edit = (patch: Partial<SetEntry>) => editSession(session.id, (s) => {
+    const x = s.exercises.find((e) => e.id === exercise?.id)?.sets.find((y) => y.id === set?.id)
+    if (x) Object.assign(x, patch)
+  })
+  const resting = timer.endAt && timer.endAt > now
+  if (!exercise || !set) {
+    return (
+      <Overlay>
+        <div className="focus-mode">
+          <h1>{t('¡Todo hecho!', 'All done!')}</h1>
+          <p className="muted">{t('Cierra el modo foco y pulsa «Terminar» para guardar el entreno.', 'Close focus mode and tap "Finish" to save the workout.')}</p>
+          <button className="btn primary focus-done" onClick={onClose}>{t('Cerrar', 'Close')}</button>
+        </div>
+      </Overlay>
+    )
+  }
+  const working = exercise.sets.filter((x) => !x.warmup && x.kind !== 'drop')
+  const number = set.warmup ? undefined : working.findIndex((x) => x.id === set.id) + 1
+  const timed = trackingOf(exercise) !== 'weight_reps'
+  return (
+    <Overlay>
+      <div className="focus-mode">
+        <div className="row between">
+          <span className="small muted">{session.name}</span>
+          <button className="btn small secondary" onClick={onClose}>{t('Salir del foco', 'Exit focus')}</button>
+        </div>
+        <h1 className="focus-name">{exercise.name}</h1>
+        <span className="muted">{set.warmup ? t('Calentamiento', 'Warm-up') : t(`Serie ${number} de ${working.length}`, `Set ${number} of ${working.length}`)}{exercise.repsMax > 0 ? ` · ${exercise.repsMin === exercise.repsMax ? exercise.repsMin : `${exercise.repsMin}-${exercise.repsMax}`} reps` : ''}</span>
+        {resting ? (
+          <div className="focus-rest">
+            <span className="small muted">{t('DESCANSO', 'REST')}</span>
+            <strong>{clock(Math.ceil((timer.endAt! - now) / 1000))}</strong>
+            <button className="btn secondary" onClick={stopRest}>{t('Saltar descanso', 'Skip rest')}</button>
+          </div>
+        ) : timed ? (
+          <p className="muted">{t('Este ejercicio es por tiempo: apúntalo en la lista.', 'This exercise is timed: log it in the list.')}</p>
+        ) : (
+          <div className="focus-fields">
+            {[
+              { label: exercise.perHand ? `${unit} ${t('c/u', 'each')}` : unit, value: set.weight ? weight(set.weight, unit).replace(` ${unit}`, '') : '0', minus: () => edit({ weight: toKg(Math.max(0, fromKg(set.weight, unit) - step), unit) }), plus: () => edit({ weight: toKg(fromKg(set.weight, unit) + step, unit) }) },
+              { label: 'reps', value: String(set.reps || 0), minus: () => edit({ reps: Math.max(0, set.reps - 1) }), plus: () => edit({ reps: set.reps + 1 }) },
+            ].map((f) => (
+              <div key={f.label} className="focus-field">
+                <button className="focus-step" onClick={f.minus} aria-label={t(`Menos ${f.label}`, `Less ${f.label}`)}>−</button>
+                <span className="focus-value"><strong>{f.value}</strong><small>{f.label}</small></span>
+                <button className="focus-step" onClick={f.plus} aria-label={t(`Más ${f.label}`, `More ${f.label}`)}>+</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {!resting && !timed && (
+          <button className="btn primary focus-done" disabled={!isSetFilled(set, 'weight_reps')}
+            onClick={() => document.querySelector<HTMLButtonElement>(`#set-${CSS.escape(set.id)} .set-check`)?.click()}>
+            <Check size={28} /> {t('Hecha', 'Done')}
+          </button>
+        )}
+      </div>
+    </Overlay>
+  )
+}
+
+/** Marca el ritmo de cada repetición con pitidos: uno largo al cambiar de fase y uno corto cada segundo. */
+function TempoPlayer({ tempo }: { tempo: string }) {
+  const phases = parseTempo(tempo)
+  const [start, setStart] = useState<number>()
+  const now = useTick(start ? 100 : 60000)
+  const at = phases && start ? tempoAt(phases, (now - start) / 1000) : undefined
+  const key = at ? `${at.rep}-${at.phase}-${at.second}` : ''
+  useEffect(() => {
+    if (!at) return
+    if (at.second === 0) { playTone('go'); navigator.vibrate?.(40) } else playTone('tick')
+  }, [key])
+  if (!phases) return null
+  const label = { down: t('Baja', 'Lower'), hold: t('Pausa', 'Pause'), up: t('Sube', 'Lift'), top: t('Arriba', 'Top') }
+  return (
+    <div className="set-countdown">
+      {at ? (
+        <>
+          <strong className="set-countdown-time" aria-live="polite">{label[at.phase]} · {at.left}</strong>
+          <span className="small muted">{t(`rep. ${at.rep}`, `rep ${at.rep}`)}</span>
+          <button className="btn secondary btn-sm" onClick={() => setStart(undefined)}>{t('Parar', 'Stop')}</button>
+        </>
+      ) : (
+        <button className="btn secondary btn-sm" onClick={() => { unlockAudio(); setStart(Date.now()) }}>
+          <Play size={16} fill="currentColor" aria-hidden="true" /> {t(`Marcar tempo ${tempo}`, `Pace tempo ${tempo}`)}
+        </button>
+      )}
     </div>
   )
 }

@@ -70,6 +70,10 @@ export interface Figure {
   sweep?: (keyof Pose)[]
   /** Gira la figura entera (grados, positivo en sentido horario) sobre el ancla: tumbado de lado = vista de frente girada -90. */
   turn?: number
+  /** Caminar, correr, arrastrar o gatear: los pies (y las manos) avanzan, así que no se clavan al suelo. */
+  gait?: boolean
+  /** Zancadas y sentadilla búlgara: el pie de atrás no se mueve del sitio en todo el movimiento. */
+  pinBack?: boolean
 }
 
 const FLOOR = 222
@@ -150,24 +154,26 @@ const legPress: Figure = {
   props: [
     { type: 'seat', span: [72, 122], y: 188 },
     { type: 'rest', at: 'hip', to: 'shoulder', rel: 'torso', angle: -90, offset: 13 },
-    { type: 'platform', at: 'ankle', angle: 52 },
+    // La plataforma avanza en la línea cadera-tobillo (58°) y queda perpendicular a ella; el pie, plano
+    // sobre ella (-32°) en todo el recorrido, con el tobillo flexionado unos 35° abajo, como en la máquina.
+    { type: 'platform', at: 'ankle', angle: 58 },
   ],
   frames: [
-    { torso: -50, head: -35, thigh: 18, shin: 118, foot: -38, upper: 160, fore: 120 },
-    { torso: -50, head: -35, thigh: 52, shin: 52, foot: -38, upper: 160, fore: 120 },
+    { torso: -50, head: -35, thigh: 25, shin: 95, foot: -32, upper: 160, fore: 120 },
+    { torso: -50, head: -35, thigh: 58, shin: 58, foot: -32, upper: 160, fore: 120 },
   ],
 }
 
 const LUNGE_TOP = { torso: 2, thigh: 165, shin: 180, thigh2: -162, shin2: -160, foot: 90, foot2: 150 }
 const LUNGE_LOW = { torso: 4, thigh: 98, shin: 182, thigh2: 182, shin2: -98, foot: 90, foot2: 170 }
-const lungeDumbbells: Figure = {
+const lungeDumbbells: Figure = { pinBack: true,
   view: 'side', work: ['legs', 'glutes'], props: [{ type: 'dumbbell', at: 'wrist', front: true }], x: 160,
   frames: [{ ...LUNGE_TOP, upper: 180, fore: 180 }, { ...LUNGE_LOW, upper: 180, fore: 180 }],
 }
-const lungeBarbell: Figure = { ...lungeDumbbells, props: [backBar], frames: [{ ...LUNGE_TOP, ...armsOnBar }, { ...LUNGE_LOW, ...armsOnBar }] }
-const lungeBodyweight: Figure = { ...lungeDumbbells, props: [], frames: [{ ...LUNGE_TOP, upper: 200, fore: 60 }, { ...LUNGE_LOW, upper: 200, fore: 60 }] }
-const lungePass: Figure = { ...lungeDumbbells, props: [{ type: 'kettlebell', at: 'wrist', front: true }], frames: [{ ...LUNGE_TOP, upper: 180, fore: 180 }, { ...LUNGE_LOW, torso: 20, upper: 165, fore: 165 }] }
-const bulgarian: Figure = {
+const lungeBarbell: Figure = { pinBack: true, ...lungeDumbbells, props: [backBar], frames: [{ ...LUNGE_TOP, ...armsOnBar }, { ...LUNGE_LOW, ...armsOnBar }] }
+const lungeBodyweight: Figure = { pinBack: true, ...lungeDumbbells, props: [], frames: [{ ...LUNGE_TOP, upper: 200, fore: 60 }, { ...LUNGE_LOW, upper: 200, fore: 60 }] }
+const lungePass: Figure = { pinBack: true, ...lungeDumbbells, props: [{ type: 'kettlebell', at: 'wrist', front: true }], frames: [{ ...LUNGE_TOP, upper: 180, fore: 180 }, { ...LUNGE_LOW, torso: 20, upper: 165, fore: 165 }] }
+const bulgarian: Figure = { pinBack: true,
   view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'ankle', at: [170, 217] },
   props: [{ type: 'bench', span: [30, 94], y: 190 }, { type: 'dumbbell', at: 'wrist', front: true }],
   frames: [
@@ -3322,5 +3328,14 @@ export const FIGURES: Record<string, Figure> = {
   Isometric_Chest_Squeezes: chestSqueeze,
   // @@MAPA@@
 }
+
+// Ejercicios en los que se avanza (caminar, correr, arrastrar, gatear): sus pies y manos no se clavan
+// al suelo en la animación (ver plantedPoints en figureEngine.ts).
+const GAIT = /walk|run(?!ner)|jog|treadmill|crawl|drag|carry|march|sprint|skip(?!ping_rope)|inchworm|sled|yoke|farmers|conans|stair|step_mill|elliptical|bike|cycling|recumbent/i
+// La misma figura puede servir a varios ejercicios: solo cuenta como «de avanzar» si lo son todos (una
+// zancada fija comparte figura con la zancada caminando y ahí se ve mejor con los pies quietos).
+const users = new Map<Figure, string[]>()
+for (const [id, figure] of Object.entries(FIGURES)) users.set(figure, [...(users.get(figure) ?? []), id])
+for (const [figure, ids] of users) if (ids.every((id) => GAIT.test(id))) figure.gait = true
 
 export { FLOOR }

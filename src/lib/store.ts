@@ -39,6 +39,8 @@ export interface RoutineExercise {
   tmSince?: number
   /** Por porcentaje: parte de tu máximo estimado (0,8 = 80 %) con la que se calcula el peso. */
   percent?: number
+  /** Tempo de cada repetición en segundos: bajar-pausa-subir(-pausa arriba), p. ej. «3-1-1». */
+  tempo?: string
 }
 
 export type Progression = 'double' | 'linear' | 'wave531' | 'percent'
@@ -96,6 +98,10 @@ export interface SessionExercise {
   auto?: AutoProgress
   /** Máquina asistida: el peso apuntado es la ayuda (resta), así que no cuenta como peso levantado. */
   assisted?: boolean
+  /** Peso de cada mancuerna (el peso movido cuenta las dos; marcas y 1RM, por mancuerna). */
+  perHand?: boolean
+  /** Tempo heredado de la rutina («3-1-1»). */
+  tempo?: string
   /** A una mano o una pierna: cada serie se apunta por lado (izquierdo y derecho). */
   unilateral?: boolean
   /** Dominadas y fondos: peso corporal (kg) ese día; las estadísticas lo suman al lastre (ver bodyweight.ts). */
@@ -151,6 +157,10 @@ export interface Settings {
   /** Comidas del día activas (por defecto las 4 de siempre) y nombres propios. */
   meals?: MealKey[]
   mealNames?: Partial<Record<MealKey, string>>
+  /** Suplementos que tomas (para marcarlos cada día en Comidas). */
+  supplements?: string[]
+  /** Ayuno intermitente: horas de ayuno y, si estás ayunando, desde cuándo. */
+  fasting?: { hours: number; start?: number }
   /** Metas de fuerza (lib/goals.ts). */
   liftGoals?: LiftGoal[]
   /** Última versión cuyas novedades se vieron (components/News.tsx). */
@@ -228,6 +238,8 @@ export interface Settings {
 export interface ExerciseMode {
   assisted?: boolean
   unilateral?: boolean
+  /** Mancuernas o pesas rusas: el peso apuntado es el de cada una (el peso movido cuenta las dos). */
+  perHand?: boolean
 }
 
 export interface AppData {

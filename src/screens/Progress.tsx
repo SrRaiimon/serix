@@ -1,4 +1,4 @@
-import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, Target, X, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, Sparkles, Target, X, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -22,6 +22,7 @@ import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
 import { goalStatus, type LiftGoal } from '../lib/goals'
+import { insights, type Insight } from '../lib/insights'
 import { ExercisePicker } from './Exercises'
 import type { Exercise } from '../lib/catalog'
 import { blankPastSession, SessionEditSheet } from './SessionEdit'
@@ -334,6 +335,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <GoalsCard sessions={sessions} unit={unit} />
       <MonthCard sessions={sessions} unit={unit} />
       <Stalls sessions={sessions} unit={unit} />
+      <InsightsCard sessions={sessions} />
       <button className="btn secondary block" onClick={() => setMore(!more)} aria-expanded={more}>
         {more ? t('Ocultar estadísticas', 'Hide stats') : t('Más estadísticas', 'More stats')}
       </button>
@@ -409,6 +411,27 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         ))}
       </div>
       <span className="small muted">{t('El peso que podrías levantar una sola vez, calculado con tu mejor serie, y cuánto ha subido en 30 días. Toca uno para ver su evolución.', 'The weight you could lift once, worked out from your best set, and how much it rose in 30 days. Tap one to see its progress.')}</span>
+    </Card>
+  )
+}
+
+/** Lo que te hace rendir mejor, según tus entrenos (lib/insights.ts). */
+function InsightsCard({ sessions }: { sessions: Session[] }) {
+  const list = useMemo(() => insights(sessions), [sessions])
+  if (!list.length) return null
+  const pct = (d: number) => `${Math.round(d * 100)} %`
+  const when = { morning: t('por la mañana', 'in the morning'), afternoon: t('por la tarde', 'in the afternoon'), evening: t('por la noche', 'in the evening') }
+  const text = (x: Insight) => x.kind === 'sleep'
+    ? t(`Los días que duermes bien (4-5) rindes un ${pct(x.diff)} más que cuando duermes mal (1-2).`, `On days you sleep well (4-5) you perform ${pct(x.diff)} better than when you sleep badly (1-2).`)
+    : x.kind === 'time'
+      ? t(`Rindes un ${pct(x.diff)} más entrenando ${when[x.best]} que ${when[x.worst]}.`, `You perform ${pct(x.diff)} better training ${when[x.best]} than ${when[x.worst]}.`)
+      : x.better === 'long'
+        ? t(`Con 3 o más días de descanso antes rindes un ${pct(x.diff)} más que entrenando seguido.`, `With 3+ rest days before, you perform ${pct(x.diff)} better than training back to back.`)
+        : t(`Entrenando seguido (1-2 días de descanso) rindes un ${pct(x.diff)} más que tras parar 3 días o más.`, `Training back to back (1-2 rest days) you perform ${pct(x.diff)} better than after 3+ days off.`)
+  return (
+    <Card title={t('Lo que te hace rendir mejor', 'What makes you perform better')} icon={Sparkles}>
+      <ul className="recap-list">{list.map((x) => <li key={x.kind}>{text(x)}</li>)}</ul>
+      <span className="tiny muted">{t('Según tus entrenos: tu mejor serie de cada ejercicio frente a tu marca anterior. Es lo que pasa en tus datos, no una regla; con más entrenos, más fiable.', 'From your workouts: your best set in each exercise against your previous best. It is what happens in your data, not a rule; more workouts make it more reliable.')}</span>
     </Card>
   )
 }

@@ -24,6 +24,75 @@ function useObjectUrl(blob?: Blob): string | undefined {
   return url
 }
 
+/**
+ * Cámara con guía: tu última foto de esa postura, en transparente encima de lo que ve la cámara, para
+ * ponerte igual (misma distancia y postura) y que la comparación sea real. Con cuenta atrás de 3 s para
+ * que te dé tiempo a colocarte. La foto no sale del móvil.
+ */
+function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: () => void; onShot: (file: File) => void }) {
+  useScrollLock()
+  const video = useRef<HTMLVideoElement>(null)
+  const [pose, setPose] = useState<Pose>(photos[0]?.pose ?? 'front')
+  const [facing, setFacing] = useState<'user' | 'environment'>('user')
+  const [error, setError] = useState<string>()
+  const [count, setCount] = useState<number>()
+  const ghost = useObjectUrl(photos.find((p) => p.pose === pose)?.image)
+  useEffect(() => {
+    let stream: MediaStream | undefined
+    let alive = true
+    setError(undefined)
+    navigator.mediaDevices?.getUserMedia({ video: { facingMode: facing, width: { ideal: 1440 }, height: { ideal: 1920 } }, audio: false })
+      .then((s) => {
+        if (!alive) return s.getTracks().forEach((x) => x.stop())
+        stream = s
+        if (video.current) { video.current.srcObject = s; void video.current.play() }
+      })
+      .catch(() => setError(t('No se pudo abrir la cámara. Revisa el permiso de cámara para Serix en los ajustes del móvil, o usa «Añadir» para elegir una foto.', 'The camera could not be opened. Check the camera permission for Serix in your phone settings, or use "Add" to pick a photo.')))
+    return () => { alive = false; stream?.getTracks().forEach((x) => x.stop()) }
+  }, [facing])
+  useEffect(() => {
+    if (count === undefined) return
+    if (count === 0) {
+      const v = video.current
+      if (!v || !v.videoWidth) return setCount(undefined)
+      const canvas = document.createElement('canvas')
+      canvas.width = v.videoWidth
+      canvas.height = v.videoHeight
+      const ctx = canvas.getContext('2d')!
+      // Con la cámara de delante se ve como en un espejo: la foto se guarda igual que se veía.
+      if (facing === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1) }
+      ctx.drawImage(v, 0, 0)
+      canvas.toBlob((b) => { if (b) onShot(new File([b], `serix-${Date.now()}.jpg`, { type: 'image/jpeg' })) }, 'image/jpeg', 0.92)
+      return
+    }
+    const id = setTimeout(() => setCount(count - 1), 1000)
+    return () => clearTimeout(id)
+  }, [count])
+  return (
+    <Overlay>
+      <div className="guided-camera">
+        <div className="row between" style={{ padding: '0 16px' }}>
+          <button className="btn small secondary" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>
+          <button className="btn small secondary" onClick={() => setFacing(facing === 'user' ? 'environment' : 'user')}>{t('Girar cámara', 'Flip camera')}</button>
+        </div>
+        <div style={{ padding: '0 16px' }}><Segmented value={pose} onChange={setPose} options={POSES.map((p) => ({ value: p, label: poseLabel(p) }))} /></div>
+        <div className="guided-view">
+          <video ref={video} playsInline muted className={facing === 'user' ? 'mirror' : ''} />
+          {ghost && <img src={ghost} alt="" aria-hidden="true" className="guided-ghost" />}
+          {count !== undefined && count > 0 && <span className="guided-count" aria-live="assertive">{count}</span>}
+          {error && <p className="guided-error">{error}</p>}
+        </div>
+        <span className="small muted" style={{ padding: '0 16px', textAlign: 'center' }}>{ghost
+          ? t('Colócate encima de tu foto anterior (la transparente): misma distancia y postura.', 'Line yourself up with your previous photo (the faded one): same distance and pose.')
+          : t('Aún no tienes foto con esta postura: esta será la primera para comparar.', 'No photo with this pose yet: this will be the first one to compare against.')}</span>
+        <button className="btn primary guided-shoot" disabled={!!error || count !== undefined} onClick={() => setCount(3)}>
+          <Camera size={22} /> {t('Foto en 3 s', 'Photo in 3 s')}
+        </button>
+      </div>
+    </Overlay>
+  )
+}
+
 /** Peso registrado más cercano a la fecha (como mucho 10 días antes o después). */
 function weightNear(measurements: Measurement[], date: number): number | undefined {
   let best: Measurement | undefined
@@ -174,6 +243,7 @@ export function PhotosScreen() {
   const [open, setOpen] = useState<Photo>()
   const [confirmAll, setConfirmAll] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [guided, setGuided] = useState(false)
   const [toast, showToast] = useToast()
   const picker = useRef<HTMLInputElement>(null)
   const zipInput = useRef<HTMLInputElement>(null)
@@ -216,6 +286,7 @@ export function PhotosScreen() {
     <>
       <NavBar showBack title={t('Fotos de progreso', 'Progress photos')} right={<button className="nav-btn bold" onClick={() => picker.current?.click()}>{t('Añadir', 'Add')}</button>} />
       <div className="screen with-nav">
+        <button className="btn primary" onClick={() => setGuided(true)}><Camera size={18} /> {t('Hacer foto con guía', 'Take a guided photo')}</button>
         <p className="small muted row" style={{ margin: 0, gap: 6 }}><Lock size={14} /> {t('Las fotos solo se guardan en este móvil. No van en la copia de seguridad ni se comparten.', 'Photos are only stored on this phone. They are not in the backup and are never shared.')}</p>
         {photos === undefined ? null : photos.length === 0 ? (
           <Empty icon={ImagePlus} title={t('Sin fotos todavía', 'No photos yet')}
@@ -242,6 +313,7 @@ export function PhotosScreen() {
       <input ref={picker} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setFile(f) }} />
       <input ref={zipInput} type="file" accept=".zip,application/zip" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void importZip(f) }} />
       {file && <AddSheet file={file} onClose={() => setFile(undefined)} />}
+      {guided && <GuidedCamera photos={photos ?? []} onClose={() => setGuided(false)} onShot={(f) => { setGuided(false); setFile(f) }} />}
       {current && <Viewer photo={current} unit={unit} measurements={data.measurements} onClose={() => setOpen(undefined)} />}
       {confirmAll && (
         <ActionSheet title={t('¿Borrar todas las fotos?', 'Delete all photos?')} message={t('Se borran de este móvil y no se puede deshacer. Si quieres conservarlas, expórtalas antes.', 'They are deleted from this phone and this cannot be undone. Export them first if you want to keep them.')}
