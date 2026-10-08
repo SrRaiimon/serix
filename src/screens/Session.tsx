@@ -1,11 +1,14 @@
-import { BadgeCheck, ChevronRight, Dumbbell, ImageIcon, Pencil, RotateCcw, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
+import { ArrowUpDown, BadgeCheck, Flame, Wind, ChevronRight, Dumbbell, ImageIcon, Pencil, RotateCcw, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
-import { day, duration, int, time, tons, volume, weight, type Unit } from '../lib/format'
+import { day, duration, int, shortDay, time, tons, volume, weight, type Unit } from '../lib/format'
+import { bodyweightAt, bodyweightText } from '../lib/bodyweight'
+import { sessionKcal } from '../lib/burn'
+import { focusFor } from '../lib/warmupRoutine'
 import { back, navigate } from '../lib/router'
 import { dayGoalOptions, dayKey, dayTotals, goalsForDay } from '../lib/nutrition'
 import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
-import { newRecords, sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
+import { compareWithLast, newRecords, sessionDuration, type ExerciseChange, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
@@ -95,8 +98,8 @@ export function SessionStats({ session, unit }: { session: Session; unit: Unit }
   return (
     <StatBand items={[
       { value: duration(sessionDuration(session)), label: t('Duración', 'Duration') },
-      { value: tons(sessionVolume(session), unit), label: t('Volumen total', 'Total volume') },
-      { value: sessionSets(session), label: t('Series efectivas', 'Working sets') },
+      { value: tons(sessionVolume(session), unit), label: t('Peso movido', 'Weight moved') },
+      { value: sessionSets(session), label: t('Series hechas', 'Sets done') },
       { value: sessionReps(session), label: t('Repeticiones', 'Reps') },
     ]} />
   )
@@ -166,6 +169,51 @@ function SessionFood({ session, today }: { session: Session; today?: boolean }) 
   )
 }
 
+/** Calorías gastadas estimadas (lib/burn.ts), si se sabe el peso. */
+function BurnLine({ session }: { session: Session }) {
+  const data = useData()
+  const kcal = sessionKcal(session, bodyweightAt(data, session.start))
+  if (!kcal) return null
+  return (
+    <span className="small muted row" style={{ gap: 6 }}>
+      <Flame size={15} aria-hidden="true" />
+      {t(`Unas ${int(kcal)} kcal gastadas (estimación con tu peso y la duración).`, `About ${int(kcal)} kcal burned (estimated from your weight and duration).`)}
+    </span>
+  )
+}
+
+/** Frente a la última vez que se hizo la misma rutina: duración, peso movido y la mejor serie de cada ejercicio. */
+function ComparisonCard({ session, history, unit }: { session: Session; history: Session[]; unit: Unit }) {
+  const c = useMemo(() => compareWithLast(session, history), [session, history])
+  if (!c) return null
+  const minutes = Math.round(c.duration / 60000)
+  const text = (x: ExerciseChange) => {
+    const sign = x.delta > 0 ? '+' : '−'
+    if (x.kind === 'weight') return `${sign}${weight(Math.abs(x.delta), unit)}`
+    if (x.kind === 'reps') return t(`${sign}${Math.abs(x.delta)} rep.`, `${sign}${Math.abs(x.delta)} reps`)
+    if (x.kind === 'time') return `${sign}${Math.abs(x.delta)} s`
+    return t('igual', 'same')
+  }
+  return (
+    <Card title={t(`Frente a la última vez (${shortDay(c.previous.start)})`, `Compared with last time (${shortDay(c.previous.start)})`)} icon={ArrowUpDown}>
+      <span className="small muted">
+        {[
+          minutes ? (minutes > 0 ? t(`${minutes} min más`, `${minutes} min longer`) : t(`${-minutes} min menos`, `${-minutes} min shorter`)) : t('Misma duración', 'Same duration'),
+          Math.abs(c.volume) >= 1 ? (c.volume > 0 ? t(`${tons(c.volume, unit)} más movidos`, `${tons(c.volume, unit)} more moved`) : t(`${tons(-c.volume, unit)} menos movidos`, `${tons(-c.volume, unit)} less moved`)) : undefined,
+        ].filter(Boolean).join(' · ')}
+      </span>
+      {c.exercises.map((x) => (
+        <div key={x.exerciseId} className="row between small">
+          <span className="clamp-1">{x.name}</span>
+          <strong className={x.delta > 0 ? 'up-text' : x.delta < 0 ? 'down-text' : 'muted'} style={{ whiteSpace: 'nowrap' }}>
+            {x.delta > 0 ? '↑ ' : x.delta < 0 ? '↓ ' : ''}{text(x)}
+          </strong>
+        </div>
+      ))}
+    </Card>
+  )
+}
+
 export function SummarySheet({ session, onClose }: { session: Session; onClose: () => void }) {
   const data = useData()
   const unit = data.settings.unit
@@ -187,6 +235,11 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
         <span className="muted small">{session.name} · {day(session.start)}</span>
       </div>
       <SessionStats session={session} unit={unit} />
+      <BurnLine session={session} />
+      <button className="btn secondary" onClick={() => { onClose(); navigate('timer', 'cooldown', focusFor(session.exercises.map((e) => e.muscle))) }}>
+        <Wind size={18} /> {t('Estirar 4 minutos (vuelta a la calma)', 'Stretch for 4 minutes (cool-down)')}
+      </button>
+      <ComparisonCard session={session} history={history} unit={unit} />
       <Card title={t('Compártelo', 'Share it')} icon={ImageIcon}>
         <Segmented value={format} onChange={setFormat} options={[
           { value: 'post', label: t('Publicación', 'Post') },
@@ -202,7 +255,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
           {records.map((r) => (
             <div key={r.exerciseId} className="row between">
               <span className="clamp-1 small">{r.name}</span>
-              <strong className="small">{weight(r.weight, unit)} × {r.reps}</strong>
+              <strong className="small">{r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × {r.reps}</strong>
             </div>
           ))}
         </Card>
@@ -244,6 +297,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
           {session.end && <div className="small muted">{time(session.start)} – {time(session.end)}</div>}
         </div>
         <SessionStats session={session} unit={unit} />
+        <BurnLine session={session} />
         <SessionFood session={session} today={dayKey(session.start) === dayKey()} />
         <SessionExercises session={session} unit={unit} />
         <Card title={t('Notas', 'Notes')} icon={StickyNote}>

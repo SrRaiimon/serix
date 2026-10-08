@@ -2577,3 +2577,35 @@ textarea { resize: none; }
 /* Día de entreno previsto (Perfil → Días de entreno). */
 .week .planned .dot:not(.today) { box-shadow: inset 0 0 0 1.5px var(--accent); }
 .recap-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.set-countdown { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+.set-countdown-time { font-size: 28px; font-variant-numeric: tabular-nums; font-family: var(--font-display); }
+.up-text { color: var(--green-text); }
+.down-text { color: var(--red-text); }
+.readiness { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--fill); }
+.readiness-row { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 8px; }
+.readiness-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.readiness-scale .chip { justify-content: center; padding: 0; min-height: 34px; }
+
+/* Informe del mes (Progreso → Informe): en pantalla como una hoja; al imprimir, solo la hoja. */
+.report-page { display: flex; flex-direction: column; gap: 18px; padding: 20px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--separator); }
+.report-page header { display: flex; flex-direction: column; gap: 2px; }
+.report-page h1 { margin: 0; font-size: 26px; }
+.report-page h2 { margin: 0 0 8px; font-size: 17px; }
+.report-page p { margin: 0 0 6px; }
+.report-brand { font-size: 12px; font-weight: 800; letter-spacing: 0.16em; color: var(--accent-text); }
+.report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+.report-grid div { display: flex; flex-direction: column; }
+.report-grid strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.report-grid span { font-size: 12px; color: var(--text-2); }
+.report-page table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+.report-page th { text-align: left; font-size: 11px; color: var(--text-2); font-weight: 700; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--separator); }
+.report-page td { padding: 5px 6px 5px 0; border-bottom: 1px solid var(--separator); font-variant-numeric: tabular-nums; }
+@media print {
+  @page { margin: 14mm; }
+  body, .app, main { background: #fff !important; }
+  .tabbar, .nav-bar, .no-print, .undo-toast { display: none !important; }
+  .screen { padding: 0 !important; }
+  .report-page { border: 0; padding: 0; background: #fff; color: #000; }
+  .report-page * { color: #000 !important; }
+  .report-page th, .report-page td { border-color: #ccc; }
+}

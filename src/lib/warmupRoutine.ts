@@ -37,13 +37,43 @@ const ROUTINES: Record<WarmupFocus, Move[]> = {
   legs: [M.jog, M.hipCircles, M.legSwings, M.catCow, M.lungeTwist, M.bridge, M.ankle, M.squat],
 }
 
+// Vuelta a la calma: estiramientos suaves al terminar, sin rebotes. Cada uno se mantiene respirando
+// despacio; en los de un lado, se cambia a mitad.
+const S = {
+  breathe: { name: ['Respiración lenta', 'Slow breathing'], cue: ['De pie o tumbado: coge aire en 4 s y suéltalo en 6 s.', 'Standing or lying down: breathe in for 4 s and out for 6 s.'] },
+  chest: { name: ['Pecho en el marco de la puerta', 'Doorway chest stretch'], cue: ['Antebrazo en el marco, da un paso adelante hasta notar el pecho. Cambia a mitad.', 'Forearm on the door frame, step forward until you feel your chest. Switch halfway.'] },
+  lats: { name: ['Dorsal colgado o apoyado', 'Lat stretch'], cue: ['Agarra un soporte alto y deja caer la cadera hacia atrás, brazos estirados.', 'Hold something high and sit your hips back, arms straight.'] },
+  shoulder: { name: ['Hombro cruzado', 'Cross-body shoulder'], cue: ['Lleva un brazo estirado por delante del pecho y sujétalo con el otro. Cambia a mitad.', 'Bring one straight arm across your chest and hold it with the other. Switch halfway.'] },
+  triceps: { name: ['Tríceps por detrás de la cabeza', 'Overhead triceps'], cue: ['Codo hacia el techo, mano a la espalda; empuja suave el codo. Cambia a mitad.', 'Elbow to the ceiling, hand down your back; gently push the elbow. Switch halfway.'] },
+  child: { name: ['Postura del niño', "Child's pose"], cue: ['De rodillas, siéntate en los talones y estira los brazos al frente.', 'Kneeling, sit back on your heels and reach your arms forward.'] },
+  quads: { name: ['Cuádriceps de pie', 'Standing quad stretch'], cue: ['Coge el empeine y acerca el talón al glúteo, rodillas juntas. Cambia a mitad.', 'Hold your foot and bring the heel to your glutes, knees together. Switch halfway.'] },
+  hamstrings: { name: ['Isquios sentado', 'Seated hamstring stretch'], cue: ['Una pierna estirada, inclínate desde la cadera con la espalda recta. Cambia a mitad.', 'One leg straight, lean forward from the hips with a straight back. Switch halfway.'] },
+  hipFlexor: { name: ['Flexor de cadera en zancada', 'Kneeling hip flexor'], cue: ['Rodilla de atrás en el suelo, aprieta el glúteo y lleva la cadera adelante. Cambia a mitad.', 'Back knee down, squeeze your glute and push your hips forward. Switch halfway.'] },
+  glutes: { name: ['Glúteo tumbado (figura 4)', 'Figure-4 glute stretch'], cue: ['Tobillo sobre la rodilla contraria y acerca las piernas al pecho. Cambia a mitad.', 'Ankle over the opposite knee and pull your legs to your chest. Switch halfway.'] },
+  calves: { name: ['Gemelo en la pared', 'Wall calf stretch'], cue: ['Pierna de atrás estirada y el talón en el suelo. Cambia a mitad.', 'Back leg straight with the heel down. Switch halfway.'] },
+} satisfies Record<string, Move>
+
+const COOLDOWNS: Record<WarmupFocus, Move[]> = {
+  full: [S.chest, S.lats, S.quads, S.hamstrings, S.glutes, S.breathe],
+  upper: [S.chest, S.lats, S.shoulder, S.triceps, S.child, S.breathe],
+  legs: [S.quads, S.hamstrings, S.hipFlexor, S.glutes, S.calves, S.breathe],
+}
+
+/** Tramos de la vuelta a la calma (como el calentamiento, con estiramientos según lo entrenado). */
+export function cooldownSegments(focus: WarmupFocus, seconds: number, prep: number): Segment[] {
+  return segmentsOf(COOLDOWNS[focus], seconds, prep)
+}
+
 export const focusLabel = (f: WarmupFocus) => (f === 'full' ? t('Cuerpo completo', 'Full body') : f === 'upper' ? t('Torso', 'Upper body') : t('Pierna', 'Legs'))
 
 const SWITCH = 5
 
 /** Tramos del calentamiento: cada movimiento `seconds` segundos y 5 s para cambiar al siguiente. */
 export function warmupSegments(focus: WarmupFocus, seconds: number, prep: number): Segment[] {
-  const moves = ROUTINES[focus]
+  return segmentsOf(ROUTINES[focus], seconds, prep)
+}
+
+function segmentsOf(moves: Move[], seconds: number, prep: number): Segment[] {
   const segments: Segment[] = prep > 0 ? [{ kind: 'prep', seconds: prep, round: 0, label: t(...moves[0].name) }] : []
   moves.forEach((m, i) => {
     segments.push({ kind: 'work', seconds, round: i + 1, label: t(...m.name), cue: t(...m.cue) })

@@ -1,4 +1,4 @@
-import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, Info, PersonStanding, Plus, Share2, TrendingDown, Trophy } from 'lucide-react'
+import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
 import { MuscleHeatMap } from '../components/MuscleMap'
@@ -350,6 +350,7 @@ function Summary({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         </>
       )}
       <ShareSummaryCard sessions={sessions} unit={unit} />
+      <button className="btn secondary" onClick={() => navigate('progress', 'report')}><FileText size={18} /> {t('Informe del mes (imprimir o PDF)', 'Monthly report (print or PDF)')}</button>
     </>
   )
 }

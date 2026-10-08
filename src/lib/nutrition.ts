@@ -1,4 +1,6 @@
 import { fold, makeSearch } from './search'
+import { sessionKcal } from './burn'
+import type { Tracking } from './tracking'
 import { addDays, startOfWeek } from './format'
 import { lang, t } from './i18n'
 
@@ -172,10 +174,16 @@ export interface DayGoalOptions {
   carryOver: boolean
   /** Más calorías los días de entreno: qué días entrenaste (o marcaste) y cuántos días entrenas a la semana. */
   training?: { days: Set<string>; perWeek: number }
+  /** En vez de lo anterior: se suman las calorías estimadas de los entrenos de cada día (y nada los de descanso). */
+  burned?: Map<string, number>
 }
 
 /** Objetivo base de un día: el de siempre, o el de entreno o descanso. */
 function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): NutritionGoals & { training?: boolean; shift: number } {
+  if (opts.burned && !goals.proteinOnly) {
+    const shift = opts.burned.get(day) ?? 0
+    return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: shift > 0, shift }
+  }
   if (!opts.training || goals.proteinOnly) return { ...goals, shift: 0 }
   const { up, down } = trainingShift(goals.kcal, opts.training.perWeek)
   const training = opts.training.days.has(day)
@@ -202,15 +210,32 @@ export function goalsForDay(goals: NutritionGoals, entries: FoodEntry[], day: st
 
 /** Opciones del objetivo diario a partir de los datos de la app (ajustes, entrenos y días marcados). */
 export function dayGoalOptions(data: {
-  sessions: { start: number }[]
+  sessions: { start: number; end?: number; exercises?: { tracking?: Tracking }[] }[]
   nutrition: { trainingDays?: string[] }
-  settings: { nutritionCarryOver?: boolean; nutritionTrainingSplit?: boolean; weeklyGoal: number }
+  measurements?: { date: number; weight?: number }[]
+  settings: { nutritionCarryOver?: boolean; nutritionTrainingSplit?: boolean; nutritionBurned?: boolean; weeklyGoal: number; nutrition?: { weightKg?: number } }
 }): DayGoalOptions {
   const carryOver = data.settings.nutritionCarryOver !== false
   if (data.settings.nutritionTrainingSplit === false) return { carryOver }
+  if (data.settings.nutritionBurned) {
+    const burned = new Map<string, number>()
+    for (const s of data.sessions) {
+      if (s.end === undefined || !s.exercises) continue
+      const kcal = sessionKcal({ ...s, exercises: s.exercises }, weightOn(data, s.start))
+      if (kcal) burned.set(dayKey(s.start), (burned.get(dayKey(s.start)) ?? 0) + kcal)
+    }
+    return { carryOver, burned }
+  }
   const days = new Set(data.nutrition.trainingDays ?? [])
   for (const s of data.sessions) days.add(dayKey(s.start))
   return { carryOver, training: { days, perWeek: data.settings.weeklyGoal } }
+}
+
+/** Peso corporal (kg) en una fecha: la última medida de antes o, si no hay, el del objetivo. */
+function weightOn(data: { measurements?: { date: number; weight?: number }[]; settings: { nutrition?: { weightKg?: number } } }, at: number): number | undefined {
+  let best: { date: number; weight: number } | undefined
+  for (const m of data.measurements ?? []) if (m.weight && m.date <= at && (!best || m.date > best.date)) best = { date: m.date, weight: m.weight }
+  return best?.weight ?? data.settings.nutrition?.weightKg
 }
 
 // MARK: Semanas

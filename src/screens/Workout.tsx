@@ -3,7 +3,7 @@ import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Minimize2, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -12,7 +12,7 @@ import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { e1rm, lastSets, loadSets, progressionHint, records, repRecordBeaten, repRecords, setLoad, stall, STALL_SESSIONS, workingSets, type Stall } from '../lib/stats'
 import { finishedSessions, rpeOn, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry, type SetKind } from '../lib/store'
-import { addRest, adjustRestForEffort, dismissRestDone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
+import { addRest, adjustRestForEffort, dismissRestDone, playTone, prepareAudio, setRestBig, startRest, stopRest, unlockAudio, useRestTimer } from '../lib/timer'
 import { defaultTargetSeconds, digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { suspicious } from '../lib/tracking'
 import { addExercises, applyDeload, discardSession, finishSession, fromSides, keepScreenOn, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
@@ -23,6 +23,7 @@ import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARS } from '../lib/plates'
 import { fromFloor, warmupSets } from '../lib/warmup'
 import { BODYWEIGHT_LIFTS, bodyweightText } from '../lib/bodyweight'
+import { lighten, readinessLevel, type Readiness } from '../lib/readiness'
 
 function editSession(id: string, fn: (s: Session) => void) {
   update((d) => {
@@ -185,6 +186,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
               </>
             )}
             <BlockStatus at={session.start} />
+            {done === 0 && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} />}
             {done === 0 && session.exercises.length > 0 && (
               <button className="btn small secondary" style={{ alignSelf: 'flex-start' }} onClick={() => {
                 minimizeWorkout()
@@ -484,7 +486,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} unit={unit} barbell={barbell} lastMax={lastMax}
+            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
@@ -584,7 +586,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax }: {
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds }: {
   set: SetEntry
   current: boolean
   askRpe: boolean
@@ -604,6 +606,8 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
   onCompleted: () => void
   /** Mayor peso apuntado en este ejercicio la última vez (kg), para avisar de un peso imposible. */
   lastMax: number
+  /** Objetivo de las series por tiempo (s), para la cuenta atrás. */
+  targetSeconds: number
 }) {
   const simple = useData().settings.simpleMode === true
   const [check, setCheck] = useState<string>()
@@ -694,7 +698,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
           }} />
       )}
       {tracking !== 'weight_reps' && (
-        <DurationInput seconds={set.duration ?? 0} placeholder={tracking === 'time' ? timePlaceholder : '0:00'} invalid={invalid}
+        <DurationInput key={set.duration ?? 0} seconds={set.duration ?? 0} placeholder={tracking === 'time' ? timePlaceholder : '0:00'} invalid={invalid}
           onChange={(duration) => change({ duration })} />
       )}
       <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? t('Desmarcar serie', 'Untick set') : t('Marcar serie', 'Tick set')}>
@@ -731,6 +735,11 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
         ]} />
       )}
     </div>
+    {current && !set.done && tracking === 'time' && (
+      <SetCountdown seconds={set.duration || targetSeconds}
+        onStop={(done) => change({ duration: done })}
+        onFinish={(total) => { change({ duration: total }); complete() }} />
+    )}
     {current && !set.done && tracking === 'weight_reps' && !set.warmup && (
       <div className="weight-steps">
         {[-1, 1].map((sign) => {
@@ -843,6 +852,89 @@ function RpeRow({ value, open, onOpen, onPick }: {
 }
 
 /** Tiempo tipo microondas: se teclean dígitos y se rellenan por la derecha (1, 3, 0 → 1:30). */
+/** «¿Cómo estás hoy?»: tres toques antes de empezar; con una nota baja, propone aligerar el día. */
+function ReadinessCheck({ session, unit }: { session: Session; unit: Unit }) {
+  const [draft, setDraft] = useState<Partial<Readiness>>(session.readiness ?? {})
+  const [lightened, setLightened] = useState(false)
+  const [hidden, setHidden] = useState(false)
+  const pick = (key: keyof Readiness, v: number) => setDraft((d) => ({ ...d, [key]: v }))
+  // Con las tres respuestas, se guarda en el entrenamiento.
+  useEffect(() => {
+    const { sleep, energy, soreness } = draft
+    const r = session.readiness
+    if (sleep && energy && soreness && (r?.sleep !== sleep || r.energy !== energy || r.soreness !== soreness)) {
+      editSession(session.id, (s) => { s.readiness = { sleep, energy, soreness } })
+    }
+  }, [draft])
+  if (hidden) return null
+  const rows: { key: keyof Readiness; label: string; low: string; high: string }[] = [
+    { key: 'sleep', label: t('Sueño', 'Sleep'), low: t('fatal', 'awful'), high: t('genial', 'great') },
+    { key: 'energy', label: t('Energía', 'Energy'), low: t('ninguna', 'none'), high: t('a tope', 'full') },
+    { key: 'soreness', label: t('Agujetas', 'Soreness'), low: t('nada', 'none'), high: t('muchas', 'a lot') },
+  ]
+  const level = session.readiness && readinessLevel(session.readiness)
+  return (
+    <div className="readiness">
+      <div className="row between">
+        <span className="small bold">{t('¿Cómo estás hoy?', 'How do you feel today?')}</span>
+        <button className="link-btn small muted" onClick={() => setHidden(true)}>{t('Omitir', 'Skip')}</button>
+      </div>
+      {rows.map((r) => (
+        <div key={r.key} className="readiness-row">
+          <span className="small">{r.label}</span>
+          <div className="readiness-scale" role="group" aria-label={`${r.label}: 1 ${r.low}, 5 ${r.high}`}>
+            {[1, 2, 3, 4, 5].map((v) => (
+              <button key={v} className={`chip ${draft[r.key] === v ? 'active' : ''}`} aria-pressed={draft[r.key] === v} onClick={() => pick(r.key, v)}>{v}</button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {level === 'low' && (
+        <div className="small" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span>{t('Día flojo: entrenar ayuda, pero mejor sin forzar. Baja un poco el peso o haz una serie menos.', 'Rough day: training still helps, but do not push it. Lower the weight a little or do one set less.')}</span>
+          {lightened ? <span className="muted">{t('Hecho: un 10 % menos de peso en todo lo de hoy.', 'Done: 10% less weight on everything today.')}</span>
+            : <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => { editSession(session.id, (s) => lighten(s, unit)); setLightened(true) }}>{t('Bajar un 10 % el peso de hoy', "Lower today's weights by 10%")}</button>}
+        </div>
+      )}
+      {level === 'high' && <span className="small" style={{ color: 'var(--green-text)' }}>{t('Buen día para ir a por una marca.', 'A good day to go for a personal best.')}</span>}
+    </div>
+  )
+}
+
+/**
+ * Cuenta atrás de una serie por tiempo (plancha, isométricos…): al acabar suena, vibra y la serie se
+ * marca sola. Si se para antes, se apunta el tiempo hecho.
+ */
+function SetCountdown({ seconds, onStop, onFinish }: { seconds: number; onStop: (done: number) => void; onFinish: (total: number) => void }) {
+  const [endAt, setEndAt] = useState<number>()
+  const now = useTick(endAt ? 200 : 60000)
+  const left = endAt ? Math.max(0, Math.ceil((endAt - now) / 1000)) : seconds
+  useEffect(() => {
+    if (!endAt || now < endAt) return
+    setEndAt(undefined)
+    playTone('end')
+    navigator.vibrate?.([200, 100, 200])
+    onFinish(seconds)
+  }, [now, endAt])
+  // Últimos 3 segundos: un pitido corto cada segundo.
+  useEffect(() => { if (endAt && left > 0 && left <= 3) playTone('tick') }, [left])
+  if (seconds <= 0) return null
+  return (
+    <div className="set-countdown">
+      {endAt ? (
+        <>
+          <strong className="set-countdown-time" aria-live="polite">{clock(left)}</strong>
+          <button className="btn secondary btn-sm" onClick={() => { setEndAt(undefined); onStop(seconds - left) }}>{t('Parar', 'Stop')}</button>
+        </>
+      ) : (
+        <button className="btn primary btn-sm" onClick={() => { unlockAudio(); setEndAt(Date.now() + seconds * 1000) }}>
+          <Play size={16} fill="currentColor" aria-hidden="true" /> {t(`Empezar ${clock(seconds)}`, `Start ${clock(seconds)}`)}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function DurationInput({ seconds, placeholder, invalid, onChange }: {
   seconds: number
   placeholder: string

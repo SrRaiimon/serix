@@ -405,3 +405,57 @@ export function exerciseUsage(sessions: Session[]): Map<string, ExerciseUsage> {
 
 const bestSet = (sets: SetEntry[]) =>
   sets.reduce((a, b) => (b.weight > a.weight || (b.weight === a.weight && (b.reps > a.reps || (b.duration ?? 0) > (a.duration ?? 0))) ? b : a), sets[0])
+
+// MARK: Frente a la última vez
+
+export interface ExerciseChange {
+  exerciseId: string
+  name: string
+  /** Mejor serie: subida o bajada de peso (kg) o, con el mismo peso, de repeticiones; en las de tiempo, segundos. */
+  kind: 'weight' | 'reps' | 'time' | 'same'
+  delta: number
+}
+
+export interface Comparison {
+  previous: Session
+  /** Diferencia de duración (ms) y de peso movido (kg): positiva si hoy fue más. */
+  duration: number
+  volume: number
+  exercises: ExerciseChange[]
+}
+
+/** Mejor serie de un ejercicio en una sesión (la de más 1RM estimado; en las de tiempo, la más larga). */
+function topSet(s: Session, exerciseId: string): SetEntry | undefined {
+  const sets = s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap(workingSets).filter((x) => x.kind !== 'drop')
+  if (!sets.length) return undefined
+  const score = (x: SetEntry) => (x.weight > 0 ? e1rm(x.weight, x.reps) * 1000 : 0) + (x.duration ?? 0) + x.reps / 1000
+  return sets.reduce((a, b) => (score(b) > score(a) ? b : a))
+}
+
+/**
+ * El entrenamiento frente al anterior de la misma rutina (o, si no es de rutina, con el mismo nombre):
+ * duración, peso movido y la mejor serie de cada ejercicio que se hizo las dos veces.
+ */
+export function compareWithLast(session: Session, history: Session[]): Comparison | undefined {
+  const same = (s: Session) => (session.routineId ? s.routineId === session.routineId : !s.routineId && s.name === session.name)
+  const previous = history.filter((s) => s.id !== session.id && s.end !== undefined && s.start < session.start && same(s)).sort((a, b) => b.start - a.start)[0]
+  if (!previous) return undefined
+  const exercises: ExerciseChange[] = []
+  for (const e of session.exercises) {
+    if (exercises.some((x) => x.exerciseId === e.exerciseId)) continue
+    const now = topSet(session, e.exerciseId)
+    const before = topSet(previous, e.exerciseId)
+    if (!now || !before) continue
+    const change: ExerciseChange = Math.abs(now.weight - before.weight) > 0.01 ? { exerciseId: e.exerciseId, name: e.name, kind: 'weight', delta: now.weight - before.weight }
+      : now.reps !== before.reps && (now.reps || before.reps) ? { exerciseId: e.exerciseId, name: e.name, kind: 'reps', delta: now.reps - before.reps }
+        : (now.duration ?? 0) !== (before.duration ?? 0) ? { exerciseId: e.exerciseId, name: e.name, kind: 'time', delta: (now.duration ?? 0) - (before.duration ?? 0) }
+          : { exerciseId: e.exerciseId, name: e.name, kind: 'same', delta: 0 }
+    exercises.push(change)
+  }
+  return {
+    previous,
+    duration: sessionDuration(session) - sessionDuration(previous),
+    volume: sessionVolume(session) - sessionVolume(previous),
+    exercises,
+  }
+}

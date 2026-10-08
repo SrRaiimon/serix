@@ -1,15 +1,17 @@
-import { CalendarCheck, Check, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
+import { CalendarCheck, Camera, Check, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { dayPlan, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
-import { addDays, clock, day, int, startOfDay, startOfWeek, tons, weight } from '../lib/format'
+import { photoDue, weighDue } from '../lib/reminders'
+import { fillBodyweights } from '../lib/bodyweight'
+import { addDays, clock, day, int, parseDecimal, relative, startOfDay, startOfWeek, toKg, tons, uid, weight } from '../lib/format'
 import { dayGoalOptions, dayKey, dayTotals, goalsForDay, mealLabel } from '../lib/nutrition'
 import { dueMeals } from '../lib/foodReminders'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
-import { activeSession, expectedMinutes, finishedSessions, updateSettings, useData, type Routine, type Session } from '../lib/store'
+import { activeSession, expectedMinutes, finishedSessions, update, updateSettings, useData, type Routine, type Session } from '../lib/store'
 import { nextRoutine, openWorkout, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
@@ -42,6 +44,9 @@ export function HomeScreen() {
       </header>
 
       {!active && <WeekRecapCard weekStart={weekStart} />}
+
+      {!active && weighDue(data) && <WeighInCard />}
+      {!active && photoDue(data) && <PhotoReminderCard />}
 
       {backupDue(data, sessions.length) && <BackupCard lastBackupAt={data.settings.lastBackupAt} />}
 
@@ -210,6 +215,48 @@ function WeekRecapCard({ weekStart }: { weekStart: number }) {
     <Card title={t('Tu semana pasada', 'Your last week')} icon={CalendarCheck}>
       <ul className="recap-list">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
       <button className="btn secondary" onClick={() => updateSettings({ recapSeen: weekStart })}>{t('Entendido', 'Got it')}</button>
+    </Card>
+  )
+}
+
+/** Pesarse una vez por semana, sin salir de Inicio. */
+function WeighInCard() {
+  const { settings, measurements } = useData()
+  const unit = settings.unit
+  const [text, setText] = useState('')
+  const value = parseDecimal(text)
+  const kg = value !== null ? toKg(value, unit) : null
+  const valid = kg !== null && kg >= 30 && kg <= 300
+  const last = [...measurements].filter((m) => m.weight !== undefined).sort((a, b) => b.date - a.date)[0]
+  const save = () => {
+    if (!valid) return
+    update((d) => { d.measurements.push({ id: uid(), date: Date.now(), weight: kg }) })
+    fillBodyweights()
+  }
+  return (
+    <Card title={t('¿Cuánto pesas hoy?', 'What do you weigh today?')} icon={Scale}>
+      <span className="small muted">
+        {last ? t(`La última vez: ${weight(last.weight!, unit)}, ${relative(last.date).toLowerCase()}. `, `Last time: ${weight(last.weight!, unit)}, ${relative(last.date).toLowerCase()}. `) : ''}
+        {t('Pésate una vez por semana, mejor en ayunas: así se ajustan tus calorías y tus marcas de dominadas.', 'Weigh yourself once a week, ideally before breakfast: it keeps your calories and pull-up records accurate.')}
+      </span>
+      <div className="row" style={{ gap: 8 }}>
+        <input className="field grow" inputMode="decimal" placeholder={unit} aria-label={t('Peso de hoy', "Today's weight")} value={text} onChange={(e) => setText(e.target.value)} />
+        <button className="btn primary" disabled={!valid} onClick={save}>{t('Guardar', 'Save')}</button>
+        <button className="btn secondary" onClick={() => updateSettings({ weighSnooze: Date.now() + 3 * 86400000 })}>{t('Ahora no', 'Not now')}</button>
+      </div>
+    </Card>
+  )
+}
+
+/** Cada 4 semanas, foto de progreso (solo si ya se hizo alguna). */
+function PhotoReminderCard() {
+  return (
+    <Card title={t('Toca foto de progreso', 'Time for a progress photo')} icon={Camera}>
+      <span className="small muted">{t('Hace 4 semanas de tus últimas fotos: es cuando más se nota el cambio. Misma luz y misma postura que la otra vez.', 'It has been 4 weeks since your last photos: that is when change shows most. Same light and pose as last time.')}</span>
+      <div className="row" style={{ gap: 8 }}>
+        <button className="btn primary grow" onClick={() => navigate('profile', 'photos')}>{t('Hacer fotos', 'Take photos')}</button>
+        <button className="btn secondary" onClick={() => updateSettings({ photoSnooze: Date.now() + 7 * 86400000 })}>{t('Ahora no', 'Not now')}</button>
+      </div>
     </Card>
   )
 }

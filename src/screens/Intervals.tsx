@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Card, NavBar, Overlay, Segmented, useScrollLock, useTick } from '../components/ui'
 import { clock, rest } from '../lib/format'
 import { plural, t } from '../lib/i18n'
-import { buildSegments, DEFAULTS, positionAt, totalSeconds, type IntervalConfig, type IntervalMode, type Segment } from '../lib/intervals'
+import { buildSegments, DEFAULTS, guided, positionAt, totalSeconds, type IntervalConfig, type IntervalMode, type Segment } from '../lib/intervals'
 import { playTone, unlockAudio } from '../lib/timer'
 import { speak } from '../lib/voice'
 import { focusLabel, WARMUP_FOCUS, type WarmupFocus } from '../lib/warmupRoutine'
@@ -27,9 +27,9 @@ function Select({ label, value, options, format, onChange }: { label: string; va
   )
 }
 
-export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
-  // Desde un entrenamiento se llega con el calentamiento ya elegido (#/timer/warmup/<zona>).
-  const [config, setConfigState] = useState<IntervalConfig>(() => (warmup ? { ...DEFAULTS.warmup, focus: warmup } : lastConfig))
+export function IntervalScreen({ warmup, cooldown }: { warmup?: WarmupFocus; cooldown?: WarmupFocus }) {
+  // Desde un entrenamiento se llega con el calentamiento o la vuelta a la calma ya elegidos (#/timer/warmup/<zona>).
+  const [config, setConfigState] = useState<IntervalConfig>(() => (warmup ? { ...DEFAULTS.warmup, focus: warmup } : cooldown ? { ...DEFAULTS.cooldown, focus: cooldown } : lastConfig))
   const [running, setRunning] = useState(false)
   const setConfig = (c: IntervalConfig) => {
     lastConfig = c
@@ -45,10 +45,13 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
       <div className="screen with-nav">
         <Segmented value={mode} onChange={(m: IntervalMode) => setConfig(DEFAULTS[m])} options={[
           { value: 'warmup', label: t('Calentar', 'Warm-up') },
+          { value: 'cooldown', label: t('Estirar', 'Stretch') },
           { value: 'tabata', label: 'Tabata' }, { value: 'emom', label: 'EMOM' }, { value: 'amrap', label: 'AMRAP' },
         ]} />
         <p className="muted small" style={{ margin: 0 }}>
-          {mode === 'warmup'
+          {mode === 'cooldown'
+            ? t('Estiramientos suaves al terminar, según lo que has entrenado: mantén cada uno respirando despacio, sin rebotes. Sin material.', 'Gentle stretches after training, based on what you worked: hold each one breathing slowly, without bouncing. No equipment needed.')
+            : mode === 'warmup'
             ? t('Movilidad y activación antes de entrenar: cada movimiento con su explicación y 5 s para cambiar al siguiente. Sin material.', 'Mobility and activation before training: each move comes with a short cue, plus 5 s to switch to the next one. No equipment needed.')
             : mode === 'tabata'
             ? t('Rondas de trabajo y descanso. El clásico: 20 s a tope y 10 s de descanso, 8 rondas (4 minutos).', 'Rounds of work and rest. The classic: 20 s all-out and 10 s rest, 8 rounds (4 minutes).')
@@ -57,7 +60,7 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
               : t('«As many rounds as possible»: todas las rondas que puedas en el tiempo fijado. Ve sumándolas con el botón.', '"As many rounds as possible": as many rounds as you can in the set time. Count them with the button.')}
         </p>
         <div className="list">
-          {mode === 'warmup' && (
+          {guided(mode) && (
             <>
               <label className="list-row">
                 <span className="grow">{t('Para', 'For')}</span>
@@ -65,7 +68,7 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
                   {WARMUP_FOCUS.map((f) => <option key={f} value={f}>{focusLabel(f)}</option>)}
                 </select>
               </label>
-              <Select label={t('Cada movimiento', 'Each move')} value={config.work} options={[30, 45, 60]} format={seconds} onChange={(work) => setConfig({ ...config, work })} />
+              <Select label={t('Cada movimiento', 'Each move')} value={config.work} options={mode === 'cooldown' ? [30, 40, 60] : [30, 45, 60]} format={seconds} onChange={(work) => setConfig({ ...config, work })} />
             </>
           )}
           {mode === 'tabata' && (
@@ -84,7 +87,7 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
           {mode === 'amrap' && (
             <Select label={t('Duración', 'Duration')} value={config.work / 60} options={range(1, 60, 1)} format={(v) => `${v} min`} onChange={(m) => setConfig({ ...config, work: m * 60 })} />
           )}
-          {mode !== 'warmup' && <Select label={t('Preparación', 'Get ready')} value={config.prep} options={range(0, 30, 5)} format={(v) => (v ? `${v} s` : t('Ninguna', 'None'))} onChange={(prep) => setConfig({ ...config, prep })} />}
+          {!guided(mode) && <Select label={t('Preparación', 'Get ready')} value={config.prep} options={range(0, 30, 5)} format={(v) => (v ? `${v} s` : t('Ninguna', 'None'))} onChange={(prep) => setConfig({ ...config, prep })} />}
         </div>
         <Card>
           <span className="row" style={{ gap: 8 }}><Timer size={18} /> {t('Total', 'Total')}: <strong>{clock(totalSeconds(segments))}</strong></span>
@@ -101,7 +104,7 @@ export function IntervalScreen({ warmup }: { warmup?: WarmupFocus }) {
 
 const phaseName = (s: Segment, mode: IntervalMode) =>
   s.kind === 'prep' ? t('PREPÁRATE', 'GET READY')
-    : mode === 'warmup' ? (s.kind === 'rest' ? t('SIGUIENTE', 'NEXT') : s.label ?? '')
+    : guided(mode) ? (s.kind === 'rest' ? t('SIGUIENTE', 'NEXT') : s.label ?? '')
       : s.kind === 'rest' ? t('DESCANSO', 'REST') : mode === 'amrap' ? 'AMRAP' : t('TRABAJO', 'WORK')
 
 function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; segments: Segment[]; onClose: () => void }) {
@@ -142,7 +145,7 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
         navigator.vibrate?.(150)
       }
       const s = pos.segment
-      speak(config.mode === 'warmup' ? (s.kind === 'work' ? s.label ?? '' : `${t('Siguiente', 'Next')}: ${s.label ?? ''}`)
+      speak(guided(config.mode) ? (s.kind === 'work' ? s.label ?? '' : `${t('Siguiente', 'Next')}: ${s.label ?? ''}`)
         : s.kind === 'prep' ? t('Prepárate', 'Get ready')
         : s.kind === 'rest' ? t('Descanso', 'Rest')
           : config.mode === 'emom' ? t(`Minuto ${s.round}`, `Interval ${s.round}`)
@@ -181,7 +184,7 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
           </svg>
           <div className="rest-full-center">
             <span className="rest-full-label">
-              {config.mode === 'warmup' ? (pos.segment.kind === 'work' ? t(`${pos.segment.round} de ${work}`, `${pos.segment.round} of ${work}`) : pos.segment.label ?? '')
+              {guided(config.mode) ? (pos.segment.kind === 'work' ? t(`${pos.segment.round} de ${work}`, `${pos.segment.round} of ${work}`) : pos.segment.label ?? '')
                 : config.mode === 'amrap' ? plural(amrapRounds, ['ronda', 'rondas'], ['round', 'rounds'])
                 : pos.segment.round > 0 ? (config.mode === 'emom' ? t(`Minuto ${pos.segment.round} de ${work}`, `Interval ${pos.segment.round} of ${work}`) : t(`Ronda ${pos.segment.round} de ${work}`, `Round ${pos.segment.round} of ${work}`))
                   : ''}
@@ -190,7 +193,7 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
             <span className="rest-full-label">{t('Total', 'Total')} {clock(Math.ceil(Math.max(0, pos.totalRemaining)))}</span>
           </div>
         </div>
-        {config.mode === 'warmup' && !pos.done && pos.segment.kind === 'work' && pos.segment.cue && <p className="interval-cue">{pos.segment.cue}</p>}
+        {guided(config.mode) && !pos.done && pos.segment.kind === 'work' && pos.segment.cue && <p className="interval-cue">{pos.segment.cue}</p>}
         <div className="rest-full-actions">
           {pos.done ? (
             <button className="btn primary" style={{ gridColumn: '1 / -1' }} onClick={onClose}>{t('Cerrar', 'Close')}</button>

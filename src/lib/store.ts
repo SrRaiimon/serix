@@ -117,6 +117,8 @@ export interface Session {
   end?: number
   notes: string
   exercises: SessionExercise[]
+  /** Cómo llegabas (1-5): sueño, energía y agujetas (5 = muchas). Ver lib/readiness.ts. */
+  readiness?: { sleep: number; energy: number; soreness: number }
 }
 
 export interface Measurement {
@@ -138,8 +140,17 @@ export interface Settings {
   unit: Unit
   defaultRest: number
   weeklyGoal: number
+  /** Días de entreno: sumar las calorías estimadas de cada entreno en vez de una cantidad fija. */
+  nutritionBurned?: boolean
   /** Lunes (ms) de la semana en la que se cerró el resumen de la semana anterior. */
   recapSeen?: number
+  /** Fecha de la última foto de progreso (para recordar la siguiente). */
+  lastPhotoAt?: number
+  /** Hasta cuándo no se recuerda hacer fotos o pesarse («Ahora no»). */
+  photoSnooze?: number
+  weighSnooze?: number
+  /** Hora habitual de entrenar («18:00»), para el calendario. */
+  trainingTime?: string
   /** Días fijos de entreno (0 = lunes … 6 = domingo); sin valor, solo cuenta cuántos a la semana. */
   trainingDays?: number[]
   activeProgram: string

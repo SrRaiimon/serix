@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { getData, updateSettings } from './store'
 import { readZip, writeZip } from './zip'
 
 // Fotos de progreso. Solo se guardan en este móvil, en una base de datos aparte de la del resto de
@@ -65,6 +66,9 @@ async function reload() {
   const all = (await run<Photo[]>('readonly', (s) => s.getAll())) ?? []
   photos = all.sort((a, b) => b.date - a.date)
   emit()
+  // Fecha de la última foto en los ajustes: Inicio recuerda hacer otra sin tener que cargar las fotos.
+  const last = photos[0]?.date
+  if (getData().settings.lastPhotoAt !== last) updateSettings({ lastPhotoAt: last })
 }
 
 /** Fotos de la más reciente a la más antigua (`undefined` mientras cargan). */

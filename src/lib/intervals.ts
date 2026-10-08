@@ -1,14 +1,17 @@
-import { warmupSegments, type WarmupFocus } from './warmupRoutine'
+import { cooldownSegments, warmupSegments, type WarmupFocus } from './warmupRoutine'
 
 // Temporizadores de intervalos (sin depender de ningún entrenamiento):
 // - Tabata / intervalos: N rondas de trabajo y descanso (por defecto 20 s / 10 s × 8).
 // - EMOM: al empezar cada intervalo (por defecto cada minuto) se hace el trabajo y se descansa lo
 //   que sobre, durante N intervalos.
 // - AMRAP: tantas rondas como se pueda en un tiempo fijo.
-// - Calentamiento: movimientos guiados uno tras otro (ver lib/warmup.ts).
+// - Calentamiento y vuelta a la calma: movimientos guiados uno tras otro (ver lib/warmupRoutine.ts).
 // Todo se calcula con el tiempo transcurrido, así que no se desajusta aunque la pantalla vaya lenta.
 
-export type IntervalMode = 'tabata' | 'emom' | 'amrap' | 'warmup'
+export type IntervalMode = 'tabata' | 'emom' | 'amrap' | 'warmup' | 'cooldown'
+
+/** Calentamiento y vuelta a la calma: movimientos guiados, con nombre e indicación. */
+export const guided = (m: IntervalMode) => m === 'warmup' || m === 'cooldown'
 
 export interface IntervalConfig {
   mode: IntervalMode
@@ -28,6 +31,7 @@ export const DEFAULTS: Record<IntervalMode, IntervalConfig> = {
   emom: { mode: 'emom', work: 60, rest: 0, rounds: 10, prep: 10 },
   amrap: { mode: 'amrap', work: 600, rest: 0, rounds: 1, prep: 10 },
   warmup: { mode: 'warmup', work: 30, rest: 5, rounds: 8, prep: 5, focus: 'full' },
+  cooldown: { mode: 'cooldown', work: 40, rest: 5, rounds: 6, prep: 5, focus: 'full' },
 }
 
 export interface Segment {
@@ -42,6 +46,7 @@ export interface Segment {
 
 export function buildSegments(c: IntervalConfig): Segment[] {
   if (c.mode === 'warmup') return warmupSegments(c.focus ?? 'full', c.work, c.prep)
+  if (c.mode === 'cooldown') return cooldownSegments(c.focus ?? 'full', c.work, c.prep)
   const segments: Segment[] = c.prep > 0 ? [{ kind: 'prep', seconds: c.prep, round: 0 }] : []
   if (c.mode === 'amrap') return [...segments, { kind: 'work', seconds: c.work, round: 1 }]
   for (let r = 1; r <= c.rounds; r++) {

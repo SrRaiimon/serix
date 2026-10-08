@@ -102,12 +102,19 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
   }
 }
 
+function readiness(v: unknown): Session['readiness'] {
+  if (!isObj(v)) return undefined
+  const [sleep, energy, soreness] = [v.sleep, v.energy, v.soreness].map((x) => optNum(x, 1, 5))
+  return sleep && energy && soreness ? { sleep, energy, soreness } : undefined
+}
+
 function session(v: unknown): Session | undefined {
   if (!isObj(v) || typeof v.start !== 'number') return undefined
   const start = num(v.start, EPOCH_MIN, EPOCH_MAX, Date.now())
   return {
     id: str(v.id, uid(), 50), name: str(v.name, 'Entrenamiento', 100), routineId: typeof v.routineId === 'string' ? v.routineId.slice(0, 50) : undefined,
     start, end: optNum(v.end, start, EPOCH_MAX), notes: str(v.notes, '', 2000), exercises: list(v.exercises, sessionExercise, 100),
+    readiness: readiness(v.readiness),
   }
 }
 
@@ -128,6 +135,10 @@ function settings(v: unknown): Settings {
     name: str(s.name, '', 60), unit: oneOf(s.unit, ['kg', 'lb'] as const) ?? d.unit,
     defaultRest: num(s.defaultRest, 0, 900, d.defaultRest), weeklyGoal: num(s.weeklyGoal, 1, 7, d.weeklyGoal),
     recapSeen: optNum(s.recapSeen, EPOCH_MIN, EPOCH_MAX),
+    nutritionBurned: s.nutritionBurned === true ? true : undefined,
+    lastPhotoAt: optNum(s.lastPhotoAt, EPOCH_MIN, EPOCH_MAX), photoSnooze: optNum(s.photoSnooze, EPOCH_MIN, EPOCH_MAX),
+    weighSnooze: optNum(s.weighSnooze, EPOCH_MIN, EPOCH_MAX),
+    trainingTime: typeof s.trainingTime === 'string' && /^\d{2}:\d{2}$/.test(s.trainingTime) ? s.trainingTime : undefined,
     trainingDays: Array.isArray(s.trainingDays) && s.trainingDays.length
       ? [...new Set(s.trainingDays.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort() : undefined,
     activeProgram: str(s.activeProgram, '', 100), onboarded: true,

@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, Camera, Users, Calculator, FileUp, Table, CalendarDays, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -10,6 +10,7 @@ import { downloadCsv } from '../lib/exportCsv'
 import { migrateCatalog } from '../lib/migrate'
 import { fillBodyweights } from '../lib/bodyweight'
 import { navyBodyFat } from '../lib/bodyfat'
+import { trainingCalendar } from '../lib/schedule'
 import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
 import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
@@ -153,6 +154,19 @@ export function ProfileScreen() {
               )
             })}
           </div>
+          {!!settings.trainingDays?.length && (
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              <label className="row" style={{ gap: 6 }}>
+                <span className="small muted">{t('Hora', 'Time')}</span>
+                <input type="time" className="field" style={{ width: 'auto', padding: '6px 10px' }} value={settings.trainingTime ?? '18:00'}
+                  onChange={(e) => updateSettings({ trainingTime: e.target.value || undefined })} aria-label={t('Hora de entrenar', 'Training time')} />
+              </label>
+              <button className="btn secondary btn-sm grow" onClick={() => addToCalendar(settings.trainingDays!, settings.trainingTime ?? '18:00')}>
+                <CalendarPlus size={17} aria-hidden="true" /> {t('Añadir al calendario', 'Add to calendar')}
+              </button>
+            </div>
+          )}
+          {!!settings.trainingDays?.length && <span className="small muted">{t('El calendario del móvil te avisará 15 minutos antes, aunque Serix esté cerrada.', 'Your phone calendar will remind you 15 minutes before, even with Serix closed.')}</span>}
         </div>
         <label className="list-row">
           <span className="grow">
@@ -427,6 +441,17 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
       </p>
     </Sheet>
   )
+}
+
+/** Descarga el .ics con los días de entreno: el móvil lo abre con su calendario para añadirlo. */
+function addToCalendar(days: number[], time: string) {
+  const text = trainingCalendar(days, time, t('Entrenar (Serix)', 'Workout (Serix)'), t('Hoy toca entrenar', 'Time to train today'))
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/calendar' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'serix-entrenos.ics'
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 10000)
 }
 
 // MARK: Calendario

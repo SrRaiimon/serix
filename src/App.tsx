@@ -27,6 +27,7 @@ const screens = {
   photos: () => import('./screens/Photos'),
   profile: () => import('./screens/Profile'),
   progress: () => import('./screens/Progress'),
+  report: () => import('./screens/Report'),
   routines: () => import('./screens/Routines'),
   session: () => import('./screens/Session'),
   transfer: () => import('./screens/Transfer'),
@@ -48,6 +49,7 @@ const MeasurementsScreen = lazy(() => screens.profile().then((m) => ({ default: 
 const CalendarScreen = lazy(() => screens.profile().then((m) => ({ default: m.CalendarScreen })))
 const OneRepMaxScreen = lazy(() => screens.profile().then((m) => ({ default: m.OneRepMaxScreen })))
 const PlatesScreen = lazy(() => screens.profile().then((m) => ({ default: m.PlatesScreen })))
+const ReportScreen = lazy(() => screens.report().then((m) => ({ default: m.ReportScreen })))
 const ProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ProgressScreen })))
 const ExerciseProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ExerciseProgressScreen })))
 const RoutinesScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutinesScreen })))
@@ -167,6 +169,7 @@ function Screen({ route }: { route: string[] }) {
     case 'progress':
       if (a === 'session' && b) return <SessionDetailScreen id={b} />
       if (a === 'exercise' && b) return <ExerciseProgressScreen id={b} />
+      if (a === 'report') return <ReportScreen />
       return <ProgressScreen />
     case 'profile':
       if (a === 'measurements') return <MeasurementsScreen />
@@ -178,7 +181,8 @@ function Screen({ route }: { route: string[] }) {
       if (a === 'friends') return b ? <FriendDetailScreen id={b} /> : <FriendsScreen />
       return <ProfileScreen />
     case 'timer':
-      return <IntervalScreen key={b ?? ''} warmup={a === 'warmup' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined} />
+      return <IntervalScreen key={`${a ?? ''}${b ?? ''}`} warmup={a === 'warmup' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined}
+        cooldown={a === 'cooldown' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined} />
     default:
       return <HomeScreen />
   }

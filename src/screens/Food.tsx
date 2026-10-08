@@ -61,6 +61,7 @@ export function FoodScreen() {
     return [m, dish && targets[m] ? { dish, items: fitDish(dish, targets[m]!, slot.removed) } : undefined]
   })) as Partial<Record<MealKey, { dish: Dish; items: ReturnType<typeof fitDish> }>>
   const [shopping, setShopping] = useState(false)
+  const [weekShopping, setWeekShopping] = useState(false)
   const [dayMenu, setDayMenu] = useState(false)
   // Semana tipo: el día de la semana que toca, si el día está vacío.
   const weekday = weekdayOf(day)
@@ -255,6 +256,7 @@ export function FoodScreen() {
           ...(entries.length && day !== today ? [{ label: t('Copiar este día a hoy', 'Copy this day to today'), onSelect: () => copyDay(today) }] : []),
           ...(entries.length && day !== tomorrow ? [{ label: t('Copiar este día a mañana', 'Copy this day to tomorrow'), onSelect: () => copyDay(tomorrow) }] : []),
           ...(entries.length ? [{ label: t('Compartir este día', 'Share this day'), onSelect: () => void shareDay() }] : []),
+          { label: t('Lista de la compra de la semana', 'Shopping list for the week'), onSelect: () => setWeekShopping(true) },
           { label: t('Guardar esta semana como semana tipo', 'Save this week as my usual week'), onSelect: saveWeek },
           ...(data.nutrition.week ? [{ label: t('Borrar la semana tipo', 'Delete my usual week'), destructive: true, onSelect: () => withUndo(t('Semana tipo borrada', 'Usual week deleted'), () => update((d) => { delete d.nutrition.week })) }] : []),
         ]} />
@@ -281,6 +283,19 @@ export function FoodScreen() {
       {editing && <EntrySheet entry={editing} day={entries} goals={target} onClose={() => setEditing(undefined)} />}
       {goals && <GoalsSheet onClose={() => setGoals(false)} />}
       {shopping && <ShoppingSheet items={Object.values(proposals).flatMap((x) => x?.items ?? [])} title={day === today ? t('Compra para hoy', 'Shopping for today') : t('Compra para mañana', 'Shopping for tomorrow')} onClose={() => setShopping(false)} onCopied={() => showToast(t('Lista copiada', 'List copied'))} />}
+      {weekShopping && (() => {
+        // Con semana tipo, sus 7 días; si no, lo que comiste los últimos 7 días (para repetirlo).
+        const usual = data.nutrition.week
+        const items = usual ? Object.values(usual.days).flatMap((d) => d ?? [])
+          : data.nutrition.entries.filter((e) => e.day < today && e.day >= shiftDay(today, -7))
+        return (
+          <ShoppingSheet title={t('Compra de la semana', 'Shopping for the week')}
+            items={items.filter((x) => x.ref?.kind !== 'quick').map((x) => ({ key: x.name, name: x.name, grams: x.grams }))}
+            note={usual ? t('Cantidades de tu semana tipo (los 7 días). El peso es el del alimento tal como se llama: «cocido» o «hecho», ya cocinado; «crudo», sin cocinar.', 'Amounts from your usual week (all 7 days). Weights match the food name: "cooked" means after cooking, "raw" before.')
+              : t('No tienes semana tipo: son las cantidades de lo que comiste los últimos 7 días. Puedes guardar una semana como semana tipo en este mismo menú.', 'You have no usual week: these are the amounts you ate over the last 7 days. You can save a week as your usual week from this same menu.')}
+            onClose={() => setWeekShopping(false)} onCopied={() => showToast(t('Lista copiada', 'List copied'))} />
+        )
+      })()}
       {month && baseGoals && <MonthSheet goals={baseGoals} opts={goalOpts} onClose={() => setMonth(false)} onPick={(d) => { setDay(d); setMonth(false) }} />}
       {toast}
     </div>
@@ -519,7 +534,7 @@ function Proposal({ dish, meal, day, target, items, proteinOnly, others, dishes,
 }
 
 /** Lista de la compra del menú propuesto: cada alimento una vez, con lo que suma en el día. */
-function ShoppingSheet({ items, title, onClose, onCopied }: { items: { key: string; name: string; grams: number }[]; title: string; onClose: () => void; onCopied: () => void }) {
+function ShoppingSheet({ items, title, note, onClose, onCopied }: { items: { key: string; name: string; grams: number }[]; title: string; note?: string; onClose: () => void; onCopied: () => void }) {
   const list = [...items.reduce((m, i) => m.set(i.key, { name: i.name, grams: (m.get(i.key)?.grams ?? 0) + i.grams }), new Map<string, { name: string; grams: number }>()).values()]
     .sort((a, b) => a.name.localeCompare(b.name))
   const text = list.map((x) => `- ${x.name}: ${g(x.grams)} g`).join('\n')
@@ -540,7 +555,7 @@ function ShoppingSheet({ items, title, onClose, onCopied }: { items: { key: stri
           </div>
         ))}
       </div>
-      <p className="list-footer" style={{ margin: 0 }}>{t('Cantidades de las comidas que quedan por apuntar. El peso es el del alimento tal como se llama: «cocido» o «hecho», ya cocinado; «crudo», sin cocinar.', 'Amounts for the meals not logged yet. Weights match the food name: "cooked" means after cooking, "raw" before.')}</p>
+      <p className="list-footer" style={{ margin: 0 }}>{note ?? t('Cantidades de las comidas que quedan por apuntar. El peso es el del alimento tal como se llama: «cocido» o «hecho», ya cocinado; «crudo», sin cocinar.', 'Amounts for the meals not logged yet. Weights match the food name: "cooked" means after cooking, "raw" before.')}</p>
     </Sheet>
   )
 }
@@ -1609,6 +1624,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const [perKg, setPerKg] = useState(saved?.proteinPerKg)
   const [carry, setCarry] = useState(data.settings.nutritionCarryOver !== false)
   const [split, setSplit] = useState(data.settings.nutritionTrainingSplit !== false)
+  const [burned, setBurned] = useState(data.settings.nutritionBurned === true)
   const [remind, setRemind] = useState(data.settings.foodReminders === true)
   const perKgValue = perKg ?? defaultProteinPerKg(aim)
   const [own, setOwn] = useState({ kcal: saved ? String(saved.kcal) : '', protein: saved ? String(saved.protein) : '', carbs: saved ? String(saved.carbs) : '', fat: saved ? String(saved.fat) : '' })
@@ -1627,7 +1643,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const result = manual ? ownGoals : computed && adjust ? adjustGoals(computed, adjust) : computed
   const save = () => {
     if (!result) return
-    updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry, nutritionTrainingSplit: split, foodReminders: remind || undefined })
+    updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry, nutritionTrainingSplit: split, nutritionBurned: (split && burned) || undefined, foodReminders: remind || undefined })
     onClose()
   }
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
@@ -1738,6 +1754,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
         const perWeek = data.settings.weeklyGoal
         const { up, down } = trainingShift(result?.kcal ?? saved?.kcal ?? 2500, perWeek)
         return (
+          <>
           <label className="list-row card-row">
             <span className="grow">
               <span className="bold" style={{ display: 'block' }}>{t('Más calorías los días de entreno', 'More calories on training days')}</span>
@@ -1745,6 +1762,16 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
             </span>
             <input type="checkbox" className="toggle" checked={split} onChange={(e) => setSplit(e.target.checked)} />
           </label>
+          {split && (
+            <div className="card" style={{ gap: 8 }}>
+              <Segmented value={burned ? 'burned' : 'fixed'} onChange={(v) => setBurned(v === 'burned')}
+                options={[{ value: 'fixed', label: t('Cantidad fija', 'Fixed amount') }, { value: 'burned', label: t('Lo que gastas', 'What you burn') }]} />
+              <span className="small muted">{burned
+                ? t('Los días que entrenas se suman las calorías estimadas de ese entreno (con tu peso y lo que duró); los de descanso, tu objetivo de siempre.', 'On training days the estimated calories of that workout are added (from your weight and how long it lasted); on rest days, your usual goal.')
+                : t('Siempre lo mismo, y a la semana comes igual: más los días de entreno y algo menos los de descanso.', 'Always the same, and your weekly total does not change: more on training days, a bit less on rest days.')}</span>
+            </div>
+          )}
+          </>
         )
       })()}
       <label className="list-row card-row">
