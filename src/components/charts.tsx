@@ -63,7 +63,7 @@ export function BarChart({ data, height = 170, color = 'var(--chart-bar)', tick 
               <rect x={pad.l + i * bw + bw * 0.29} y={pad.t + ch - h} width={bw * 0.42} height={h} rx={3} fill={i === data.length - 1 ? 'var(--accent)' : color} />
             )}
             {/* Una fecha de cada dos, contando desde la última para que la semana en curso siempre lleve la suya. */}
-            {(data.length - 1 - i) % 2 === 0 && (
+            {(data.length - 1 - i) % 2 === 0 && !(currentLabel && i === data.length - 3 && data.length > 4) && (
               <text x={pad.l + i * bw + bw / 2} y={height - 5} textAnchor="middle" className={currentLabel && i === data.length - 1 ? 'chart-current' : undefined}>
                 {currentLabel && i === data.length - 1 ? currentLabel : d.label}
               </text>

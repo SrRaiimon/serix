@@ -46,7 +46,8 @@ export interface PersonalRecord {
 
 export function records(sessions: Session[]): PersonalRecord[] {
   const best = new Map<string, PersonalRecord>()
-  for (const s of sessions) {
+  // En orden de fecha: si se iguala una marca, cuenta la primera vez (no la última).
+  for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
     for (const e of s.exercises) {
       for (const set of workingSets(e)) {
         if (set.weight <= 0 || set.reps <= 0) continue

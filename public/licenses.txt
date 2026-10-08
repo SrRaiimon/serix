@@ -964,7 +964,8 @@ movimiento son contenido propio de Serix.
 Lista básica (public/foods.json): valores de la tabla de composición ANSES-CIQUAL 2020 (Agence nationale
 de sécurité sanitaire de l'alimentation, de l'environnement et du travail, Francia), https://ciqual.anses.fr,
 con la Licence Ouverte / Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/).
-Se han seleccionado 125 alimentos; los nombres en español y las raciones son propios. Los valores no se han
+Se incluyen 2.713 alimentos (sin comida infantil, aguas, especias ni platos muy locales); los nombres en
+español y las raciones orientativas son propios. Los valores no se han
 modificado; cuando falta la energía, se calcula con los factores del Reglamento (UE) 1169/2011.
 
 Productos de supermercado (public/aesan.json): Agencia Española de Seguridad Alimentaria y Nutrición (AESAN),
@@ -973,7 +974,8 @@ https://www.aesan.gob.es/datos-abiertos/alimentos-y-bebidas, actualizados el 29/
 aviso legal de la AESAN (usos comerciales y no comerciales, citando la fuente y la fecha de actualización y sin
 desnaturalizar su contenido). Los datos los recogió Kantar Worldpanel de las etiquetas en 2022 y pueden haber
 cambiado. Los valores nutricionales no se han modificado; los nombres se pasan a minúsculas, sin la marca al
-principio y sin restos de la codificación interna («(SC)», palabras repetidas). Su mención no implica
+principio y sin restos de la codificación interna («(SC)», palabras repetidas); en los 500 más vendidos, el
+nombre se ha revisado a mano y se añade una ración orientativa propia. Su mención no implica
 recomendación ni respaldo de la AESAN.
 
 Productos con código de barras: se consultan en Open Food Facts (https://world.openfoodfacts.org) al

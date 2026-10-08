@@ -147,3 +147,10 @@ test('uso de ejercicios: última vez, sesiones y mejor serie', () => {
   assert.equal(bench.top.reps, 6)
   assert.equal(usage.has('row'), false)
 })
+
+test('récords: si se iguala una marca, cuenta la fecha de la primera vez (sin importar el orden)', () => {
+  const first = session(0, [exercise('bench', [set(100, 5)])])
+  const tie = session(10, [exercise('bench', [set(100, 5)])])
+  assert.equal(records([tie, first])[0].date, first.start)
+  assert.equal(records([first, tie])[0].date, first.start)
+})

@@ -34,9 +34,12 @@ export interface Balance {
   total: number
 }
 
-export function muscleBalance(sessions: Session[], now = Date.now()): Balance {
+export function muscleBalance(sessions: Session[], now = Date.now(), secondaryOf: (exerciseId: string) => string[] = () => []): Balance {
   const since = now - BALANCE_DAYS * 86400000
   const sets = new Map<string, number>()
+  // Músculos trabajados como secundarios (la sentadilla trabaja glúteos): no cuentan para los
+  // equilibrios, pero un grupo así no está «sin ninguna serie».
+  const worked = new Set<string>()
   let total = 0
   for (const s of sessions) {
     if (s.start < since || s.start > now) continue
@@ -44,6 +47,7 @@ export function muscleBalance(sessions: Session[], now = Date.now()): Balance {
       const n = setCount(e)
       if (!n) continue
       sets.set(e.muscle, (sets.get(e.muscle) ?? 0) + n)
+      for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) worked.add(m)
       total += n
     }
   }
@@ -61,7 +65,7 @@ export function muscleBalance(sessions: Session[], now = Date.now()): Balance {
     // Cuádriceps e isquiotibiales: es normal algo más de cuádriceps; se avisa a partir de 2,5 veces.
     pair({ id: 'quadsHams', label: ['Delante y detrás de la pierna', 'Front and back of the leg'], sides: [['Cuádriceps', 'Quads'], ['Isquiotibiales', 'Hamstrings']], sets: [sum(['quads']), sum(['hamstrings'])], max: 2.5, min: 1 / 2 }),
   ]
-  const neglected = total >= 30 ? MAIN_GROUPS.filter(([, muscles]) => sum(muscles) === 0).map(([name]) => name) : []
+  const neglected = total >= 30 ? MAIN_GROUPS.filter(([, muscles]) => sum(muscles) === 0 && !muscles.some((m) => worked.has(m))).map(([name]) => name) : []
   return { pairs, neglected, total }
 }
 

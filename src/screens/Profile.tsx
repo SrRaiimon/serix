@@ -443,14 +443,26 @@ export function CalendarScreen() {
             {t(`${plural(trainedThisMonth, ['día entrenado', 'días entrenados'], ['', ''])} este mes`, `${plural(trainedThisMonth, ['', ''], ['day', 'days'])} trained this month`)}
           </span>
         </Card>
-        {selected !== undefined && byDay.get(selected) && (
+        {selected !== undefined && byDay.get(selected) ? (
           <>
             <div className="list-header">{day(selected)}</div>
             <div className="list">
               {byDay.get(selected)!.map((s) => <SessionRow key={s.id} session={s} unit={data.settings.unit} onClick={() => navigate('progress', 'session', s.id)} />)}
             </div>
           </>
-        )}
+        ) : (() => {
+          // Sin día elegido, los entrenos del mes (lo más reciente arriba).
+          const end = new Date(month.getFullYear(), month.getMonth() + 1, 1).getTime()
+          const inMonth = sessions.filter((s) => s.start >= month.getTime() && s.start < end).sort((a, b) => b.start - a.start)
+          return inMonth.length > 0 && (
+            <>
+              <div className="list-header">{t('Entrenos del mes', 'Workouts this month')}</div>
+              <div className="list">
+                {inMonth.map((s) => <SessionRow key={s.id} session={s} unit={data.settings.unit} onClick={() => navigate('progress', 'session', s.id)} />)}
+              </div>
+            </>
+          )
+        })()}
       </div>
     </>
   )

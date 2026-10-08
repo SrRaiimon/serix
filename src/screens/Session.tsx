@@ -1,8 +1,9 @@
-import { BadgeCheck, Dumbbell, ImageIcon, Share2, StickyNote, Trash2, Trophy } from 'lucide-react'
+import { BadgeCheck, ChevronRight, Dumbbell, ImageIcon, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
-import { day, duration, time, tons, volume, weight, type Unit } from '../lib/format'
-import { back } from '../lib/router'
+import { day, duration, int, time, tons, volume, weight, type Unit } from '../lib/format'
+import { back, navigate } from '../lib/router'
+import { dayGoalOptions, dayKey, dayTotals, goalsForDay } from '../lib/nutrition'
 import { shareCardSVG, shareImage, svgToPng } from '../lib/shareCard'
 import { newRecords, sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
@@ -133,6 +134,34 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
   )
 }
 
+/** Lo que comiste el día del entreno frente a tu objetivo de ese día (si usas Comidas). */
+function SessionFood({ session, today }: { session: Session; today?: boolean }) {
+  const data = useData()
+  const dayOf = dayKey(session.start)
+  const entries = data.nutrition.entries.filter((e) => e.day === dayOf)
+  const base = data.settings.nutrition
+  if (!base && !entries.length) return null
+  const goals = base && goalsForDay(base, data.nutrition.entries, dayOf, dayGoalOptions(data))
+  const v = dayTotals(entries)
+  const missing = goals ? Math.max(0, goals.protein - v.p) : 0
+  return (
+    <button className="card session-food" onClick={() => navigate('food')}>
+      <span className="row" style={{ gap: 8 }}>
+        <Utensils size={17} aria-hidden="true" />
+        <strong className="grow">{today ? t('Comida de hoy', 'Food today') : t('Comida de ese día', 'Food that day')}</strong>
+        <ChevronRight size={18} className="chevron" aria-hidden="true" />
+      </span>
+      {entries.length ? (
+        <span className="small">
+          {goals?.proteinOnly ? '' : t(`${int(v.kcal)} kcal${goals ? ` de ${int(goals.kcal)}` : ''} · `, `${int(v.kcal)} kcal${goals ? ` of ${int(goals.kcal)}` : ''} · `)}
+          {t(`${int(v.p)} g de proteína${goals ? ` de ${int(goals.protein)}` : ''}`, `${int(v.p)} g protein${goals ? ` of ${int(goals.protein)}` : ''}`)}
+        </span>
+      ) : <span className="small muted">{today ? t('Aún no has apuntado nada hoy.', 'Nothing logged today yet.') : t('No apuntaste nada ese día.', 'Nothing was logged that day.')}</span>}
+      {today && goals && missing > 0 && <span className="small muted">{t(`Te faltan ${int(missing)} g de proteína para tu objetivo: una comida con proteína en las próximas horas te ayuda a recuperar.`, `${int(missing)} g of protein left for your goal: a protein-rich meal in the next few hours helps recovery.`)}</span>}
+    </button>
+  )
+}
+
 export function SummarySheet({ session, onClose }: { session: Session; onClose: () => void }) {
   const data = useData()
   const unit = data.settings.unit
@@ -175,6 +204,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
         </Card>
       )}
       <NewAchievements session={session} sessions={history} measurements={data.measurements} unit={unit} />
+      <SessionFood session={session} today />
       <SessionExercises session={session} unit={unit} />
       <Card title={t('Notas', 'Notes')} icon={StickyNote}>
         <textarea rows={3} placeholder={t('¿Cómo te has sentido?', 'How did it feel?')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
@@ -209,6 +239,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
           {session.end && <div className="small muted">{time(session.start)} – {time(session.end)}</div>}
         </div>
         <SessionStats session={session} unit={unit} />
+        <SessionFood session={session} today={dayKey(session.start) === dayKey()} />
         <SessionExercises session={session} unit={unit} />
         <Card title={t('Notas', 'Notes')} icon={StickyNote}>
           <textarea rows={2} placeholder={t('Añade una nota', 'Add a note')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />

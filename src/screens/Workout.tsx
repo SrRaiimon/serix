@@ -192,10 +192,14 @@ export function WorkoutScreen({ session }: { session: Session }) {
             if (run.length === 1) return block(run[0])
             const first = slots[run[0]]
             const lastEx = session.exercises[run[run.length - 1]]
+            // Rondas: tantas como series tenga el ejercicio que más tiene; hechas, las que han completado todos.
+            const rounds = Math.max(...run.map((i) => session.exercises[i].sets.length))
+            const done = Math.min(...run.map((i) => session.exercises[i].sets.filter((x) => x.done).length))
+            const round = done >= rounds ? t('rondas hechas', 'rounds done') : t(`ronda ${done + 1} de ${rounds}`, `round ${done + 1} of ${rounds}`)
             return (
               <div key={session.exercises[run[0]].id} className="group-box">
                 <div className="group-head">
-                  <Link2 size={15} /> {groupKind(first.size)} {first.letter} · {t(`descanso ${rest(lastEx.rest)} tras cada ronda`, `${rest(lastEx.rest)} rest after each round`)}
+                  <Link2 size={15} /> {groupKind(first.size)} {first.letter} · <strong>{round}</strong> · {t(`descanso ${rest(lastEx.rest)} tras cada ronda`, `${rest(lastEx.rest)} rest after each round`)}
                 </div>
                 {run.map(block)}
               </div>
@@ -269,6 +273,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   lastPain?: { pain: number; date: number; note?: string }
   startedAt: number
 }) {
+  const [stallOpen, setStallOpen] = useState(false)
   const [menu, setMenu] = useState(false)
   const [restMenu, setRestMenu] = useState(false)
   const [trackingMenu, setTrackingMenu] = useState(false)
@@ -375,19 +380,26 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           <BatteryLow size={16} style={{ flexShrink: 0 }} />
           {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
-      ) : !hint && stalled && exercise.auto?.kind !== 'wave' && (
-        <div className="stall-box">
-          <span className="small row" style={{ gap: 6, alignItems: 'flex-start' }}>
-            <TrendingDown size={16} style={{ flexShrink: 0 }} />
-            <span>
-              {t(`Llevas ${STALL_SESSIONS} sesiones sin superar tu mejor marca (1RM est. ~${int(fromKg(stalled.best, unit))} ${unit}). Una sesión de descarga o cambiar a una variante suele ayudar a desatascarse.`,
-                `${STALL_SESSIONS} sessions without beating your best (est. 1RM ~${int(fromKg(stalled.best, unit))} ${unit}). A deload session or switching to a variation usually helps you move forward.`)}
-            </span>
-          </span>
-          <div className="row" style={{ gap: 8 }}>
-            <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>{t('Hacer descarga', 'Deload')}</button>
-            <button className="btn small plain" onClick={() => setReplacing(true)}>{t('Ver variantes', 'Variations')}</button>
-          </div>
+      ) : !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
+        // Una línea plegada: no empuja las series hacia abajo; las opciones, al tocarla.
+        <div className={`stall-box ${stallOpen ? 'open' : ''}`}>
+          <button className="stall-line small" onClick={() => setStallOpen(!stallOpen)} aria-expanded={stallOpen}>
+            <TrendingDown size={15} style={{ flexShrink: 0 }} aria-hidden="true" />
+            <span className="grow">{t(`${STALL_SESSIONS} sesiones sin superar tu mejor marca`, `${STALL_SESSIONS} sessions without beating your best`)}</span>
+            <span className="stall-more">{stallOpen ? t('Cerrar', 'Close') : t('Opciones', 'Options')}</span>
+          </button>
+          {stallOpen && (
+            <>
+              <span className="small">
+                {t(`Tu mejor marca: 1RM estimado de ~${int(fromKg(stalled.best, unit))} ${unit}. Una sesión más ligera (descarga: menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
+                  `Your best: estimated 1RM of ~${int(fromKg(stalled.best, unit))} ${unit}. A lighter session (deload: fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
+              </span>
+              <div className="row" style={{ gap: 8 }}>
+                <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>{t('Hacer descarga', 'Deload')}</button>
+                <button className="btn small plain" onClick={() => setReplacing(true)}>{t('Ver variantes', 'Variations')}</button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -453,9 +465,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             onCompleted={() => {
               onSetDone(set)
               if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
-              // Antes de un drop set no se descansa: se quita peso y se sigue. Igual al cambiar de lado.
-              if (dropNext || sideNext) return
-              if (inGroupWithNext) return onGroupNext()
+              // Antes de un drop set no se descansa: se quita peso y se sigue. Igual al cambiar de lado y
+              // dentro de una superserie. Si quedaba un descanso de antes en marcha, se para: ya se ha acabado.
+              if (dropNext || sideNext) return stopRest()
+              if (inGroupWithNext) { stopRest(); return onGroupNext() }
               // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
               const later = exercise.sets.slice(i + 1).find((s) => !s.done)
               const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined

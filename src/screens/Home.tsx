@@ -2,7 +2,8 @@ import { Check, ChevronRight, Compass, Users, ClipboardList, Download, Dumbbell,
 import { useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { addDays, clock, day, int, startOfDay, startOfWeek, tons } from '../lib/format'
-import { dayGoalOptions, dayKey, dayTotals, goalsForDay } from '../lib/nutrition'
+import { dayGoalOptions, dayKey, dayTotals, goalsForDay, mealLabel } from '../lib/nutrition'
+import { dueMeals } from '../lib/foodReminders'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
@@ -98,6 +99,7 @@ function FoodTodayCard() {
   const goals = base && goalsForDay(base, data.nutrition.entries, today, dayGoalOptions(data))
   if (!goals && !entries.length) return null
   const totals = dayTotals(entries)
+  const due = data.settings.foodReminders ? dueMeals(data.nutrition.entries) : []
   return (
     <button className="card food-today" onClick={() => navigate('food')}>
       <span className="row" style={{ gap: 8 }}>
@@ -129,6 +131,7 @@ function FoodTodayCard() {
           </span>
         </>
       )}
+      {due.length > 0 && <span className="small due">{t(`Falta apuntar: ${due.map((m) => mealLabel(m).toLowerCase()).join(', ')}`, `Not logged yet: ${due.map((m) => mealLabel(m).toLowerCase()).join(', ')}`)}</span>}
     </button>
   )
 }

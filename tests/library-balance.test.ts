@@ -78,3 +78,10 @@ test('calentamiento según el entrenamiento', () => {
   assert.equal(focusFor(['pectorals', 'lats', 'delts', 'quads']), 'upper')
   assert.equal(focusFor(['pectorals', 'quads']), 'full')
 })
+
+test('equilibrio: un grupo trabajado como secundario no sale «sin ninguna serie»', () => {
+  // La sentadilla (cuádriceps) trabaja glúteos: «Series por grupo» le da media serie, así que no está olvidado.
+  const sessions = [s(1, 'quads', 15), s(2, 'pectorals', 15)]
+  assert.ok(muscleBalance(sessions, now).neglected.some(([es]) => es === 'Glúteos'))
+  assert.ok(!muscleBalance(sessions, now, (id) => (id === 'quads' ? ['glutes'] : [])).neglected.some(([es]) => es === 'Glúteos'))
+})

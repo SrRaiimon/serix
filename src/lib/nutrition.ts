@@ -20,7 +20,15 @@ export const mealLabel = (m: MealKey) => ({
 })[m]
 
 /** Valores por 100 g: kilocalorías y gramos de proteína, carbohidratos y grasa (y fibra, si se sabe). */
-export interface Per100 { kcal: number; p: number; c: number; f: number; fiber?: number }
+export interface Per100 { kcal: number; p: number; c: number; f: number; fiber?: number; sugar?: number; salt?: number }
+
+/** Lo que no traen todos los alimentos: fibra, azúcares y sal (en gramos). */
+export const OPTIONAL = ['fiber', 'sugar', 'salt'] as const
+export type Optional = (typeof OPTIONAL)[number]
+
+/** Copia solo los opcionales que se saben. */
+export const optionals = (v: Partial<Record<Optional, number | null | undefined>>, k = 1): Partial<Record<Optional, number>> =>
+  Object.fromEntries(OPTIONAL.filter((key) => typeof v[key] === 'number').map((key) => [key, v[key]! * k]))
 
 /** De dónde sale un alimento: lista básica (id), Open Food Facts (código de barras) o propio (id). */
 export interface FoodRef { kind: 'basic' | 'off' | 'mine' | 'quick'; id: string }
@@ -71,7 +79,9 @@ export function recipeValues(r: Recipe): { per100: Per100; total: Per100; weight
   return {
     per100: {
       kcal: Math.round(total.kcal * k), p: round(total.p * k), c: round(total.c * k), f: round(total.f * k),
-      ...(r.items.every((i) => i.per100.fiber !== undefined) ? { fiber: round(r.items.reduce((n, i) => n + (i.per100.fiber! * i.grams) / 100, 0) * k) } : {}),
+      // Fibra, azúcares y sal solo si todos los ingredientes traen el dato.
+      ...Object.fromEntries(OPTIONAL.filter((key) => r.items.every((i) => i.per100[key] !== undefined))
+        .map((key) => [key, Math.round(r.items.reduce((n, i) => n + (i.per100[key]! * i.grams) / 100, 0) * k * 100) / 100])),
     },
     total, weight, portionG: Math.round(weight / Math.max(1, r.servings)),
   }
@@ -109,6 +119,9 @@ export interface DayPlan {
   meals: Partial<Record<MealKey, { dish: string; removed?: string[]; skipped?: string[] }>>
 }
 
+/** Clave de favorito de un alimento (los apuntados a mano no se pueden marcar). */
+export const favoriteKey = (ref?: FoodRef) => (ref && ref.kind !== 'quick' ? `${ref.kind}:${ref.id}` : undefined)
+
 /** Menú propuesto de un día, si lo hay. */
 export const planFor = (n: { plans?: DayPlan[] }, day: string) => n.plans?.find((p) => p.day === day)
 
@@ -129,6 +142,8 @@ export interface NutritionData {
   /** Semana tipo: lo que se come cada día de la semana (0 = lunes), para volver a apuntarlo. */
   week?: { saved: number; days: Partial<Record<number, WeekItem[]>> }
   prefs?: PlanPrefs
+  /** Alimentos favoritos («basic:egg», «off:8480000…», «mine:id»), los primeros arriba al añadir. */
+  favorites?: string[]
   /** Días marcados a mano como de entreno (los días con entrenamiento ya cuentan solos). */
   trainingDays?: string[]
 }
@@ -207,6 +222,8 @@ export interface WeekIntake {
   days: number
   /** Peso medio de la semana, en kg (si te pesaste). */
   weight?: number
+  /** Media de proteína de los días con algo apuntado. */
+  p: number
 }
 
 /** Últimas semanas (lunes a domingo, la actual incluida): calorías medias y peso medio. */
@@ -222,10 +239,39 @@ export function weeklyIntake(entries: FoodEntry[], weights: { date: number; weig
     return {
       start,
       kcal: days.length ? Math.round(days.reduce((a, d) => a + dayTotals(d).kcal, 0) / days.length) : 0,
+      p: days.length ? days.reduce((a, d) => a + dayTotals(d).p, 0) / days.length : 0,
       days: days.length,
       ...(w.length ? { weight: w.reduce((a, b) => a + b, 0) / w.length } : {}),
     }
   })
+}
+
+/** Últimos 7 días (sin hoy): media de lo apuntado, días cumplidos y el alimento que más proteína dio. */
+export function lastWeek(entries: FoodEntry[], goalsOf: (day: string) => NutritionGoals | undefined, today: string) {
+  const days = Array.from({ length: 7 }, (_, i) => shiftDay(today, -7 + i))
+  const byDay = days.map((d) => entries.filter((e) => e.day === d)).filter((x) => x.length)
+  const totals = byDay.map((x) => ({ day: x[0].day, v: dayTotals(x) }))
+  const avg = (k: 'kcal' | 'p') => (totals.length ? totals.reduce((n, x) => n + x.v[k], 0) / totals.length : 0)
+  const met = totals.filter((x) => { const g = goalsOf(x.day); return g && dayStatus(x.v, g) === 'met' }).length
+  const protein = new Map<string, number>()
+  for (const e of byDay.flat()) protein.set(e.name, (protein.get(e.name) ?? 0) + entryTotals(e).p)
+  const top = [...protein].sort((a, b) => b[1] - a[1])[0]
+  return { logged: totals.length, kcal: avg('kcal'), p: avg('p'), met, top: top && { name: top[0], p: top[1] } }
+}
+
+/** El día en texto, para compartirlo (por comidas, con cantidades y totales). */
+export function dayText(entries: FoodEntry[], title: string): string {
+  const lines = [title]
+  for (const meal of MEALS) {
+    const items = entries.filter((e) => e.meal === meal)
+    if (!items.length) continue
+    lines.push('', `${mealLabel(meal)} (${dayTotals(items).kcal} kcal)`)
+    for (const e of items) lines.push(`- ${e.name}${e.ref?.kind === 'quick' ? '' : `: ${shownGrams(e.grams)} g`}`)
+  }
+  const v = dayTotals(entries)
+  lines.push('', t(`Total: ${v.kcal} kcal · ${shownGrams(v.p)} g de proteína · ${shownGrams(v.c)} g de hidratos · ${shownGrams(v.f)} g de grasa`,
+    `Total: ${v.kcal} kcal · ${shownGrams(v.p)} g protein · ${shownGrams(v.c)} g carbs · ${shownGrams(v.f)} g fat`))
+  return lines.join('\n').replace(/(\d)\.(\d)/g, lang() === 'en' ? '$1.$2' : '$1,$2')
 }
 
 // MARK: Ajuste según el peso
@@ -355,18 +401,31 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
 /** Valores de una cantidad en gramos. */
 export function amountOf(per100: Per100, grams: number): Per100 {
   const k = grams / 100
-  return { kcal: per100.kcal * k, p: per100.p * k, c: per100.c * k, f: per100.f * k, ...(per100.fiber !== undefined ? { fiber: per100.fiber * k } : {}) }
+  return { kcal: per100.kcal * k, p: per100.p * k, c: per100.c * k, f: per100.f * k, ...optionals(per100, k) }
 }
 
 /** Fibra recomendada al día para adultos (EFSA, ingesta adecuada). */
 export const FIBER_GOAL = 25
 
-/** Fibra del día: la de los alimentos que traen el dato, y cuántos no lo traen. */
-export function dayFiber(entries: { per100: Per100; grams: number }[]): { g: number; missing: number } {
+/** Sal recomendada como máximo al día (OMS: menos de 5 g). */
+export const SALT_MAX = 5
+
+/** Fibra, azúcares o sal del día: lo de los alimentos que traen el dato, y cuántos no lo traen. */
+export function dayOptional(entries: { per100: Per100; grams: number }[], key: Optional): { g: number; missing: number } {
   return {
-    g: entries.reduce((n, e) => n + ((e.per100.fiber ?? 0) * e.grams) / 100, 0),
-    missing: entries.filter((e) => e.per100.fiber === undefined).length,
+    g: entries.reduce((n, e) => n + ((e.per100[key] ?? 0) * e.grams) / 100, 0),
+    missing: entries.filter((e) => e.per100[key] === undefined).length,
   }
+}
+export const dayFiber = (entries: { per100: Per100; grams: number }[]) => dayOptional(entries, 'fiber')
+
+/**
+ * Semáforo de azúcares y sal por 100 g (criterios de la Food Standards Agency del Reino Unido para
+ * alimentos; en bebidas los cortes de azúcar son la mitad). Bajo, medio o alto.
+ */
+export function traffic(key: 'sugar' | 'salt', per100: number, drink = false): 'low' | 'medium' | 'high' {
+  const [low, high] = key === 'sugar' ? (drink ? [2.5, 11.25] : [5, 22.5]) : drink ? [0.3, 0.75] : [0.3, 1.5]
+  return per100 <= low ? 'low' : per100 > high ? 'high' : 'medium'
 }
 
 /**
@@ -446,14 +505,15 @@ export const AESAN_SOURCE = 'AESAN, Base de datos de alimentos y bebidas comerci
 let aesan: Promise<{ list: AesanProduct[]; byCode: Map<string, AesanProduct> }> | undefined
 export function loadAesan() {
   // ?v=: al cambiar el archivo se sube el número (y el de la caché en sw-template.js).
-  aesan ??= fetch(`${import.meta.env.BASE_URL}aesan.json?v=1`)
+  aesan ??= fetch(`${import.meta.env.BASE_URL}aesan.json?v=3`)
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-    .then((d: { subcategories: string[]; products: (string | number)[][] }) => {
-      const list = d.products.map(([barcode, name, brand, kcal, p, c, f, sub, fiber]): AesanProduct => {
+    .then((d: { subcategories: string[]; products: (string | number | null)[][] }) => {
+      const list = d.products.map(([barcode, name, brand, kcal, p, c, f, sub, fiber, sugar, salt, label, grams]): AesanProduct => {
         const category = d.subcategories[sub as number] ?? ''
         return {
           barcode: barcode as string, name: name as string, ...(brand && brand !== 'Sin Marca' ? { brand: brand as string } : {}),
-          per100: { kcal: kcal as number, p: p as number, c: c as number, f: f as number, ...(fiber !== undefined ? { fiber: fiber as number } : {}) },
+          per100: { kcal: kcal as number, p: p as number, c: c as number, f: f as number, ...optionals({ fiber, sugar, salt } as Record<Optional, number | null>) },
+          ...(label ? { portion: { label: label as string, g: grams as number } } : {}),
           category, text: fold(`${name} ${brand} ${category}`),
         }
       })
@@ -474,13 +534,12 @@ export async function findAesan(code: string): Promise<AesanProduct | undefined>
 
 /** Productos que contienen todas las palabras; primero los que las tienen en el nombre o la marca, y los más vendidos. */
 export function searchAesan(list: AesanProduct[], query: string, max = 30): AesanProduct[] {
-  const words = fold(query).split(/\s+/).filter(Boolean)
-  if (!words.length) return []
+  const terms = searchTerms(query)
+  if (!terms.length) return []
   const named: AesanProduct[] = [], byCategory: AesanProduct[] = []
   for (const x of list) {
-    if (!words.every((w) => x.text.includes(w))) continue
-    const own = fold(`${x.name} ${x.brand ?? ''}`)
-    ;(words.every((w) => own.includes(w)) ? named : byCategory).push(x)
+    if (!matchesTerms(x.text, terms)) continue
+    ;(matchesTerms(fold(`${x.name} ${x.brand ?? ''}`), terms) ? named : byCategory).push(x)
     if (named.length >= max) break
   }
   return [...named, ...byCategory].slice(0, max)
@@ -499,7 +558,11 @@ export interface BasicFood {
   c: number
   f: number
   fiber?: number
+  sugar?: number
+  salt?: number
   portion: { es: string; en: string; g: number }
+  /** De la lista ampliada: solo sale al buscar (la lista sin buscar enseña los habituales). */
+  more?: 1
 }
 
 let basic: Promise<BasicFood[]> | undefined
@@ -513,9 +576,52 @@ export function loadBasicFoods(): Promise<BasicFood[]> {
 
 /** Búsqueda sin tildes ni mayúsculas: todas las palabras tienen que aparecer. */
 export const fold = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+// MARK: Búsqueda
+
+/** Palabras que significan lo mismo al buscar comida (en singular y sin tildes). */
+const SYNONYMS = [
+  ['pasta', 'macarron', 'espagueti', 'spaghetti', 'tallarin', 'fideo', 'penne', 'tagliatelle', 'lasana'],
+  ['patata', 'papa'], ['boniato', 'batata', 'camote'], ['aguacate', 'palta'], ['fresa', 'frutilla'],
+  ['melocoton', 'durazno'], ['albaricoque', 'damasco'], ['maiz', 'choclo'], ['guisante', 'arveja', 'chicharo'],
+  ['alubia', 'judia', 'frijol', 'habichuela', 'poroto'], ['zumo', 'jugo'], ['gamba', 'langostino'],
+  ['yogur', 'yogurt', 'yoghurt'], ['ternera', 'vacuno', 'buey'], ['cerdo', 'puerco'], ['bocadillo', 'bocata'],
+  ['cacahuete', 'mani'], ['calabacin', 'zucchini'], ['refresco', 'soda'], ['pimiento', 'morron'],
+]
+
+/**
+ * Raíz de una palabra para buscar: sin tildes y en singular («huevos» → «huevo», «panes» → «pan»,
+ * «nueces» → «nuez»). Es sencilla a propósito: luego se busca como parte de la palabra.
+ */
+export function stem(word: string): string {
+  const w = fold(word)
+  if (w.length > 4 && w.endsWith('ces')) return `${w.slice(0, -3)}z`
+  if (w.length > 4 && /[lnrdj]es$/.test(w)) return w.slice(0, -2)
+  if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) return w.slice(0, -1)
+  return w
+}
+
+type Term = { typed: string; alts: RegExp[] }
+const synonymCache = new Map<string, RegExp[]>()
+
+/** Cada palabra buscada: lo escrito (como parte de una palabra) y sus sinónimos (como palabra entera, en singular o plural). */
+export function searchTerms(query: string): Term[] {
+  return fold(query).split(/\s+/).filter(Boolean).map((word) => {
+    const typed = stem(word)
+    let alts = synonymCache.get(typed)
+    if (!alts) {
+      const group = SYNONYMS.find((g) => g.includes(typed))
+      alts = (group ?? []).filter((x) => x !== typed).map((x) => new RegExp(`(^|[^a-z])${x}(e?s)?([^a-z]|$)`))
+      synonymCache.set(typed, alts)
+    }
+    return { typed, alts }
+  })
+}
+
+/** ¿El texto (ya sin tildes) tiene todas las palabras buscadas? */
+export const matchesTerms = (folded: string, terms: Term[]) => terms.every((t) => folded.includes(t.typed) || t.alts.some((r) => r.test(folded)))
+
 export function matches(name: string, query: string): boolean {
-  const n = fold(name)
-  return fold(query).split(/\s+/).filter(Boolean).every((w) => n.includes(w))
+  return matchesTerms(fold(name), searchTerms(query))
 }
 
 // MARK: Open Food Facts
@@ -551,7 +657,7 @@ export function parseOffProduct(barcode: string, json: unknown, language: 'es' |
     barcode,
     name,
     brand: str(product.brands)?.split(',')[0].trim(),
-    per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f), ...(n(nut.fiber_100g) !== undefined && n(nut.fiber_100g)! <= 100 ? { fiber: round1(n(nut.fiber_100g)!) } : {}) },
+    per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f), ...optionals({ fiber: ok100(n(nut.fiber_100g)), sugar: ok100(n(nut.sugars_100g)), salt: ok100(n(nut.salt_100g)) }) },
     ...(grams && grams > 0 && grams < 2000 && (!servingUnit || servingUnit === 'g' || servingUnit === 'ml')
       ? { portion: { label: portionLabel(str(product.serving_size)), g: round1(grams) } } : {}),
   }
@@ -589,6 +695,8 @@ export function suspectValue(v: Per100): 'kcal' | 'p' | 'c' | 'f' | undefined {
 }
 
 const round1 = (v: number) => Math.round(v * 10) / 10
+/** Un valor por 100 g posible, redondeado (la sal con dos decimales). */
+const ok100 = (v?: number) => (v !== undefined && v >= 0 && v <= 100 ? Math.round(v * 100) / 100 : undefined)
 
 /** Busca el producto en Open Food Facts. Solo se envía el código de barras. */
 export async function fetchOffProduct(barcode: string, signal?: AbortSignal): Promise<ScannedProduct | undefined | 'offline'> {

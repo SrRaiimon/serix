@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
+import { dueMeals } from '../src/lib/foodReminders'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods } from '../src/lib/mealPlan'
-import { adjustGoals, computeGoals, dayFiber, recipeValues, waterGoal, dayGoalOptions, dayKey, dayStatus, dayTotals, goalsForDay, MEALS, trainingShift, weekdayOf, weeklyIntake, weekTemplate, weightAdvice, type BasicFood, type FoodEntry, type MealKey } from '../src/lib/nutrition'
+import { adjustGoals, computeGoals, dayFiber, recipeValues, waterGoal, dayGoalOptions, dayKey, dayStatus, dayTotals, dayText, goalsForDay, lastWeek, MEALS, trainingShift, weekdayOf, weeklyIntake, weekTemplate, weightAdvice, type BasicFood, type FoodEntry, type MealKey } from '../src/lib/nutrition'
 
 const { foods } = JSON.parse(readFileSync('public/foods.json', 'utf8')) as { foods: BasicFood[] }
 const goals = computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'keep' })
@@ -226,4 +227,19 @@ test('semana tipo: cada día de lunes a domingo con lo apuntado, y se conserva e
   const parsed = parseBackup(JSON.stringify({ sessions: [], routines: [], nutrition: { entries: [], foods: [], meals: [], week: { saved: Date.UTC(2026, 2, 19), days }, water: { '2026-03-16': 5, mal: 3 } } }))
   assert.deepEqual(parsed.nutrition.week!.days[6]!.map((x) => x.name), ['domingo'])
   assert.deepEqual(parsed.nutrition.water, { '2026-03-16': 5 })
+})
+
+test('última semana, día en texto, recordatorios y favoritos en la copia', () => {
+  const e = (day: string, meal: MealKey, name: string, grams: number, p: number, kcal: number): FoodEntry => ({ id: day + name, day, meal, name, grams, per100: { kcal, p, c: 0, f: 0 }, at: 0 })
+  const entries = [e('2026-03-09', 'lunch', 'Pollo', 200, 30, 150), e('2026-03-09', 'dinner', 'Arroz', 200, 3, 130), e('2026-03-12', 'lunch', 'Pollo', 100, 30, 150)]
+  const w = lastWeek(entries, () => ({ ...goals, kcal: 560 }), '2026-03-15')
+  assert.deepEqual([w.logged, Math.round(w.kcal), w.met, w.top?.name, w.top?.p], [2, 355, 1, 'Pollo', 90])
+  const text = dayText(entries.filter((x) => x.day === '2026-03-09'), 'Mis comidas')
+  assert.ok(text.includes('Comida (300 kcal)') && text.includes('- Pollo: 200 g') && text.includes('Total: 560 kcal'), text)
+  // A las 16:00 sin nada apuntado: desayuno y comida pendientes; con la comida apuntada, solo el desayuno.
+  const now = new Date(2026, 2, 16, 16, 0)
+  assert.deepEqual(dueMeals([], now), ['breakfast', 'lunch'])
+  assert.deepEqual(dueMeals([e('2026-03-16', 'lunch', 'x', 1, 0, 0)], now), ['breakfast'])
+  const parsed = parseBackup(JSON.stringify({ sessions: [], routines: [], nutrition: { entries: [], foods: [], meals: [], favorites: ['basic:egg', 'off:8480000062505', 'raro'] } }))
+  assert.deepEqual(parsed.nutrition.favorites, ['basic:egg', 'off:8480000062505'])
 })

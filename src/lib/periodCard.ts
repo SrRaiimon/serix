@@ -1,7 +1,7 @@
 import { addDays, int, startOfDay, startOfWeek, volume, type Unit } from './format'
 import { locale, t } from './i18n'
 import { MAIN_GROUPS } from './labels'
-import { periodStats, setCount } from './stats'
+import { periodStats, setCount, streakWeeks } from './stats'
 import { C, DISPLAY, SANS, cardChrome, cardFooter, cardTitle, esc, statBand } from './cardStyle'
 import type { Session } from './store'
 
@@ -20,7 +20,7 @@ export interface PeriodSummary {
   volume: number
   sets: number
   records: number
-  /** Racha más larga de semanas seguidas entrenando dentro del periodo. */
+  /** Semanas seguidas entrenando hasta el final del periodo (la misma racha que Inicio). */
   bestStreak: number
   /** Entrenamientos por día (clave: inicio del día). */
   days: Map<number, number>
@@ -56,14 +56,9 @@ export function summarize(sessions: Session[], period: Period, now = Date.now())
     days.set(key, (days.get(key) ?? 0) + 1)
   }
 
-  // Racha: semanas (de lunes a domingo) seguidas con algún entrenamiento.
-  const weeks = [...new Set(inside.map((s) => startOfWeek(s.start).getTime()))].sort((a, b) => a - b)
-  let bestStreak = 0
-  let run = 0
-  weeks.forEach((w, i) => {
-    run = i > 0 && Math.round((w - weeks[i - 1]) / (7 * 86400000)) === 1 ? run + 1 : 1
-    bestStreak = Math.max(bestStreak, run)
-  })
+  // Racha: semanas (de lunes a domingo) seguidas entrenando hasta el final del periodo, contando las de
+  // antes; la misma cifra que Inicio y Progreso en el periodo actual.
+  const bestStreak = streakWeeks(sessions.filter((s) => s.start < to), Math.min(to - 1, now))
 
   const byExercise = new Map<string, { name: string; sets: number }>()
   const groups = MAIN_GROUPS.map(() => 0)

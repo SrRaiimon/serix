@@ -184,6 +184,8 @@ export interface Settings {
   nutritionTrainingSplit?: boolean
   /** Última vez que se aplicó o se descartó el ajuste según el peso (no se vuelve a proponer en 14 días). */
   nutritionAdviceAt?: number
+  /** Recordar apuntar las comidas que no se han apuntado pasada su hora. */
+  foodReminders?: boolean
 }
 
 export interface ExerciseMode {

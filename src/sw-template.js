@@ -7,7 +7,7 @@ const APP_CACHE = `serix-${VERSION}`
 const OCR_CACHE = 'serix-ocr-v1'
 // Productos de supermercado (aesan.json, ~2 MB): igual, aparte. Si cambia el archivo, cambia el número
 // aquí y en loadAesan (src/lib/nutrition.ts).
-const AESAN_CACHE = 'serix-aesan-v1'
+const AESAN_CACHE = 'serix-aesan-v3'
 const KEEP = [OCR_CACHE, AESAN_CACHE]
 const OWN_OR_LEGACY = (key) => (key.startsWith('serix-') && !KEEP.includes(key)) || key.startsWith('gym-app-') || key === 'gym-img-v1'
 const PRECACHE = __PRECACHE__
@@ -71,7 +71,10 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       const client = list.find((c) => 'focus' in c)
-      return client ? client.focus() : self.clients.openWindow('./')
+      // El recordatorio de comidas abre Comidas; el del descanso, la app tal cual.
+      const url = event.notification.data?.url
+      if (!client) return self.clients.openWindow(url || './')
+      return client.focus().then((c) => (url && c.navigate ? c.navigate(url) : c))
     }),
   )
 })

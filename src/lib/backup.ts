@@ -6,7 +6,7 @@ import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Sess
 import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
-import { MEALS, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
+import { MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -157,6 +157,7 @@ function settings(v: unknown): Settings {
     nutritionCarryOver: s.nutritionCarryOver === false ? false : undefined,
     nutritionTrainingSplit: s.nutritionTrainingSplit === false ? false : undefined,
     nutritionAdviceAt: optNum(s.nutritionAdviceAt, EPOCH_MIN, EPOCH_MAX),
+    foodReminders: s.foodReminders === true ? true : undefined,
   }
 }
 
@@ -185,8 +186,8 @@ function exerciseNotes(v: unknown): Record<string, string> {
 function per100(v: unknown): Per100 | undefined {
   if (!isObj(v)) return undefined
   const kcal = optNum(v.kcal, 0, 1000), p = optNum(v.p, 0, 100), c = optNum(v.c, 0, 100), f = optNum(v.f, 0, 100)
-  const fiber = optNum(v.fiber, 0, 100)
-  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f, ...(fiber !== undefined ? { fiber } : {}) } : undefined
+  const extra = optionals({ fiber: optNum(v.fiber, 0, 100), sugar: optNum(v.sugar, 0, 100), salt: optNum(v.salt, 0, 100) })
+  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f, ...extra } : undefined
 }
 
 function foodRef(v: unknown): FoodRef | undefined {
@@ -242,11 +243,13 @@ function savedMeal(v: unknown): SavedMeal | undefined {
 function nutrition(v: unknown): NutritionData {
   if (!isObj(v)) return { entries: [], foods: [], meals: [] }
   const prefs = planPrefs(v.prefs)
+  const favs = list(v.favorites, (x) => (typeof x === 'string' && /^(basic|off|mine):.{1,60}$/.test(x) ? x : undefined), 60)
   const trainingDays = list(v.trainingDays, (x) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : undefined), 400)
   return {
     entries: list(v.entries, foodEntry, 50000), foods: list(v.foods, myFood, 2000), meals: list(v.meals, savedMeal, 200),
     ...(prefs ? { prefs } : {}), ...(trainingDays.length ? { trainingDays } : {}), ...(water(v.water) ? { water: water(v.water) } : {}),
     ...(week(v.week) ? { week: week(v.week) } : {}),
+    ...(favs.length ? { favorites: favs } : {}),
   }
 }
 

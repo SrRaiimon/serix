@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, barcodeVariants, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { amountOf, barcodeVariants, dayOptional, stem, traffic, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -100,8 +100,10 @@ test('lista básica: valores coherentes con sus calorías (factores de la UE)', 
     assert.ok(f.es && f.en && f.ciqual > 0 && f.portion.g > 0, f.id)
     // Energía UE: 4 kcal/g proteína e hidratos, 9 grasa, 2 fibra (más el alcohol, que no se guarda).
     const calc = 4 * f.p + 4 * f.c + 9 * f.f + 2 * (f.fiber ?? 0)
-    const alcohol = ['beer', 'wine'].includes(f.id)
-    if (!alcohol) assert.ok(Math.abs(calc - f.kcal) <= Math.max(15, f.kcal * 0.12), `${f.id}: ${f.kcal} kcal frente a ${Math.round(calc)}`)
+    // Fuera de la cuenta: el alcohol (7 kcal/g), los polialcoholes de lo «sin azúcar» y los ácidos del vinagre.
+    const other = /cerveza|vino|sidra|licor|ginebra|\bron\b|vodka|whisky|brandy|aguardiente|pastís|sake|sangría|cóctel|ponche|kir|champán|cava|marsala|aperitivo|vinagre|sin azúcar|edulcorante|chicle/i.test(f.es)
+    // La lista ampliada trae medias de CIQUAL con algo más de dispersión (p. ej. ñoquis).
+    if (!other) assert.ok(Math.abs(calc - f.kcal) <= Math.max(15, f.kcal * (f.more ? 0.3 : 0.12)), `${f.id}: ${f.kcal} kcal frente a ${Math.round(calc)}`)
   }
 })
 
@@ -232,4 +234,40 @@ test('supermercados (AESAN): el archivo es válido y la búsqueda prioriza nombr
   assert.deepEqual(searchAesan(list, 'hacendado yogur').map((x) => x.barcode), ['3'])
   assert.deepEqual(barcodeVariants('036000291452'), ['036000291452', '0036000291452'])
   assert.deepEqual(barcodeVariants('0036000291452'), ['0036000291452', '036000291452'])
+})
+
+test('búsqueda: singular y plural, y sinónimos como palabra entera', () => {
+  assert.equal(stem('huevos'), 'huevo')
+  assert.equal(stem('panes'), 'pan')
+  assert.equal(stem('nueces'), 'nuez')
+  assert.equal(stem('arroces'), 'arroz')
+  assert.equal(stem('tomates'), 'tomate')
+  assert.ok(matches('Huevo', 'huevos'))
+  assert.ok(matches('Pasta (cocida)', 'macarrones'))
+  assert.ok(matches('Patata cocida', 'papas'))
+  assert.ok(matches('Zumo de naranja', 'jugo de naranja'))
+  assert.ok(matches('Alubias blancas cocidas', 'frijoles'))
+  // Un sinónimo no vale como trozo de otra palabra: «papa» no es «papaya».
+  assert.ok(!matches('Papaya', 'patata'))
+  // Lo escrito sí, mientras se teclea.
+  assert.ok(matches('Pechuga de pollo', 'pech pol'))
+})
+
+test('azúcares y sal: semáforo por 100 g y totales del día con los que traen el dato', () => {
+  assert.equal(traffic('sugar', 4), 'low')
+  assert.equal(traffic('sugar', 10), 'medium')
+  assert.equal(traffic('sugar', 30), 'high')
+  assert.equal(traffic('sugar', 10.6, true), 'medium')
+  assert.equal(traffic('sugar', 12, true), 'high')
+  assert.equal(traffic('salt', 0.2), 'low')
+  assert.equal(traffic('salt', 2), 'high')
+  const e = (salt: number | undefined, grams: number) => ({ grams, per100: { kcal: 0, p: 0, c: 0, f: 0, ...(salt !== undefined ? { salt } : {}) } })
+  assert.deepEqual(dayOptional([e(1.5, 200), e(undefined, 100)], 'salt'), { g: 3, missing: 1 })
+  assert.deepEqual(amountOf({ kcal: 100, p: 1, c: 2, f: 3, sugar: 10, salt: 1 }, 50), { kcal: 50, p: 0.5, c: 1, f: 1.5, sugar: 5, salt: 0.5 })
+  // Open Food Facts trae azúcares y sal.
+  const off = parseOffProduct('1', { product: { product_name: 'Galletas', nutriments: { 'energy-kcal_100g': 450, proteins_100g: 6, carbohydrates_100g: 70, fat_100g: 16, sugars_100g: 24.4, salt_100g: 0.555 } } })!
+  assert.deepEqual([off.per100.sugar, off.per100.salt], [24.4, 0.56])
+  // Se conservan en la copia.
+  const entry = { id: 'x', day: '2026-03-10', meal: 'lunch', name: 'x', grams: 100, per100: { kcal: 100, p: 1, c: 2, f: 3, sugar: 5, salt: 0.4 }, at: 1 }
+  assert.deepEqual(parseBackup(JSON.stringify({ sessions: [], routines: [], nutrition: { entries: [entry], foods: [], meals: [] } })).nutrition.entries[0].per100, entry.per100)
 })

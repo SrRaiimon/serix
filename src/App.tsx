@@ -1,5 +1,6 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { useFoodReminders } from './lib/foodReminders'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
 import { lang, t } from './lib/i18n'
@@ -100,6 +101,7 @@ export default function App() {
 
 function Main() {
   const data = useData()
+  useFoodReminders(data.settings.foodReminders === true, data.nutrition.entries)
   const route = useRoute()
   const ui = useWorkoutUI()
   const active = activeSession(data)

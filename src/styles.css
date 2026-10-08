@@ -35,7 +35,7 @@
   --green-text: #15803d;
   --red-text: #c4001a;
   --blue-text: #0062cc;
-  --amber-text: #b45f00;
+  --amber-text: #a35400;
   --on-accent: #111114;
   --bar: #ffffff;
   --shadow: 0 10px 30px rgba(14, 16, 19, 0.12);
@@ -1226,8 +1226,10 @@ a.list-row:active {
 }
 
 .set-check {
-  width: 34px;
-  height: 34px;
+  /* 44 px para tocarlo bien con las manos sudadas; el margen negativo mantiene la fila igual. */
+  width: 44px;
+  height: 44px;
+  margin: -5px;
   display: grid;
   place-items: center;
   color: var(--text-3);
@@ -2508,7 +2510,7 @@ textarea { resize: none; }
 .proposal-actions .btn { flex: 1 1 auto; justify-content: center; min-height: 44px; }
 
 .food-month { gap: 14px; }
-.month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; text-align: center; }
+.food-month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; text-align: center; }
 .mday { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 48px; border-radius: 10px; background: var(--fill); color: var(--text); padding: 2px 0; font-variant-numeric: tabular-nums; }
 .mday:disabled { background: transparent; color: var(--text-3); }
 .mday-n { font-size: 14px; font-weight: 600; line-height: 1.1; }
@@ -2534,3 +2536,24 @@ textarea { resize: none; }
 .water-dots { display: flex; flex-wrap: wrap; gap: 3px; max-width: 62px; justify-content: flex-end; }
 .water-dots i { width: 6px; height: 10px; border-radius: 2px 2px 3px 3px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--separator); }
 .water-dots i.on { background: var(--blue-text); box-shadow: none; }
+.sugar-salt { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 0 2px; font-size: 14px; }
+.tl-item { display: inline-flex; align-items: center; gap: 6px; }
+.tl { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.tl.low { background: color-mix(in srgb, var(--green) 18%, var(--card)); color: var(--green-text); }
+.tl.medium { background: color-mix(in srgb, var(--gold) 22%, var(--card)); color: var(--amber-text); }
+.tl.high { background: color-mix(in srgb, var(--red) 16%, var(--card)); color: var(--red-text); }
+.day-extras { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: -4px; }
+.day-extras .over strong { color: var(--red-text); }
+.day-extras-note { flex-basis: 100%; }
+.fav-btn { flex-shrink: 0; color: var(--text-2); }
+.fav-btn.on { color: var(--amber-text); }
+.week-card { gap: 10px; }
+.week-card .stat-band.food-band { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.reminder-row { color: inherit; }
+.reminder-row > svg:first-child { color: var(--accent-text); }
+.food-today .due { color: var(--accent-text); font-weight: 600; }
+.session-food { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; text-align: left; color: inherit; }
+.stall-box:not(.open) { padding: 0; background: transparent; }
+.stall-line { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 36px; padding: 6px 10px; border-radius: 10px; text-align: left; color: var(--text-2); background: color-mix(in srgb, #f08c00 10%, transparent); }
+.stall-box.open .stall-line { padding: 0; background: transparent; min-height: 28px; }
+.stall-more { font-weight: 600; color: var(--amber-text); }

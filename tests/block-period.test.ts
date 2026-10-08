@@ -52,7 +52,7 @@ test('resumen del mes: cifras, días, racha, ejercicios y grupo', () => {
   assert.equal(m.volume, 15 * 500)
   assert.equal(m.days.size, 3)
   assert.equal(m.days.get(new Date(2026, 2, 2).getTime()), 2)
-  assert.equal(m.bestStreak, 3) // semanas del 2, 9 y 16 de marzo
+  assert.equal(m.bestStreak, 4) // semanas del 23 de febrero y del 2, 9 y 16 de marzo, seguidas: igual que Inicio
   assert.deepEqual(m.top.map((e) => [e.name, e.sets]), [['Sentadilla', 9], ['Press', 6]])
   assert.equal(m.topGroup, 5) // cuádriceps
   assert.equal(summarize(sessions, 'lastMonth', now).sessions, 1)

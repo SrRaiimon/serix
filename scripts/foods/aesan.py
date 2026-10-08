@@ -76,6 +76,14 @@ def title(text):
     return ' '.join(w if w in KEEP else w[:1] + w[1:].lower() for w in text.split())
 
 
+# Los 500 más vendidos, revisados a mano (aesan-top.tsv: EAN, nombre, ración, gramos): nombre con tildes y
+# sin abreviaturas, y una ración orientativa propia. Los valores nutricionales no se tocan.
+top = {}
+for line in open('scripts/foods/aesan-top.tsv', encoding='utf8'):
+    if line.strip():
+        ean, name, label, grams = line.rstrip('\n').split('\t')
+        top[ean] = (name, label, int(grams))
+
 rows = read_rows(sys.argv[1])
 head = next(rows)
 ix = {h: i for i, h in enumerate(head)}
@@ -92,24 +100,36 @@ for r in rows:
     # El nombre empieza casi siempre por la marca: se quita (la marca va aparte).
     if brand and name.upper().startswith(brand.upper() + ' '):
         name = name[len(brand) + 1:]
+    # Sin nombre propio (solo la marca): la denominación legal o, si no, la subcategoría.
+    if not clean(name):
+        name = get(r, 'DenominacionLegal').strip()[:80] or get(r, 'Subcategoria').strip()
     fiber = num(get(r, 'Fibra'))
     share = num(get(r, 'CuotaMercadoTotalEan')) or 0
     # Subcategoría oficial (bien escrita y con tildes): sirve para buscar cuando el nombre va abreviado.
     sub = get(r, 'Subcategoria').strip()
     if sub not in subs:
         subs.append(sub)
-    item = [ean, sentence(name), title(brand), round(kcal), p, c, f, subs.index(sub)]
-    if fiber is not None and fiber <= 100:
-        item.append(fiber)
+    fixed = top.get(ean)
+    sugar, salt = num(get(r, 'Azúcares')), num(get(r, 'Sal'))
+    item = [ean, fixed[0] if fixed else sentence(name), title(brand), round(kcal), p, c, f, subs.index(sub),
+            fiber if fiber is not None and fiber <= 100 else None,
+            sugar if sugar is not None and sugar <= 100 else None,
+            round(salt, 2) if salt is not None and salt <= 100 else None]
+    if fixed:
+        item += [fixed[1], fixed[2]]
+    # Sin los null del final (ahorra espacio).
+    while item[-1] is None:
+        item.pop()
     products.append((float(get(r, 'CuotaMercadoTotalEan') or 0), item))
 
 products.sort(key=lambda x: -x[0])
 json.dump({
-    'version': 1,
+    'version': 2,
     'source': 'AESAN, Base de datos de alimentos y bebidas comercializados en España en 2022 (datos de Kantar Worldpanel), '
               f'última actualización {sys.argv[2]}. Valores por 100 g o 100 ml.',
     'subcategories': subs,
-    # [EAN, nombre, marca, kcal, proteína, hidratos, grasa, subcategoría, fibra?], de más a menos vendido.
+    # [EAN, nombre, marca, kcal, proteína, hidratos, grasa, subcategoría, fibra?, azúcares?, sal?, ración?,
+    # gramos?], de más a menos vendido (null si no se sabe; los null del final se quitan).
     'products': [p for _, p in products],
 }, open('public/aesan.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print(len(products), 'productos')

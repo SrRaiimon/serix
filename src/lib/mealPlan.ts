@@ -1,5 +1,5 @@
 import { lang } from './i18n'
-import { dayTotals, fold, MEALS, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
+import { dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
 
 // Menú del día propuesto: un plato por comida, con las cantidades ajustadas a lo que te queda del
 // objetivo. Los platos salen de una lista base (alimentos de la lista básica) y de lo que tú comes:
@@ -106,7 +106,7 @@ export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: str
       const f = byId.get(id)
       if (!f) break
       items.push({
-        key: id, name: en ? f.en : f.es, per100: { kcal: f.kcal, p: f.p, c: f.c, f: f.f, ...(f.fiber !== undefined ? { fiber: f.fiber } : {}) }, ref: { kind: 'basic', id },
+        key: id, name: en ? f.en : f.es, per100: { kcal: f.kcal, p: f.p, c: f.c, f: f.f, ...optionals(f) }, ref: { kind: 'basic', id },
         role, g, min: min ?? g, max: max ?? g, step: units ? f.portion.g : g >= 50 ? 10 : 5,
       })
     }

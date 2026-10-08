@@ -8,7 +8,7 @@ import { shareImage, svgToPng } from '../lib/shareCard'
 import { duration, fromKg, int, monthYear, num, shortDay, tonnes, tons, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
-import { exerciseHistory, monthToDate, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
+import { exerciseHistory, monthToDate, newRecords, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
 import { finishedSessions, updateSettings, useData, type Session } from '../lib/store'
 import type { Unit } from '../lib/format'
 import { ExerciseSheet } from './Exercises'
@@ -106,7 +106,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
 
 /** Equilibrio entre músculos opuestos en las últimas 4 semanas (lib/balance.ts). */
 function BalanceCard({ sessions }: { sessions: Session[] }) {
-  const balance = useMemo(() => muscleBalance(sessions), [sessions])
+  const catalog = useCatalog()
+  const balance = useMemo(() => muscleBalance(sessions, Date.now(), (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
   if (balance.total === 0) return null
   return (
     <Card title={t('Equilibrio muscular (4 semanas)', 'Muscle balance (4 weeks)')} icon={Scale}>
@@ -264,6 +265,20 @@ function WeightFoodCard() {
   const avg = fed.length ? Math.round(fed.reduce((a, w) => a + w.kcal * w.days, 0) / fed.reduce((a, w) => a + w.days, 0)) : 0
   const change = weighed.length >= 2 ? weighed[weighed.length - 1].weight! - weighed[0].weight! : undefined
   const kg = (v: number) => weight(Math.abs(v), unit)
+  // Récords en las semanas con la proteína cumplida (media ≥ 90 % del objetivo) frente a las demás.
+  const proteinWeeks = useMemo(() => {
+    if (!goal) return undefined
+    const sessions = finishedSessions(data)
+    const per = weeks.filter((w) => w.days >= 3).map((w) => {
+      const end = w.start.getTime() + 7 * 86400000
+      const inWeek = sessions.filter((x) => x.start >= w.start.getTime() && x.start < end)
+      return { ok: w.p >= goal.protein * 0.9, records: inWeek.reduce((n, x) => n + newRecords(x, sessions).length, 0), trained: inWeek.length > 0 }
+    }).filter((w) => w.trained)
+    const yes = per.filter((w) => w.ok), no = per.filter((w) => !w.ok)
+    if (yes.length < 2 || no.length < 2) return undefined
+    const avg = (l: typeof per) => l.reduce((n, w) => n + w.records, 0) / l.length
+    return { yes: avg(yes), no: avg(no), weeks: per.length }
+  }, [goal, data, weeks])
   return (
     <Card title={t('Calorías y peso', 'Calories and weight')} icon={Utensils}>
       {fed.length > 0 && (
@@ -287,6 +302,12 @@ function WeightFoodCard() {
             : change < 0 ? t(`has bajado ${kg(change)}`, `you have lost ${kg(change)}`) : t(`has subido ${kg(change)}`, `you have gained ${kg(change)}`),
         ].filter(Boolean).join(t(' y ', ' and ')) + '.')}
       </span>
+      {proteinWeeks && (
+        <span className="small">
+          {t(`Las semanas que llegaste a tu proteína batiste ${num(proteinWeeks.yes)} récords de media; las demás, ${num(proteinWeeks.no)}.`, `In weeks when you hit your protein you set ${num(proteinWeeks.yes)} records on average; in the others, ${num(proteinWeeks.no)}.`)}
+          <span className="muted">{t(` (${proteinWeeks.weeks} semanas con entrenos y comida apuntada; es una comparación, no prueba la causa)`, ` (${proteinWeeks.weeks} weeks with workouts and food logged; a comparison, not proof of cause)`)}</span>
+        </span>
+      )}
     </Card>
   )
 }
@@ -373,10 +394,12 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
 /** Ejercicios hechos el último mes que no mejoran desde hace varias sesiones. */
 function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const list = useMemo(() => stalls(sessions, Date.now() - 30 * 86400000), [sessions])
+  const [all, setAll] = useState(false)
   if (!list.length) return null
+  // Los 3 primeros; el resto, al tocar «Ver todos» (con muchos, la lista tapaba el resumen).
   return (
-    <Card title={t('Estancados', 'Stalled')} icon={TrendingDown}>
-      {list.map((x) => (
+    <Card title={t(`Estancados (${list.length})`, `Stalled (${list.length})`)} icon={TrendingDown}>
+      {(all ? list : list.slice(0, 3)).map((x) => (
         <button key={x.exerciseId} className="row" style={{ textAlign: 'left' }} onClick={() => navigate('progress', 'exercise', x.exerciseId)}>
           <Thumb exerciseId={x.exerciseId} size={36} />
           <span className="grow">
@@ -385,6 +408,7 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           </span>
         </button>
       ))}
+      {list.length > 3 && <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => setAll(!all)}>{all ? t('Ver menos', 'Show fewer') : t(`Ver todos (${list.length})`, `Show all (${list.length})`)}</button>}
       <span className="small muted">
         {t('Pueden haber subido este mes y llevar unas sesiones parados. Al empezarlos te propondremos una descarga (menos series y −10 % de peso) o una variante.',
           'They may have gone up this month and still be stuck for a few sessions. When you start them we will suggest a deload (fewer sets and −10% weight) or a variation.')}

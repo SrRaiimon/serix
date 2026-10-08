@@ -10,7 +10,7 @@ const allSettings: Required<Settings> = {
   ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
   catalogVersion: 2, block: { start: Date.UTC(2026, 0, 5), weeks: 5 }, effortRestOff: true, exerciseModes: { Pullups: { assisted: true }, Dumbbell_Lunges: { unilateral: true } }, simpleMode: true, guideHidden: true, guideProgressSeen: true, shareBodyWeight: true, friendShareAt: Date.UTC(2026, 0, 3), friendReminderOff: true, friendReminderSnooze: Date.UTC(2026, 0, 6), language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
   nutrition: { kcal: 2600, protein: 150, carbs: 300, fat: 72, sex: 'f', age: 31, heightCm: 168, weightKg: 62.5, activity: 1.55, aim: 'gain', proteinOnly: true, adjust: -150 },
-  nutritionCarryOver: false, nutritionTrainingSplit: false, nutritionAdviceAt: Date.UTC(2026, 0, 4),
+  nutritionCarryOver: false, nutritionTrainingSplit: false, nutritionAdviceAt: Date.UTC(2026, 0, 4), foodReminders: true,
 }
 
 const sample = (): AppData => ({
