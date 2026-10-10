@@ -1,10 +1,10 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
 import { fillBodyweights } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
-import { lang, t } from './lib/i18n'
+import { dictReady, langKey, onDict, t } from './lib/i18n'
 import { migrateCatalog, relabelExercises } from './lib/migrate'
 import { autoProtect } from './lib/protect'
 import { clock } from './lib/format'
@@ -34,6 +34,7 @@ const screens = {
   session: () => import('./screens/Session'),
   transfer: () => import('./screens/Transfer'),
   workout: () => import('./screens/Workout'),
+  wod: () => import('./screens/Wod'),
 }
 const ExercisesScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExercisesScreen })))
 const ExerciseDetailScreen = lazy(() => screens.exercises().then((m) => ({ default: m.ExerciseDetailScreen })))
@@ -57,6 +58,7 @@ const ProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.P
 const ExerciseProgressScreen = lazy(() => screens.progress().then((m) => ({ default: m.ExerciseProgressScreen })))
 const RoutinesScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutinesScreen })))
 const RoutineDetailScreen = lazy(() => screens.routines().then((m) => ({ default: m.RoutineDetailScreen })))
+const WodScreen = lazy(() => screens.wod().then((m) => ({ default: m.WodScreen })))
 const SessionDetailScreen = lazy(() => screens.session().then((m) => ({ default: m.SessionDetailScreen })))
 const SummarySheet = lazy(() => screens.session().then((m) => ({ default: m.SummarySheet })))
 const TransferScreen = lazy(() => screens.transfer().then((m) => ({ default: m.TransferScreen })))
@@ -73,12 +75,14 @@ export default function App() {
   // rehace si cambian de verdad.
   const { customExercises } = useData()
   const customKey = JSON.stringify(customExercises)
-  const language = lang()
+  // Cambia con el idioma y cuando llega su diccionario (francés y portugués se descargan aparte).
+  const language = useSyncExternalStore(onDict, langKey)
   const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey)) : undefined), [raw, language, customKey])
 
   useEffect(() => {
     Promise.all([loadCatalog(), loadData()])
-      .then(([c]) => {
+      .then(async ([c]) => {
+        await dictReady()
         migrateCatalog(new Catalog(c.exercises, c.legacy))
         setRaw(c)
         void autoProtect()
@@ -123,6 +127,7 @@ function Main() {
       requestAdd(mealByTime())
       return navigate('food')
     }
+    if (route[1] === 'wod') return navigate('wod')
     if (route[1] === 'free') startEmpty()
     if (route[1] === 'next') {
       const routine = nextRoutine(d)
@@ -190,6 +195,8 @@ function Screen({ route }: { route: string[] }) {
       if (a === 'legal') return <LegalScreen />
       if (a === 'friends') return b ? <FriendDetailScreen id={b} /> : <FriendsScreen />
       return <ProfileScreen />
+    case 'wod':
+      return <WodScreen />
     case 'timer':
       return <IntervalScreen key={`${a ?? ''}${b ?? ''}`} warmup={a === 'warmup' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined}
         cooldown={a === 'cooldown' && (b === 'full' || b === 'upper' || b === 'legs') ? b : undefined} />

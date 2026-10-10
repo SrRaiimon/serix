@@ -1,7 +1,7 @@
 import { FileText, HeartPulse, Lock, Mail, Scale } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Card, NavBar } from '../components/ui'
-import { lang, t } from '../lib/i18n'
+import { dataLang, t } from '../lib/i18n'
 
 export const REPO_URL = 'https://github.com/SrRaiimon/serix'
 
@@ -9,7 +9,7 @@ export const REPO_URL = 'https://github.com/SrRaiimon/serix'
 export function HealthNotice({ plain = false }: { plain?: boolean }) {
   return (
     <p className={plain ? undefined : 'small muted'} style={plain ? undefined : { margin: 0 }}>
-      {lang() === 'en' ? (
+      {dataLang() === 'en' ? (
         <>
           Serix gives general guidance and <strong>is not a substitute for a health or fitness
           professional</strong>. If you have an injury, an illness or any doubts, get advice before you start. You
@@ -39,7 +39,7 @@ export function LegalScreen() {
     <>
       <NavBar showBack title={t('Legal y privacidad', 'Legal and privacy')} />
       <div className="screen with-nav">
-        {lang() === 'en' ? <LegalEn /> : <LegalEs />}
+        {dataLang() === 'en' ? <LegalEn /> : <LegalEs />}
         <p className="list-footer" style={{ margin: 0 }}>
           <FileText size={13} style={{ verticalAlign: -2 }} /> {t('Versión', 'Version')} {__APP_VERSION__}
         </p>

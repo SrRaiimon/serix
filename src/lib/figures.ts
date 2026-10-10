@@ -3339,6 +3339,54 @@ const crabWalk: Figure = {
     { torso: -62, head: -40, thigh: 92, shin: 185, thigh2: 70, shin2: 170, foot: 90, upper: 178, fore: 175, upper2: 195, fore2: 185 },
   ],
 }
+const hollowHold: Figure = {
+  // Boca arriba con hombros y piernas despegados del suelo y los brazos por encima de la cabeza.
+  view: 'side', work: ['core'], anchor: { joint: 'hip', at: [140, 208] }, shadow: 110, period: 4000, props: [],
+  frames: [
+    { torso: -78, head: -70, thigh: 72, shin: 72, foot: 30, upper: -76, fore: -76 },
+    { torso: -77, head: -69, thigh: 73, shin: 73, foot: 30, upper: -75, fore: -75 },
+  ],
+}
+const hollowRock: Figure = {
+  ...hollowHold, period: 1400,
+  frames: [
+    { torso: -86, head: -78, thigh: 64, shin: 64, foot: 30, upper: -84, fore: -84 },
+    { torso: -68, head: -60, thigh: 82, shin: 82, foot: 30, upper: -66, fore: -66 },
+  ],
+}
+const wallSit: Figure = {
+  // Espalda contra la pared, muslos paralelos al suelo; casi quieto (es isométrico).
+  view: 'side', work: ['legs'], period: 4000, props: [{ type: 'box', span: [62, 76], y: 40 }],
+  frames: [
+    { torso: 0, head: 0, thigh: 90, shin: 180, foot: 90, upper: 90, fore: 90 },
+    { torso: -1, head: -1, thigh: 91, shin: 180, foot: 90, upper: 88, fore: 88 },
+  ],
+}
+const lSit: Figure = {
+  // En paralelas bajas: brazos estirados y piernas rectas, en horizontal.
+  view: 'side', work: ['core', 'arms'], anchor: { joint: 'wrist', at: [120, 190] }, period: 3000,
+  props: [{ type: 'box', span: [108, 132], y: 192 }],
+  frames: [
+    { torso: 0, head: 0, thigh: 96, shin: 96, foot: 60, upper: 180, fore: 180 },
+    { torso: -2, head: -2, thigh: 88, shin: 88, foot: 60, upper: 182, fore: 182 },
+  ],
+}
+const pikePushUp: Figure = {
+  // Cadera arriba (en V invertida): la cabeza baja hacia el suelo entre las manos.
+  view: 'side', work: ['shoulders', 'arms'], anchor: { joint: 'wrist', at: [150, 218] }, hands: true, shadow: 110, props: [],
+  frames: [
+    { torso: 115, head: 130, thigh: -152, shin: -152, foot: 100, upper: 180, fore: 180 },
+    { torso: 140, head: 155, thigh: -158, shin: -158, foot: 100, upper: -145, fore: 150 },
+  ],
+}
+const shadowBox: Figure = {
+  // En guardia, un pie adelantado: golpe recto con un brazo mientras el otro protege la cara.
+  view: 'side', work: ['shoulders', 'core'], period: 800, props: [],
+  frames: [
+    { torso: 6, head: 4, thigh: 166, shin: 182, thigh2: 194, shin2: 184, foot: 90, upper: 92, fore: 90, upper2: 150, fore2: 25 },
+    { torso: 2, head: 2, thigh: 166, shin: 182, thigh2: 194, shin2: 184, foot: 90, upper: 150, fore: 25, upper2: 92, fore2: 90 },
+  ],
+}
 const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Wall_Ball: ['Kettlebell_Thruster', [{ type: 'ball', at: 'wrist', size: 11, front: true }]],
   Burpee: 'Freehand_Jump_Squat',
@@ -3358,19 +3406,19 @@ const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Man_Maker: 'Pushups',
   Box_Step_Over: ['Dumbbell_Step_Ups', FIGURES.Dumbbell_Step_Ups.props.filter((p) => p.type === 'box')],
   GHD_Sit_Up: 'Jackknife_Sit-Up',
-  L_Sit: 'Hanging_Leg_Raise',
+  L_Sit: lSit,
   Rowing_Machine: 'Rowing_Stationary',
   Assault_Bike: 'Bicycling_Stationary',
   Ski_Erg: 'Straight-Arm_Pulldown',
   Squat_Clean: 'Clean',
-  Hollow_Hold: 'Dead_Bug',
-  Hollow_Rock: 'Dead_Bug',
+  Hollow_Hold: hollowHold,
+  Hollow_Rock: hollowRock,
   V_Up: 'Jackknife_Sit-Up',
   Jumping_Jacks: 'Star_Jump',
   High_Knees: 'Fast_Skipping',
   Skater_Jumps: 'Lateral_Bound',
-  Wall_Sit: ['Chair_Squat', []],
-  Pike_Push_Up: 'Handstand_Push-Ups',
+  Wall_Sit: wallSit,
+  Pike_Push_Up: pikePushUp,
   Archer_Push_Up: 'Pushups',
   Plank_Shoulder_Taps: 'Plank',
   Plank_Jacks: 'Mountain_Climbers',
@@ -3384,7 +3432,7 @@ const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Single_Leg_Deadlift: ['Kettlebell_One-Legged_Deadlift', []],
   Bodyweight_Bulgarian_Split_Squat: 'Split_Squats',
   Shuttle_Run: ['Running_Treadmill', []],
-  Shadow_Boxing: 'Fast_Skipping',
+  Shadow_Boxing: shadowBox,
   Sprawl: 'Freehand_Jump_Squat',
 }
 for (const [id, like] of Object.entries(SAME_AS)) {

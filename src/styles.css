@@ -2148,6 +2148,7 @@ html.scroll-locked body {
 .recovery-status { text-align: right; white-space: nowrap; font-weight: 600; }
 .hero-warning { gap: 6px; align-items: flex-start; font-weight: 600; padding: 8px 10px; border-radius: 10px; background: var(--fill); color: var(--text); }
 .hero-warning svg { color: var(--amber-text); }
+.hero-note { color: var(--text-2); font-weight: 600; }
 .import-nomatch { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: var(--text-2); background: var(--fill); }
 
 /* Logros */
@@ -2663,3 +2664,22 @@ a.list-row { color: var(--text); text-decoration: none; }
 .guided-count { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 140px; font-weight: 800; color: #fff; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6); }
 .guided-error { position: absolute; inset: auto 16px 16px; margin: 0; padding: 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.7); }
 .guided-shoot { margin: 0 16px; min-height: 64px; font-size: 20px; }
+
+/* MARK: Entrenador de la semana (components/Coach.tsx) */
+.coach-tip { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--separator); }
+.card-title + .coach-tip { border-top: 0; padding-top: 0; }
+.coach-icon { flex-shrink: 0; margin-top: 2px; color: var(--accent-text); }
+.coach-action { margin-top: 8px; max-width: 100%; text-align: left; white-space: normal; }
+.coach-hide { width: 30px; height: 30px; flex-shrink: 0; color: var(--text-3); }
+
+/* MARK: WOD del día (screens/Wod.tsx) */
+.wod-hero { gap: 12px; }
+.wod-title { margin: 0; font-size: 28px; line-height: 1.1; letter-spacing: -0.02em; }
+.wod-moves { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wod-move { width: 100%; gap: 12px; text-align: left; }
+.wod-amount { min-width: 52px; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent-text); text-align: center; }
+.wod-try { width: 100%; padding: 6px 0; gap: 12px; }
+
+/* MARK: Liga semanal (screens/Friends.tsx) */
+.league-last { font-weight: 700; padding: 8px 10px; border-radius: 10px; background: var(--fill); }
+.league-points { font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }

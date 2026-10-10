@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, BellRing, CloudOff, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -20,12 +20,13 @@ import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
 import { speak, voiceSupported } from '../lib/voice'
 import { isIOS } from '../lib/pwa'
+import { offlineStatus, prepareOffline, type OfflineProgress } from '../lib/offline'
 import { finishedSessions, replaceData, resetData, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlateInventory, PlatesView } from './Plates'
 
 const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
 import { SessionRow } from '../components/SessionRow'
-import { plural, t, type Lang } from '../lib/i18n'
+import { LANGS, plural, t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 
 export function ProfileScreen() {
@@ -133,8 +134,7 @@ export function ProfileScreen() {
           <span className="grow">Idioma · Language</span>
           <select className="select" value={settings.language ?? ''} onChange={(e) => updateSettings({ language: (e.target.value || undefined) as Lang | undefined })}>
             <option value="">{t('Automático', 'Automatic')}</option>
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            {LANGS.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         </label>
         <label className="list-row">
@@ -293,11 +293,13 @@ export function ProfileScreen() {
           <Row icon={HardDrive} label={t('Protección contra borrado', 'Protection against deletion')} detail={storage === 'protected' ? t('Activada', 'On') : t('Activar', 'Turn on')}
             onClick={storage === 'protected' ? undefined : () => void protect()} chevron={false} />
         )}
+        <OfflineRow />
         <Row icon={Trash2} label={t('Borrar todos los datos', 'Delete all data')} className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
       </div>
       <p className="list-footer">
         {t('Tus datos se guardan solo en este dispositivo. La protección evita que el navegador los borre para liberar espacio, pero no sustituye a una copia: si borras la app, solo podrás recuperarlos con una copia exportada. Para cambiar de móvil, usa «Pasar a otro móvil».',
           'Your data is stored only on this device. Protection stops the browser from deleting it to free up space, but it is no substitute for a backup: if you delete the app, you can only recover it from an exported backup. To switch phones, use “Move to another phone”.')}
+        {' '}{t('Entrenar y apuntar comidas funciona siempre sin conexión; «Usar sin conexión» descarga además el escáner de códigos, los productos del súper y el lector de etiquetas.', 'Training and logging food always work offline; “Use offline” also downloads the barcode scanner, supermarket products and the label reader.')}
       </p>
 
       <div className="list-header">{t('Ayuda', 'Help')}</div>
@@ -671,3 +673,31 @@ export function PlatesScreen() {
   )
 }
 
+
+/**
+ * Descargar de una vez lo que solo se guarda al usarlo (escáner de códigos, productos del súper y lector
+ * de etiquetas), para el gimnasio o el súper sin cobertura. No sale si no hay service worker.
+ */
+function OfflineRow() {
+  const [state, setState] = useState<OfflineProgress>()
+  const [busy, setBusy] = useState(false)
+  const [toast, showToast] = useToast()
+  useEffect(() => { void offlineStatus().then(setState) }, [])
+  if (!state) return null
+  const ready = state.done >= state.total
+  const start = async () => {
+    setBusy(true)
+    const end = await prepareOffline(setState)
+    setBusy(false)
+    if (end?.failed) showToast(t('No se pudo descargar todo: prueba con mejor conexión', 'Could not download everything: try with a better connection'))
+    else if (end) showToast(t('Listo: todo funciona sin conexión', 'Done: everything works offline'))
+  }
+  return (
+    <>
+      <Row icon={CloudOff} label={t('Usar sin conexión', 'Use offline')} chevron={false}
+        detail={ready ? t('Todo descargado', 'All downloaded') : busy ? `${Math.round((state.done / state.total) * 100)} %` : t('Descargar (~17 MB)', 'Download (~17 MB)')}
+        onClick={ready || busy ? undefined : () => void start()} />
+      {toast}
+    </>
+  )
+}

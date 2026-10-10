@@ -2,7 +2,7 @@ import { fold, makeSearch } from './search'
 import { sessionKcal } from './burn'
 import type { Tracking } from './tracking'
 import { addDays, startOfWeek } from './format'
-import { lang, t } from './i18n'
+import { dataLang, lang, t } from './i18n'
 
 // Comidas: lo que comes cada día (calorías y macronutrientes) frente a un objetivo calculado con
 // tus datos. Todo se guarda en el móvil. Los alimentos salen de tres sitios:
@@ -724,7 +724,7 @@ export async function fetchOffProduct(barcode: string, signal?: AbortSignal): Pr
     const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${fields}`, { signal })
     if (r.status === 404) return undefined
     if (!r.ok) return 'offline'
-    return parseOffProduct(barcode, await r.json(), lang())
+    return parseOffProduct(barcode, await r.json(), dataLang())
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e
     return 'offline'
@@ -753,7 +753,7 @@ export async function searchOff(query: string, signal?: AbortSignal): Promise<Sc
     const out: ScannedProduct[] = []
     for (const product of data.products ?? []) {
       const code = typeof product.code === 'string' ? product.code : ''
-      const parsed = code ? parseOffProduct(code, { product }, lang()) : undefined
+      const parsed = code ? parseOffProduct(code, { product }, dataLang()) : undefined
       // Sin repetir: ni el mismo código ni el mismo producto (nombre y marca) con otro código.
       const key = parsed && `${fold(parsed.name)}|${fold(parsed.brand ?? '')}`
       if (!parsed || seen.has(code) || seen.has(key!)) continue

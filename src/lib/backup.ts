@@ -137,6 +137,17 @@ function session(v: unknown): Session | undefined {
     id: str(v.id, uid(), 50), name: str(v.name, 'Entrenamiento', 100), routineId: typeof v.routineId === 'string' ? v.routineId.slice(0, 50) : undefined,
     start, end: optNum(v.end, start, EPOCH_MAX), notes: str(v.notes, '', 2000), exercises: list(v.exercises, sessionExercise, 100),
     readiness: readiness(v.readiness),
+    wod: wodRecord(v.wod),
+  }
+}
+
+function wodRecord(v: unknown): Session['wod'] {
+  if (!isObj(v) || typeof v.key !== 'string') return undefined
+  const format = oneOf(v.format, ['amrap', 'emom', 'forTime'] as const)
+  if (!format) return undefined
+  return {
+    key: v.key.slice(0, 200), format, minutes: num(v.minutes, 1, 120, 10), rounds: num(v.rounds, 0, 500, 0),
+    reps: optNum(v.reps, 0, 1000), seconds: optNum(v.seconds, 0, 7200), benchmark: optNum(v.benchmark, 1, 10),
   }
 }
 
@@ -184,7 +195,7 @@ function settings(v: unknown): Settings {
     lockScreenAlert: s.lockScreenAlert === true ? true : undefined,
     voice: s.voice === true ? true : undefined,
     barKg: optNum(s.barKg, 1, 50),
-    language: oneOf(s.language, ['es', 'en'] as const),
+    language: oneOf(s.language, ['es', 'en', 'fr', 'pt'] as const),
     theme: oneOf(s.theme, ['light', 'dark'] as const),
     plates: isObj(s.plates) ? {
       kg: list(s.plates.kg, (x) => (typeof x === 'number' && PLATE_OPTIONS.kg.includes(x) ? x : undefined), 20),
@@ -208,6 +219,13 @@ function settings(v: unknown): Settings {
     nutritionTrainingSplit: s.nutritionTrainingSplit === false ? false : undefined,
     nutritionAdviceAt: optNum(s.nutritionAdviceAt, EPOCH_MIN, EPOCH_MAX),
     foodReminders: s.foodReminders === true ? true : undefined,
+    easyWeek: optNum(s.easyWeek, EPOCH_MIN, EPOCH_MAX),
+    coachHidden: isObj(s.coachHidden) && optNum(s.coachHidden.week, EPOCH_MIN, EPOCH_MAX)
+      ? { week: s.coachHidden.week as number, ids: list(s.coachHidden.ids, (x) => (typeof x === 'string' ? x.slice(0, 80) : undefined), 30) } : undefined,
+    weightGoal: isObj(s.weightGoal) && optNum(s.weightGoal.kg, 20, 400) && optNum(s.weightGoal.from, 20, 400) ? {
+      kg: s.weightGoal.kg as number, from: s.weightGoal.from as number, createdAt: num(s.weightGoal.createdAt, EPOCH_MIN, EPOCH_MAX, Date.now()),
+      ...(optNum(s.weightGoal.by, EPOCH_MIN, EPOCH_MAX + 10 * 365 * DAY) ? { by: s.weightGoal.by as number } : {}),
+    } : undefined,
   }
 }
 

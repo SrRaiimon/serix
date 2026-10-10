@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
-import { fromKg, increment, toKg, uid, type Unit } from './format'
+import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
 import { lastSets, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
@@ -200,7 +200,8 @@ export function nextRoutine(d: AppData, now = Date.now()): Routine | undefined {
 
 /** En la semana de descarga del bloque, los ejercicios de peso empiezan ya con la descarga. */
 function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
-  if (blockWeek(d.settings.block)?.deload && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
+  const easy = blockWeek(d.settings.block)?.deload || d.settings.easyWeek === startOfWeek(Date.now()).getTime()
+  if (easy && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
   return e
 }
 

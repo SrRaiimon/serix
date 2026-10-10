@@ -20,6 +20,9 @@ import { RECOVERING, useRecovery } from '../components/Recovery'
 import { BlockStatus } from '../components/Block'
 import { blockWeek } from '../lib/block'
 import { SessionRow } from '../components/SessionRow'
+import { CoachCard } from '../components/Coach'
+import { forgottenGroups } from '../lib/coach'
+import { MAIN_GROUPS } from '../lib/labels'
 import { locale, plural, t } from '../lib/i18n'
 import { copiedToast, shareMine, shareReminderDue } from '../lib/friends'
 
@@ -78,6 +81,8 @@ export function HomeScreen() {
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} />
 
+      {!active && <CoachCard />}
+
       <FoodTodayCard />
 
       {sessions.length > 0 && (
@@ -93,6 +98,7 @@ export function HomeScreen() {
       <div className="list">
         {([
           [Zap, t('Entreno libre', 'Free workout'), t('Sin rutina: añades los ejercicios sobre la marcha', 'No routine: add exercises as you go'), startEmpty],
+          [Flame, t('WOD del día', 'Workout of the day'), t('Un entreno funcional corto que cambia cada día', 'A short functional workout that changes daily'), () => navigate('wod')],
           [Timer, t('Temporizador', 'Timer'), t('Intervalos, Tabata, EMOM o cuenta atrás', 'Intervals, Tabata, EMOM or countdown'), () => navigate('timer')],
           [Dumbbell, t('Ejercicios', 'Exercises'), t('Cómo se hace cada uno y qué músculos trabaja', 'How to do each one and the muscles it works'), () => navigate('exercises')],
         ] as const).map(([Icon, title, detail, go]) => (
@@ -175,6 +181,9 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
   const plan = dayPlan(data.settings)
   const trainedToday = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
+  // Lo que se nota de un vistazo: días sin entrenar y el grupo que más tiempo llevas sin tocar.
+  const daysOff = sessions.length ? Math.floor((startOfDay(Date.now()).getTime() - startOfDay(Math.max(...sessions.map((s) => s.start))).getTime()) / 86400000) : undefined
+  const forgotten = forgottenGroups(sessions)[0]
   return (
     <section className="hero" aria-labelledby="next-workout">
       <span className="hero-ribbon" aria-hidden="true" />
@@ -191,6 +200,14 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
         <span className="hero-fact"><strong>~{expectedMinutes(data, routine).minutes}</strong>{t('minutos', 'minutes')}</span>
         <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
       </div>
+      {(daysOff !== undefined && daysOff >= 3) || forgotten ? (
+        <span className="small hero-note">
+          {[
+            daysOff !== undefined && daysOff >= 3 ? t(`Último entreno hace ${daysOff} días`, `Last workout ${daysOff} days ago`) : '',
+            forgotten ? t(`${t(...MAIN_GROUPS[forgotten.group][0])}: ${forgotten.days} días sin entrenarlo`, `${t(...MAIN_GROUPS[forgotten.group][0])}: ${forgotten.days} days untrained`) : '',
+          ].filter(Boolean).join(' · ')}
+        </span>
+      ) : null}
       {tired.length > 0 && (
         <span className="small row hero-warning">
           <HeartPulse size={15} style={{ flexShrink: 0 }} />

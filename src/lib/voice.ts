@@ -1,4 +1,4 @@
-import { lang } from './i18n'
+import { locale } from './i18n'
 import { getData } from './store'
 
 // Avisos por voz con la voz del propio móvil (Web Speech API: sin conexión ni servicios externos).
@@ -11,7 +11,7 @@ export function speak(text: string, force = false) {
   try {
     speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
-    u.lang = lang() === 'en' ? 'en-GB' : 'es-ES'
+    u.lang = locale()
     u.rate = 1.05
     speechSynthesis.speak(u)
   } catch {

@@ -1,4 +1,4 @@
-import { lang, locale } from './i18n'
+import { dataLang, locale } from './i18n'
 import { customToRaw, type CustomExercise } from './customExercises'
 import { bodyPartLabel, equipmentLabel, muscleLabel } from './labels'
 import { fold, makeSearch } from './search'
@@ -68,7 +68,7 @@ export class Catalog {
   private names = new Map<string, string>()
 
   constructor(raw: RawExercise[], private legacy: Record<string, string> = {}, custom: CustomExercise[] = []) {
-    const en = lang() === 'en'
+    const en = dataLang() === 'en'
     const list: Exercise[] = [...raw, ...custom.map(customToRaw)].map(({ instructionsEn, ...e }) => ({
       ...e, nameEs: e.name, name: en ? e.nameEn : e.name,
       instructions: (en && instructionsEn?.length ? instructionsEn : e.instructions) ?? [],

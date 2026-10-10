@@ -12,6 +12,7 @@ import { MAIN_GROUPS } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { finishedSessions, update, updateSettings, useData, withUndo, type AppData } from '../lib/store'
 import { ExercisePicker } from './Exercises'
+import { crowns, pastChampions, weeklyLeague } from '../lib/league'
 
 // Retos entre amigos (ver lib/friends.ts): compartir tu resumen, retos con objetivo y fecha, y
 // comparar los resúmenes que te mandan.
@@ -342,6 +343,37 @@ function StaleFriends({ friends }: { friends: FriendSnapshot[] }) {
   )
 }
 
+/** Liga de la semana: puntos por constancia (no por kilos) y coronas de las semanas pasadas. */
+function LeagueCard({ mine, friends }: { mine: FriendSnapshot; friends: FriendSnapshot[] }) {
+  const rows = weeklyLeague(mine, friends)
+  const champions = pastChampions(mine, friends)
+  const lastWeek = champions.find((c) => c.weekStart === addDays(startOfWeek(Date.now()), -7).getTime())
+  const board = crowns(champions)
+  const missing = friends.length - (rows.length - 1)
+  return (
+    <Card title={t('Liga de la semana', 'Weekly league')} icon={Trophy}>
+      {lastWeek && <span className="league-last">👑 {lastWeek.me ? t('Ganaste la semana pasada', 'You won last week') : t(`${lastWeek.name} ganó la semana pasada`, `${lastWeek.name} won last week`)}</span>}
+      {rows.map((r, i) => (
+        <div key={r.me ? '__me' : friendKey(r.name)} className={`rank-row ${r.me ? 'me' : ''}`}>
+          <span className="rank-pos">{i + 1}</span>
+          <span className="grow clamp-1">
+            <span className="bold">{r.me ? `${r.name || t('Tú', 'You')} (${t('tú', 'you')})` : r.name}</span>
+            <span className="tiny muted" style={{ display: 'block' }}>
+              {[plural(r.sessions, ['entreno', 'entrenos'], ['workout', 'workouts']), plural(r.sets, ['serie', 'series'], ['set', 'sets']), r.prs ? plural(r.prs, ['récord', 'récords'], ['PR', 'PRs']) : '', r.streak >= 4 ? t(`racha ${r.streak}`, `streak ${r.streak}`) : ''].filter(Boolean).join(' · ')}
+            </span>
+          </span>
+          <strong className="league-points">{r.points}<span className="tiny muted"> {t('pts', 'pts')}</span></strong>
+        </div>
+      ))}
+      {board.length > 0 && <span className="small">{t('Coronas (8 semanas)', 'Crowns (8 weeks)')}: {board.map((b) => `${b.me ? t('tú', 'you') : b.name} ×${b.count}`).join(' · ')}</span>}
+      <span className="tiny muted">
+        {t('10 puntos por entreno (hasta 6), 1 por cada 5 series, 5 por récord y 5 más con 4 semanas seguidas. Cuenta la constancia, no los kilos.', '10 points per workout (up to 6), 1 per 5 sets, 5 per PR and 5 more with a 4-week streak. Consistency counts, not kilos.')}
+        {missing > 0 ? ` ${t(`Faltan ${missing} por mandar su resumen de esta semana.`, `${missing} still need to send this week's summary.`)}` : ''}
+      </span>
+    </Card>
+  )
+}
+
 function Ranking({ title, rows, unit, pick }: { title: string; rows: Row[]; unit: Unit; pick: (r: Row) => FriendStats }) {
   const sorted = [...rows].sort((a, b) => pick(b).sessions - pick(a).sessions || pick(b).volume - pick(a).volume)
   return (
@@ -370,7 +402,6 @@ export function FriendsScreen() {
   const [creating, setCreating] = useState(false)
   const now = Date.now()
   const everyone: Row[] = [{ ...mine, me: true }, ...data.friends]
-  const week = everyone.filter((r) => r.me || sameWeek(r.at, now))
   const month = everyone.filter((r) => r.me || sameMonth(r.at, now))
   const stale = data.friends.filter((f) => isStale(f, now))
   const sessions = useMemo(() => finishedSessions(data), [data])
@@ -395,7 +426,7 @@ export function FriendsScreen() {
         ) : (
           <>
             <StaleFriends friends={stale} />
-            <Ranking title={t('Esta semana', 'This week')} rows={week} unit={unit} pick={(r) => r.week} />
+            <LeagueCard mine={mine} friends={data.friends} />
             <Ranking title={t('Este mes', 'This month')} rows={month} unit={unit} pick={(r) => r.month} />
             <Card title={t('Rachas y básicos', 'Streaks and main lifts')} icon={Users}>
               <div className="rank-table">

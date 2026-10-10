@@ -1,4 +1,4 @@
-import { lang } from './i18n'
+import { dataLang } from './i18n'
 import { ALL_MEALS, dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
 
 // Menú del día propuesto: un plato por comida, con las cantidades ajustadas a lo que te queda del
@@ -97,7 +97,7 @@ function recentMeals(entries: FoodEntry[], today: string) {
 
 /** Platos base que se pueden hacer con la lista básica y platos tuyos (lo que repites). */
 export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: string): Dish[] {
-  const en = lang() === 'en'
+  const en = dataLang() === 'en'
   const byId = new Map(basic.map((f) => [f.id, f]))
   const base: Dish[] = []
   for (const d of BASE) {

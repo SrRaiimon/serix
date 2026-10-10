@@ -5,7 +5,8 @@ import { availablePlates, stepFor } from './plates'
 import type { EquipmentProfile, TrainingGoal, TrainingLevel } from './generator'
 import { setLang, systemLang, type Lang } from './i18n'
 import { applyTextScale, applyTheme, type Theme } from './theme'
-import type { LiftGoal } from './goals'
+import type { LiftGoal, WeightGoal } from './goals'
+import type { WodRecord } from './wod'
 import type { TrainingBlock } from './block'
 import type { CustomExercise } from './customExercises'
 import type { Challenge, FriendSnapshot } from './friends'
@@ -129,6 +130,8 @@ export interface Session {
   exercises: SessionExercise[]
   /** Cómo llegabas (1-5): sueño, energía y agujetas (5 = muchas). Ver lib/readiness.ts. */
   readiness?: { sleep: number; energy: number; soreness: number }
+  /** Resultado si fue un WOD (ver lib/wod.ts). */
+  wod?: WodRecord
 }
 
 export interface Measurement {
@@ -233,6 +236,12 @@ export interface Settings {
   nutritionAdviceAt?: number
   /** Recordar apuntar las comidas que no se han apuntado pasada su hora. */
   foodReminders?: boolean
+  /** Semana suave propuesta por el entrenador (lunes de esa semana, ver lib/coach.ts). */
+  easyWeek?: number
+  /** Consejos del entrenador ocultos esta semana («Ahora no»). */
+  coachHidden?: { week: number; ids: string[] }
+  /** Meta de peso corporal con fecha opcional (ver lib/goals.ts). */
+  weightGoal?: WeightGoal
 }
 
 export interface ExerciseMode {

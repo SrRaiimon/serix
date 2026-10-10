@@ -2,7 +2,7 @@ import { Barcode, Bell, CalendarDays, Share2, Star, Camera, Check, ChefHat, Drop
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActionSheet, Card, Chip, LargeTitle, Segmented, Sheet, useTick, useToast } from '../components/ui'
 import { day as longDay, editable, fromKg, int, monthYear, parseDecimal, uid } from '../lib/format'
-import { lang, locale, t } from '../lib/i18n'
+import { dataLang, locale, t } from '../lib/i18n'
 import {
   ACTIVITY, adjustGoals, AIMS, amountOf, dayText, favoriteKey, lastWeek, stem, dayFiber, dayOptional, optionals, SALT_MAX, traffic, weekdayOf, weekTemplate, FIBER_GOAL, recipeValues, waterGoal, type Recipe, type RecipeItem, CARRY_OVER_MAX, computeGoals, dayGoalOptions, dayKey, dayStatus, goalsForDay, trainingShift, weightAdvice, type DayGoalOptions, type WeightAdvice, defaultProteinPerKg, doubtfulValues, portionLabel, PROTEIN_PER_KG, suspectValue, dayTotals, entryTotals, fetchOffProduct, fold, fromDayKey, loadBasicFoods, matches, MEALS, ALL_MEALS, activeMeals, defaultMealLabel, mealLabel, planFor,
   quickEntryAmount, recentFoods, searchOff, AESAN_SOURCE, barcodeVariants, findAesan, loadAesan, searchAesan, type AesanProduct, shownGrams, shiftDay, validBarcode, type Aim, type BasicFood, type FoodEntry, type FoodRef, type MealKey, type MyFood, type NutritionGoals,
@@ -155,7 +155,7 @@ export function FoodScreen() {
             <RotateCcw size={18} aria-hidden="true" />
             <span className="grow food-row-text">
               <span className="bold" style={{ display: 'block', fontSize: 15 }}>{t(`Apuntar tu ${weekdayName} tipo`, `Log your usual ${weekdayName}`)}</span>
-              <span className="small muted">{[t(`${typical.length} alimentos`, `${typical.length} foods`), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), `${g(v.p)} g prot.`].map(nb).join(' · ')}</span>
+              <span className="small muted">{[t(`${typical.length} alimentos`, `${typical.length} foods`), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), `${g(v.p)} ${t('g prot.', 'g prot.')}`].map(nb).join(' · ')}</span>
             </span>
           </button>
         )
@@ -203,7 +203,7 @@ export function FoodScreen() {
           <section key={meal} className="meal">
             <div className="list-header">
               <span className="grow">{mealLabel(meal)}</span>
-              {items.length > 0 && <span className="meal-total">{proteinOnly ? nb(`${g(sums.p)} g prot.`) : nb(`${int(sums.kcal)} kcal`)}</span>}
+              {items.length > 0 && <span className="meal-total">{proteinOnly ? nb(`${g(sums.p)} ${t('g prot.', 'g prot.')}`) : nb(`${int(sums.kcal)} kcal`)}</span>}
               <button className="meal-more" onClick={() => setMealMenu(meal)} aria-label={t(`Opciones de ${mealLabel(meal)}`, `${mealLabel(meal)} options`)}><Ellipsis size={20} /></button>
             </div>
             <div className="list">
@@ -213,9 +213,9 @@ export function FoodScreen() {
                   <button key={e.id} className="list-row" onClick={() => setEditing(e)}>
                     <span className="grow" style={{ minWidth: 0 }}>
                       <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{e.name}</span>
-                      <span className="small muted">{[...(e.ref?.kind === 'quick' ? [t('A mano', 'By hand')] : [nb(`${g(e.grams)} g`)]), ...(proteinOnly || (e.ref?.kind === 'quick' && !v.p) ? [] : [nb(`${g(v.p)} g prot.`)])].join(' · ')}</span>
+                      <span className="small muted">{[...(e.ref?.kind === 'quick' ? [t('A mano', 'By hand')] : [nb(`${g(e.grams)} g`)]), ...(proteinOnly || (e.ref?.kind === 'quick' && !v.p) ? [] : [nb(`${g(v.p)} ${t('g prot.', 'g prot.')}`)])].join(' · ')}</span>
                     </span>
-                    {proteinOnly ? <strong className="food-kcal">{g(v.p)}<small> g prot.</small></strong> : <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>}
+                    {proteinOnly ? <strong className="food-kcal">{g(v.p)}<small> {t('g prot.', 'g prot.')}</small></strong> : <strong className="food-kcal">{int(v.kcal)}<small> kcal</small></strong>}
                   </button>
                 )
               })}
@@ -227,7 +227,7 @@ export function FoodScreen() {
                     <span className="small muted clamp-1" style={{ display: 'block' }}>{yesterdayItems.map((x) => x.name).join(', ')}</span>
                     <span className="small muted" style={{ display: 'block' }}>
                       {[t(`${yesterdayItems.length} ${yesterdayItems.length === 1 ? 'alimento' : 'alimentos'}`, `${yesterdayItems.length} ${yesterdayItems.length === 1 ? 'food' : 'foods'}`),
-                        ...(proteinOnly ? [] : [`${int(yesterdaySums.kcal)} kcal`]), `${g(yesterdaySums.p)} g prot.`].map(nb).join(' · ')}
+                        ...(proteinOnly ? [] : [`${int(yesterdaySums.kcal)} kcal`]), `${g(yesterdaySums.p)} ${t('g prot.', 'g prot.')}`].map(nb).join(' · ')}
                     </span>
                   </span>
                 </button>
@@ -392,7 +392,7 @@ function DaySummary({ totals, entries, goals, day, canMark }: { totals: Per100; 
           <div className="day-extras small">
             <span><span className="muted">{t('Fibra', 'Fibre')}</span> <strong>{g(fiber.g)}</strong><span className="muted"> / {FIBER_GOAL} g</span></span>
             <span><span className="muted">{t('Azúcares', 'Sugars')}</span> <strong>{g(sugar.g)} g</strong></span>
-            <span className={salt.g > SALT_MAX ? 'over' : ''}><span className="muted">{t('Sal', 'Salt')}</span> <strong>{editable(Math.round(salt.g * 10) / 10)}</strong><span className="muted"> / {SALT_MAX} g máx.</span></span>
+            <span className={salt.g > SALT_MAX ? 'over' : ''}><span className="muted">{t('Sal', 'Salt')}</span> <strong>{editable(Math.round(salt.g * 10) / 10)}</strong><span className="muted"> / {SALT_MAX} g {t('máx.', 'max')}</span></span>
             {missing > 0 && <span className="tiny muted day-extras-note">{t(`Sin contar los alimentos sin el dato (${missing}). Los azúcares incluyen los de la fruta y la leche.`, `Not counting foods without the data (${missing}). Sugars include those in fruit and milk.`)}</span>}
             {missing === 0 && <span className="tiny muted day-extras-note">{t('Los azúcares incluyen los de la fruta y la leche.', 'Sugars include those in fruit and milk.')}</span>}
           </div>
@@ -666,7 +666,7 @@ function Proposal({ dish, meal, day, target, items, proteinOnly, others, dishes,
           <span className="tiny muted bold proposal-kicker">{dish.mine ? t('De lo que sueles comer', 'From what you usually eat') : t('Propuesta', 'Suggestion')}</span>
           <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{dish.mine ? items.map((i) => i.name).join(', ') : dish.name}</span>
         </span>
-        <strong className="food-kcal">{proteinOnly ? <>{g(v.p)}<small> g prot.</small></> : <>{int(v.kcal)}<small> kcal</small></>}</strong>
+        <strong className="food-kcal">{proteinOnly ? <>{g(v.p)}<small> {t('g prot.', 'g prot.')}</small></> : <>{int(v.kcal)}<small> kcal</small></>}</strong>
       </div>
       <ul className="proposal-items">
         {items.map((i) => (
@@ -676,7 +676,7 @@ function Proposal({ dish, meal, day, target, items, proteinOnly, others, dishes,
           </li>
         ))}
       </ul>
-      {!proteinOnly && <span className="small muted">{[`${g(v.p)} g prot.`, `${g(v.c)} g ${t('hidratos', 'carbs')}`, `${g(v.f)} g ${t('grasa', 'fat')}`].map(nb).join(' · ')}</span>}
+      {!proteinOnly && <span className="small muted">{[`${g(v.p)} ${t('g prot.', 'g prot.')}`, `${g(v.c)} g ${t('hidratos', 'carbs')}`, `${g(v.f)} g ${t('grasa', 'fat')}`].map(nb).join(' · ')}</span>}
       <div className="proposal-actions">
         <button className="btn primary btn-sm" onClick={accept}><Check size={17} /> {t('Apuntar', 'Log it')}</button>
         <button className="btn secondary btn-sm" onClick={other}><Shuffle size={16} /> {t('Otra opción', 'Another option')}</button>
@@ -862,9 +862,9 @@ interface Pickable {
 }
 
 const fromBasic = (f: BasicFood): Pickable => ({
-  name: lang() === 'en' ? f.en : f.es,
+  name: dataLang() === 'en' ? f.en : f.es,
   per100: { kcal: f.kcal, p: f.p, c: f.c, f: f.f, ...optionals(f) },
-  portions: [{ label: `${lang() === 'en' ? f.portion.en : f.portion.es}`, g: f.portion.g }],
+  portions: [{ label: `${dataLang() === 'en' ? f.portion.en : f.portion.es}`, g: f.portion.g }],
   ref: { kind: 'basic', id: f.id },
 })
 
@@ -1005,7 +1005,7 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
     if (!q) return (basic ?? []).filter((f) => !f.more)
     // Los habituales primero; luego, los que empiezan por lo buscado («Lentejas rubias» antes que «Pasta de lentejas»).
     const start = stem(q)
-    const rank = (f: BasicFood) => (f.more ? 1 : 0) * 2 + (fold(lang() === 'en' ? f.en : f.es).startsWith(start) ? 0 : 1)
+    const rank = (f: BasicFood) => (f.more ? 1 : 0) * 2 + (fold(dataLang() === 'en' ? f.en : f.es).startsWith(start) ? 0 : 1)
     // Con una sola letra, solo los habituales (la lista ampliada tiene 2.600 y sale demasiado).
     return (basic ?? []).filter((f) => (q.length > 1 || !f.more) && matches(`${f.es} ${f.en}`, q)).map((f, i) => ({ f, i, r: rank(f) })).sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.f)
   })()
@@ -1013,10 +1013,10 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
   const offResults = off && off.query === q && Array.isArray(off.state) ? off.state : undefined
   const amountText = (per100: Per100, grams: number) => {
     const v = amountOf(per100, grams)
-    return (proteinOnly ? [`${g(grams)} g`, `${g(v.p)} g prot.`] : [`${g(grams)} g`, `${int(v.kcal)} kcal`, `${g(v.p)} g prot.`]).map(nb).join(' · ')
+    return (proteinOnly ? [`${g(grams)} g`, `${g(v.p)} ${t('g prot.', 'g prot.')}`] : [`${g(grams)} g`, `${int(v.kcal)} kcal`, `${g(v.p)} ${t('g prot.', 'g prot.')}`]).map(nb).join(' · ')
   }
   /** Un apunte a mano: sus totales, sin inventar la proteína si no se escribió. */
-  const quickText = (v: Per100) => [t('A mano', 'By hand'), ...(proteinOnly ? [] : [nb(`${int(v.kcal)} kcal`)]), ...(v.p > 0 || proteinOnly ? [nb(`${g(v.p)} g prot.`)] : [])].join(' · ')
+  const quickText = (v: Per100) => [t('A mano', 'By hand'), ...(proteinOnly ? [] : [nb(`${int(v.kcal)} kcal`)]), ...(v.p > 0 || proteinOnly ? [nb(`${g(v.p)} ${t('g prot.', 'g prot.')}`)] : [])].join(' · ')
   /** Lo que añade el «+»: la ración si la hay (o lo último que apuntaste), si no 100 g. */
   const quickGrams = (food: Pickable) => food.grams ?? food.portions[0]?.g ?? 100
   /** Misma línea para todos: [marca ·] [ración ·] g · kcal · prot. (la ración, solo si tiene nombre propio: «1 huevo»). */
@@ -1090,7 +1090,7 @@ function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }: { day
                 <div key={m.id} className="list-row quick-row">
                   <button className="quick-main" onClick={() => setEditMeal(m.id)} aria-label={t(`Ver o cambiar ${m.name}`, `View or edit ${m.name}`)}>
                     <span className="bold clamp-2" style={{ display: 'block', fontSize: 15 }}>{m.name}</span>
-                    <span className="small muted">{[t(`${m.items.length} alimentos`, `${m.items.length} foods`), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), `${g(v.p)} g prot.`].map(nb).join(' · ')}</span>
+                    <span className="small muted">{[t(`${m.items.length} alimentos`, `${m.items.length} foods`), ...(proteinOnly ? [] : [`${int(v.kcal)} kcal`]), `${g(v.p)} ${t('g prot.', 'g prot.')}`].map(nb).join(' · ')}</span>
                   </button>
                   <button className="icon-btn" onClick={() => addMeal(m.id)} aria-label={t(`Añadir ${m.name}`, `Add ${m.name}`)}><Plus size={19} /></button>
                 </div>
@@ -1408,7 +1408,7 @@ function QuickEntrySheet({ initialName, initial, meal, onBack, onClose, onSave, 
                 onClick={() => { setValues({ kcal: String(x.kcal), p: String(x.p), c: String(x.c), f: String(x.f) }); if (!name.trim() || name === initialName) setName(x.name) }}>
                 <span className="grow">
                   <span style={{ display: 'block' }}>{x.name}</span>
-                  <span className="small muted">≈ {(proteinOnly ? [`${x.p} g prot.`] : [`${int(x.kcal)} kcal`, `${x.p} g prot.`, `${x.c} g hidr.`, `${x.f} g grasa`]).map(nb).join(' · ')}</span>
+                  <span className="small muted">≈ {(proteinOnly ? [`${x.p} ${t('g prot.', 'g prot.')}`] : [`${int(x.kcal)} kcal`, `${x.p} ${t('g prot.', 'g prot.')}`, `${x.c} ${t('g hidr.', 'g carbs')}`, `${x.f} ${t('g grasa', 'g fat')}`]).map(nb).join(' · ')}</span>
                 </span>
                 {values.kcal === String(x.kcal) && values.p === String(x.p) && <span className="check">✓</span>}
               </button>
@@ -1654,7 +1654,7 @@ function SavedMealSheet({ meal, onBack, onClose, onAdd }: { meal: SavedMeal; onB
           </div>
         ))}
       </div>
-      <span className="small muted">{[`${int(v.kcal)} kcal`, `${g(v.p)} g prot.`, `${g(v.c)} g ${t('hidratos', 'carbs')}`, `${g(v.f)} g ${t('grasa', 'fat')}`].map(nb).join(' · ')}</span>
+      <span className="small muted">{[`${int(v.kcal)} kcal`, `${g(v.p)} ${t('g prot.', 'g prot.')}`, `${g(v.c)} g ${t('hidratos', 'carbs')}`, `${g(v.f)} g ${t('grasa', 'fat')}`].map(nb).join(' · ')}</span>
       {changed && ok && <button className="btn secondary" onClick={save}><Check size={17} /> {t('Guardar cambios', 'Save changes')}</button>}
       <button className="nav-btn" style={{ color: 'var(--red-text)', alignSelf: 'flex-start' }} onClick={remove}><Trash2 size={16} /> {t('Borrar esta comida', 'Delete this meal')}</button>
     </Sheet>

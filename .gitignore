@@ -5,3 +5,4 @@ dist
 # Herramientas de diseño (capturas y estado local)
 .impeccable/review/
 .impeccable/questions/
+scripts/i18n/strings.json

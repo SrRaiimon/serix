@@ -15,7 +15,7 @@ import { alternatives } from '../lib/alternatives'
 import { equipmentInfo, STAPLES } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
-import { lang, plural, t } from '../lib/i18n'
+import { dataLang, plural, t } from '../lib/i18n'
 
 // Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
 const MoveFigure = lazy(() => import('../components/MoveFigure').then((m) => ({ default: m.MoveFigure })))
@@ -294,7 +294,7 @@ function useInstructions(exercise: Exercise): string[] {
     let alive = true
     loadSteps().then((all) => {
       const x = all.get(exercise.id)
-      if (alive) setLoaded({ id: exercise.id, list: (lang() === 'en' && x?.en.length ? x.en : x?.es) ?? [] })
+      if (alive) setLoaded({ id: exercise.id, list: (dataLang() === 'en' && x?.en.length ? x.en : x?.es) ?? [] })
     }).catch(() => { /* sin conexión y sin caché: la ficha sale sin pasos */ })
     return () => { alive = false }
   }, [exercise])

@@ -14,7 +14,7 @@ const dateText = (ms: number) => {
 }
 
 export function sessionsToCsv(sessions: Session[], unit: Unit): string {
-  const es = lang() === 'es'
+  const es = lang() !== 'en' // en Europa: punto y coma y coma decimal
   const sep = es ? ';' : ','
   const number = (v: number | undefined) => (v === undefined ? '' : es ? String(Math.round(v * 100) / 100).replace('.', ',') : String(Math.round(v * 100) / 100))
   const cell = (v: string) => (/["\n\r;,]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)

@@ -157,8 +157,27 @@ async function main() {
     check(!spanish, `Quedan textos en español en ${hash}`)
   }
 
+  step = 'francés'
+  // Francés: el diccionario se descarga aparte; la barra de abajo y una pantalla entera, sin español.
+  await run(() => { location.hash = '#/profile' })
+  await wait(700)
+  await run(() => {
+    const select = [...document.querySelectorAll('select')].find((x) => [...x.options].some((o) => o.value === 'fr'))
+    select.value = 'fr'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await wait(1500)
+  const fr = await run(() => ({ lang: document.documentElement.lang, bar: document.querySelector('.tabbar')?.textContent ?? '' }))
+  check(fr.lang === 'fr' && /Accueil/.test(fr.bar) && /Repas/.test(fr.bar), `No cambió a francés: ${JSON.stringify(fr)}`)
+  for (const hash of ['#/', '#/wod', '#/progress', '#/food']) {
+    await run((h) => { location.hash = h }, hash)
+    await wait(700)
+    const blank = await run(() => !!document.querySelector('.rescue') || document.querySelector('main')?.textContent.trim() === '')
+    check(!blank, `La pantalla ${hash} ha fallado en francés`)
+  }
+
   check(!errors.length, `Errores en la consola:\n${errors.join('\n')}`)
-  console.log('e2e: cuestionario, entreno, comida y pantallas principales correctos, en español y en inglés con tema claro')
+  console.log('e2e: cuestionario, entreno, comida y pantallas principales correctos, en español, en inglés con tema claro y en francés')
 }
 
 let failed = false

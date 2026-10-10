@@ -1,4 +1,4 @@
-import { lang } from './i18n'
+import { t } from './i18n'
 
 // Traducciones de los códigos del catálogo de ejercicios (ver scripts/catalog/build_catalog.py),
 // en español e inglés.
@@ -72,7 +72,7 @@ const levels: Labels = {
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-const label = (labels: Labels, k: string) => labels[k]?.[lang() === 'en' ? 1 : 0] ?? cap(k)
+const label = (labels: Labels, k: string) => (labels[k] ? t(labels[k][0], labels[k][1]) : cap(k))
 
 export const muscleLabel = (k: string) => label(muscles, k)
 export const MUSCLE_KEYS = Object.keys(muscles)

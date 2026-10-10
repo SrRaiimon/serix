@@ -79,6 +79,19 @@
           "type": "image/png"
         }
       ]
+    },
+    {
+      "name": "WOD del día",
+      "short_name": "WOD del día",
+      "description": "El entreno funcional de hoy · Today's functional workout",
+      "url": "./#/go/wod",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

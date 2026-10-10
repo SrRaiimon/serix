@@ -7,7 +7,7 @@ import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
 import { ProgramPreview, saveProgram } from './Routines'
-import { lang, t } from '../lib/i18n'
+import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./Food').then((m) => ({ default: m.GoalsSheet })))
 
@@ -92,8 +92,7 @@ export function OnboardingScreen() {
         {step === 0 && (
           <>
             <div className="row" style={{ justifyContent: 'flex-end', gap: 6 }}>
-              <Chip label="Español" active={lang() === 'es'} onClick={() => updateSettings({ language: 'es' })} />
-              <Chip label="English" active={lang() === 'en'} onClick={() => updateSettings({ language: 'en' })} />
+              {LANGS.map((l) => <Chip key={l.id} label={l.name} active={lang() === l.id} onClick={() => updateSettings({ language: l.id })} />)}
             </div>
             <Dumbbell size={64} color="var(--accent-text)" style={{ marginTop: 8 }} />
             <h1 style={{ fontSize: 34, margin: 0, lineHeight: 1.1 }}>{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>

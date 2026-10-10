@@ -1,5 +1,6 @@
 import { exerciseHistory, records } from './stats'
 import type { Session } from './store'
+import { weeklyTrend } from './reminders'
 
 // Metas de fuerza: «100 kg en press de banca» (como máximo estimado a una repetición, que se puede
 // alcanzar con cualquier serie: 85 × 5 ya son ~99 kg), con fecha opcional y previsión a tu ritmo.
@@ -18,6 +19,55 @@ export interface LiftGoal {
 }
 
 const DAY = 86400000
+
+/** Meta de peso corporal: «75 kg para junio». Sirve para bajar o para subir. */
+export interface WeightGoal {
+  kg: number
+  /** Peso al ponerla. */
+  from: number
+  createdAt: number
+  by?: number
+}
+
+export interface WeightGoalStatus {
+  current: number
+  progress: number
+  doneAt?: number
+  /** Cambio por semana ahora mismo (kg; negativo = bajando). */
+  perWeek?: number
+  eta?: number
+  onTrack?: boolean
+  /** Con fecha: lo que habría que cambiar por semana para llegar. */
+  neededPerWeek?: number
+  /** Más de un 1 % del peso por semana: demasiado rápido para hacerlo bien. */
+  tooFast?: boolean
+}
+
+/**
+ * Cómo va la meta de peso con las pesadas (la tendencia de las últimas 4 semanas, no la última pesada,
+ * que varía mucho de un día a otro).
+ */
+export function weightGoalStatus(goal: WeightGoal, weighIns: { date: number; weight: number }[], now = Date.now()): WeightGoalStatus | undefined {
+  const points = weighIns.filter((m) => m.weight > 0).sort((a, b) => a.date - b.date)
+  const last = points.at(-1)
+  if (!last) return undefined
+  const losing = goal.kg < goal.from
+  const reached = points.find((p) => p.date >= goal.createdAt && (losing ? p.weight <= goal.kg : p.weight >= goal.kg))
+  const span = goal.kg - goal.from
+  const progress = span ? Math.min(1, Math.max(0, (last.weight - goal.from) / span)) : 1
+  if (reached) return { current: last.weight, progress: 1, doneAt: reached.date }
+  const perWeek = weeklyTrend(points.map((p) => ({ x: p.date, y: p.weight })))
+  const left = goal.kg - last.weight
+  const right = perWeek !== undefined && Math.abs(perWeek) > 0.02 && Math.sign(perWeek) === Math.sign(left)
+  const eta = right ? now + (left / perWeek!) * 7 * DAY : undefined
+  const weeksLeft = goal.by ? (goal.by - now) / (7 * DAY) : undefined
+  const neededPerWeek = weeksLeft !== undefined && weeksLeft > 0 ? left / weeksLeft : undefined
+  return {
+    current: last.weight, progress, perWeek, eta,
+    ...(goal.by ? { onTrack: eta !== undefined && eta <= goal.by, neededPerWeek } : {}),
+    ...(neededPerWeek !== undefined && Math.abs(neededPerWeek) > last.weight * 0.01 ? { tooFast: true } : {}),
+  }
+}
 
 export interface GoalStatus {
   current: number

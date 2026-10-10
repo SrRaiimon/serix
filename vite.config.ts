@@ -18,6 +18,9 @@ function serviceWorker(): Plugin {
         'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']
       // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
       const precache = [...new Set([...statics, ...files])]
+      // Lo que no se precarga pero se puede descargar de una vez desde Perfil para usar sin conexión
+      // (ver src/lib/offline.ts). aesan.json va con el mismo ?v= que en loadAesan (src/lib/nutrition.ts).
+      const optional = [...Object.keys(bundle).filter((f) => f.endsWith('.wasm')), ...Object.keys(OCR_FILES), 'aesan.json?v=3']
       const version = Date.now().toString(36)
       const template = readFileSync('src/sw-template.js', 'utf8')
       this.emitFile({
@@ -25,7 +28,8 @@ function serviceWorker(): Plugin {
         fileName: 'sw.js',
         source: template
           .replace('__VERSION__', version)
-          .replace('__PRECACHE__', JSON.stringify(precache)),
+          .replace('__PRECACHE__', JSON.stringify(precache))
+          .replace('__OPTIONAL__', JSON.stringify(optional)),
       })
     },
   }
@@ -35,18 +39,20 @@ function serviceWorker(): Plugin {
  * Lector de etiquetas (Comidas): el worker y el motor de Tesseract.js y los datos de español se
  * sirven desde la propia web en ocr/, en vez de desde un CDN. Solo se descargan al usarlo.
  */
+const require = createRequire(import.meta.url)
+const tesseract = dirname(require.resolve('tesseract.js/package.json'))
+const core = dirname(createRequire(join(tesseract, 'package.json')).resolve('tesseract.js-core/package.json'))
+const OCR_FILES: Record<string, string> = {
+  'ocr/worker.min.js': join(tesseract, 'dist/worker.min.js'),
+  // Tres versiones del motor según lo que admita el móvil (el worker elige una sola).
+  'ocr/core/tesseract-core-lstm.wasm.js': join(core, 'tesseract-core-lstm.wasm.js'),
+  'ocr/core/tesseract-core-simd-lstm.wasm.js': join(core, 'tesseract-core-simd-lstm.wasm.js'),
+  'ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js': join(core, 'tesseract-core-relaxedsimd-lstm.wasm.js'),
+  'ocr/lang/spa.traineddata.gz': join(dirname(require.resolve('@tesseract.js-data/spa/package.json')), '4.0.0_best_int/spa.traineddata.gz'),
+}
+
 function ocrAssets(): Plugin {
-  const require = createRequire(import.meta.url)
-  const tesseract = dirname(require.resolve('tesseract.js/package.json'))
-  const core = dirname(createRequire(join(tesseract, 'package.json')).resolve('tesseract.js-core/package.json'))
-  const files: Record<string, string> = {
-    'ocr/worker.min.js': join(tesseract, 'dist/worker.min.js'),
-    // Tres versiones del motor según lo que admita el móvil (el worker elige una sola).
-    'ocr/core/tesseract-core-lstm.wasm.js': join(core, 'tesseract-core-lstm.wasm.js'),
-    'ocr/core/tesseract-core-simd-lstm.wasm.js': join(core, 'tesseract-core-simd-lstm.wasm.js'),
-    'ocr/core/tesseract-core-relaxedsimd-lstm.wasm.js': join(core, 'tesseract-core-relaxedsimd-lstm.wasm.js'),
-    'ocr/lang/spa.traineddata.gz': join(dirname(require.resolve('@tesseract.js-data/spa/package.json')), '4.0.0_best_int/spa.traineddata.gz'),
-  }
+  const files = OCR_FILES
   return {
     name: 'gym-ocr-assets',
     configureServer(server) {

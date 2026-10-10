@@ -21,7 +21,7 @@ import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
-import { goalStatus, type LiftGoal } from '../lib/goals'
+import { goalStatus, weightGoalStatus, type LiftGoal } from '../lib/goals'
 import { insights, type Insight } from '../lib/insights'
 import { ExercisePicker } from './Exercises'
 import type { Exercise } from '../lib/catalog'
@@ -442,10 +442,12 @@ function GoalsCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
   const goals = settings.liftGoals ?? []
   const [adding, setAdding] = useState(false)
   const [menu, setMenu] = useState<LiftGoal>()
+  const [weightGoal, setWeightGoal] = useState(false)
   const dateText = (ms: number) => new Date(ms).toLocaleDateString(locale(), { day: 'numeric', month: 'long' })
   return (
     <Card title={t('Tus metas', 'Your goals')} icon={Target}>
-      {goals.length === 0 && <span className="small muted">{t('Ponte una meta, por ejemplo «100 kg en press de banca», y te diremos cuándo llegarías a tu ritmo.', 'Set a goal, e.g. "100 kg bench press", and we will tell you when you would get there at your pace.')}</span>}
+      {goals.length === 0 && !settings.weightGoal && <span className="small muted">{t('Ponte una meta, por ejemplo «100 kg en press de banca» o «75 kg de peso para junio», y te diremos cuándo llegarías a tu ritmo.', 'Set a goal, e.g. "100 kg bench press" or "75 kg body weight by June", and we will tell you when you would get there at your pace.')}</span>}
+      <WeightGoalRow unit={unit} onEdit={() => setWeightGoal(true)} />
       {goals.map((g) => {
         const st = goalStatus(g, sessions)
         return (
@@ -465,8 +467,12 @@ function GoalsCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           </button>
         )
       })}
-      <button className="btn secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setAdding(true)}><Plus size={16} /> {t('Añadir meta', 'Add goal')}</button>
-      <span className="tiny muted">{t('Se mide con el máximo estimado a una repetición: 85 kg × 5 ya cuentan como unos 99 kg.', 'Measured as the estimated one-rep max: 85 kg × 5 already count as about 99 kg.')}</span>
+      <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <button className="btn secondary btn-sm" onClick={() => setAdding(true)}><Plus size={16} /> {t('Meta de fuerza', 'Strength goal')}</button>
+        {!settings.weightGoal && <button className="btn secondary btn-sm" onClick={() => setWeightGoal(true)}><Scale size={16} /> {t('Meta de peso', 'Weight goal')}</button>}
+      </span>
+      {weightGoal && <WeightGoalSheet unit={unit} onClose={() => setWeightGoal(false)} />}
+      {goals.length > 0 && <span className="tiny muted">{t('Las de fuerza se miden con el máximo estimado a una repetición: 85 kg × 5 ya cuentan como unos 99 kg.', 'Strength goals use the estimated one-rep max: 85 kg × 5 already count as about 99 kg.')}</span>}
       {adding && <GoalSheet sessions={sessions} unit={unit} onClose={() => setAdding(false)} />}
       {menu && (
         <ActionSheet title={menu.name} onClose={() => setMenu(undefined)} options={[
@@ -475,6 +481,74 @@ function GoalsCard({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         ]} />
       )}
     </Card>
+  )
+}
+
+/** Meta de peso corporal: a qué ritmo vas según tus pesadas y si llegas a la fecha. */
+function WeightGoalRow({ unit, onEdit }: { unit: Unit; onEdit: () => void }) {
+  const { settings, measurements } = useData()
+  const goal = settings.weightGoal
+  const weighIns = useMemo(() => measurements.filter((m) => m.weight).map((m) => ({ date: m.date, weight: m.weight! })), [measurements])
+  if (!goal) return null
+  const st = weightGoalStatus(goal, weighIns)
+  const kg = (v: number) => `${num(Math.round(fromKg(v, unit) * 10) / 10)} ${unit}`
+  const dateText = (ms: number) => new Date(ms).toLocaleDateString(locale(), { day: 'numeric', month: 'long' })
+  const pace = st?.perWeek !== undefined ? t(`${st.perWeek > 0 ? '+' : ''}${num(fromKg(st.perWeek, unit))} ${unit}/semana`, `${st.perWeek > 0 ? '+' : ''}${num(fromKg(st.perWeek, unit))} ${unit}/week`) : ''
+  return (
+    <button className="goal-row" onClick={onEdit}>
+      <span className="row between">
+        <span className="bold clamp-1">{t('Peso corporal', 'Body weight')} · {kg(goal.kg)}</span>
+        <span className="small muted">{st?.doneAt ? '✓' : st ? kg(st.current) : ''}</span>
+      </span>
+      <span className="food-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((st?.progress ?? 0) * 100)}>
+        <span style={{ transform: `scaleX(${st?.progress ?? 0})` }} />
+      </span>
+      <span className="small muted">
+        {!st ? t('Pésate para empezar a medir tu ritmo.', 'Weigh yourself to start tracking your pace.')
+          : st.doneAt ? t(`¡Conseguida el ${dateText(st.doneAt)}!`, `Achieved on ${dateText(st.doneAt)}!`)
+            : st.eta ? `${pace} · ${t(`a este ritmo, hacia el ${dateText(st.eta)}`, `at this pace, around ${dateText(st.eta)}`)}${goal.by ? (st.onTrack ? t(': llegas a tiempo.', ': on track.') : t(`; para el ${dateText(goal.by)} harían falta ${num(fromKg(Math.abs(st.neededPerWeek ?? 0), unit))} ${unit}/semana.`, `; by ${dateText(goal.by)} you would need ${num(fromKg(Math.abs(st.neededPerWeek ?? 0), unit))} ${unit}/week.`)) : '.'}`
+              : st.perWeek !== undefined ? `${pace} · ${t('ahora vas en la otra dirección o casi igual.', 'right now you are going the other way or barely moving.')}`
+                : t('Hacen falta 2 semanas de pesadas para calcular tu ritmo.', 'Two weeks of weigh-ins are needed to work out your pace.')}
+        {st?.tooFast && !st.doneAt ? ` ${t('Ojo: más de un 1 % de tu peso por semana es demasiado rápido para mantener el músculo; mejor más tiempo.', 'Careful: more than 1% of your weight a week is too fast to keep your muscle; better give it more time.')}` : ''}
+      </span>
+    </button>
+  )
+}
+
+function WeightGoalSheet({ unit, onClose }: { unit: Unit; onClose: () => void }) {
+  const { settings, measurements } = useData()
+  const latest = [...measurements].filter((m) => m.weight).sort((a, b) => b.date - a.date)[0]?.weight
+  const goal = settings.weightGoal
+  const [kgText, setKgText] = useState(goal ? num(fromKg(goal.kg, unit)) : '')
+  const [by, setBy] = useState(goal?.by ? new Date(goal.by).toISOString().slice(0, 10) : '')
+  const value = parseDecimal(kgText)
+  const kg = value ? toKg(value, unit) : 0
+  const from = goal?.from ?? latest
+  const valid = !!from && kg >= 30 && kg <= 300 && Math.abs(kg - from) >= 0.5
+  const save = () => {
+    if (!valid || !from) return
+    updateSettings({ weightGoal: { kg, from, createdAt: goal?.createdAt ?? Date.now(), ...(by ? { by: new Date(`${by}T12:00:00`).getTime() } : {}) } })
+    onClose()
+  }
+  return (
+    <Sheet title={t('Meta de peso', 'Weight goal')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" disabled={!valid} onClick={save}>{t('Guardar meta', 'Save goal')}</button>}>
+      <div className="list">
+        <label className="list-row">
+          <span className="grow">{t('Quiero llegar a', 'I want to reach')}</span>
+          <input inputMode="decimal" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={kgText} onChange={(e) => setKgText(e.target.value)} aria-label={t('Peso de la meta', 'Goal weight')} />
+          <span className="muted">{unit}</span>
+        </label>
+        <label className="list-row">
+          <span className="grow">{t('Para (opcional)', 'By (optional)')}</span>
+          <input type="date" value={by} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
+        </label>
+      </div>
+      <span className="small muted">{from
+        ? t(`Partes de ${num(fromKg(from, unit))} ${unit}. Se mide con la tendencia de tus pesadas (Perfil → Medidas), no con la última, que varía mucho de un día a otro.`, `You start from ${num(fromKg(from, unit))} ${unit}. It uses the trend of your weigh-ins (Profile → Measurements), not the last one, which varies a lot day to day.`)
+        : t('Primero apunta tu peso en Perfil → Medidas.', 'First log your weight in Profile → Measurements.')}</span>
+      {goal && <button className="btn secondary danger" onClick={() => { withUndo(t('Meta quitada', 'Goal removed'), () => updateSettings({ weightGoal: undefined })); onClose() }}>{t('Quitar la meta', 'Remove the goal')}</button>}
+    </Sheet>
   )
 }
 
