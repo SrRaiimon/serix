@@ -102,12 +102,6 @@ export function OnboardingScreen() {
             <Feature icon={WandSparkles} text={t('Programa generado según tu objetivo y tu material', 'A program generated for your goal and equipment')} />
             <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
             <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
-            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} aria-label={t('Tu nombre', 'Your name')} autoComplete="given-name"
-              value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
-            <div className="card" style={{ gap: 6 }}>
-              <HealthNotice />
-              <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
-            </div>
             <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
               <ArrowRightLeft size={18} /> {t('¿Vienes de otro móvil? Pasa tus datos', 'Coming from another phone? Move your data')}
             </button>
@@ -158,6 +152,8 @@ export function OnboardingScreen() {
         {step === 5 && (
           <>
             <Header title={t('Último detalle', 'One last thing')} subtitle={t('Puedes cambiarlo más adelante en Perfil.', 'You can change it later in Profile.')} />
+            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} aria-label={t('Tu nombre', 'Your name')} autoComplete="given-name"
+              value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
             <Card title={t('Unidad de peso', 'Weight unit')}>
               <Segmented value={settings.unit} onChange={(u: Unit) => updateSettings({ unit: u })}
                 options={[{ value: 'kg', label: t('Kilogramos (kg)', 'Kilograms (kg)') }, { value: 'lb', label: t('Libras (lb)', 'Pounds (lb)') }]} />
@@ -169,6 +165,11 @@ export function OnboardingScreen() {
                 {equipmentInfo(settings.equipment).label}
               </span>
             </Card>
+            {/* Antes de crear el programa, a la vista y no al pie de la bienvenida. */}
+            <div className="card" style={{ gap: 6 }}>
+              <HealthNotice />
+              <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
+            </div>
           </>
         )}
       </div>

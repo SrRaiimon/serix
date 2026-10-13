@@ -458,8 +458,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <div className="howto small">
           <Info size={16} aria-hidden="true" />
           <span>
-            {t('Escribe el peso y las repeticiones que hagas y, al acabar la serie, toca el círculo ○. El descanso empieza solo.', 'Type the weight and the reps you do and, when the set is over, tap the circle ○. The rest timer starts by itself.')}
-            {weightHint && !bodyweight ? ` ${t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}` : ''}
+            {t('Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter weight and reps and tap ○ when the set is done: rest starts by itself.')}
+            {weightHint && !bodyweight ? ` ${t('Peso: uno que puedas mover unas 12 veces bien.', 'Weight: one you could lift about 12 times with good form.')}` : ''}
           </span>
         </div>
       )}
@@ -474,8 +474,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             : t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}
         </span>
       )}
-      <div className={`set-grid set-head ${tracking}`}>
-        <span>{t('SERIE', 'SET')}</span><span>{t('ÚLTIMA VEZ', 'LAST TIME')}</span>
+      {/* Sin historial, la columna «Última vez» solo tendría rayas: se quita y los campos ganan sitio. */}
+      <div className={`set-grid set-head ${tracking} ${previous.length ? '' : 'fresh'}`}>
+        <span>{t('SERIE', 'SET')}</span>{previous.length > 0 && <span>{t('ÚLTIMA VEZ', 'LAST TIME')}</span>}
         {tracking === 'weight_reps' && <>
           {exercise.assisted
             ? <span title={t('Ayuda de la máquina', 'Machine assistance')}>{t('AYUDA', 'ASSIST')}</span>
@@ -503,7 +504,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         // Tras el lado izquierdo se pasa al derecho sin descanso.
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
-          <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
+          <SetRow key={set.id} set={set} label={label} previous={prev} fresh={!previous.length} tracking={tracking} current={set.id === currentSet}
             repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} needsWeight={needsWeight && !exercise.assisted} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
@@ -617,8 +618,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
 /** Si ya se marcó alguna serie mientras la app está abierta (para no repetir la ayuda del primer día). */
 let firstSetDone = false
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
+function SetRow({ set, label, previous, fresh, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
   set: SetEntry
+  /** Ejercicio sin historial: sin columna «Última vez». */
+  fresh: boolean
   current: boolean
   askRpe: boolean
   onAskRpe: () => void
@@ -736,12 +739,12 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
 
   return (
     <>
-    <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''} ${current ? 'current' : ''}`}>
+    <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''} ${current ? 'current' : ''} ${fresh ? 'fresh' : ''}`}>
       <button className={`set-label ${set.warmup ? 'warmup' : set.kind ?? ''}`} onClick={() => setMenu(true)}
         aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
-      <span className="set-prev">{previous ? setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×') : '—'}</span>
+      {!fresh && <span className="set-prev">{previous ? setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×') : '—'}</span>}
       {tracking === 'weight_reps' && (
         <>
           <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}

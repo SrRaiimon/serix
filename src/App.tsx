@@ -195,6 +195,7 @@ function Screen({ route }: { route: string[] }) {
       if (a === 'plates') return <PlatesScreen />
       if (a === 'legal') return <LegalScreen />
       if (a === 'friends') return b ? <FriendDetailScreen id={b} /> : <FriendsScreen />
+      if (a === 'general' || a === 'training' || a === 'alerts' || a === 'data') return <ProfileScreen section={a} />
       return <ProfileScreen />
     case 'wod':
       return <WodScreen />

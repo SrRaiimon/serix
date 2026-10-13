@@ -119,7 +119,8 @@ export type AutoProgress =
   | { kind: 'hold'; mode: 'double' | 'linear'; reason?: 'rpe' }
   /** Tres sesiones seguidas sin completar el objetivo (lineal): se baja un 10 % para volver a subir. */
   | { kind: 'down'; from: number; to: number; mode: 'linear' }
-  | { kind: 'wave'; week: number; tm: number }
+  /** `reset`: este ciclo empieza con el TM un 10 % más bajo (algún AMRAP no llegó al mínimo). */
+  | { kind: 'wave'; week: number; tm: number; reset?: true }
   | { kind: 'percent'; pct: number; max: number }
 
 export interface Session {
@@ -378,12 +379,35 @@ export function useStorageProblem(): StorageProblem | undefined {
 /** Si se puede escribir: no tras un fallo de lectura ni con datos de una versión más nueva. */
 const writable = () => problem?.kind !== 'readError' && problem?.kind !== 'newer'
 
+// MARK: Varias pestañas
+
+// Con la app abierta en dos pestañas (o la instalada y el navegador), cada una guardaría su copia
+// encima de la otra. Tras cada guardado se avisa a las demás, que releen los datos si no tienen
+// cambios propios pendientes (si los tienen, los suyos se guardan después y avisan a su vez).
+const channel = typeof BroadcastChannel === 'undefined' ? undefined : new BroadcastChannel('serix-data')
+// En Node (tests) el canal abierto no deja terminar el proceso.
+;(channel as { unref?: () => void } | undefined)?.unref?.()
+/** Hay cambios en memoria aún sin escribir. */
+let dirty = false
+channel?.addEventListener('message', () => {
+  if (dirty || !writable()) return
+  void readData().then((stored) => {
+    const migrated = stored === undefined ? undefined : migrateData(stored)
+    if (!migrated || migrated === 'newer' || dirty) return
+    state = migrated
+    emit()
+  }).catch(() => {})
+})
+
 async function save(data: AppData): Promise<void> {
   if (!writable()) return
+  dirty = false
   try {
     await writeData(data)
+    channel?.postMessage('saved')
     if (problem?.kind === 'writeError') setProblem(undefined)
   } catch (e) {
+    dirty = true
     setProblem({ kind: 'writeError', detail: e instanceof Error ? e.name : String(e) })
   }
 }
@@ -393,13 +417,18 @@ export const DATA_VERSION = 1
 /** MIGRATIONS[n] pasa los datos de la versión n a la n + 1 (aún no hace falta ninguna). */
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => void> = {}
 
+/** Aplica en orden las migraciones pendientes (a una copia). También para las copias de seguridad antiguas. */
+export function runMigrations(stored: Record<string, unknown>): Record<string, unknown> {
+  const d = { ...stored }
+  for (let v = typeof d.version === 'number' ? d.version : 1; v < DATA_VERSION; v++) MIGRATIONS[v]?.(d)
+  return d
+}
+
 /** Datos guardados → datos de esta versión: migraciones en orden y lo mínimo para que la forma sea válida. */
 export function migrateData(stored: unknown): AppData | 'newer' | undefined {
   if (typeof stored !== 'object' || stored === null) return undefined
-  const d = { ...(stored as Record<string, unknown>) }
-  let v = typeof d.version === 'number' ? d.version : 1
-  if (v > DATA_VERSION) return 'newer'
-  for (; v < DATA_VERSION; v++) MIGRATIONS[v]?.(d)
+  if (typeof (stored as { version?: unknown }).version === 'number' && (stored as { version: number }).version > DATA_VERSION) return 'newer'
+  const d = runMigrations(stored as Record<string, unknown>)
   const empty = emptyData()
   const list = <T,>(x: unknown, fallback: T[]): T[] => (Array.isArray(x) ? x.filter((e) => typeof e === 'object' && e !== null) as T[] : fallback)
   const obj = <T,>(x: unknown, fallback: T): T => (typeof x === 'object' && x !== null && !Array.isArray(x) ? x as T : fallback)
@@ -438,6 +467,7 @@ function emit() {
 }
 
 function scheduleSave() {
+  dirty = true
   clearTimeout(saveTimer)
   saveTimer = setTimeout(() => void save(state), 250)
 }
@@ -493,20 +523,21 @@ export function update(recipe: (draft: AppData) => void) {
   scheduleSave()
 }
 
-export function replaceData(data: AppData) {
+/** Sustituye todos los datos; la promesa se cumple cuando ya están guardados. */
+export function replaceData(data: AppData): Promise<void> {
   // Restaurar una copia es una decisión expresa: vuelve a permitir guardar.
   setProblem(undefined)
   state = { ...emptyData(), ...data, settings: { ...defaultSettings, ...data.settings } }
   emit()
-  flush()
+  return flush()
 }
 
-export function resetData() {
+export function resetData(): Promise<void> {
   const keepOnboarding = state.settings
   state = emptyData()
   state.settings = { ...keepOnboarding, activeProgram: '', favorites: [] }
   emit()
-  flush()
+  return flush()
 }
 
 function subscribe(listener: () => void) {
@@ -615,7 +646,7 @@ export function undo(): boolean {
   if (!offer) return false
   state = offer.previous
   emit()
-  flush()
+  void flush()
   return true
 }
 

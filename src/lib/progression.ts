@@ -10,9 +10,12 @@ import type { AutoProgress, Progression, Session, SetEntry } from './store'
 //   se repite. Los ejercicios de pierna suben el doble.
 // - wave531 (5/3/1 de Jim Wendler): ciclo de 4 semanas sobre un máximo de entrenamiento (TM,
 //   ~90 % del 1RM). La última serie de las 3 primeras semanas es AMRAP y la cuarta es de descarga.
-//   Al acabar cada ciclo el TM sube 2,5 kg (tren superior) o 5 kg (pierna).
+//   Al acabar cada ciclo el TM sube 2,5 kg (tren superior) o 5 kg (pierna), salvo que en algún AMRAP no
+//   se llegara a las repeticiones mínimas: entonces el TM baja un 10 % (el «reinicio» de Wendler).
 
 const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors', 'calves'])
+/** Pierna con mancuerna, kettlebell o a una pierna (goblet, zancadas, búlgaras…): sube como el tren superior. */
+const LIGHT_LEG = /dumbbell|kettlebell|goblet|lunge|split|step|single|one[-_]leg|pistol/i
 
 /** Ejercicios de aislamiento (por su nombre en el catálogo): suben poco, 2,5 kg en elevaciones laterales es mucho. */
 const ISOLATION = /raise|fly|flye|curl|extension|kickback|pushdown|lateral|calf|shrug|crunch|pullover|wrist|reverse_fly|face_pull/i
@@ -29,7 +32,7 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
     const min = unit === 'kg' ? 1 : 2
     return toKg(Math.max(min, Math.round((fromKg(weight, unit) * 0.05) / fine) * fine), unit)
   }
-  return toKg(increment(unit) * (LOWER.has(muscle) ? 2 : 1), unit)
+  return toKg(increment(unit) * (LOWER.has(muscle) && !LIGHT_LEG.test(exerciseId) ? 2 : 1), unit)
 }
 
 /** Sesiones seguidas (de la más reciente hacia atrás) en las que no se completó el objetivo con este peso. */
@@ -90,17 +93,33 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     if (!ex.trainingMax) return undefined
     const since = ex.tmSince ?? 0
     // Semana del ciclo: cuántas veces se ha hecho el ejercicio desde que se fijó el TM.
-    const done = history.filter((s) => s.start >= since && s.exercises.some((e) => e.exerciseId === ex.exerciseId && workingSets(e).length)).length
-    const week = done % 4
-    const cycle = Math.floor(done / 4)
-    const tm = ex.trainingMax + cycle * progressionStep(ex.muscle, unit)
+    const done = history
+      .filter((s) => s.start >= since)
+      .sort((a, b) => a.start - b.start)
+      .map((s) => s.exercises.find((e) => e.exerciseId === ex.exerciseId && workingSets(e).length))
+      .filter((e) => e !== undefined)
+    const week = done.length % 4
+    // Cada ciclo terminado: si en algún AMRAP (semanas 1-3) no se llegó al mínimo, TM −10 %; si no, sube.
+    let tm = ex.trainingMax
+    let reset = false
+    for (let c = 0; c < Math.floor(done.length / 4); c++) {
+      const missed = done.slice(c * 4, c * 4 + 3).some((e, w) => {
+        const amrap = e.sets.find((x) => x.kind === 'amrap' && x.done)
+        return amrap !== undefined && amrap.reps < WAVE[w][2][1]
+      })
+      reset = missed
+      tm = missed ? round(tm * 0.9, unit) : tm + progressionStep(ex.muscle, unit)
+    }
     const sets = WAVE[week].map(([pct, reps], i) => blank(round(tm * pct, unit), reps, week < 3 && i === 2 ? { kind: 'amrap' } : {}))
-    return { sets, auto: { kind: 'wave', week: week + 1, tm }, deload: week === 3 }
+    return { sets, auto: { kind: 'wave', week: week + 1, tm, ...(reset && week === 0 ? { reset: true as const } : {}) }, deload: week === 3 }
   }
   if (ex.progression === 'percent') {
-    // Peso = porcentaje del mejor 1RM estimado hasta hoy (si aún no hay, se pone a mano).
+    // Peso = porcentaje del mejor 1RM estimado de los últimos 90 días (si has bajado tras una pausa, baja
+    // contigo); sin datos recientes, el mejor de siempre, y si aún no hay, se pone a mano.
     // En dominadas y fondos el máximo incluye el peso corporal: ahí el lastre se pone a mano.
-    const max = records(history).find((r) => r.exerciseId === ex.exerciseId && r.added === undefined)?.e1rm
+    const latest = Math.max(0, ...history.map((s) => s.start))
+    const best = (h: Session[]) => records(h).find((r) => r.exerciseId === ex.exerciseId && r.added === undefined)?.e1rm
+    const max = best(history.filter((s) => s.start >= latest - 90 * 86400000)) ?? best(history)
     if (!max || !ex.percent) return undefined
     const reps = ex.repsMax || ex.repsMin || 5
     return { sets: Array.from({ length: Math.max(ex.sets, 1) }, () => blank(round(max * ex.percent!, unit), reps)), auto: { kind: 'percent', pct: ex.percent, max } }

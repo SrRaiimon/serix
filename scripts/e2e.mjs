@@ -129,15 +129,15 @@ async function main() {
   check(d.nutrition.entries.length === 1, `Debería haber 1 alimento apuntado y hay ${d.nutrition.entries.length}`)
 
   step = 'pantallas'
-  for (const hash of ['#/routines', '#/progress', '#/profile', '#/exercises', '#/timer', '#/progress/report']) {
+  for (const hash of ['#/routines', '#/progress', '#/profile', '#/profile/general', '#/profile/training', '#/profile/alerts', '#/profile/data', '#/exercises', '#/timer', '#/progress/report']) {
     await run((h) => { location.hash = h }, hash)
     await wait(700)
     const blank = await run(() => !!document.querySelector('.rescue') || document.querySelector('main')?.textContent.trim() === '')
     check(!blank, `La pantalla ${hash} ha fallado`)
   }
   step = 'inglés y tema claro'
-  // Mismo recorrido en inglés y con tema claro, cambiándolos desde Perfil como haría alguien.
-  await run(() => { location.hash = '#/profile' })
+  // Mismo recorrido en inglés y con tema claro, cambiándolos desde Perfil → General como haría alguien.
+  await run(() => { location.hash = '#/profile/general' })
   await wait(700)
   await run(() => {
     const pick = (value) => {
@@ -163,7 +163,7 @@ async function main() {
 
   step = 'francés'
   // Francés: el diccionario se descarga aparte; la barra de abajo y una pantalla entera, sin español.
-  await run(() => { location.hash = '#/profile' })
+  await run(() => { location.hash = '#/profile/general' })
   await wait(700)
   await run(() => {
     const select = [...document.querySelectorAll('select')].find((x) => [...x.options].some((o) => o.value === 'fr'))

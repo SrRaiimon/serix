@@ -4,7 +4,7 @@ import { QrCode } from '../components/Qr'
 import { Card, NavBar, useCatalog } from '../components/ui'
 import { migrateCatalog } from '../lib/migrate'
 import { navigate } from '../lib/router'
-import { finishedSessions, getData, replaceData, useData, type AppData } from '../lib/store'
+import { finishedSessions, flush, getData, replaceData, useData, type AppData } from '../lib/store'
 import { addFrame, assemble, emptyReceived, encodeTransfer, isComplete, parseFrame, type Received } from '../lib/transfer'
 import { keepScreenOn } from '../lib/workout'
 import { plural, t } from '../lib/i18n'
@@ -166,11 +166,12 @@ function Receiver() {
     }
   }
 
-  const apply = () => {
+  const apply = async () => {
     if (!result) return
-    replaceData(result)
+    await replaceData(result)
     // Por si los datos vienen de una versión antigua con el catálogo anterior.
     migrateCatalog(catalog)
+    await flush()
     navigate('home')
   }
 

@@ -283,7 +283,7 @@
 "Cierra el modo foco y pulsa «Terminar» para guardar el entreno.": "Fecha o modo foco e toca em «Terminar» para guardar o treino.",
 "Cintura": "Cintura",
 "Circuito": "Circuito",
-"Circuitos con más repeticiones, descansos cortos y cardio.": "Circuitos com mais repetições, descansos curtos e cardio.",
+"Básicos pesados para conservar músculo, accesorios con menos descanso y algo de cardio.": "Exercícios básicos pesados para manter o músculo, acessórios com menos descanso e algum cardio.",
 "Claro": "Claro",
 "Clave:": "Ponto-chave:",
 "Club de los {0} {1}": "Clube dos {0} {1}",
@@ -1943,5 +1943,16 @@
 "último día": "último dia",
 "🐞 FALLO en Serix": "🐞 ERRO no Serix",
 "💡 IDEA para Serix": "💡 IDEIA para o Serix",
-"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 pódio com pelo menos um rival · 🎯 objetivo cumprido"
+"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 pódio com pelo menos um rival · 🎯 objetivo cumprido",
+"5/3/1 · TM −10 %": "5/3/1 · TM −10 %",
+"Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.": "Regista o peso e as repetições e toca em ○ ao acabar a série: o descanso começa sozinho.",
+"Copia cargada, pero no se ha podido guardar": "Cópia carregada, mas não foi possível guardá-la",
+"General": "Geral",
+"Peso: uno que puedas mover unas 12 veces bien.": "Peso: um que consigas levantar umas 12 vezes bem.",
+"Sin copia": "Sem cópia",
+"Bienvenida más ligera: el nombre y el aviso de salud pasan al último paso, junto a tu plan.": "Boas-vindas mais leves: o nome e o aviso de saúde passam para o último passo, junto ao teu plano.",
+"Calorías del entreno más realistas (cuentan los descansos) y el 5/3/1 baja el máximo un 10 % si fallas un AMRAP.": "Calorias do treino mais realistas (contam os descansos) e o 5/3/1 baixa o máximo de treino 10 % se falhares um AMRAP.",
+"Con la app abierta en dos pestañas ya no se pisan los datos, y las copias antiguas se actualizan al importarlas.": "Com a app aberta em dois separadores os dados já não se sobrepõem, e as cópias antigas são atualizadas ao importá-las.",
+"Perfil más corto: los ajustes van en cuatro apartados (General, Entrenamiento, Avisos y sonido, Tus datos).": "Perfil mais curto: as definições ficam em quatro secções (Geral, Treino, Avisos e som, Os teus dados).",
+"Saltos de peso más pequeños en sentadilla goblet y zancadas, y el modo porcentaje usa tu 1RM de los últimos 90 días.": "Saltos de peso mais pequenos no agachamento goblet e nas passadas, e o modo percentagem usa o teu 1RM dos últimos 90 dias."
 }

@@ -283,7 +283,7 @@
 "Cierra el modo foco y pulsa «Terminar» para guardar el entreno.": "Quitte le mode focus et touche « Terminer » pour enregistrer l'entraînement.",
 "Cintura": "Tour de taille",
 "Circuito": "Circuit",
-"Circuitos con más repeticiones, descansos cortos y cardio.": "Circuits avec plus de répétitions, repos courts et cardio.",
+"Básicos pesados para conservar músculo, accesorios con menos descanso y algo de cardio.": "Exercices de base lourds pour garder le muscle, accessoires avec moins de repos et un peu de cardio.",
 "Claro": "Clair",
 "Clave:": "Point clé :",
 "Club de los {0} {1}": "Club des {0} {1}",
@@ -1943,5 +1943,16 @@
 "último día": "dernier jour",
 "🐞 FALLO en Serix": "🐞 BUG dans Serix",
 "💡 IDEA para Serix": "💡 IDÉE pour Serix",
-"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 podium avec au moins un rival · 🎯 objectif atteint"
+"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 podium avec au moins un rival · 🎯 objectif atteint",
+"5/3/1 · TM −10 %": "5/3/1 · TM −10 %",
+"Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.": "Note le poids et les répétitions, puis touche ○ à la fin de la série : le repos démarre tout seul.",
+"Copia cargada, pero no se ha podido guardar": "Sauvegarde chargée, mais elle n'a pas pu être enregistrée",
+"General": "Général",
+"Peso: uno que puedas mover unas 12 veces bien.": "Poids : un que tu peux soulever environ 12 fois proprement.",
+"Sin copia": "Aucune sauvegarde",
+"Bienvenida más ligera: el nombre y el aviso de salud pasan al último paso, junto a tu plan.": "Accueil plus léger : ton prénom et l'avertissement santé passent à la dernière étape, à côté de ton plan.",
+"Calorías del entreno más realistas (cuentan los descansos) y el 5/3/1 baja el máximo un 10 % si fallas un AMRAP.": "Calories de l'entraînement plus réalistes (les repos sont pris en compte) et le 5/3/1 baisse le max d'entraînement de 10 % si tu rates un AMRAP.",
+"Con la app abierta en dos pestañas ya no se pisan los datos, y las copias antiguas se actualizan al importarlas.": "Avec l'app ouverte dans deux onglets, les données ne s'écrasent plus, et les anciennes sauvegardes sont mises à jour à l'import.",
+"Perfil más corto: los ajustes van en cuatro apartados (General, Entrenamiento, Avisos y sonido, Tus datos).": "Profil plus court : les réglages sont regroupés en quatre sections (Général, Entraînement, Alertes et son, Tes données).",
+"Saltos de peso más pequeños en sentadilla goblet y zancadas, y el modo porcentaje usa tu 1RM de los últimos 90 días.": "Paliers de poids plus petits au goblet squat et aux fentes, et le mode pourcentage utilise ton 1RM des 90 derniers jours."
 }

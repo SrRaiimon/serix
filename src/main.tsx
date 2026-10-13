@@ -9,7 +9,7 @@ registerServiceWorker()
 
 // Guarda al pasar a segundo plano: en móvil el navegador puede cerrar la app sin avisar.
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') flush()
+  if (document.visibilityState === 'hidden') void flush()
 })
 
 createRoot(document.getElementById('root')!).render(

@@ -1,4 +1,4 @@
-import { ArrowRightLeft, BellRing, CloudOff, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, Bell, BellRing, Database, Dumbbell, SlidersHorizontal, CloudOff, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
@@ -21,7 +21,7 @@ import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, 
 import { speak, voiceSupported } from '../lib/voice'
 import { isIOS } from '../lib/pwa'
 import { offlineStatus, prepareOffline, type OfflineProgress } from '../lib/offline'
-import { finishedSessions, replaceData, resetData, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
+import { finishedSessions, flush, replaceData, resetData, storageProblem, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlateInventory, PlatesView } from './Plates'
 
 const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
@@ -29,7 +29,9 @@ import { SessionRow } from '../components/SessionRow'
 import { LANGS, plural, t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 
-export function ProfileScreen() {
+export type ProfileSection = 'general' | 'training' | 'alerts' | 'data'
+
+export function ProfileScreen({ section }: { section?: ProfileSection }) {
   const data = useData()
   const catalog = useCatalog()
   const { settings } = data
@@ -57,57 +59,24 @@ export function ProfileScreen() {
     try {
       const parsed = parseBackup(await file.text())
       if (!confirm(t(`Se sustituirán tus datos actuales por la copia (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). ¿Continuar?`, `Your current data will be replaced by the backup (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). Continue?`))) return
-      replaceData(parsed)
+      await replaceData(parsed)
       // Las copias hechas con el catálogo anterior se adaptan al actual.
       migrateCatalog(catalog)
-      showToast(t('Copia restaurada', 'Backup restored'))
+      await flush()
+      showToast(storageProblem() ? t('Copia cargada, pero no se ha podido guardar', 'Backup loaded, but it could not be saved') : t('Copia restaurada', 'Backup restored'))
     } catch (e) {
       // Los avisos propios (demasiado grande, versión más nueva…) dicen qué pasa; el resto, el genérico.
       showToast(e instanceof Error && !(e instanceof SyntaxError) && e.message ? e.message : t('El archivo no es una copia válida', 'The file is not a valid backup'))
     }
   }
 
-  return (
-    <div className="screen">
-      <LargeTitle title={t('Perfil', 'Profile')} />
-      <Card>
-        <div className="row">
-          <div className="avatar">{initials}</div>
-          <div className="grow">
-            <strong style={{ fontSize: 20, display: 'block' }}>{settings.name || t('Tu perfil', 'Your profile')}</strong>
-            <span className="small muted" style={{ display: 'block' }}>
-              {plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} · {duration(sessions.reduce((t, s) => t + sessionDuration(s), 0))}
-            </span>
-            <span className="small muted">{volume(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('levantados', 'lifted')}</span>
-          </div>
-        </div>
-      </Card>
-
-      <div className="list-header">{t('Cuerpo y actividad', 'Body and activity')}</div>
-      <div className="list">
-        <Row icon={Scale} label={t('Medidas corporales', 'Body measurements')} detail={lastWeight !== undefined ? weight(lastWeight, settings.unit) : undefined} onClick={() => navigate('profile', 'measurements')} />
-        <Row icon={Camera} label={t('Fotos de progreso', 'Progress photos')} onClick={() => navigate('profile', 'photos')} />
-        <Row icon={CalendarDays} label={t('Calendario', 'Calendar')} onClick={() => navigate('profile', 'calendar')} />
-        <Row icon={Users} label={t('Retos con amigos', 'Friend challenges')} detail={data.friends.length || undefined} onClick={() => navigate('profile', 'friends')} />
-      </div>
-
-      <div className="list-header">{t('Herramientas', 'Tools')}</div>
-      <div className="list">
-        <Row icon={Calculator} label={t('Calculadora de 1RM', '1RM calculator')} onClick={() => navigate('profile', '1rm')} />
-        <Row icon={Disc} label={t('Calculadora de discos', 'Plate calculator')} onClick={() => navigate('profile', 'plates')} />
-      </div>
-
-      <div className="list-header">{t('Programa', 'Program')}</div>
-      <div className="list">
-        <Row icon={WandSparkles} label={t('Generar nuevo programa', 'Generate a new program')} className="accent" onClick={() => navigate('routines')} chevron={false} />
-        <Row icon={RotateCcw} label={t('Repetir cuestionario inicial', 'Redo the initial questionnaire')} className="accent" onClick={() => updateSettings({ onboarded: false })} chevron={false} />
-      </div>
-
-      <div className="list-header">{t('Ajustes', 'Settings')}</div>
+  // Los ajustes van en subpantallas (Perfil → Ajustes → …): en una sola lista eran casi 4 pantallas.
+  const sectionBody = section === 'general' ? (
+    <>
       <div className="list">
         <label className="list-row">
           <span>{t('Nombre', 'Name')}</span>
-          <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)' }} placeholder={t('Tu nombre', 'Your name')} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
+          <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Tu nombre', 'Your name')} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
         </label>
         <div className="list-row">
           <span className="grow">{t('Unidad de peso', 'Weight unit')}</span>
@@ -140,7 +109,9 @@ export function ProfileScreen() {
         </label>
       </div>
 
-      <div className="list-header">{t('Entrenamiento', 'Training')}</div>
+    </>
+  ) : section === 'training' ? (
+    <>
       <div className="list">
         <label className="list-row">
           <span className="grow">
@@ -239,7 +210,9 @@ export function ProfileScreen() {
         )}
       </div>
 
-      <div className="list-header">{t('Avisos y sonido', 'Alerts and sound')}</div>
+    </>
+  ) : section === 'alerts' ? (
+    <>
       <div className="list">
         <label className="list-row">
           <span className="grow">
@@ -293,7 +266,9 @@ export function ProfileScreen() {
         )}
       </div>
 
-      <div className="list-header">{t('Tus datos', 'Your data')}</div>
+    </>
+  ) : section === 'data' ? (
+    <>
       <div className="list">
         <Row icon={Download} label={t('Guardar copia de seguridad', 'Save backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={() => void exportBackup()} chevron={false} />
         <Row icon={Upload} label={t('Importar copia de seguridad', 'Import backup')} onClick={() => fileInput.current?.click()} chevron={false} />
@@ -313,6 +288,57 @@ export function ProfileScreen() {
         {' '}{t('Entrenar y apuntar comidas funciona siempre sin conexión; «Usar sin conexión» descarga además el escáner de códigos, los productos del súper y el lector de etiquetas.', 'Training and logging food always work offline; “Use offline” also downloads the barcode scanner, supermarket products and the label reader.')}
       </p>
 
+    </>
+  ) : null
+
+  const titles = { general: t('General', 'General'), training: t('Entrenamiento', 'Training'), alerts: t('Avisos y sonido', 'Alerts and sound'), data: t('Tus datos', 'Your data') }
+  return (
+    <>
+    {section && <NavBar showBack title={titles[section]} />}
+    <div className={section ? 'screen with-nav' : 'screen'}>
+      {section ? sectionBody : <>
+      <LargeTitle title={t('Perfil', 'Profile')} />
+      <Card>
+        <div className="row">
+          <div className="avatar">{initials}</div>
+          <div className="grow">
+            <strong style={{ fontSize: 20, display: 'block' }}>{settings.name || t('Tu perfil', 'Your profile')}</strong>
+            <span className="small muted" style={{ display: 'block' }}>
+              {plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} · {duration(sessions.reduce((t, s) => t + sessionDuration(s), 0))}
+            </span>
+            <span className="small muted">{volume(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('levantados', 'lifted')}</span>
+          </div>
+        </div>
+      </Card>
+
+      <div className="list-header">{t('Cuerpo y actividad', 'Body and activity')}</div>
+      <div className="list">
+        <Row icon={Scale} label={t('Medidas corporales', 'Body measurements')} detail={lastWeight !== undefined ? weight(lastWeight, settings.unit) : undefined} onClick={() => navigate('profile', 'measurements')} />
+        <Row icon={Camera} label={t('Fotos de progreso', 'Progress photos')} onClick={() => navigate('profile', 'photos')} />
+        <Row icon={CalendarDays} label={t('Calendario', 'Calendar')} onClick={() => navigate('profile', 'calendar')} />
+        <Row icon={Users} label={t('Retos con amigos', 'Friend challenges')} detail={data.friends.length || undefined} onClick={() => navigate('profile', 'friends')} />
+      </div>
+
+      <div className="list-header">{t('Herramientas', 'Tools')}</div>
+      <div className="list">
+        <Row icon={Calculator} label={t('Calculadora de 1RM', '1RM calculator')} onClick={() => navigate('profile', '1rm')} />
+        <Row icon={Disc} label={t('Calculadora de discos', 'Plate calculator')} onClick={() => navigate('profile', 'plates')} />
+      </div>
+
+      <div className="list-header">{t('Programa', 'Program')}</div>
+      <div className="list">
+        <Row icon={WandSparkles} label={t('Generar nuevo programa', 'Generate a new program')} className="accent" onClick={() => navigate('routines')} chevron={false} />
+        <Row icon={RotateCcw} label={t('Repetir cuestionario inicial', 'Redo the initial questionnaire')} className="accent" onClick={() => updateSettings({ onboarded: false })} chevron={false} />
+      </div>
+
+      <div className="list-header">{t('Ajustes', 'Settings')}</div>
+      <div className="list">
+        <Row icon={SlidersHorizontal} label={t('General', 'General')} onClick={() => navigate('profile', 'general')} />
+        <Row icon={Dumbbell} label={t('Entrenamiento', 'Training')} onClick={() => navigate('profile', 'training')} />
+        <Row icon={Bell} label={t('Avisos y sonido', 'Alerts and sound')} onClick={() => navigate('profile', 'alerts')} />
+        <Row icon={Database} label={t('Tus datos', 'Your data')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Sin copia', 'No backup')} onClick={() => navigate('profile', 'data')} />
+      </div>
+
       <div className="list-header">{t('Ayuda', 'Help')}</div>
       <div className="list">
         <Row icon={Bug} label={t('Contar un fallo', 'Report a bug')} onClick={() => setFeedback('bug')} />
@@ -327,6 +353,7 @@ export function ProfileScreen() {
         <Row icon={Trash2} label={t('Borrar todos los datos', 'Delete all data')} className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
       </div>
       <p className="list-footer">{t('Versión', 'Version')} {__APP_VERSION__}</p>
+      </>}
       <input ref={csvInput} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
         const f = e.target.files?.[0]
         e.target.value = ''
@@ -343,6 +370,7 @@ export function ProfileScreen() {
       )}
       {toast}
     </div>
+    </>
   )
 }
 

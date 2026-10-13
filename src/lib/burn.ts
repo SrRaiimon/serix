@@ -1,11 +1,11 @@
 import type { Tracking } from './tracking'
 
 // Calorías gastadas en un entrenamiento, estimadas con MET (Compendium of Physical Activities, Ainsworth
-// et al., 2011): kcal = MET × peso (kg) × horas. Pesas: 5 MET (entre «moderado» 3,5 y «vigoroso» 6);
-// cardio de distancia (correr, bici, remo…): 7 MET de media. Se resta 1 MET (lo que se gasta en reposo,
+// et al., 2011): kcal = MET × peso (kg) × horas. Pesas: 3,5 MET (código 02050, «esfuerzo moderado»):
+// el MET de la sesión entera, con los descansos dentro, no el de la serie; cardio de distancia (correr, bici, remo…): 7 MET de media. Se resta 1 MET (lo que se gasta en reposo,
 // que ya cuenta el objetivo del día). Es una estimación: puede fallar bastante.
 
-const MET_WEIGHTS = 5
+const MET_WEIGHTS = 3.5
 const MET_CARDIO = 7
 
 /** Kcal estimadas de un entrenamiento terminado (0 si no se sabe el peso o no tiene duración). */

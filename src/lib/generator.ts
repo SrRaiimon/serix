@@ -10,7 +10,7 @@ export type EquipmentProfile = 'gym' | 'dumbbells' | 'kettlebell' | 'bands' | 'b
 export const goals: { id: TrainingGoal; label: string; short: string; detail: string }[] = [
   { id: 'hypertrophy', get label() { return t('Ganar músculo', 'Build muscle') }, get short() { return t('Hipertrofia', 'Hypertrophy') }, get detail() { return t('Series de 6-15 repeticiones y volumen moderado-alto.', 'Sets of 6-15 reps and moderate-to-high volume.') } },
   { id: 'strength', get label() { return t('Ganar fuerza', 'Get stronger') }, get short() { return t('Fuerza', 'Strength') }, get detail() { return t('Básicos pesados a pocas repeticiones y descansos largos.', 'Heavy compound lifts, low reps and long rests.') } },
-  { id: 'fatLoss', get label() { return t('Perder grasa', 'Lose fat') }, get short() { return t('Definición', 'Fat loss') }, get detail() { return t('Circuitos con más repeticiones, descansos cortos y cardio.', 'Circuits with higher reps, short rests and cardio.') } },
+  { id: 'fatLoss', get label() { return t('Perder grasa', 'Lose fat') }, get short() { return t('Definición', 'Fat loss') }, get detail() { return t('Básicos pesados para conservar músculo, accesorios con menos descanso y algo de cardio.', 'Heavy compound lifts to keep muscle, accessories with shorter rests and some cardio.') } },
   { id: 'general', get label() { return t('Estar en forma', 'Get fit') }, get short() { return t('Salud', 'Fitness') }, get detail() { return t('Un poco de todo para moverte mejor y sentirte bien.', 'A bit of everything to move better and feel good.') } },
 ]
 

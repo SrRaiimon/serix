@@ -91,3 +91,25 @@ test('lineal: tras 3 sesiones sin completar, un 10 % menos', () => {
   // Con solo dos fallos, se repite.
   assert.equal(plan(squat, [set(100, 5), set(100, 4), set(100, 3)], history.slice(1), 'kg')?.auto?.kind, 'hold')
 })
+
+test('5/3/1: si un AMRAP no llega al mínimo, el TM baja un 10 % en el ciclo siguiente', () => {
+  const lift = { exerciseId: 'squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'wave531' as const, trainingMax: 100, tmSince: 0 }
+  const week = (day: number, amrapReps: number) => session(day, [exercise('squat', [set(70, 5), set(80, 5), set(90, amrapReps, { kind: 'amrap' })])])
+  const cycle = (third: number) => [week(0, 8), week(7, 5), week(14, third), session(21, [exercise('squat', [set(40, 5)])])]
+  assert.deepEqual(plan(lift, [], cycle(0), 'kg')?.auto, { kind: 'wave', week: 1, tm: 90, reset: true })
+  assert.deepEqual(plan(lift, [], cycle(3), 'kg')?.auto, { kind: 'wave', week: 1, tm: 105 })
+})
+
+test('pierna con mancuerna o a una pierna sube como el tren superior', () => {
+  assert.equal(progressionStep('quads', 'kg', 'Barbell_Squat'), 5)
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat'), 2.5)
+  assert.equal(progressionStep('quads', 'kg', 'Dumbbell_Lunges'), 2.5)
+})
+
+test('porcentaje: usa el 1RM de los últimos 90 días, no el récord de hace un año', () => {
+  const lift = { exerciseId: 'bench', muscle: 'pectorals', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent' as const, percent: 0.8 }
+  const old = session(0, [exercise('bench', [set(100, 1)])])
+  const recent = session(365, [exercise('bench', [set(80, 1)])])
+  assert.equal(plan(lift, [], [old, recent], 'kg')?.sets[0].weight, 65) // 80 × 0,8 = 64 → 65
+  assert.equal(plan(lift, [], [old], 'kg')?.sets[0].weight, 80)
+})

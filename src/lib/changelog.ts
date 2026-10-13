@@ -8,6 +8,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.69',
+    items: [
+      ['Perfil más corto: los ajustes van en cuatro apartados (General, Entrenamiento, Avisos y sonido, Tus datos).', 'Shorter Profile: settings are grouped into four sections (General, Training, Alerts and sound, Your data).'],
+      ['Bienvenida más ligera: el nombre y el aviso de salud pasan al último paso, junto a tu plan.', 'Lighter welcome: your name and the health notice move to the last step, next to your plan.'],
+      ['Calorías del entreno más realistas (cuentan los descansos) y el 5/3/1 baja el máximo un 10 % si fallas un AMRAP.', 'More realistic workout calories (rests are taken into account) and 5/3/1 lowers the training max by 10% if you miss an AMRAP.'],
+      ['Saltos de peso más pequeños en sentadilla goblet y zancadas, y el modo porcentaje usa tu 1RM de los últimos 90 días.', 'Smaller weight jumps on goblet squats and lunges, and percentage mode uses your 1RM from the last 90 days.'],
+      ['Con la app abierta en dos pestañas ya no se pisan los datos, y las copias antiguas se actualizan al importarlas.', 'With the app open in two tabs, data no longer gets overwritten, and old backups are updated when imported.'],
+    ],
+  },
+  {
     version: '0.0.68',
     items: [
       ['Progresión más lista: tiene en cuenta el esfuerzo (RPE), sube menos en ejercicios de aislamiento y, si te atascas 3 veces, baja un 10 % para volver a subir.', 'Smarter progression: it takes effort (RPE) into account, uses smaller jumps on isolation exercises and, if you stall 3 times, drops 10% to climb again.'],

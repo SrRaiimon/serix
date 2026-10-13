@@ -24,7 +24,7 @@ test('frente a la última vez: misma rutina, mejor serie de cada ejercicio, dura
 test('calorías del entreno: (MET − 1) × peso × horas, más con cardio', () => {
   const weights = { start: 0, end: 3600000, exercises: [{}, {}] }
   // Lo que se gasta de más sobre el reposo, que ya va en el objetivo del día.
-  assert.equal(sessionKcal(weights, 80), 320)
+  assert.equal(sessionKcal(weights, 80), 200)
   assert.equal(sessionKcal({ ...weights, exercises: [{ tracking: 'distance_time' as const }] }, 80), 480)
   assert.equal(sessionKcal(weights, undefined), 0)
 })
@@ -34,7 +34,7 @@ test('objetivo según lo que gastas: los días de entreno suman sus calorías; l
   const s = session(0, [exercise('Squat', [set(100, 5)])])
   const opts = dayGoalOptions({ sessions: [s], nutrition: {}, measurements: [{ date: T0 - DAY, weight: 80 }], settings: { ...defaultSettings, nutritionBurned: true } })
   // Objetivo escrito a mano (sin factor de actividad): esa es la base y se suma el entreno.
-  assert.equal(goalsForDay(goals, [], dayKey(s.start), opts).kcal, 2500 + 320)
+  assert.equal(goalsForDay(goals, [], dayKey(s.start), opts).kcal, 2500 + 200)
   assert.equal(goalsForDay(goals, [], dayKey(s.start + DAY), opts).kcal, 2500)
 })
 

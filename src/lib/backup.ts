@@ -4,7 +4,7 @@ import { cleanCustomExercise, MAX_CUSTOM_EXERCISES } from './customExercises'
 import { cleanChallenge, cleanSnapshot } from './friends'
 import type { LiftGoal } from './goals'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
-import { defaultSettings, MAX_EXERCISE_NOTE, DATA_VERSION } from './store'
+import { defaultSettings, MAX_EXERCISE_NOTE, DATA_VERSION, runMigrations } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
 import { ALL_MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
@@ -50,7 +50,7 @@ function autoProgress(v: unknown): AutoProgress | undefined {
   }
   if (v.kind === 'wave') {
     const week = optNum(v.week, 1, 4), tm = optNum(v.tm, 0, 2000)
-    return week !== undefined && tm !== undefined ? { kind: 'wave', week: Math.round(week), tm } : undefined
+    return week !== undefined && tm !== undefined ? { kind: 'wave', week: Math.round(week), tm, ...(v.reset === true ? { reset: true as const } : {}) } : undefined
   }
   return undefined
 }
@@ -395,6 +395,11 @@ export function parseBackup(text: string): AppData {
   if (!isObj(raw) || !Array.isArray(raw.sessions) || !Array.isArray(raw.routines)) throw new Error(t('No es una copia de Serix.', 'This is not a Serix backup.'))
   // Una copia de una versión más nueva podría tener datos que esta no entiende: mejor no perderlos.
   if (typeof raw.version === 'number' && raw.version > DATA_VERSION) throw new Error(t('Esta copia es de una versión más nueva de Serix: recarga la app para actualizarla y vuelve a importarla.', 'This backup is from a newer version of Serix: reload the app to update it and import it again.'))
+  // Una copia antigua pasa por las mismas migraciones que los datos guardados.
+  return sanitize(runMigrations(raw))
+}
+
+function sanitize(raw: Record<string, unknown>): AppData {
   return {
     version: DATA_VERSION,
     routines: list(raw.routines, routine, 1000),

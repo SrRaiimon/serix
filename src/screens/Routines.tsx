@@ -217,6 +217,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   const auto = planned.auto
   const why = planned.deload ? t('Descarga', 'Deload')
     : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
+      : auto?.kind === 'wave' && auto.reset ? t('5/3/1 · TM −10 %', '5/3/1 · TM −10%')
       : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
         : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
           : auto?.kind === 'hold' ? t('Repite el peso', 'Repeat the weight')
@@ -620,7 +621,7 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
       </Card>
       {program.days.map((d) => (
         <div key={d.name} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="list-header">{d.name}</div>
+          <h2 className="list-header">{d.name}</h2>
           <div className="list">
             {d.exercises.map((g) => (
               <div key={g.exercise.id} className="list-row">
