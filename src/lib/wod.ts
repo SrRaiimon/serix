@@ -67,10 +67,10 @@ const POOL: Entry[] = [
   ['Dumbbell_Lunges', 'dumbbell', 'legs', R(12), 0, true], ['Box_Step_Over', 'box', 'legs', R(12), 0], ['Front_Box_Jump', 'box', 'legs', R(10), 1],
   ['Pushups', 'none', 'push', R(10), 0], ['Pike_Push_Up', 'none', 'push', R(8), 1], ['Handstand_Push-Ups', 'none', 'push', R(5), 2], ['Bench_Dips', 'none', 'push', R(12), 0],
   ['Devil_Press', 'dumbbell', 'push', R(6), 1, true], ['Man_Maker', 'dumbbell', 'push', R(5), 1, true], ['Push_Press', 'barbell', 'push', R(9), 1, true],
-  ['Pullups', 'bar', 'pull', R(8), 0], ['Kipping_Pull_Up', 'bar', 'pull', R(10), 1], ['Chest_To_Bar_Pull_Up', 'bar', 'pull', R(8), 2], ['Muscle_Up', 'bar', 'pull', R(3), 2],
+  ['Pullups', 'bar', 'pull', R(8), 1], ['Kipping_Pull_Up', 'bar', 'pull', R(10), 1], ['Chest_To_Bar_Pull_Up', 'bar', 'pull', R(8), 2], ['Muscle_Up', 'bar', 'pull', R(3), 2],
   ['Inverted_Row', 'none', 'pull', R(10), 0], ['Towel_Door_Row', 'none', 'pull', R(12), 0], ['Backpack_Row', 'none', 'pull', R(12), 0],
   ['American_Kettlebell_Swing', 'kettlebell', 'hinge', R(15), 0, true], ['Russian_Kettlebell_Swing', 'kettlebell', 'hinge', R(15), 0, true],
-  ['Barbell_Deadlift', 'barbell', 'hinge', R(9), 0, true], ['Power_Clean', 'barbell', 'hinge', R(6), 1, true], ['Squat_Clean', 'barbell', 'hinge', R(5), 2, true],
+  ['Barbell_Deadlift', 'barbell', 'hinge', R(9), 1, true], ['Power_Clean', 'barbell', 'hinge', R(6), 1, true], ['Squat_Clean', 'barbell', 'hinge', R(5), 2, true],
   ['Single_Leg_Deadlift', 'none', 'hinge', R(10), 0],
   ['Sit-Up', 'none', 'core', R(15), 0], ['V_Up', 'none', 'core', R(10), 1], ['Hollow_Rock', 'none', 'core', R(15), 0], ['Plank_Shoulder_Taps', 'none', 'core', R(20), 0],
   ['Toes_To_Bar', 'bar', 'core', R(10), 1], ['Knees_To_Elbows', 'bar', 'core', R(10), 0], ['GHD_Sit_Up', 'machine', 'core', R(12), 1],
@@ -114,7 +114,7 @@ const move = (e: Entry, factor: number): WodMove => ({ exerciseId: e[0], ...scal
 
 /** Las pruebas de los sábados: cada hueco, el primer ejercicio que permita tu material. */
 const BENCHMARKS: { format: WodFormat; minutes: number; rounds?: number; ladder?: number[]; moves: [ids: string[], amount: Entry[3]][] }[] = [
-  { format: 'forTime', minutes: 15, ladder: [21, 15, 9], moves: [[['Barbell_Thruster', 'Dumbbell_Thruster', 'Kettlebell_Thruster', 'Bodyweight_Squat'], R(0)], [['Pullups', 'Burpee'], R(0)]] },
+  { format: 'forTime', minutes: 15, ladder: [21, 15, 9], moves: [[['Barbell_Thruster', 'Dumbbell_Thruster', 'Kettlebell_Thruster', 'Bodyweight_Squat'], R(0)], [['Pullups', 'Inverted_Row', 'Burpee'], R(0)]] },
   { format: 'amrap', minutes: 20, moves: [[['Pullups', 'Towel_Door_Row'], R(5)], [['Pushups'], R(10)], [['Bodyweight_Squat'], R(15)]] },
   { format: 'forTime', minutes: 25, rounds: 5, moves: [[['Rowing_Machine', 'Shuttle_Run'], { reps: 6, meters: 400 }], [['American_Kettlebell_Swing', 'Russian_Kettlebell_Swing', 'Dumbbell_Thruster', 'Single_Leg_Deadlift'], R(15)], [['Burpee'], R(10)]] },
   { format: 'emom', minutes: 12, moves: [[['Burpee'], R(10)], [['Bodyweight_Squat'], R(15)], [['Pushups'], R(10)]] },
@@ -122,17 +122,39 @@ const BENCHMARKS: { format: WodFormat; minutes: number; rounds?: number; ladder?
 
 const entry = (id: string) => POOL.find((e) => e[0] === id)
 
-function benchmark(n: number, equipment: EquipmentProfile): Wod {
+/** Escalera de la prueba 1 según el nivel: 21-15-9 es mucho para empezar. */
+const LADDER: Record<TrainingLevel, number[]> = { beginner: [12, 9, 6], intermediate: [21, 15, 9], advanced: [21, 15, 9] }
+
+function benchmark(n: number, equipment: EquipmentProfile, level: TrainingLevel): Wod {
   const b = BENCHMARKS[n - 1]
   const kit = new Set(KITS[equipment])
+  // El primer ejercicio que permita tu material y tu nivel (si ninguno, el último, el más sencillo).
+  const fits = (x: string) => { const e = entry(x); return kit.has(e?.[1] ?? 'none') && (e?.[4] ?? 0) <= LEVEL[level] }
   const moves = b.moves.map(([ids, amount]) => {
-    const id = ids.find((x) => kit.has(entry(x)?.[1] ?? 'none')) ?? ids.at(-1)!
+    const id = ids.find(fits) ?? ids.at(-1)!
     const e = entry(id)
-    // Las distancias solo valen para las máquinas; si no hay, idas y vueltas.
-    const use = e?.[3].meters ? { meters: amount.meters ?? e[3].meters } : amount.reps ? { reps: amount.reps } : e?.[3] ?? amount
+    // Las distancias solo valen para las máquinas; si no hay, idas y vueltas. Las repeticiones, según el nivel.
+    const use = e?.[3].meters ? { meters: amount.meters ?? e[3].meters } : amount.reps ? scaled({ reps: amount.reps }, SCALE[level]) : e?.[3] ?? amount
     return { exerciseId: id, ...use, ...(e?.[5] ? { loaded: true as const } : {}) }
   })
-  return { key: `b${n}:${moves.map((m) => m.exerciseId).join('+')}`, format: b.format, minutes: b.minutes, ...(b.rounds ? { rounds: b.rounds } : {}), ...(b.ladder ? { ladder: b.ladder } : {}), moves, benchmark: n }
+  const ladder = b.ladder ? LADDER[level] : undefined
+  // El nivel va en la clave: cada uno se compara con sus propios intentos de la misma versión.
+  return { key: `b${n}:${level}:${moves.map((m) => m.exerciseId).join('+')}`, format: b.format, minutes: b.minutes, ...(b.rounds ? { rounds: b.rounds } : {}), ...(ladder ? { ladder } : {}), moves, benchmark: n }
+}
+
+/**
+ * Peso orientativo para los ejercicios con carga, según el material y el nivel. En los WOD se busca
+ * moverlo sin parar: si dudas, el más ligero.
+ */
+export function loadHint(equipment: string, level: TrainingLevel): string | undefined {
+  const i = LEVEL[level]
+  const table: Record<string, [string, string, string]> = {
+    barbell: [t('barra sola o 20-30 kg', 'empty bar or 20-30 kg'), '30-45 kg', '40-60 kg'],
+    dumbbell: ['2 × 5-8 kg', '2 × 10-15 kg', '2 × 15-22,5 kg'],
+    kettlebell: ['8-12 kg', '12-16 kg', '16-24 kg'],
+    'medicine-ball': ['3-5 kg', '6-9 kg', '9 kg'],
+  }
+  return table[equipment]?.[i]
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -145,7 +167,7 @@ export function wodOf(day: string, equipment: EquipmentProfile, level: TrainingL
   // Sábados: la prueba fija (cada semana una de las cuatro).
   if (date.getDay() === 6 && variant === 0) {
     const week = Math.floor(date.getTime() / (7 * 86400000))
-    return benchmark((week % BENCHMARKS.length) + 1, equipment)
+    return benchmark((week % BENCHMARKS.length) + 1, equipment, level)
   }
   const rnd = random(`${day}|${equipment}|${level}|${variant}`)
   const pick = <T>(list: T[]) => list[Math.floor(rnd() * list.length)]

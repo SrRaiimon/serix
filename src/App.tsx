@@ -9,7 +9,7 @@ import { migrateCatalog, relabelExercises } from './lib/migrate'
 import { autoProtect } from './lib/protect'
 import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
-import { activeSession, getData, loadData, useData } from './lib/store'
+import { activeSession, flush, getData, loadData, useData, useStorageProblem } from './lib/store'
 import { closeSummary, nextRoutine, openWorkout, startEmpty, startRoutine, useWorkoutUI } from './lib/workout'
 import { HomeScreen } from './screens/Home'
 import { UndoToast } from './components/UndoToast'
@@ -152,6 +152,7 @@ function Main() {
 
   return (
     <div className={`app ${active && !ui.open ? 'has-active' : ''}`}>
+      <StorageBanner />
       <main>
         <ErrorBoundary resetKey={route.join('/')}>
           <Suspense fallback={<div className="screen" />}>
@@ -217,7 +218,7 @@ function TabBar({ tab }: { tab: Tab }) {
   return (
     <nav className="tabbar">
       {tabItems.map(({ id, label, icon: Icon }) => (
-        <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)}>
+        <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)} aria-current={tab === id ? 'page' : undefined}>
           <Icon size={24} strokeWidth={tab === id ? 2.4 : 2} />
           {label()}
         </button>
@@ -240,5 +241,24 @@ function ActiveBar({ name, start }: { name: string; start: number }) {
       <strong>{t('Continuar', 'Resume')}</strong>
       <ChevronUp size={20} />
     </button>
+  )
+}
+
+/** Aviso si no se pudieron leer o guardar los datos (ver StorageProblem en lib/store.ts). */
+function StorageBanner() {
+  const problem = useStorageProblem()
+  if (!problem) return null
+  const text = problem.kind === 'readError'
+    ? t('No se han podido leer tus datos. Para no borrarlos, no se guardará nada hasta que recargues la app.', 'Your data could not be read. To avoid erasing it, nothing will be saved until you reload the app.')
+    : problem.kind === 'newer'
+      ? t('Tus datos son de una versión más nueva de Serix. Recarga la app para actualizarla; mientras tanto no se guardará nada.', 'Your data is from a newer version of Serix. Reload the app to update it; nothing will be saved until then.')
+      : t('No se han podido guardar los últimos cambios (¿falta espacio en el móvil?). Libera espacio y vuelve a intentarlo.', 'The latest changes could not be saved (is your phone out of space?). Free up some space and try again.')
+  return (
+    <div className="storage-banner" role="alert">
+      <span className="grow">{text}</span>
+      {problem.kind === 'writeError'
+        ? <button className="btn secondary btn-sm" onClick={flush}>{t('Reintentar', 'Try again')}</button>
+        : <button className="btn secondary btn-sm" onClick={() => location.reload()}>{t('Recargar la app', 'Reload the app')}</button>}
+    </div>
   )
 }

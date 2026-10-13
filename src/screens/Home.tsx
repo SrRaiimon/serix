@@ -48,6 +48,14 @@ export function HomeScreen() {
       </header>
 
       <IosDataWarning />
+
+      {/* Lo primero, lo que toca hoy: los avisos y novedades van debajo. */}
+      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : guideVisible(data, sessions.length) ? null : (
+        <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
+          <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
+          <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
+        </Card>
+      )}
       {!active && <NewsCard />}
       {!active && <WeekRecapCard weekStart={weekStart} />}
 
@@ -68,16 +76,11 @@ export function HomeScreen() {
 
       {shareReminderDue(data) && <FriendReminderCard friends={data.friends.length} />}
 
-      {!active && guideVisible(data, sessions.length) && <GuideCard next={next} />}
-
       {!active && blockWeek(data.settings.block) && <div className="card"><BlockStatus /></div>}
 
-      {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : guideVisible(data, sessions.length) ? null : (
-        <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
-          <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
-          <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
-        </Card>
-      )}
+
+      {/* La guía va debajo del siguiente entreno: «Empezar» queda siempre a la vista. */}
+      {!active && guideVisible(data, sessions.length) && <GuideCard next={next} />}
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} />
 
@@ -374,7 +377,7 @@ function InstallBanner() {
         {t('Se abrirá como una app, a pantalla completa y sin conexión, y tus datos quedan mejor protegidos.', 'It opens like an app, full screen and offline, and your data is better protected.')}
       </span>
       <button className="btn small secondary" onClick={() => void promptInstall()}>{t('Instalar', 'Install')}</button>
-      <button onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      <button className="hit" onClick={dismiss} aria-label={t('Cerrar', 'Close')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
     </div>
   )
 }

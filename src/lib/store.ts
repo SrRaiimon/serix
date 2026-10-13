@@ -305,13 +305,28 @@ const DB_NAME = 'gymapp'
 const STORE = 'kv'
 const KEY = 'data'
 
+// Una sola conexión para toda la sesión (abrir una por escritura era lento); si el navegador la
+// cierra, se vuelve a abrir en la siguiente.
+let dbPromise: Promise<IDBDatabase> | undefined
+
 function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  dbPromise ??= new Promise<IDBDatabase>((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1)
     req.onupgradeneeded = () => req.result.createObjectStore(STORE)
-    req.onsuccess = () => resolve(req.result)
+    req.onsuccess = () => {
+      const db = req.result
+      db.onclose = () => { dbPromise = undefined }
+      db.onversionchange = () => { db.close(); dbPromise = undefined }
+      resolve(db)
+    }
     req.onerror = () => reject(req.error)
-  })
+  }).catch((e: unknown) => { dbPromise = undefined; throw e })
+  return dbPromise
+}
+
+/** Olvida la conexión abierta (para los tests, que cambian el IndexedDB de prueba). */
+export function forgetDB() {
+  dbPromise = undefined
 }
 
 async function readData(): Promise<AppData | undefined> {
@@ -330,7 +345,70 @@ async function writeData(data: AppData): Promise<void> {
     tx.objectStore(STORE).put(data, KEY)
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
+    tx.onabort = () => reject(tx.error ?? new Error('abort'))
   })
+}
+
+// MARK: Estado del guardado
+
+/**
+ * Problemas con el almacenamiento, para avisar en pantalla:
+ * - readError: no se pudieron leer los datos al abrir. No se escribe nada (si no, se guardaría la app
+ *   vacía encima del historial de verdad) hasta recargar.
+ * - newer: los datos son de una versión más nueva de la app (p. ej. tras volver a una anterior): no se
+ *   tocan para no perder lo que esa versión guardó.
+ * - writeError: falló un guardado (por ejemplo, sin espacio). Se reintenta en el siguiente cambio.
+ */
+export type StorageProblem = { kind: 'readError' | 'newer' | 'writeError'; detail?: string }
+let problem: StorageProblem | undefined
+const problemListeners = new Set<() => void>()
+const setProblem = (p: StorageProblem | undefined) => {
+  if (problem?.kind === p?.kind && problem?.detail === p?.detail) return
+  problem = p
+  problemListeners.forEach((l) => l())
+}
+export const storageProblem = () => problem
+export function useStorageProblem(): StorageProblem | undefined {
+  return useSyncExternalStore((l) => { problemListeners.add(l); return () => problemListeners.delete(l) }, storageProblem)
+}
+
+/** Si se puede escribir: no tras un fallo de lectura ni con datos de una versión más nueva. */
+const writable = () => problem?.kind !== 'readError' && problem?.kind !== 'newer'
+
+async function save(data: AppData): Promise<void> {
+  if (!writable()) return
+  try {
+    await writeData(data)
+    if (problem?.kind === 'writeError') setProblem(undefined)
+  } catch (e) {
+    setProblem({ kind: 'writeError', detail: e instanceof Error ? e.name : String(e) })
+  }
+}
+
+/** Versión de los datos que entiende esta app. Para cambiar su forma, súbela y añade su paso en MIGRATIONS. */
+export const DATA_VERSION = 1
+/** MIGRATIONS[n] pasa los datos de la versión n a la n + 1 (aún no hace falta ninguna). */
+const MIGRATIONS: Record<number, (d: Record<string, unknown>) => void> = {}
+
+/** Datos guardados → datos de esta versión: migraciones en orden y lo mínimo para que la forma sea válida. */
+export function migrateData(stored: unknown): AppData | 'newer' | undefined {
+  if (typeof stored !== 'object' || stored === null) return undefined
+  const d = { ...(stored as Record<string, unknown>) }
+  let v = typeof d.version === 'number' ? d.version : 1
+  if (v > DATA_VERSION) return 'newer'
+  for (; v < DATA_VERSION; v++) MIGRATIONS[v]?.(d)
+  const empty = emptyData()
+  const list = <T,>(x: unknown, fallback: T[]): T[] => (Array.isArray(x) ? x.filter((e) => typeof e === 'object' && e !== null) as T[] : fallback)
+  const obj = <T,>(x: unknown, fallback: T): T => (typeof x === 'object' && x !== null && !Array.isArray(x) ? x as T : fallback)
+  const nutrition = obj<Partial<NutritionData>>(d.nutrition, {})
+  return {
+    ...empty, ...(d as Partial<AppData>), version: DATA_VERSION,
+    routines: list(d.routines, empty.routines), sessions: list(d.sessions, empty.sessions), measurements: list(d.measurements, empty.measurements),
+    friends: list(d.friends, empty.friends), challenges: list(d.challenges, empty.challenges), customExercises: list(d.customExercises, empty.customExercises),
+    exerciseNotes: obj(d.exerciseNotes, empty.exerciseNotes),
+    nutrition: { ...empty.nutrition, ...nutrition, entries: list(nutrition.entries, []), foods: list(nutrition.foods, []), meals: list(nutrition.meals, []) },
+    settings: { ...defaultSettings, ...obj<Partial<Settings>>(d.settings, {}) },
+  }
 }
 
 // MARK: Store
@@ -358,18 +436,35 @@ function emit() {
 
 function scheduleSave() {
   clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => void writeData(state), 250)
+  saveTimer = setTimeout(() => void save(state), 250)
 }
 
 /** Guarda de inmediato (p. ej. al pasar la app a segundo plano). */
 export function flush() {
   clearTimeout(saveTimer)
-  void writeData(state)
+  void save(state)
 }
 
 export async function loadData(): Promise<void> {
-  const stored = await readData().catch(() => undefined)
-  if (stored) state = { ...emptyData(), ...stored, nutrition: { ...emptyNutrition(), ...stored.nutrition }, settings: { ...defaultSettings, ...stored.settings } }
+  // Si la lectura falla (el navegador a veces tarda en dar acceso al abrir), se reintenta; si sigue
+  // fallando no se escribe nada, para no guardar la app vacía encima de los datos de verdad.
+  let stored: unknown
+  for (let attempt = 0; ; attempt++) {
+    try {
+      stored = await readData()
+      break
+    } catch (e) {
+      if (attempt >= 2) {
+        setProblem({ kind: 'readError', detail: e instanceof Error ? e.name : String(e) })
+        emit()
+        return
+      }
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)))
+    }
+  }
+  const migrated = stored === undefined ? undefined : migrateData(stored)
+  if (migrated === 'newer') setProblem({ kind: 'newer' })
+  else if (migrated) state = migrated
   // Pide al navegador que no borre los datos si falta espacio.
   void navigator.storage?.persist?.()
   emit()
@@ -396,6 +491,8 @@ export function update(recipe: (draft: AppData) => void) {
 }
 
 export function replaceData(data: AppData) {
+  // Restaurar una copia es una decisión expresa: vuelve a permitir guardar.
+  setProblem(undefined)
   state = { ...emptyData(), ...data, settings: { ...defaultSettings, ...data.settings } }
   emit()
   flush()

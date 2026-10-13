@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { equipmentInfo } from '../src/lib/generator'
-import { better, scoreText, wodOf, wodSession, type WodRecord } from '../src/lib/wod'
+import { better, loadHint, scoreText, wodOf, wodSession, type WodRecord } from '../src/lib/wod'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
 const days = Array.from({ length: 60 }, (_, i) => new Date(Date.UTC(2026, 9, 1 + i, 12)).toISOString().slice(0, 10))
@@ -35,7 +35,12 @@ test('WOD: solo ejercicios que existen y que tu material permite', () => {
 test('WOD: los sábados, la prueba fija que se repite cada 4 semanas', () => {
   const a = wodOf('2026-10-10', 'gym', 'intermediate')
   assert.ok(a.benchmark)
-  assert.equal(wodOf('2026-11-07', 'gym', 'beginner').key, a.key, 'misma prueba 4 semanas después, sea cual sea el nivel')
+  assert.equal(wodOf('2026-11-07', 'gym', 'intermediate').key, a.key, 'misma prueba 4 semanas después')
+  // Para quien empieza, la versión escalada: más corta y sin ejercicios de nivel alto.
+  const easy = wodOf('2026-10-24', 'gym', 'beginner')
+  assert.equal(easy.benchmark, 1)
+  assert.deepEqual(easy.ladder, [12, 9, 6])
+  assert.ok(!easy.moves.some((m) => ['Barbell_Thruster', 'Pullups'].includes(m.exerciseId)), JSON.stringify(easy.moves))
   assert.notEqual(wodOf('2026-10-17', 'gym', 'intermediate').benchmark, a.benchmark)
 })
 
@@ -56,4 +61,10 @@ test('WOD: qué resultado es mejor', () => {
   assert.ok(better({ ...base, format: 'forTime', rounds: 3, seconds: 400 }, { ...base, format: 'forTime', rounds: 3, seconds: 450 }))
   assert.ok(better({ ...base, format: 'forTime', rounds: 3, seconds: 900 }, { ...base, format: 'forTime', rounds: 3 }), 'acabar siempre gana a quedarse sin tiempo')
   assert.ok(better({ ...base, format: 'amrap', rounds: 5, reps: 3 }, { ...base, format: 'amrap', rounds: 5 }))
+})
+
+test('WOD: peso orientativo según material y nivel', () => {
+  assert.equal(loadHint('kettlebell', 'beginner'), '8-12 kg')
+  assert.equal(loadHint('dumbbell', 'advanced'), '2 × 15-22,5 kg')
+  assert.equal(loadHint('bodyweight', 'beginner'), undefined)
 })

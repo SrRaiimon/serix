@@ -6,9 +6,10 @@ import { plural, t } from '../lib/i18n'
 import { positionAt, type Segment } from '../lib/intervals'
 import { navigate } from '../lib/router'
 import { finishedSessions, update, useData } from '../lib/store'
+import type { TrainingLevel } from '../lib/generator'
 import { playTone, unlockAudio } from '../lib/timer'
 import { speak } from '../lib/voice'
-import { amountText, better, formatHint, formatTitle, previousTries, scoreText, wodDay, wodOf, wodSession, type Wod, type WodRecord } from '../lib/wod'
+import { amountText, better, loadHint, formatHint, formatTitle, previousTries, scoreText, wodDay, wodOf, wodSession, type Wod, type WodRecord } from '../lib/wod'
 import { keepScreenOn } from '../lib/workout'
 import { ExerciseSheet } from './Exercises'
 
@@ -58,7 +59,7 @@ export function WodScreen() {
                       <span className="bold clamp-2">{e?.name ?? m.exerciseId}</span>
                       {(m.loaded || wod.format === 'emom') && (
                         <span className="small muted" style={{ display: 'block' }}>
-                          {[wod.format === 'emom' ? t(`minutos ${i + 1}, ${i + 1 + wod.moves.length}…`, `minutes ${i + 1}, ${i + 1 + wod.moves.length}…`) : '', m.loaded ? t('con un peso que muevas sin parar', 'with a weight you can move without stopping') : ''].filter(Boolean).join(' · ')}
+                          {[wod.format === 'emom' ? t(`minutos ${i + 1}, ${i + 1 + wod.moves.length}…`, `minutes ${i + 1}, ${i + 1 + wod.moves.length}…`) : '', m.loaded ? loadText(e?.equipment, data.settings.level) : ''].filter(Boolean).join(' · ')}
                         </span>
                       )}
                     </span>
@@ -107,6 +108,13 @@ export function WodScreen() {
       {info && <ExerciseSheet exerciseId={info} onClose={() => setInfo(undefined)} />}
     </>
   )
+}
+
+/** Peso orientativo de un ejercicio con carga («con 2 × 10-15 kg…»). */
+function loadText(equipment: string | undefined, level: TrainingLevel): string {
+  const hint = equipment ? loadHint(equipment, level) : undefined
+  return hint ? t(`con ${hint} (o un peso que muevas sin parar)`, `with ${hint} (or a weight you can move without stopping)`)
+    : t('con un peso que muevas sin parar', 'with a weight you can move without stopping')
 }
 
 const PREP = 10

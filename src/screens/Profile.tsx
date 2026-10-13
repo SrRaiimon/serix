@@ -137,6 +137,10 @@ export function ProfileScreen() {
             {LANGS.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         </label>
+      </div>
+
+      <div className="list-header">{t('Entrenamiento', 'Training')}</div>
+      <div className="list">
         <label className="list-row">
           <span className="grow">{t('Descanso por defecto', 'Default rest')}</span>
           <select className="select" value={settings.defaultRest} onChange={(e) => updateSettings({ defaultRest: Number(e.target.value) })}>
@@ -208,6 +212,33 @@ export function ProfileScreen() {
         </div>
         <label className="list-row">
           <span className="grow">
+            {t('Modo sencillo', 'Simple mode')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Oculta el RPE, los tipos de serie, los bloques y otras opciones avanzadas', 'Hides RPE, set types, blocks and other advanced options')}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={settings.simpleMode === true} onChange={(e) => updateSettings({ simpleMode: e.target.checked })} />
+        </label>
+        {!settings.simpleMode && <label className="list-row">
+          <span className="grow">
+            {t('Anotar esfuerzo (RPE)', 'Log effort (RPE)')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Al marcar cada serie, de 6 a 10', 'When ticking each set, from 6 to 10')}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={settings.rpe} onChange={(e) => updateSettings({ rpe: e.target.checked })} />
+        </label>}
+        {rpeOn(settings) && (
+          <label className="list-row">
+            <span className="grow">
+              {t('Descanso según el esfuerzo', 'Rest based on effort')}
+              <span className="small muted" style={{ display: 'block' }}>{t('RPE 9: +15 s · RPE 9,5–10 o al fallo: +30 s · RPE 7 o menos: −15 s', 'RPE 9: +15 s · RPE 9.5–10 or to failure: +30 s · RPE 7 or less: −15 s')}</span>
+            </span>
+            <input type="checkbox" className="toggle" checked={!settings.effortRestOff} onChange={(e) => updateSettings({ effortRestOff: e.target.checked ? undefined : true })} />
+          </label>
+        )}
+      </div>
+
+      <div className="list-header">{t('Avisos y sonido', 'Alerts and sound')}</div>
+      <div className="list">
+        <label className="list-row">
+          <span className="grow">
             {t('Pitido al terminar el descanso', 'Beep when rest ends')}
             <span className="small muted" style={{ display: 'block' }}>{t('En iPhone no suena con el modo silencio activado', 'On iPhone it does not sound in silent mode')}</span>
           </span>
@@ -256,29 +287,6 @@ export function ProfileScreen() {
             <LockScreenTestResult />
           </>
         )}
-        <label className="list-row">
-          <span className="grow">
-            {t('Modo sencillo', 'Simple mode')}
-            <span className="small muted" style={{ display: 'block' }}>{t('Oculta el RPE, los tipos de serie, los bloques y otras opciones avanzadas', 'Hides RPE, set types, blocks and other advanced options')}</span>
-          </span>
-          <input type="checkbox" className="toggle" checked={settings.simpleMode === true} onChange={(e) => updateSettings({ simpleMode: e.target.checked })} />
-        </label>
-        {!settings.simpleMode && <label className="list-row">
-          <span className="grow">
-            {t('Anotar esfuerzo (RPE)', 'Log effort (RPE)')}
-            <span className="small muted" style={{ display: 'block' }}>{t('Al marcar cada serie, de 6 a 10', 'When ticking each set, from 6 to 10')}</span>
-          </span>
-          <input type="checkbox" className="toggle" checked={settings.rpe} onChange={(e) => updateSettings({ rpe: e.target.checked })} />
-        </label>}
-        {rpeOn(settings) && (
-          <label className="list-row">
-            <span className="grow">
-              {t('Descanso según el esfuerzo', 'Rest based on effort')}
-              <span className="small muted" style={{ display: 'block' }}>{t('RPE 9: +15 s · RPE 9,5–10 o al fallo: +30 s · RPE 7 o menos: −15 s', 'RPE 9: +15 s · RPE 9.5–10 or to failure: +30 s · RPE 7 or less: −15 s')}</span>
-            </span>
-            <input type="checkbox" className="toggle" checked={!settings.effortRestOff} onChange={(e) => updateSettings({ effortRestOff: e.target.checked ? undefined : true })} />
-          </label>
-        )}
       </div>
 
       <div className="list-header">{t('Tus datos', 'Your data')}</div>
@@ -294,7 +302,6 @@ export function ProfileScreen() {
             onClick={storage === 'protected' ? undefined : () => void protect()} chevron={false} />
         )}
         <OfflineRow />
-        <Row icon={Trash2} label={t('Borrar todos los datos', 'Delete all data')} className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
       </div>
       <p className="list-footer">
         {t('Tus datos se guardan solo en este dispositivo. La protección evita que el navegador los borre para liberar espacio, pero no sustituye a una copia: si borras la app, solo podrás recuperarlos con una copia exportada. Para cambiar de móvil, usa «Pasar a otro móvil».',
@@ -311,6 +318,10 @@ export function ProfileScreen() {
       </div>
       {feedback && <FeedbackSheet kind={feedback} onClose={() => setFeedback(undefined)} />}
       {news && <NewsSheet onClose={() => setNews(false)} />}
+      {/* Lo que no se puede deshacer, aparte y al final: lejos de los ajustes que se tocan a menudo. */}
+      <div className="list" style={{ marginTop: 8 }}>
+        <Row icon={Trash2} label={t('Borrar todos los datos', 'Delete all data')} className="danger" onClick={() => setConfirmReset(true)} chevron={false} />
+      </div>
       <p className="list-footer">{t('Versión', 'Version')} {__APP_VERSION__}</p>
       <input ref={csvInput} type="file" accept=".csv,text/csv" hidden onChange={(e) => {
         const f = e.target.files?.[0]

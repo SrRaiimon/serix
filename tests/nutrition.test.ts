@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { amountOf, barcodeVariants, dayOptional, stem, traffic, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { goalsForDay, restDayKcal, amountOf, barcodeVariants, dayOptional, stem, traffic, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -270,4 +270,24 @@ test('azúcares y sal: semáforo por 100 g y totales del día con los que traen 
   // Se conservan en la copia.
   const entry = { id: 'x', day: '2026-03-10', meal: 'lunch', name: 'x', grams: 100, per100: { kcal: 100, p: 1, c: 2, f: 3, sugar: 5, salt: 0.4 }, at: 1 }
   assert.deepEqual(parseBackup(JSON.stringify({ sessions: [], routines: [], nutrition: { entries: [entry], foods: [], meals: [] } })).nutrition.entries[0].per100, entry.per100)
+})
+
+test('calorías gastadas: no se cuentan dos veces los entrenos', () => {
+  const goals = computeGoals({ sex: 'm', age: 30, heightCm: 180, weightKg: 80, activity: 1.55, aim: 'keep' })
+  const day = '2026-01-05'
+  const rest = goalsForDay(goals, [], day, { carryOver: false, burned: new Map() })
+  const trained = goalsForDay(goals, [], day, { carryOver: false, burned: new Map([[day, 400]]) })
+  // Sin entreno, la base es la sedentaria (no la de «Activo», que ya incluye los entrenos).
+  assert.equal(rest.kcal, restDayKcal(goals))
+  assert.ok(rest.kcal < goals.kcal)
+  assert.equal(trained.kcal, rest.kcal + 400)
+  assert.equal(trained.training, true)
+})
+
+test('objetivo: nunca por debajo del metabolismo en reposo, y proteína razonable con obesidad', () => {
+  const tiny = computeGoals({ sex: 'f', age: 60, heightCm: 150, weightKg: 45, activity: 1.2, aim: 'lose' })
+  const bmr = 10 * 45 + 6.25 * 150 - 5 * 60 - 161
+  assert.ok(tiny.kcal >= Math.round(bmr / 10) * 10 - 5)
+  const heavy = computeGoals({ sex: 'm', age: 40, heightCm: 175, weightKg: 130, activity: 1.375, aim: 'lose' })
+  assert.equal(heavy.protein, Math.round(25 * 1.75 ** 2 * 2.2), 'con el peso de un IMC de 25')
 })

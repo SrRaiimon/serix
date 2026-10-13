@@ -107,6 +107,9 @@ async function main() {
   await wait(300)
   await run(() => document.querySelector('.set-row.current button.set-check').click())
   await wait(500)
+  // La segunda serie, con un solo toque y sin escribir nada: se apuntan las repeticiones del objetivo.
+  await run(() => document.querySelector('.set-row.current button.set-check')?.click())
+  await wait(500)
   await click('^Terminar$')
   await click('^Terminar y guardar$')
   await click('^Listo$')
@@ -114,6 +117,7 @@ async function main() {
   const done = d.sessions.filter((s) => s.end)
   check(done.length === 1, `Debería haber 1 entrenamiento terminado y hay ${done.length}`)
   check(done[0].exercises[0].sets.some((x) => x.done && x.weight === 40 && x.reps === 8), 'La serie de 40 × 8 no se ha guardado')
+  check(done[0].exercises[0].sets.filter((x) => x.done && x.reps > 0).length >= 2, 'Marcar una serie sin escribir las repeticiones no la ha apuntado')
 
   step = 'comida'
   await run(() => { location.hash = '#/food' })

@@ -91,7 +91,7 @@ export function OnboardingScreen() {
       <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
         {step === 0 && (
           <>
-            <div className="row" style={{ justifyContent: 'flex-end', gap: 6 }}>
+            <div className="row" style={{ justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
               {LANGS.map((l) => <Chip key={l.id} label={l.name} active={lang() === l.id} onClick={() => updateSettings({ language: l.id })} />)}
             </div>
             <Dumbbell size={64} color="var(--accent-text)" style={{ marginTop: 8 }} />
@@ -208,7 +208,7 @@ function Feature({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
 
 function Option({ icon: Icon, title, detail, active, onClick }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void }) {
   return (
-    <button className={`option-card ${active ? 'active' : ''}`} onClick={onClick}>
+    <button className={`option-card ${active ? 'active' : ''}`} onClick={onClick} aria-pressed={active}>
       <span className="icon"><Icon size={22} /></span>
       <span className="grow">
         <strong style={{ display: 'block' }}>{title}</strong>

@@ -197,11 +197,24 @@ export interface DayGoalOptions {
   burned?: Map<string, number>
 }
 
+/**
+ * Calorías de un día sin entreno: el objetivo recalculado con el factor sedentario. Con un objetivo
+ * escrito a mano (sin factor de actividad) se toma tal cual.
+ */
+export function restDayKcal(goals: Pick<NutritionGoals, 'kcal' | 'activity'>): number {
+  if (!goals.activity || goals.activity <= SEDENTARY) return goals.kcal
+  return Math.round((goals.kcal * SEDENTARY) / goals.activity / 10) * 10
+}
+
 /** Objetivo base de un día: el de siempre, o el de entreno o descanso. */
 function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): NutritionGoals & { training?: boolean; shift: number } {
   if (opts.burned && !goals.proteinOnly) {
-    const shift = opts.burned.get(day) ?? 0
-    return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: shift > 0, shift }
+    // El factor de actividad ya cuenta los entrenos («Entrenas 3-5 días»): para no sumarlos dos veces,
+    // la base es la de un día sin entrenar (sedentario) y cada día se suma lo que gastó su entreno.
+    const rest = restDayKcal(goals)
+    const burned = opts.burned.get(day) ?? 0
+    const shift = rest - goals.kcal + burned
+    return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: burned > 0, shift }
   }
   if (!opts.training || goals.proteinOnly) return { ...goals, shift: 0 }
   const { up, down } = trainingShift(goals.kcal, opts.training.perWeek)
@@ -415,7 +428,9 @@ export const PROTEIN_PER_KG = [1.6, 1.8, 2, 2.2]
 export const defaultProteinPerKg = (aim: Aim) => (aim === 'lose' ? 2.2 : 1.8)
 
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
+export const SEDENTARY = 1.2
 export const ACTIVITY = [
+  { value: SEDENTARY, label: () => t('Sedentario', 'Sedentary'), detail: () => t('Trabajo sentado y apenas entrenas', 'Desk job and little or no training') },
   { value: 1.375, label: () => t('Poco activo', 'Lightly active'), detail: () => t('Trabajo sentado y entrenas 2-3 días', 'Desk job and 2-3 workouts a week') },
   { value: 1.55, label: () => t('Activo', 'Active'), detail: () => t('Entrenas 3-5 días o te mueves bastante', '3-5 workouts or on your feet a lot') },
   { value: 1.725, label: () => t('Muy activo', 'Very active'), detail: () => t('Entrenas 6-7 días o trabajo físico', '6-7 workouts or a physical job') },
@@ -436,8 +451,13 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
   const { sex, age, heightCm, weightKg, activity, aim } = input
   const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (sex === 'm' ? 5 : -161)
   const factor = aim === 'lose' ? 0.8 : aim === 'gain' ? 1.1 : 1
-  const kcal = Math.round((bmr * activity * factor) / 10) * 10
-  const protein = Math.round(weightKg * (input.proteinPerKg ?? defaultProteinPerKg(aim)))
+  // Nunca por debajo del metabolismo en reposo: comer menos no ayuda a perder grasa y cuesta músculo.
+  const kcal = Math.round(Math.max(bmr * activity * factor, bmr) / 10) * 10
+  // Con obesidad (IMC > 30) la proteína se calcula con el peso de un IMC de 25: con el peso total sale
+  // una cifra exagerada que no aporta nada.
+  const height2 = (heightCm / 100) ** 2
+  const reference = weightKg / height2 > 30 ? 25 * height2 : weightKg
+  const protein = Math.round(reference * (input.proteinPerKg ?? defaultProteinPerKg(aim)))
   const fat = Math.round((kcal * 0.25) / 9)
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { kcal, protein, carbs, fat, ...input }

@@ -3,7 +3,7 @@ import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Maximize2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { HeartPulse, ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Maximize2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -191,13 +191,11 @@ export function WorkoutScreen({ session }: { session: Session }) {
               </>
             )}
             <BlockStatus at={session.start} />
-            {done === 0 && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} />}
-            {done === 0 && session.exercises.length > 0 && (
-              <button className="btn small secondary" style={{ alignSelf: 'flex-start' }} onClick={() => {
-                minimizeWorkout()
-                navigate('timer', 'warmup', focusFor(session.exercises.map((e) => e.muscle)))
-              }}><Flame size={15} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
-            )}
+            {/* Antes de la primera serie, solo dos accesos pequeños: la lista de series queda a la vista. */}
+            {done === 0 && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {
+              minimizeWorkout()
+              navigate('timer', 'warmup', focusFor(session.exercises.map((e) => e.muscle)))
+            }} />}
           </div>
 
           {runs.map((run) => {
@@ -495,7 +493,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
+            repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
@@ -599,7 +597,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defaultReps, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
   set: SetEntry
   current: boolean
   askRpe: boolean
@@ -611,6 +609,8 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
   previous?: SetEntry
   tracking: Tracking
   repsPlaceholder: string
+  /** Repeticiones que se apuntan al marcar la serie sin escribirlas (el mínimo del objetivo; 0 = ninguna). */
+  defaultReps: number
   timePlaceholder: string
   unit: Unit
   barbell: boolean
@@ -654,9 +654,20 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
       return onChange({ done: false, doneAt: undefined, rpe: undefined })
     }
     if (!isSetFilled(set, tracking)) {
-      setInvalid(true)
-      navigator.vibrate?.(60)
-      return
+      // Un toque basta, como en otras apps: sin escribir nada se apuntan las repeticiones del objetivo
+      // (el mínimo, para no subir el peso por error) o el tiempo previsto. Se ven y se pueden corregir.
+      const fill: Partial<SetEntry> | undefined = tracking === 'weight_reps' && defaultReps > 0 ? { reps: defaultReps }
+        : tracking === 'time' ? { duration: targetSeconds } : undefined
+      if (!fill) {
+        setInvalid(true)
+        navigator.vibrate?.(60)
+        return
+      }
+      if (fill.reps) setRepsText(String(fill.reps))
+      onChange(fill)
+      const warning = tracking === 'weight_reps' ? suspicious({ ...set, ...fill }, lastMax, unit) : undefined
+      if (warning) return setCheck(warning)
+      return complete()
     }
     // Un cero de más (800 en vez de 80) estropearía marcas y estadísticas: se pregunta antes.
     const warning = tracking === 'weight_reps' ? suspicious(set, lastMax, unit) : undefined
@@ -692,7 +703,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
       <span className="set-prev">{previous ? setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×') : '—'}</span>
       {tracking === 'weight_reps' && (
         <>
-          <input className="set-input" inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
+          <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
             onChange={(e) => {
               setWeightText(e.target.value)
               change({ weight: toKg(parseDecimal(e.target.value) ?? 0, unit) })
@@ -750,6 +761,13 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, time
         ]} />
       )}
     </div>
+    {invalid && !set.done && (
+      <p className="set-invalid-hint" role="alert">
+        {tracking === 'weight_reps' ? t('Escribe cuántas repeticiones hiciste y vuelve a tocar ○.', 'Type how many reps you did and tap ○ again.')
+          : tracking === 'distance_time' ? t('Escribe la distancia o el tiempo y vuelve a tocar ○.', 'Type the distance or the time and tap ○ again.')
+            : t('Escribe el tiempo y vuelve a tocar ○.', 'Type the time and tap ○ again.')}
+      </p>
+    )}
     {current && !set.done && tracking === 'weight_reps' && tempo && <TempoPlayer tempo={tempo} />}
     {current && !set.done && tracking === 'time' && (
       <SetCountdown seconds={set.duration || targetSeconds}
@@ -871,10 +889,11 @@ function RpeRow({ value, open, onOpen, onPick }: {
 
 /** Tiempo tipo microondas: se teclean dígitos y se rellenan por la derecha (1, 3, 0 → 1:30). */
 /** «¿Cómo estás hoy?»: tres toques antes de empezar; con una nota baja, propone aligerar el día. */
-function ReadinessCheck({ session, unit }: { session: Session; unit: Unit }) {
+function ReadinessCheck({ session, unit, warmup }: { session: Session; unit: Unit; warmup: () => void }) {
   const [draft, setDraft] = useState<Partial<Readiness>>(session.readiness ?? {})
   const [lightened, setLightened] = useState(false)
   const [hidden, setHidden] = useState(false)
+  const [open, setOpen] = useState(false)
   const pick = (key: keyof Readiness, v: number) => setDraft((d) => ({ ...d, [key]: v }))
   // Con las tres respuestas, se guarda en el entrenamiento.
   useEffect(() => {
@@ -884,18 +903,26 @@ function ReadinessCheck({ session, unit }: { session: Session; unit: Unit }) {
       editSession(session.id, (s) => { s.readiness = { sleep, energy, soreness } })
     }
   }, [draft])
-  if (hidden) return null
+  const level = session.readiness && readinessLevel(session.readiness)
+  if (hidden || !open) {
+    return (
+      <div className="workout-pre">
+        {!hidden && !session.readiness && <button className="btn small secondary" onClick={() => setOpen(true)}><HeartPulse size={15} /> {t('¿Cómo estás hoy?', 'How do you feel today?')}</button>}
+        {!hidden && level === 'low' && !lightened && <button className="btn small secondary" onClick={() => { editSession(session.id, (s) => lighten(s, unit)); setLightened(true) }}>{t('Bajar un 10 % el peso de hoy', "Lower today's weights by 10%")}</button>}
+        <button className="btn small secondary" onClick={warmup}><Flame size={15} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
+      </div>
+    )
+  }
   const rows: { key: keyof Readiness; label: string; low: string; high: string }[] = [
     { key: 'sleep', label: t('Sueño', 'Sleep'), low: t('fatal', 'awful'), high: t('genial', 'great') },
     { key: 'energy', label: t('Energía', 'Energy'), low: t('ninguna', 'none'), high: t('a tope', 'full') },
     { key: 'soreness', label: t('Agujetas', 'Soreness'), low: t('nada', 'none'), high: t('muchas', 'a lot') },
   ]
-  const level = session.readiness && readinessLevel(session.readiness)
   return (
     <div className="readiness">
       <div className="row between">
         <span className="small bold">{t('¿Cómo estás hoy?', 'How do you feel today?')}</span>
-        <button className="link-btn small muted" onClick={() => setHidden(true)}>{t('Omitir', 'Skip')}</button>
+        <button className="link-btn small muted" onClick={() => (session.readiness ? setOpen(false) : setHidden(true))}>{session.readiness ? t('Listo', 'Done') : t('Omitir', 'Skip')}</button>
       </div>
       {rows.map((r) => (
         <div key={r.key} className="readiness-row">

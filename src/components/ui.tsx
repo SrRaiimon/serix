@@ -101,7 +101,7 @@ export function StatBand({ items }: { items: { value: ReactNode; label: string }
 
 export function Chip({ label, icon: Icon, active, onClick, ariaLabel }: { label: string; icon?: LucideIcon; active?: boolean; onClick: (e: MouseEvent<HTMLButtonElement>) => void; ariaLabel?: string }) {
   return (
-    <button className={`chip ${active ? 'active' : ''}`} onClick={onClick} aria-label={ariaLabel}>
+    <button className={`chip ${active ? 'active' : ''}`} onClick={onClick} aria-label={ariaLabel} aria-pressed={active ?? false}>
       {Icon && <Icon size={15} />} {label}
     </button>
   )

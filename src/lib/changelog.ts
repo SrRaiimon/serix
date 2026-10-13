@@ -8,6 +8,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.67',
+    items: [
+      ['Más seguro con tus datos: si el móvil no deja leerlos al abrir, la app ya no guarda nada encima, y te avisa si un guardado falla.', 'Safer with your data: if the phone will not let the app read it on opening, nothing is saved over it, and you are told if a save fails.'],
+      ['Marca una serie con un solo toque: si no escribes las repeticiones, se apuntan las del objetivo.', 'Tick a set with one tap: if you do not type the reps, the target reps are logged.'],
+      ['Entreno e Inicio más despejados: lo que toca hoy, arriba; Perfil ordenado por grupos.', 'Cleaner workout and Home screens: today\'s workout on top; Profile organised into groups.'],
+      ['Calorías más exactas los días que entrenas (no se suma el entreno dos veces) y opción «Sedentario».', 'More accurate calories on training days (the workout is no longer counted twice) and a "Sedentary" option.'],
+      ['Las pruebas de los sábados se adaptan a tu nivel y los WOD indican qué peso usar.', 'Saturday tests adapt to your level and WODs suggest what weight to use.'],
+      ['Botones más fáciles de tocar y mejor con lector de pantalla.', 'Buttons that are easier to tap and better screen reader support.'],
+    ],
+  },
+  {
     version: '0.0.66',
     items: [
       ['Tu entrenador: cada semana te propone cambios concretos (cambiar un ejercicio atascado, una semana más suave, más o menos series) y los aplica con un toque.', 'Your coach: every week it suggests concrete changes (swap a stuck exercise, an easier week, more or fewer sets) and applies them with one tap.'],
