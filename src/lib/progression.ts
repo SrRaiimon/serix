@@ -14,8 +14,39 @@ import type { AutoProgress, Progression, Session, SetEntry } from './store'
 
 const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors', 'calves'])
 
-/** Lo que se sube cada vez: un salto de la unidad (2,5 kg / 5 lb), el doble en pierna. */
-export const progressionStep = (muscle: string, unit: Unit) => toKg(increment(unit) * (LOWER.has(muscle) ? 2 : 1), unit)
+/** Ejercicios de aislamiento (por su nombre en el catálogo): suben poco, 2,5 kg en elevaciones laterales es mucho. */
+const ISOLATION = /raise|fly|flye|curl|extension|kickback|pushdown|lateral|calf|shrug|crunch|pullover|wrist|reverse_fly|face_pull/i
+export const isIsolation = (exerciseId: string) => ISOLATION.test(exerciseId)
+
+/**
+ * Lo que se sube cada vez: un salto de la unidad (2,5 kg / 5 lb), el doble en los básicos de pierna. En
+ * aislamiento, un 5 % del peso (al menos 1 kg / 2 lb), redondeado a 0,5 kg / 1 lb: mancuernas y poleas
+ * van de 1-2 kg en 1-2 kg.
+ */
+export function progressionStep(muscle: string, unit: Unit, exerciseId = '', weight = 0): number {
+  if (exerciseId && isIsolation(exerciseId)) {
+    const fine = unit === 'kg' ? 0.5 : 1
+    const min = unit === 'kg' ? 1 : 2
+    return toKg(Math.max(min, Math.round((fromKg(weight, unit) * 0.05) / fine) * fine), unit)
+  }
+  return toKg(increment(unit) * (LOWER.has(muscle) ? 2 : 1), unit)
+}
+
+/** Sesiones seguidas (de la más reciente hacia atrás) en las que no se completó el objetivo con este peso. */
+function failedStreak(ex: PlanInput, history: Session[], weight: number): number {
+  let n = 0
+  for (const s of [...history].sort((a, b) => b.start - a.start)) {
+    const e = s.exercises.find((x) => x.exerciseId === ex.exerciseId && !x.deload)
+    if (!e) continue
+    const main = workingSets(e).filter((x) => x.kind !== 'drop' && x.weight > 0)
+    if (!main.length) continue
+    if (Math.abs(Math.max(...main.map((x) => x.weight)) - weight) > 0.01) break
+    const completed = main.length >= Math.max(ex.sets, 1) && main.every((x) => x.reps >= ex.repsMax)
+    if (completed) break
+    n++
+  }
+  return n
+}
 
 /** Semanas del 5/3/1: [porcentaje del TM, repeticiones] por serie; la última de las 3 primeras es AMRAP. */
 export const WAVE: [number, number][][] = [
@@ -82,8 +113,22 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
   // Se sube si la última vez se hicieron todas las series previstas y en todas se llegó al máximo
   // de repeticiones del rango (en lineal, a las repeticiones fijadas).
   const completed = main.length >= count && main.every((s) => s.reps >= ex.repsMax)
-  if (completed) {
-    const next = weight + progressionStep(ex.muscle, unit)
+  // El esfuerzo (si se apuntó) matiza: completar al límite (RPE 9,5-10) aún no es para subir, y en doble
+  // progresión ir sobrado (RPE 7 o menos en todas) a 1 repetición del máximo ya lo es.
+  const rpes = main.map((s) => s.rpe).filter((r): r is number => r !== undefined)
+  const allRated = rpes.length === main.length
+  const maxed = allRated && Math.max(...rpes) >= 9.5
+  const easy = ex.progression === 'double' && allRated && main.length >= count && Math.max(...rpes) <= 7 && main.every((s) => s.reps >= ex.repsMax - 1)
+  if (completed && maxed) {
+    return { sets: Array.from({ length: count }, (_, i) => blank(weight, ex.progression === 'linear' ? ex.repsMax : (main[Math.min(i, main.length - 1)].reps || ex.repsMin))), auto: { kind: 'hold', mode: ex.progression, reason: 'rpe' } }
+  }
+  // Lineal: tras 3 sesiones seguidas sin completar con el mismo peso, un 10 % menos para volver a subir.
+  if (ex.progression === 'linear' && !completed && failedStreak(ex, history, weight) >= 3) {
+    const lower = Math.max(0, round(weight * 0.9, unit))
+    return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
+  }
+  if (completed || easy) {
+    const next = weight + progressionStep(ex.muscle, unit, ex.exerciseId, weight)
     const reps = ex.progression === 'double' ? ex.repsMin : ex.repsMax
     return { sets: Array.from({ length: count }, () => blank(next, reps)), auto: { kind: 'up', from: weight, to: next, mode: ex.progression } }
   }

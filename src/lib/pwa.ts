@@ -58,8 +58,17 @@ export function registerServiceWorker() {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController || reloading || activeSession(getData())) return
     reloading = true
-    flush()
-    location.reload()
+    // Primero se guarda (esperando a que termine) y después se recarga.
+    void flush().finally(() => location.reload())
+  })
+
+  // Una pantalla que no se había abierto y ya no existe (la versión nueva la renombró): se guarda y se
+  // recarga con la nueva, también a mitad de entreno (el entreno sigue al volver), en vez de fallar.
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault()
+    if (reloading) return
+    reloading = true
+    void flush().finally(() => location.reload())
   })
 
   window.addEventListener('load', async () => {

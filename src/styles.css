@@ -2573,8 +2573,8 @@ textarea { resize: none; }
 .stall-more { font-weight: 600; color: var(--amber-text); }
 
 /* Ayuda del primer entrenamiento, junto a la primera serie. */
-.howto { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text); line-height: 1.35; }
-.howto svg { flex-shrink: 0; margin-top: 1px; color: var(--accent-text); }
+.howto { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--fill); color: var(--text); line-height: 1.35; }
+.howto svg { flex-shrink: 0; margin-top: 1px; color: var(--text-2); }
 .food-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .food-tools .btn { justify-content: center; }
 .day-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -2692,8 +2692,8 @@ a.list-row { color: var(--text); text-decoration: none; }
 /* MARK: Zonas táctiles de al menos 44 × 44 px (WCAG 2.5.8 y guía de iOS) sin cambiar el dibujo:
    un área invisible centrada en el botón. :where() no suma especificidad, así que un botón ya
    posicionado (absolute, sticky…) conserva su posición. */
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check) { position: relative; }
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check)::after {
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button) { position: relative; }
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button)::after {
   content: '';
   position: absolute;
   top: 50%;

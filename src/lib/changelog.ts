@@ -8,6 +8,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.68',
+    items: [
+      ['Progresión más lista: tiene en cuenta el esfuerzo (RPE), sube menos en ejercicios de aislamiento y, si te atascas 3 veces, baja un 10 % para volver a subir.', 'Smarter progression: it takes effort (RPE) into account, uses smaller jumps on isolation exercises and, if you stall 3 times, drops 10% to climb again.'],
+      ['Al marcar una serie con un toque te dice qué se ha apuntado (con «Deshacer»), el peso pasa solo a las series siguientes y avisa si una serie con barra va sin peso.', 'Ticking a set with one tap tells you what was logged (with "Undo"), the weight carries over to the next sets and it warns you if a barbell set has no weight.'],
+      ['«Perder grasa» mantiene cargas pesadas en los básicos, el 5×5 hace una sola serie de peso muerto y quien empieza con 5-6 días recibe un reparto más llevadero.', '"Lose fat" keeps heavy loads on the main lifts, 5×5 does a single deadlift set and beginners choosing 5-6 days get a gentler split.'],
+      ['Las actualizaciones a mitad de entreno ya no rompen ninguna pantalla, ni sin conexión.', 'Updates arriving mid-workout no longer break any screen, even offline.'],
+    ],
+  },
+  {
     version: '0.0.67',
     items: [
       ['Más seguro con tus datos: si el móvil no deja leerlos al abrir, la app ya no guarda nada encima, y te avisa si un guardado falla.', 'Safer with your data: if the phone will not let the app read it on opening, nothing is saved over it, and you are told if a save fails.'],

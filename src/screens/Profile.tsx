@@ -61,8 +61,9 @@ export function ProfileScreen() {
       // Las copias hechas con el catálogo anterior se adaptan al actual.
       migrateCatalog(catalog)
       showToast(t('Copia restaurada', 'Backup restored'))
-    } catch {
-      showToast(t('El archivo no es una copia válida', 'The file is not a valid backup'))
+    } catch (e) {
+      // Los avisos propios (demasiado grande, versión más nueva…) dicen qué pasa; el resto, el genérico.
+      showToast(e instanceof Error && !(e instanceof SyntaxError) && e.message ? e.message : t('El archivo no es una copia válida', 'The file is not a valid backup'))
     }
   }
 
@@ -142,7 +143,10 @@ export function ProfileScreen() {
       <div className="list-header">{t('Entrenamiento', 'Training')}</div>
       <div className="list">
         <label className="list-row">
-          <span className="grow">{t('Descanso por defecto', 'Default rest')}</span>
+          <span className="grow">
+            {t('Descanso por defecto', 'Default rest')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Para los ejercicios que añades tú; los programas traen el suyo', 'For exercises you add; programs come with their own')}</span>
+          </span>
           <select className="select" value={settings.defaultRest} onChange={(e) => updateSettings({ defaultRest: Number(e.target.value) })}>
             {restOptions.map((o) => <option key={o} value={o}>{rest(o)}</option>)}
           </select>

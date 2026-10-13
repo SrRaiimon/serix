@@ -4,7 +4,7 @@ import { cleanCustomExercise, MAX_CUSTOM_EXERCISES } from './customExercises'
 import { cleanChallenge, cleanSnapshot } from './friends'
 import type { LiftGoal } from './goals'
 import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Session, SessionExercise, SetEntry, Settings } from './store'
-import { defaultSettings, MAX_EXERCISE_NOTE } from './store'
+import { defaultSettings, MAX_EXERCISE_NOTE, DATA_VERSION } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
 import { ALL_MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
@@ -39,7 +39,11 @@ function autoProgress(v: unknown): AutoProgress | undefined {
     const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
     return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode } : undefined
   }
-  if (v.kind === 'hold' && mode) return { kind: 'hold', mode }
+  if (v.kind === 'hold' && mode) return { kind: 'hold', mode, ...(v.reason === 'rpe' ? { reason: 'rpe' as const } : {}) }
+  if (v.kind === 'down' && mode === 'linear') {
+    const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
+    return from !== undefined && to !== undefined ? { kind: 'down', from, to, mode } : undefined
+  }
   if (v.kind === 'percent') {
     const pct = optNum(v.pct, 0.3, 1), max = optNum(v.max, 0, 2000)
     return pct !== undefined && max !== undefined ? { kind: 'percent', pct, max } : undefined
@@ -389,8 +393,10 @@ export function parseBackup(text: string): AppData {
   if (text.length > MAX_BACKUP_BYTES) throw new Error(t('El archivo es demasiado grande.', 'The file is too large.'))
   const raw: unknown = JSON.parse(text)
   if (!isObj(raw) || !Array.isArray(raw.sessions) || !Array.isArray(raw.routines)) throw new Error(t('No es una copia de Serix.', 'This is not a Serix backup.'))
+  // Una copia de una versión más nueva podría tener datos que esta no entiende: mejor no perderlos.
+  if (typeof raw.version === 'number' && raw.version > DATA_VERSION) throw new Error(t('Esta copia es de una versión más nueva de Serix: recarga la app para actualizarla y vuelve a importarla.', 'This backup is from a newer version of Serix: reload the app to update it and import it again.'))
   return {
-    version: 1,
+    version: DATA_VERSION,
     routines: list(raw.routines, routine, 1000),
     sessions: list(raw.sessions, session, 20000),
     measurements: list(raw.measurements, measurement, 5000),

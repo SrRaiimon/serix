@@ -62,3 +62,32 @@ test('5/3/1: los básicos y accesorios existen en el catálogo y el TM es el 90 
   }
   assert.equal(trainingMaxFrom(140, 'kg'), 125) // 126 → 125
 })
+
+test('progresión con RPE: al límite no se sube; sobrado, se sube antes', () => {
+  const dbl = { ...base, progression: 'double' as const }
+  const hard = plan(dbl, [set(80, 12, { rpe: 10 }), set(80, 12, { rpe: 9.5 }), set(80, 12, { rpe: 9 })], [], 'kg')
+  assert.deepEqual(hard?.auto, { kind: 'hold', mode: 'double', reason: 'rpe' })
+  assert.deepEqual(shape(hard), ['80x12', '80x12', '80x12'])
+  const easy = plan(dbl, [set(80, 11, { rpe: 7 }), set(80, 11, { rpe: 7 }), set(80, 12, { rpe: 6 })], [], 'kg')
+  assert.equal(easy?.auto?.kind, 'up')
+  // Sin RPE apuntado, como siempre.
+  assert.equal(plan(dbl, [set(80, 11), set(80, 11), set(80, 12)], [], 'kg')?.auto?.kind, 'hold')
+})
+
+test('aislamiento: saltos pequeños (5 %, al menos 1 kg)', () => {
+  const lateral = { exerciseId: 'Side_Lateral_Raise', muscle: 'delts', sets: 3, repsMin: 12, repsMax: 15, progression: 'double' as const }
+  const up = plan(lateral, [set(8, 15), set(8, 15), set(8, 15)], [], 'kg')
+  assert.deepEqual(up?.auto, { kind: 'up', from: 8, to: 9, mode: 'double' })
+  assert.equal(progressionStep('quads', 'kg', 'Leg_Extensions', 60), 3)
+  assert.equal(progressionStep('quads', 'kg', 'Barbell_Squat', 100), 5)
+})
+
+test('lineal: tras 3 sesiones sin completar, un 10 % menos', () => {
+  const squat = { exerciseId: 'squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'linear' as const }
+  const fail = (day: number) => session(day, [exercise('squat', [set(100, 5), set(100, 4), set(100, 3)], { muscle: 'quads' })])
+  const history = [fail(0), fail(3), fail(6)]
+  const p = plan(squat, [set(100, 5), set(100, 4), set(100, 3)], history, 'kg')
+  assert.deepEqual(p?.auto, { kind: 'down', from: 100, to: 90, mode: 'linear' })
+  // Con solo dos fallos, se repite.
+  assert.equal(plan(squat, [set(100, 5), set(100, 4), set(100, 3)], history.slice(1), 'kg')?.auto?.kind, 'hold')
+})

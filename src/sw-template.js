@@ -26,8 +26,14 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     // Borra solo sus versiones anteriores y las de la primera versión (fotos incluidas); nunca
     // cachés ajenas del mismo dominio.
+    // Se conserva también la versión anterior: una pestaña abierta con ella (p. ej. a mitad de
+    // entreno, que no se recarga) aún puede cargar sus pantallas sin conexión hasta reabrirse.
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== APP_CACHE && OWN_OR_LEGACY(k)).map((k) => caches.delete(k))))
+      .then((keys) => {
+        const previous = keys.filter((k) => /^serix-[0-9a-z]+$/.test(k) && k !== APP_CACHE && !KEEP.includes(k))
+          .sort((a, b) => parseInt(b.slice(6), 36) - parseInt(a.slice(6), 36))[0]
+        return Promise.all(keys.filter((k) => k !== APP_CACHE && k !== previous && OWN_OR_LEGACY(k)).map((k) => caches.delete(k)))
+      })
       .then(() => self.clients.claim()),
   )
 })

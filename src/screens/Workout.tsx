@@ -4,7 +4,7 @@ import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
 import { HeartPulse, ArrowUpRight, BatteryLow, Flame, Check, ChevronDown, Ellipsis, Info, Link2, Maximize2, Minimize2, Play, Plus, StickyNote, Timer, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActionSheet, Overlay, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, editable, fromKg, increment, int, num, parseDecimal, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
@@ -128,6 +128,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
         bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(e.exerciseId)}
         pairs={['dumbbell', 'kettlebell'].includes(catalog.get(e.exerciseId)?.equipment ?? '')}
+        needsWeight={LOADED.has(catalog.get(e.exerciseId)?.equipment ?? '') && !BODYWEIGHT_LIFTS.has(e.exerciseId)}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
@@ -248,8 +249,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
 
 /** Material con el que tiene sentido calcular discos y empezar el calentamiento con la barra sola. */
 const BARBELL = new Set(['barbell', 'ez-bar'])
+/** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
+const LOADED = new Set(['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'machine', 'cable'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, pairs, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, pairs, needsWeight, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -264,6 +267,8 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   bodyweight: boolean
   /** Con mancuernas o pesas rusas (se puede apuntar el peso de cada una). */
   pairs: boolean
+  /** Ejercicio con barra, mancuernas o máquina: avisar si se marca una serie sin peso. */
+  needsWeight: boolean
   barKg: number
   previous: SetEntry[]
   /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
@@ -298,7 +303,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const simple = settings.simpleMode === true
   const note = exerciseNotes[exercise.exerciseId]
   // Primer entrenamiento: se explica cómo se apunta una serie justo donde hay que hacerlo.
-  const firstEver = index === 0 && exercise.sets[0]?.id === currentSet && !finishedSessions(data).length
+  // La ayuda del primer entreno sale una vez: al marcar la primera serie ya no vuelve (aunque se desmarque).
+  if (exercise.sets.some((x) => x.done)) firstSetDone = true
+  const firstEver = index === 0 && exercise.sets[0]?.id === currentSet && !finishedSessions(data).length && !firstSetDone
   // Ejercicio nuevo sin peso puesto: una pista para elegirlo (la próxima vez ya se propone solo).
   const weightHint = trackingOf(exercise) === 'weight_reps' && !previous.length && !exercise.assisted
     && exercise.sets.some((x) => x.id === currentSet && !x.weight)
@@ -446,10 +453,14 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </span>
       )}
 
+      {/* Una sola ayuda, en gris: el primer día explica cómo se apunta (y qué peso elegir). */}
       {firstEver && (
         <div className="howto small">
           <Info size={16} aria-hidden="true" />
-          <span>{t('Escribe el peso y las repeticiones que hagas y, al acabar la serie, toca el círculo ○. El descanso empieza solo.', 'Type the weight and the reps you do and, when the set is over, tap the circle ○. The rest timer starts by itself.')}</span>
+          <span>
+            {t('Escribe el peso y las repeticiones que hagas y, al acabar la serie, toca el círculo ○. El descanso empieza solo.', 'Type the weight and the reps you do and, when the set is over, tap the circle ○. The rest timer starts by itself.')}
+            {weightHint && !bodyweight ? ` ${t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}` : ''}
+          </span>
         </div>
       )}
       {BODYWEIGHT_LIFTS.has(exercise.exerciseId) && exercise.bodyweight === undefined && tracking === 'weight_reps' && (
@@ -457,7 +468,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           {t('Apunta tu peso en Medidas para que cuente en tus marcas de este ejercicio.', 'Log your weight in Measurements so it counts in your records for this exercise.')}
         </button>
       )}
-      {weightHint && (
+      {weightHint && !(firstEver && !bodyweight) && (
         <span className="small muted">
           {bodyweight ? t('Sin lastre, deja el peso en 0.', 'With no added weight, leave the weight at 0.')
             : t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}
@@ -493,13 +504,19 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
+            repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} needsWeight={needsWeight && !exercise.assisted} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
             askRpe={rpeFor === set.id}
             onAskRpe={() => onAskRpe(set.id)}
             onRpeDone={() => onAskRpe(undefined)}
             onRpePicked={(rpe) => onEffort(set.id, rpe, exercise.rest)}
+            carryWeight={() => edit((e) => {
+              // El peso de esta serie pasa a las siguientes que aún no tienen: así basta un toque en cada una.
+              const i = e.sets.findIndex((x) => x.id === set.id)
+              const w = e.sets[i]?.weight ?? 0
+              if (w > 0 && !e.sets[i].warmup) for (const x of e.sets.slice(i + 1)) if (!x.done && !x.warmup && x.kind !== 'drop' && x.weight <= 0) x.weight = w
+            })}
             onCompleted={() => {
               onSetDone(set)
               if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
@@ -597,7 +614,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   )
 }
 
-function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defaultReps, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
+/** Si ya se marcó alguna serie mientras la app está abierta (para no repetir la ayuda del primer día). */
+let firstSetDone = false
+
+function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
   set: SetEntry
   current: boolean
   askRpe: boolean
@@ -611,6 +631,10 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
   repsPlaceholder: string
   /** Repeticiones que se apuntan al marcar la serie sin escribirlas (el mínimo del objetivo; 0 = ninguna). */
   defaultReps: number
+  /** Con barra, mancuernas o máquina: una serie sin peso es casi siempre un olvido. */
+  needsWeight: boolean
+  /** Copia el peso de esta serie a las siguientes que no tienen. */
+  carryWeight: () => void
   timePlaceholder: string
   unit: Unit
   barbell: boolean
@@ -630,6 +654,8 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
   const [repsText, setRepsText] = useState(set.reps > 0 ? String(set.reps) : '')
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
   const [invalid, setInvalid] = useState(false)
+  // «Sí, es correcto» a una serie sin peso: no se vuelve a preguntar en esta serie.
+  const zeroOk = useRef(false)
   const [menu, setMenu] = useState(false)
   const [kindMenu, setKindMenu] = useState(false)
   const [plates, setPlates] = useState(false)
@@ -653,6 +679,9 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
       onRpeDone()
       return onChange({ done: false, doneAt: undefined, rpe: undefined })
     }
+    if (needsWeight && tracking === 'weight_reps' && set.weight <= 0 && !set.warmup && !zeroOk.current) {
+      return setCheck(t('¿Sin peso? Este ejercicio se hace con barra, mancuernas o máquina.', 'No weight? This exercise uses a barbell, dumbbells or a machine.'))
+    }
     if (!isSetFilled(set, tracking)) {
       // Un toque basta, como en otras apps: sin escribir nada se apuntan las repeticiones del objetivo
       // (el mínimo, para no subir el peso por error) o el tiempo previsto. Se ven y se pueden corregir.
@@ -664,10 +693,21 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
         return
       }
       if (fill.reps) setRepsText(String(fill.reps))
-      onChange(fill)
       const warning = tracking === 'weight_reps' ? suspicious({ ...set, ...fill }, lastMax, unit) : undefined
-      if (warning) return setCheck(warning)
-      return complete()
+      if (warning) {
+        onChange(fill)
+        return setCheck(warning)
+      }
+      // Se dice qué se ha apuntado, con «Deshacer», para que nada se guarde sin darse cuenta.
+      const what = fill.reps ? `${fill.reps} reps${set.weight > 0 ? ` · ${weight(set.weight, unit)}` : ''}` : clock(fill.duration ?? 0)
+      ;(document.activeElement as HTMLElement | null)?.blur()
+      withUndo(t(`Apuntado: ${what}`, `Logged: ${what}`), () => {
+        onChange(fill)
+        onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
+        carryWeight()
+      })
+      navigator.vibrate?.(30)
+      return onCompleted()
     }
     // Un cero de más (800 en vez de 80) estropearía marcas y estadísticas: se pregunta antes.
     const warning = tracking === 'weight_reps' ? suspicious(set, lastMax, unit) : undefined
@@ -677,6 +717,7 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
   const complete = () => {
     ;(document.activeElement as HTMLElement | null)?.blur()
     onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
+    carryWeight()
     navigator.vibrate?.(30)
     onCompleted()
   }
@@ -756,14 +797,19 @@ function SetRow({ set, label, previous, tracking, current, repsPlaceholder, defa
       {plates && <PlatesSheet weightKg={set.weight} onClose={() => setPlates(false)} />}
       {check && (
         <ActionSheet title={check} onClose={() => setCheck(undefined)} options={[
-          { label: t('Sí, es correcto', 'Yes, it is right'), onSelect: complete },
+          { label: t('Sí, es correcto', 'Yes, it is right'), onSelect: () => {
+            // Confirmado «sin peso»: se sigue como si nada (rellenar repeticiones, avisos de peso…).
+            if (set.weight <= 0) { zeroOk.current = true; return toggle() }
+            complete()
+          } },
           { label: t('Corregirlo', 'Fix it'), onSelect: () => setInvalid(true) },
         ]} />
       )}
     </div>
     {invalid && !set.done && (
       <p className="set-invalid-hint" role="alert">
-        {tracking === 'weight_reps' ? t('Escribe cuántas repeticiones hiciste y vuelve a tocar ○.', 'Type how many reps you did and tap ○ again.')
+        {tracking === 'weight_reps' && needsWeight && set.weight <= 0 ? t('Escribe el peso que has usado y vuelve a tocar ○.', 'Type the weight you used and tap ○ again.')
+          : tracking === 'weight_reps' ? t('Escribe cuántas repeticiones hiciste y vuelve a tocar ○.', 'Type how many reps you did and tap ○ again.')
           : tracking === 'distance_time' ? t('Escribe la distancia o el tiempo y vuelve a tocar ○.', 'Type the distance or the time and tap ○ again.')
             : t('Escribe el tiempo y vuelve a tocar ○.', 'Type the time and tap ○ again.')}
       </p>
@@ -827,8 +873,12 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
   const text = auto.kind === 'up'
     ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
+    : auto.kind === 'down'
+      ? t(`Tres veces sin completar con ${weight(auto.from, unit)}: hoy ${weight(auto.to, unit)} para coger impulso y volver a subir.`, `Three times without completing ${weight(auto.from, unit)}: today ${weight(auto.to, unit)} to build momentum and climb again.`)
     : auto.kind === 'hold'
-      ? t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.')
+      ? (auto.reason === 'rpe'
+        ? t('Lo completaste, pero al límite (RPE 9,5-10): mismo peso hasta que salga con algo de margen.', 'You completed it, but at your limit (RPE 9.5-10): same weight until it feels easier.')
+        : t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.'))
       : auto.kind === 'percent'
         ? t(`${Math.round(auto.pct * 100)} % de tu máximo estimado (${weight(auto.max, unit)}).`, `${Math.round(auto.pct * 100)}% of your estimated max (${weight(auto.max, unit)}).`)
       : auto.week === 4

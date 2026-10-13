@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { DATA_VERSION, forgetDB, getData, loadData, migrateData, replaceData, storageProblem, update } from '../src/lib/store'
 import { fakeIndexedDB, session } from './helpers'
+import { parseBackup } from '../src/lib/backup'
 
 test('datos guardados: se repara la forma sin perder lo que hay', () => {
   const d = migrateData({ version: 1, sessions: [session(0, []), 'basura'], routines: 'no es lista', settings: { name: 'Ana' }, nutrition: { entries: [{ id: 'e' }] }, extra: 1 })
@@ -40,4 +41,8 @@ test('si no se pueden leer los datos al abrir, no se escribe encima', async () =
     replaceData({ ...getData(), sessions: [] })
     assert.equal(storageProblem(), undefined)
   }
+})
+
+test('copia de una versión más nueva: se rechaza con un aviso claro', () => {
+  assert.throws(() => parseBackup(JSON.stringify({ version: DATA_VERSION + 1, sessions: [], routines: [] })), /más nueva/)
 })

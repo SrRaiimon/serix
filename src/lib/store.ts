@@ -115,7 +115,10 @@ export interface SessionExercise {
 
 export type AutoProgress =
   | { kind: 'up'; from: number; to: number; mode: 'double' | 'linear' }
-  | { kind: 'hold'; mode: 'double' | 'linear' }
+  /** reason 'rpe': se completó, pero al límite (RPE 9,5-10), así que aún no se sube. */
+  | { kind: 'hold'; mode: 'double' | 'linear'; reason?: 'rpe' }
+  /** Tres sesiones seguidas sin completar el objetivo (lineal): se baja un 10 % para volver a subir. */
+  | { kind: 'down'; from: number; to: number; mode: 'linear' }
   | { kind: 'wave'; week: number; tm: number }
   | { kind: 'percent'; pct: number; max: number }
 
@@ -439,10 +442,10 @@ function scheduleSave() {
   saveTimer = setTimeout(() => void save(state), 250)
 }
 
-/** Guarda de inmediato (p. ej. al pasar la app a segundo plano). */
-export function flush() {
+/** Guarda de inmediato (p. ej. al pasar la app a segundo plano); se puede esperar a que termine. */
+export function flush(): Promise<void> {
   clearTimeout(saveTimer)
-  void save(state)
+  return save(state)
 }
 
 export async function loadData(): Promise<void> {

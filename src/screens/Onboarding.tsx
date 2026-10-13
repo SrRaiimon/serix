@@ -63,7 +63,7 @@ export function OnboardingScreen() {
       <main className="app">
         <div className="nav-bar">
           <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
-          <div className="title">{t('Vista previa', 'Preview')}</div>
+          <h1 className="title" style={{ margin: 0, font: 'inherit' }}>{t('Vista previa', 'Preview')}</h1>
           <div className="right">
             <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra', 'Another')}</button>
           </div>
@@ -102,7 +102,7 @@ export function OnboardingScreen() {
             <Feature icon={WandSparkles} text={t('Programa generado según tu objetivo y tu material', 'A program generated for your goal and equipment')} />
             <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
             <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
-            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} autoComplete="given-name"
+            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} aria-label={t('Tu nombre', 'Your name')} autoComplete="given-name"
               value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
             <div className="card" style={{ gap: 6 }}>
               <HealthNotice />
@@ -136,6 +136,9 @@ export function OnboardingScreen() {
               <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
                 {[2, 3, 4, 5, 6].map((n) => <Chip key={n} label={String(n)} active={settings.days === n} onClick={() => updateSettings({ days: n })} />)}
               </div>
+              {settings.level === 'beginner' && settings.days >= 5 && (
+                <span className="small muted">{t('Para empezar, 3-4 días dan casi lo mismo y recuperas mejor. Si eliges más, el programa reparte el trabajo para no pasarte.', 'When starting out, 3-4 days give nearly the same results and you recover better. If you choose more, the program spreads the work so you do not overdo it.')}</span>
+              )}
             </Card>
             <Card title={t('Minutos por sesión', 'Minutes per session')}>
               <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
@@ -162,7 +165,7 @@ export function OnboardingScreen() {
             <Card title={t('Tu plan', 'Your plan')}>
               <span className="muted">
                 {goalInfo(settings.goal).label} · {levelInfo(settings.level).label}<br />
-                {t(`${settings.days} días por semana de ${settings.minutes} min`, `${settings.days} days a week, ${settings.minutes} min each`)}<br />
+                {t(`${settings.days} días por semana de hasta ${settings.minutes} min`, `${settings.days} days a week, up to ${settings.minutes} min each`)}<br />
                 {equipmentInfo(settings.equipment).label}
               </span>
             </Card>

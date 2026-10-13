@@ -138,6 +138,10 @@ function split(c: GeneratorConfig): [string, Template[]] {
       : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
   if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), [upperA, lowerA, upperB, lowerB]]
+  // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario.
+  if (c.level === 'beginner' && c.days >= 5) {
+    return [t('Torso / Pierna + Cuerpo completo', 'Upper / Lower + Full body'), [upperA, lowerA, fullBodyC, upperB, lowerB, ...(c.days >= 6 ? [fullBodyB] : [])]]
+  }
   if (c.days === 5) return [t('Híbrido PPL + Torso / Pierna', 'PPL + Upper / Lower hybrid'), [pushA, pullA, legsA, upperB, lowerB]]
   return [t('Empuje / Tirón / Pierna ×2', 'Push / Pull / Legs ×2'), [pushA, pullA, legsA, pushB, pullB, legsB]]
 }
@@ -154,7 +158,9 @@ function scheme(kind: Kind, c: GeneratorConfig) {
   const table: Record<TrainingGoal, Record<Kind, [number, number, number, number]>> = {
     strength: { compound: [4, 3, 5, 180], accessory: [3, 6, 10, 120], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
     hypertrophy: { compound: [4, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
-    fatLoss: { compound: [3, 10, 15, 75], accessory: [3, 12, 20, 45], core: [3, 15, 20, 30], conditioning: [3, 15, 20, 30] },
+    // Perder grasa: en déficit, los básicos siguen pesados (es lo que conserva el músculo); el gasto
+    // extra lo ponen los accesorios con menos descanso y el bloque de acondicionamiento.
+    fatLoss: { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 60], core: [3, 12, 15, 45], conditioning: [3, 15, 20, 30] },
     general: { compound: [3, 8, 12, 90], accessory: [3, 10, 15, 60], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
   }
   let [sets, repsMin, repsMax, rest] = table[c.goal][kind]
@@ -203,7 +209,7 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
 
   return {
     name: `${splitName} · ${goalInfo(c.goal).short}`,
-    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${c.minutes} min · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
+    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${t(`hasta ${c.minutes} min`, `up to ${c.minutes} min`)} · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
     days,
   }
 }
@@ -228,6 +234,8 @@ export interface LibraryProgram {
   extraEquipment?: string[]
   templates: Template[]
   scheme: Record<Kind, SchemeRow>
+  /** Series de un hueco concreto (en el 5×5, el peso muerto va a 1×5: con 5 series se acumula demasiada fatiga). */
+  setsFor?: Partial<Record<SlotName, number>>
   progression?: Progression
 }
 
@@ -263,8 +271,8 @@ export const LIBRARY: LibraryProgram[] = [
   },
   {
     id: 'strength5x5', name: ['Fuerza 5×5 · 3 días', 'Strength 5×5 · 3 days'], days: 3, level: 'beginner', progression: 'linear',
-    description: ['Dos sesiones (A y B) que se alternan: 5 series de 5 en los básicos y subida de peso en cada sesión si completas todas. Clásico para ganar fuerza rápido al principio.', 'Two sessions (A and B) that alternate: 5 sets of 5 on the main lifts and a weight increase each session if you complete them all. A classic for fast early strength gains.'],
-    templates: [strengthA, strengthB], scheme: STRENGTH_5X5,
+    description: ['Dos sesiones (A y B) que se alternan: 5 series de 5 en los básicos (1 de 5 en peso muerto) y subida de peso en cada sesión si completas todas. Clásico para ganar fuerza rápido al principio.', 'Two sessions (A and B) that alternate: 5 sets of 5 on the main lifts (1 set of 5 on deadlifts) and a weight increase each session if you complete them all. A classic for fast early strength gains.'],
+    templates: [strengthA, strengthB], scheme: STRENGTH_5X5, setsFor: { hinge: 1 },
   },
   {
     id: 'ppl3', name: ['Empuje / Tirón / Pierna · 3 días', 'Push / Pull / Legs · 3 days'], days: 3, level: 'intermediate',
@@ -314,7 +322,8 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       const exercise = pick(slot, variant, allowed, used, catalog)
       if (!exercise) continue
       used.add(exercise.id)
-      const [sets, repsMin, repsMax, rest] = p.scheme[slot.kind]
+      const [schemeSets, repsMin, repsMax, rest] = p.scheme[slot.kind]
+      const sets = p.setsFor?.[name] ?? schemeSets
       exercises.push({ exercise, sets, repsMin, repsMax, rest, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
     }
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
