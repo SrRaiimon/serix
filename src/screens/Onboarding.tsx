@@ -91,7 +91,7 @@ export function OnboardingScreen() {
       <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
         {step === 0 && (
           <>
-            <div className="row" style={{ justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
+            <div className="row" style={{ justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
               {LANGS.map((l) => <Chip key={l.id} label={l.name} active={lang() === l.id} onClick={() => updateSettings({ language: l.id })} />)}
             </div>
             <Dumbbell size={64} color="var(--accent-text)" style={{ marginTop: 8 }} />

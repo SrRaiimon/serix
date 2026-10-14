@@ -11,7 +11,7 @@ Pensada para Europa (kg, €, normativa UE).
 - **Preguntar «¿Lo publico?» antes de cada `git push`** y esperar un sí expreso. Un sí vale para ese push.
 - **Cada publicación de la app sube `version` en `package.json`** y añade su entrada en `src/lib/changelog.ts`
   (frases cortas, lo que se nota al usar la app, con su texto en español e inglés).
-- **Nunca `rm -rf`**, y nunca borrar carpetas que ya existían: se borra solo el archivo temporal que uno creó.
+- **Nunca borrar carpetas con `rm` recursivo** (`-r`, `-rf`…), y nunca borrar carpetas que ya existían: se borra solo el archivo temporal que uno creó.
   En el scratchpad, en vez de borrar, se usan carpetas nuevas.
 - **Commits con el email del repo** `49187817+SrRaiimon@users.noreply.github.com` (ya configurado en local) y
   terminados en `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. El email global de git no se toca

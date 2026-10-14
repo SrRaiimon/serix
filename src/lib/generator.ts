@@ -1,5 +1,6 @@
 import type { Catalog, Exercise } from './catalog'
 import { t } from './i18n'
+import { isIsolation } from './isolation'
 import type { Progression } from './store'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
@@ -173,11 +174,11 @@ function scheme(kind: Kind, c: GeneratorConfig) {
 }
 
 /** Necesitan una barra de dominadas (o algo de donde colgarse): solo se proponen con gimnasio. */
-const NEEDS_BAR = /pull-?up|pullup|chin-?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
+const NEEDS_BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
 /** Demasiado para empezar aunque el catálogo los ponga de nivel básico: dominadas, nórdico, pistol, pino. */
-const HARD_START = /^(Pullups|Chin-Up|Kipping_Pull_Up|Chest_To_Bar_Pull_Up|Floor_Glute-Ham_Raise|Pistol_Squat|Handstand_Push-Ups)$/
-/** Con carga a mano, la sentadilla sin peso no es un básico (se queda para quien entrena solo con su cuerpo). */
-const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit)$/
+const HARD_START = /^(Pullups|Chin-Up|Kipping_Pull_Up|Chest_To_Bar_Pull_Up|Floor_Glute-Ham_Raise|Natural_Glute_Ham_Raise|Pistol_Squat|Handstand_Push-Ups|Wall_Walk)$/
+/** Con carga a mano, la sentadilla o el puente sin peso no son un básico (se quedan para quien entrena solo con su cuerpo). */
+const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit|Single_Leg_Glute_Bridge)$/
 /** Básicos pesados que cargan la columna: uno por día como mucho. */
 export const HEAVY_AXIAL = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift|Romanian_Deadlift|Stiff-Legged_Barbell_Deadlift|Good_Morning)$/
 
@@ -188,9 +189,12 @@ interface PickRules {
   /** Ya hay un básico pesado de columna ese día. */
   axialUsed?: boolean
   equipment?: EquipmentProfile
+  /** Programas de fuerza e hipertrofia: sin gestos de CrossFit como la dominada con kipping. */
+  strict?: boolean
 }
 
 function suits(e: Exercise, r: PickRules): boolean {
+  if (r.strict && /kipping/i.test(e.id)) return false
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
   if (r.level === 'intermediate' && e.level === 'expert' && e.equipment === 'bodyweight') return false
@@ -216,6 +220,38 @@ function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<strin
   return fallback.length ? fallback[Math.min(variant, fallback.length - 1)] : undefined
 }
 
+/** Si un hueco se queda sin ejercicio (sin barra, sin material…), otro que trabaje lo mismo. */
+const SUBSTITUTES: Partial<Record<SlotName, string>> = {
+  verticalPull: 'horizontalPull homePull',
+  fnPull: 'homePull',
+  horizontalPull: 'homePull',
+  shoulderPress: 'homePush',
+  legCurl: 'hinge',
+}
+
+function pickOrSubstitute(name: SlotName, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules): { exercise: Exercise; slot: Slot } | undefined {
+  for (const n of [name, ...((SUBSTITUTES[name]?.split(' ') ?? []) as SlotName[])]) {
+    const exercise = pick(slots[n], variant, allowed, used, catalog, rules)
+    if (exercise) return { exercise, slot: slots[n] }
+  }
+  return undefined
+}
+
+/**
+ * La pauta del hueco ajustada al ejercicio que ha tocado: los aislamientos, a 8-12 o más y sin descansos
+ * de básico; lo que no va con barra, nunca a 3-5 (un goblet o una prensa no se hacen a 3 repeticiones);
+ * el swing, a 10-15; y las piernas sin carga, a 12-20 para que cuesten.
+ */
+function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }) {
+  const out = { ...s }
+  if (kind === 'conditioning' || kind === 'core') return out
+  if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
+  else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
+  else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20 })
+  else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
+  return out
+}
+
 /** `variation` desplaza la elección en cada hueco para obtener una alternativa al mismo plan. */
 export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): GeneratedProgram {
   const [splitName, templates] = split(c)
@@ -229,20 +265,24 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     const exercises: GeneratedExercise[] = []
     // Series por músculo principal en la sesión: más de ~10 de un mismo músculo en un día ya no suman.
     const perMuscle = new Map<string, number>()
+    // Tope de series de la sesión según el tiempo (unos 3,4 min por serie con su descanso).
+    const maxTotal = Math.round(c.minutes / 3.4)
+    let total = 0
     for (const [name, variant] of list) {
-      const slot: Slot = slots[name]
-      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym', equipment: c.equipment, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
-      const exercise = pick(slot, variant + variation, allowed, used, catalog, rules)
-      if (!exercise) continue
-      const s = scheme(slot.kind, c)
-      // Sin carga, las piernas necesitan más repeticiones para que cueste (2×8-12 de sentadilla al aire no basta).
-      if (exercise.equipment === 'bodyweight' && slot.kind === 'compound' && ['quads', 'glutes', 'hamstrings'].includes(exercise.muscle)) Object.assign(s, { repsMin: 12, repsMax: 20 })
+      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym', equipment: c.equipment, strict: true, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
+      const found = pickOrSubstitute(name, variant + variation, allowed, used, catalog, rules)
+      if (!found) continue
+      const { exercise, slot } = found
+      const s = fitScheme(exercise, slot.kind, scheme(slot.kind, c))
       // Cuenta todo lo de fuerza (también un swing en el bloque de acondicionamiento); el cardio, no.
       const counts = exercise.category !== 'cardio' && exercise.category !== 'plyometrics'
       const done = perMuscle.get(exercise.muscle) ?? 0
       if (counts && done > MAX_SETS_PER_SESSION - 2) continue
       if (counts) s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
+      if (total + s.sets > maxTotal && total + 2 > maxTotal) continue
+      s.sets = Math.min(s.sets, maxTotal - total)
       if (counts) perMuscle.set(exercise.muscle, done + s.sets)
+      total += s.sets
       used.add(exercise.id)
       exercises.push({ exercise, ...s })
     }
@@ -360,9 +400,12 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
     const used = new Set<string>()
     const exercises: GeneratedExercise[] = []
     for (const [name, variant] of template.slots) {
-      const slot: Slot = slots[name]
-      const exercise = pick(slot, variant, allowed, used, catalog)
-      if (!exercise) continue
+      // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
+      // extra). Lo de un básico pesado por día no: son programas clásicos (el 5×5 junta sentadilla y peso muerto).
+      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other'), equipment: p.equipment ?? equipment }
+      const found = pickOrSubstitute(name, variant, allowed, used, catalog, rules)
+      if (!found) continue
+      const { exercise, slot } = found
       used.add(exercise.id)
       const [schemeSets, repsMin, repsMax, rest] = p.scheme[slot.kind]
       const sets = p.setsFor?.[name] ?? schemeSets

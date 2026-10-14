@@ -120,7 +120,8 @@ export function ReportScreen() {
               <h2>{t('Comida', 'Food')}</h2>
               <p>
                 {t(`${r.food.days} días apuntados · media de ${int(r.food.kcal)} kcal y ${int(r.food.p)} g de proteína.`, `${r.food.days} days logged · average ${int(r.food.kcal)} kcal and ${int(r.food.p)} g of protein.`)}
-                {data.settings.nutrition && ` ${t(`${r.food.met} días dentro de tu objetivo (${int(data.settings.nutrition.kcal)} kcal, ${int(data.settings.nutrition.protein)} g de proteína).`, `${r.food.met} days on target (${int(data.settings.nutrition.kcal)} kcal, ${int(data.settings.nutrition.protein)} g protein).`)}`}
+                {/* El objetivo de cada día (cambia si entrenas), el mismo que se ve en Comidas: no una cifra fija. */}
+                {data.settings.nutrition && ` ${t(`${r.food.met} días dentro de tu objetivo del día, como lo ves en Comidas.`, `${r.food.met} days within that day's goal, as shown in Food.`)}`}
               </p>
             </section>
           )}

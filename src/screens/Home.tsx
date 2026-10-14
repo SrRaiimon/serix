@@ -139,7 +139,8 @@ export function HomeScreen() {
         </>
       )}
 
-      <InstallBanner />
+      {/* Instalar es un aviso más: solo cuando no hay otro. */}
+      {!notice && <InstallBanner />}
     </div>
   )
 }

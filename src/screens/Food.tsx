@@ -140,7 +140,7 @@ export function FoodScreen() {
       </div>
 
       {advice && baseGoals && <WeightAdviceCard advice={advice} goals={baseGoals} />}
-      {target ? <DaySummary totals={totals} entries={entries} goals={target} day={day} canMark={!!goalOpts.training && canPlan && !data.sessions.some((x) => dayKey(x.start) === day)} /> : (
+      {target ? <DaySummary totals={totals} entries={entries} goals={target} base={baseGoals!} day={day} canMark={!!goalOpts.training && canPlan && !data.sessions.some((x) => dayKey(x.start) === day)} /> : (
         <Card title={t('Calcula tu objetivo', 'Work out your goal')}>
           <span className="small muted">{t('Con tu peso, altura, edad y actividad te decimos cuántas calorías y cuánta proteína te tocan al día para tu objetivo.', 'With your weight, height, age and activity we tell you how many calories and how much protein you need a day for your goal.')}</span>
           <button className="btn primary" onClick={() => setGoals(true)}><Target size={18} /> {t('Calcular objetivo', 'Work out goal')}</button>
@@ -317,7 +317,7 @@ export function FoodScreen() {
 }
 
 /** Calorías del día frente al objetivo y los tres macronutrientes. */
-function DaySummary({ totals, entries, goals, day, canMark }: { totals: Per100; entries: FoodEntry[]; goals: NutritionGoals & { carried?: number; training?: boolean; shift?: number }; day: string; canMark: boolean }) {
+function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Per100; entries: FoodEntry[]; goals: NutritionGoals & { carried?: number; training?: boolean; shift?: number }; base: NutritionGoals; day: string; canMark: boolean }) {
   const fiber = dayFiber(entries)
   // Hoy sin entreno todavía: se puede marcar que vas a entrenar para tener ya el objetivo de entreno.
   const mark = (on: boolean) => update((d) => {
@@ -357,12 +357,13 @@ function DaySummary({ totals, entries, goals, day, canMark }: { totals: Per100; 
         </span>
         {goals.training !== undefined && (
           <span className="day-kind small">
+            {/* Respecto a qué: el objetivo de un día normal (el que pusiste), no solo «−200». */}
             <span className="muted">{goals.training
-              ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal`, `Training day: +${int(goals.shift ?? 0)} kcal`)
+              ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal sobre tus ${int(base.kcal)}`, `Training day: +${int(goals.shift ?? 0)} kcal over your ${int(base.kcal)}`)
               : day === dayKey()
-                ? t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal`)
-                : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal`, `Rest day: −${int(-(goals.shift ?? 0))} kcal`)}</span>
-            {canMark && <button className="nav-btn small" onClick={() => mark(!goals.training)}>{day === dayKey()
+                ? t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)
+                : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)}</span>
+            {canMark && <button className="btn secondary btn-sm" onClick={() => mark(!goals.training)}>{day === dayKey()
               ? (goals.training ? t('Hoy no entreno', 'Not training today') : t('Hoy entreno', 'Training today'))
               : (goals.training ? t('Mañana no entreno', 'Not training tomorrow') : t('Mañana entreno', 'Training tomorrow'))}</button>}
           </span>

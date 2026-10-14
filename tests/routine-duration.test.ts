@@ -12,9 +12,9 @@ const session = (start: number, minutes: number | undefined): Session => ({
 const data = (sessions: Session[]) => ({ sessions, routines: [routine], settings: defaultSettings } as unknown as AppData)
 
 test('duración de la rutina: estimada sin historial y mediana de las últimas sesiones con él', () => {
-  // 3 series × (40 s + 120 s) + 90 s de preparación = 570 s ≈ 10 min.
-  assert.equal(routineMinutes(routine), 10)
-  assert.deepEqual(expectedMinutes(data([]), routine), { minutes: 10, measured: false })
+  // 3 series × (45 s + 120 s) + 150 s de preparación = 645 s ≈ 11 min.
+  assert.equal(routineMinutes(routine), 11)
+  assert.deepEqual(expectedMinutes(data([]), routine), { minutes: 11, measured: false })
   const DAY = 86400000
   assert.deepEqual(expectedMinutes(data([session(1 * DAY, 50), session(2 * DAY, 62), session(3 * DAY, 70)]), routine), { minutes: 62, measured: true })
   // Se ignoran las que siguen abiertas, las olvidadas abiertas horas y las de menos de 5 min.

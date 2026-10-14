@@ -8,6 +8,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.71',
+    items: [
+      ['Con la app abierta en dos pestañas, los cambios se juntan bien: lo que borras no vuelve y lo que cambias en la otra no se pierde.', 'With the app open in two tabs, changes are merged properly: what you delete stays deleted and what you change in the other tab is kept.'],
+      ['Programas y Biblioteca más adecuados: sin dominadas si no tienes barra, sin nórdico ni pino para quien empieza, y un ejercicio parecido cuando falta material en vez de dejar el hueco.', 'Better programs and library: no pull-ups without a bar, no Nordic curls or handstands for beginners, and a similar exercise when equipment is missing instead of leaving a gap.'],
+      ['Series y descansos según el ejercicio: goblet o prensa nunca a 3 repeticiones, aislamientos con menos descanso y cada sesión ajustada a tus minutos.', 'Sets and rests that fit each exercise: goblet squats or leg press never at 3 reps, shorter rests for isolation work and every session fitted to your minutes.'],
+      ['Inicio aún más ligero: las novedades caben en una línea y el aviso para instalar solo sale si no hay otro.', 'An even lighter Home: news fits in one line and the install prompt only shows when there is no other notice.'],
+      ['Cifras más claras: duración de las rutinas más realista, «con tu peso» en dominadas y fondos, toneladas levantadas en Perfil y cuánto suman o restan las calorías de cada día.', 'Clearer figures: more realistic routine durations, "incl. bodyweight" on pull-ups and dips, tonnes lifted in Profile and how much each day adds or subtracts in calories.'],
+    ],
+  },
+  {
     version: '0.0.70',
     items: [
       ['Inicio más despejado: un solo aviso a la vez y el entrenador te enseña su consejo principal (el resto, a un toque).', 'A cleaner Home screen: one notice at a time, and the coach shows its main tip (the rest are one tap away).'],

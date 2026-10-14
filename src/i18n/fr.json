@@ -1966,5 +1966,20 @@
 "Los datos se han cargado, pero no se han podido guardar en este móvil. Revisa el espacio libre y vuelve a intentarlo.": "Les données ont été chargées, mais elles n'ont pas pu être enregistrées sur ce téléphone. Vérifie l'espace libre et réessaie.",
 "Mejor con lector de pantalla: cada pantalla anuncia su título y los días de la semana se leen enteros.": "Meilleur avec un lecteur d'écran : chaque écran annonce son titre et les jours de la semaine sont lus en entier.",
 "Programas más adecuados: nada de ejercicios de experto ni dominadas sin barra para quien empieza, un solo básico pesado de espalda por día y como mucho 10 series de un músculo por sesión.": "Programmes mieux adaptés : pas d'exercices experts ni de tractions sans barre pour les débutants, un seul exercice lourd chargeant le dos par jour et au maximum 10 séries par muscle et par séance.",
-"Ver todas las novedades": "Voir toutes les nouveautés"
+"Ver todas las novedades": "Voir toutes les nouveautés",
+"¿Qué peso? Uno con el que llegues a {0} repeticiones bien hechas con 2 de margen. La próxima vez te lo proponemos.": "Quel poids ? Un poids avec lequel tu arrives à {0} répétitions propres en gardant 2 de marge. La prochaine fois, on te le propose.",
+"{0} días dentro de tu objetivo del día, como lo ves en Comidas.": "{0} jours dans ton objectif du jour, tel que tu le vois dans Repas.",
+"Cifras más claras: duración de las rutinas más realista, «con tu peso» en dominadas y fondos, toneladas levantadas en Perfil y cuánto suman o restan las calorías de cada día.": "Des chiffres plus clairs : durée des routines plus réaliste, « avec ton poids » pour les tractions et les dips, tonnes soulevées dans Profil et combien chaque jour ajoute ou retire en calories.",
+"Con la app abierta en dos pestañas, los cambios se juntan bien: lo que borras no vuelve y lo que cambias en la otra no se pierde.": "Avec l'app ouverte dans deux onglets, les changements sont bien réunis : ce que tu supprimes ne revient pas et ce que tu modifies dans l'autre n'est pas perdu.",
+"con tu peso": "avec ton poids",
+"Día de descanso: −{0} kcal de tus {1}": "Jour de repos : −{0} kcal sur tes {1}",
+"Día de entreno: +{0} kcal sobre tus {1}": "Jour d'entraînement : +{0} kcal en plus de tes {1}",
+"Hoy, sin entreno de momento: −{0} kcal de tus {1}": "Aujourd'hui, pas encore d'entraînement : −{0} kcal sur tes {1}",
+"Inicio aún más ligero: las novedades caben en una línea y el aviso para instalar solo sale si no hay otro.": "Accueil encore plus léger : les nouveautés tiennent sur une ligne et l'invitation à installer n'apparaît que s'il n'y a pas d'autre alerte.",
+"Novedades de la versión {0}": "Nouveautés de la version {0}",
+"Peso: uno con el que llegues a {0} repeticiones con 2 de margen.": "Poids : un poids avec lequel tu arrives à {0} répétitions en gardant 2 de marge.",
+"Programas y Biblioteca más adecuados: sin dominadas si no tienes barra, sin nórdico ni pino para quien empieza, y un ejercicio parecido cuando falta material en vez de dejar el hueco.": "Programmes et bibliothèque mieux adaptés : pas de tractions sans barre, pas de nordic curl ni d'équilibre sur les mains pour les débutants, et un exercice similaire quand il manque du matériel au lieu de laisser un trou.",
+"Series y descansos según el ejercicio: goblet o prensa nunca a 3 repeticiones, aislamientos con menos descanso y cada sesión ajustada a tus minutos.": "Séries et repos adaptés à chaque exercice : goblet squat ou presse jamais à 3 répétitions, moins de repos pour l'isolation et chaque séance ajustée à tes minutes.",
+"Última": "Dernière",
+"Ver": "Voir"
 }

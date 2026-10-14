@@ -111,7 +111,7 @@ export function RoutinesScreen() {
             <div className="list-header">
               <span className="grow clamp-1">{key || t('Mis rutinas', 'My routines')}</span>
               {key && key === active && <span className="tag accent">{t('ACTIVO', 'ACTIVE')}</span>}
-              {key && <button className="nav-btn" style={{ padding: 0, minHeight: 0 }} onClick={() => setProgramMenu(key)} aria-label={t('Opciones del programa', 'Program options')}><Ellipsis size={20} /></button>}
+              {key && <button className="nav-btn" style={{ padding: 0, minHeight: 0, zIndex: 1 }} onClick={() => setProgramMenu(key)} aria-label={t('Opciones del programa', 'Program options')}><Ellipsis size={20} /></button>}
             </div>
             <div className="list">
               {groups.get(key)!.map((r) => <RoutineRow key={r.id} routine={r} data={data} next={r.id === next?.id} />)}

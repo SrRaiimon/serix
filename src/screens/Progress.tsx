@@ -404,6 +404,8 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
             <strong>{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
             <span className="clamp-2">{r.name}</span>
+            {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta. */}
+            {r.added !== undefined && <span className="tiny muted">{t('con tu peso', 'incl. bodyweight')}</span>}
             {(r.e1rm - (before.get(r.exerciseId) ?? r.e1rm)) >= 0.5 && (
               <em title={t('Mejora en los últimos 30 días', 'Gain in the last 30 days')}>+{int(fromKg(r.e1rm - before.get(r.exerciseId)!, unit))} {unit} · 30 d</em>
             )}
@@ -739,7 +741,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: value(p) }))} />
               <span className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-                <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(change)} {unit}</strong>
+                <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(Math.round(change * 2) / 2)} {unit}</strong>
                 <span className="small muted">{t('desde el', 'since')} {shortDay(first.date)}</span>
               </span>
               {metric === 'e1rm' && <span className="small muted">{t('Máximo estimado (1RM): el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated max (1RM): the weight you could lift once, worked out from your sets.')}</span>}

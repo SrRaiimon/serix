@@ -462,7 +462,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           <Info size={16} aria-hidden="true" />
           <span>
             {t('Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter weight and reps and tap ○ when the set is done: rest starts by itself.')}
-            {weightHint && !bodyweight ? ` ${t('Peso: uno que puedas mover unas 12 veces bien.', 'Weight: one you could lift about 12 times with good form.')}` : ''}
+            {weightHint && !bodyweight ? ` ${t(`Peso: uno con el que llegues a ${exercise.repsMax} repeticiones con 2 de margen.`, `Weight: one you can lift ${exercise.repsMax} times with 2 reps to spare.`)}` : ''}
           </span>
         </div>
       )}
@@ -474,7 +474,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
       {weightHint && !(firstEver && !bodyweight) && (
         <span className="small muted">
           {bodyweight ? t('Sin lastre, deja el peso en 0.', 'With no added weight, leave the weight at 0.')
-            : t('¿Qué peso? Uno con el que podrías hacer unas 12 repeticiones bien hechas. La próxima vez te lo proponemos.', 'Which weight? One you could lift about 12 times with good form. Next time we suggest it.')}
+            : t(`¿Qué peso? Uno con el que llegues a ${exercise.repsMax} repeticiones bien hechas con 2 de margen. La próxima vez te lo proponemos.`, `Which weight? One you can lift ${exercise.repsMax} times with good form and 2 reps to spare. Next time we suggest it.`)}
         </span>
       )}
       {/* Sin historial, la columna «Última vez» solo tendría rayas: se quita y los campos ganan sitio. */}

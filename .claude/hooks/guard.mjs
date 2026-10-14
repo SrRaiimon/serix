@@ -13,9 +13,25 @@ const deny = (why) => { process.stderr.write(`Serix: ${why}\n`); process.exit(2)
 const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { encoding: 'utf8' }).trim()
 const versionAt = (ref) => { try { return JSON.parse(git('show', `${ref}:package.json`)).version } catch { return undefined } }
 
+/** La orden sin lo que va entre comillas: un texto que menciona estas órdenes no es la orden. */
+const unquoted = (command) => command.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, "''")
+
+/** Borrado recursivo en cualquier forma: -r, -rf, -Rf, -rfv, -r -f, --recursive… */
+function recursiveRm(command) {
+  for (const m of command.matchAll(/(?:^|[;&|(\s])rm((?:\s+-{1,2}[\w-]+)+)/g)) {
+    const flags = m[1].split(/\s+/).filter(Boolean)
+    const short = flags.filter((f) => /^-[^-]/.test(f)).join('')
+    const recursive = /[rR]/.test(short) || flags.includes('--recursive')
+    // Recursivo ya borra carpetas enteras, con o sin forzar.
+    if (recursive) return true
+  }
+  return false
+}
+
 function forbidden(command) {
-  if (/\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|-r\s+-f|-f\s+-r)\b/.test(command)) return 'nada de rm -rf: borra solo el archivo temporal que hayas creado, nunca una carpeta entera'
-  if (/git\s+config\s+(--global|--system)\s+user\.email/.test(command) && !/--get\b|user\.email\s*$/.test(command)) return 'el email global de git no se cambia sin preguntar'
+  const bare = unquoted(command)
+  if (recursiveRm(bare)) return 'nada de borrados recursivos: borra solo el archivo temporal que hayas creado, nunca una carpeta entera'
+  if (/git\s+config\s+(--global|--system)\s+user\.email/.test(bare) && !/--get\b|user\.email\s*$/.test(bare)) return 'el email global de git no se cambia sin preguntar'
   return undefined
 }
 
@@ -30,7 +46,7 @@ function pushProblems() {
   const changed = git('diff', '--name-only', 'origin/main..HEAD').split('\n').filter(Boolean)
   if (changed.some((f) => APP.test(f))) {
     const local = versionAt('HEAD')
-    if (local === versionAt('origin/main')) problems.push(`la app cambia pero package.json sigue en ${local}: sube la versión`)
+    if (local !== undefined && local === versionAt('origin/main')) problems.push(`la app cambia pero package.json sigue en ${local}: sube la versión`)
     let changelog = ''
     try { changelog = git('show', 'HEAD:src/lib/changelog.ts') } catch { /* sin changelog */ }
     if (!changelog.includes(`version: '${local}'`)) problems.push(`falta la entrada de ${local} en src/lib/changelog.ts`)
@@ -42,7 +58,8 @@ if (input.tool_name === 'Bash') {
   const command = input.tool_input?.command ?? ''
   const why = forbidden(command)
   if (why) deny(why)
-  if (/\bgit\b[^|;&]*\bpush\b/.test(command)) {
+  // Solo `git push` como orden (no un mensaje de commit que diga «push»).
+  if (/\bgit\s+(?:-C\s+\S+\s+)?push\b/.test(unquoted(command))) {
     const problems = pushProblems()
     if (problems.length) deny(`no se publica todavía: ${problems.join('; ')}`)
   }

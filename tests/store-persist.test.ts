@@ -53,18 +53,22 @@ test('copia de una versión más nueva: se rechaza con un aviso claro', () => {
 })
 
 test('varias pestañas: se juntan los cambios de las dos en vez de pisarse', () => {
-  const base = migrateData({ version: 1, sessions: [session(0, [])], routines: [], settings: { name: 'Ana' }, nutrition: { entries: [{ id: 'comida-vieja' }] } })
+  const base = migrateData({ version: 1, sessions: [session(0, []), session(1, [])], routines: [], settings: { name: 'Ana' }, nutrition: { entries: [{ id: 'vieja', grams: 100 }, { id: 'arroz', grams: 100 }] } })
   assert.ok(base && base !== 'newer')
-  // Esta pestaña añade un entreno; la otra, una comida y borra la comida vieja.
-  const ours = { ...base, sessions: [...base.sessions, session(1, [])], settings: { ...base.settings, name: 'Ana B' } }
-  const theirs = { ...base, nutrition: { ...base.nutrition, entries: [{ id: 'comida-nueva' } as never] } }
+  // La otra pestaña llega leída de IndexedDB: una copia, nunca los mismos objetos.
+  const disk = (d: typeof base) => structuredClone(d)
+  // Aquí: un entreno nuevo, se borra el primero y se cambian las unidades.
+  const ours = { ...base, sessions: [base.sessions[1], session(2, [])], settings: { ...base.settings, unit: 'lb' as const } }
+  // Allí: se borra la comida vieja, se corrigen los gramos del arroz y se cambia el nombre.
+  const theirs = disk({ ...base, settings: { ...base.settings, name: 'Ana B' }, nutrition: { ...base.nutrition, entries: [{ ...base.nutrition.entries[1], grams: 150 }, { id: 'nueva' } as never] } })
   const merged = mergeData(theirs, ours, base)
-  assert.equal(merged.sessions.length, 2, 'el entreno de esta pestaña se queda')
-  assert.deepEqual(merged.nutrition.entries.map((e) => e.id), ['comida-nueva'], 'la comida de la otra entra y la borrada allí no vuelve')
-  assert.equal(merged.settings.name, 'Ana B')
-  // Lo que borra esta pestaña tampoco vuelve.
-  const deleted = mergeData(base, { ...base, sessions: [] }, base)
-  assert.equal(deleted.sessions.length, 0)
+  assert.deepEqual(merged.sessions.map((x) => x.id), [base.sessions[1].id, ours.sessions[1].id], 'lo borrado aquí no reaparece y lo nuevo se queda')
+  assert.deepEqual(merged.nutrition.entries.map((e) => [e.id, (e as { grams?: number }).grams]), [['arroz', 150], ['nueva', undefined]], 'lo cambiado y borrado allí se respeta')
+  assert.equal(merged.settings.name, 'Ana B', 'un ajuste cambiado solo allí')
+  assert.equal(merged.settings.unit, 'lb', 'un ajuste cambiado solo aquí')
+  // Si los dos cambian lo mismo, gana esta pestaña.
+  const both = mergeData(disk({ ...base, settings: { ...base.settings, name: 'Allí' } }), { ...base, settings: { ...base.settings, name: 'Aquí' } }, base)
+  assert.equal(both.settings.name, 'Aquí')
 })
 
 test('varias pestañas: al guardar, si otra pestaña escribió antes, se junta en la misma escritura', serial(async () => {

@@ -2,7 +2,7 @@ import { ArrowRightLeft, Bell, BellRing, Database, Dumbbell, SlidersHorizontal, 
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
-import { day, duration, editable, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, volume, weight, type Unit } from '../lib/format'
+import { day, duration, editable, tons, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
@@ -269,7 +269,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
   ) : section === 'data' ? (
     <>
       <div className="list">
-        <Row icon={Download} label={t('Guardar copia de seguridad', 'Save backup')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Nunca', 'Never')} onClick={() => void exportBackup()} chevron={false} />
+        <Row icon={Download} label={t('Guardar copia de seguridad', 'Save backup')} detail={settings.lastBackupAt ? `${t('Última', 'Last')}: ${relative(settings.lastBackupAt).toLowerCase()}` : t('Nunca', 'Never')} onClick={() => void exportBackup()} chevron={false} />
         <Row icon={Upload} label={t('Importar copia de seguridad', 'Import backup')} onClick={() => fileInput.current?.click()} chevron={false} />
         <Row icon={FileUp} label={t('Importar desde Strong o Hevy', 'Import from Strong or Hevy')} onClick={() => csvInput.current?.click()} chevron={false} />
         <Row icon={Table} label={t('Exportar a hoja de cálculo (CSV)', 'Export to spreadsheet (CSV)')} chevron={false}
@@ -305,7 +305,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
             <span className="small muted" style={{ display: 'block' }}>
               {plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} · {duration(sessions.reduce((t, s) => t + sessionDuration(s), 0))}
             </span>
-            <span className="small muted">{volume(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('levantados', 'lifted')}</span>
+            <span className="small muted">{tons(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('levantados', 'lifted')}</span>
           </div>
         </div>
       </Card>

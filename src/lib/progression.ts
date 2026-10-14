@@ -1,4 +1,5 @@
 import { fromKg, increment, toKg, uid, type Unit } from './format'
+import { isIsolation } from './isolation'
 import { records, workingSets } from './stats'
 import type { AutoProgress, Progression, Session, SetEntry } from './store'
 
@@ -18,9 +19,7 @@ const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors'
 /** Pierna con mancuerna, kettlebell o a una pierna (goblet, zancadas, búlgaras…): sube como el tren superior. */
 const LIGHT_LEG = /dumbbell|kettlebell|goblet|lunge|split|step|single|one[-_]leg|pistol/i
 
-/** Ejercicios de aislamiento (por su nombre en el catálogo): suben poco, 2,5 kg en elevaciones laterales es mucho. */
-const ISOLATION = /raise|fly|flye|curl|extension|kickback|pushdown|lateral|calf|shrug|crunch|pullover|wrist|reverse_fly|face_pull/i
-export const isIsolation = (exerciseId: string) => ISOLATION.test(exerciseId)
+export { isIsolation } from './isolation'
 
 /**
  * Lo que se sube cada vez: un salto de la unidad (2,5 kg / 5 lb), el doble en los básicos de pierna. En
@@ -118,13 +117,15 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
   }
   if (ex.progression === 'percent') {
     // Peso = porcentaje del mejor 1RM estimado de los últimos 90 días contados desde hoy (si has bajado,
-    // baja contigo). Tras una pausa más larga, el mejor de antes menos un 10 %, para volver con margen; si
+    // baja contigo). Tras una pausa más larga, el mejor de los 90 días antes de parar menos un 10 %; si
     // aún no hay ninguno, se pone a mano.
     // En dominadas y fondos el máximo incluye el peso corporal: ahí el lastre se pone a mano.
     const best = (h: Session[]) => records(h).find((r) => r.exerciseId === ex.exerciseId && r.added === undefined)?.e1rm
     const recent = best(history.filter((s) => s.start >= now - 90 * 86400000))
-    const old = recent === undefined ? best(history) : undefined
-    const max = recent ?? (old !== undefined ? old * 0.9 : undefined)
+    // Tras la pausa: lo que movías en los 90 días antes de parar (no el récord de hace años), −10 %.
+    const last = Math.max(0, ...history.filter((s) => s.exercises.some((e) => e.exerciseId === ex.exerciseId)).map((s) => s.start))
+    const before = recent === undefined && last ? best(history.filter((s) => s.start >= last - 90 * 86400000 && s.start <= last)) : undefined
+    const max = recent ?? (before !== undefined ? before * 0.9 : undefined)
     if (!max || !ex.percent) return undefined
     const reps = ex.repsMax || ex.repsMin || 5
     return { sets: Array.from({ length: Math.max(ex.sets, 1) }, () => blank(round(max * ex.percent!, unit), reps)), auto: { kind: 'percent', pct: ex.percent, max } }

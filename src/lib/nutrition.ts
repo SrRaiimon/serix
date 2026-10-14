@@ -270,7 +270,8 @@ export function dayGoalOptions(data: {
     // Gasto medio de un entreno (los de las últimas 8 semanas; sin ninguno, una hora de pesas: 2,5 MET netos).
     const since = dayKey(now - 56 * 86400000)
     const recent = [...burned].filter(([d]) => d >= since).map(([, k]) => k)
-    const perSession = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 2.5 * (data.settings.nutrition?.weightKg ?? 0)
+    const kg = weightOn(data, now) ?? 70
+    const perSession = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 2.5 * kg
     return { carryOver, burned, burnedDaily: (perSession * data.settings.weeklyGoal) / 7 }
   }
   const days = new Set(data.nutrition.trainingDays ?? [])

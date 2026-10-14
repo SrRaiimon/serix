@@ -365,6 +365,7 @@ async function writeData(data: AppData): Promise<AppData | undefined> {
     let written = data
     let merged: AppData | undefined
     let next = knownRev
+    let tooNew = false
     const revReq = os.get(REV)
     revReq.onsuccess = () => {
       const rev = typeof revReq.result === 'number' ? revReq.result : 0
@@ -373,59 +374,92 @@ async function writeData(data: AppData): Promise<AppData | undefined> {
       const theirsReq = os.get(KEY)
       theirsReq.onsuccess = () => {
         const theirs = theirsReq.result === undefined ? undefined : migrateData(theirsReq.result)
-        merged = theirs && theirs !== 'newer' ? mergeData(theirs, data, base) : data
+        // Otra pestaña con una versión más nueva de la app ha guardado: no se escribe encima en el formato viejo.
+        if (theirs === 'newer') { tooNew = true; tx.abort(); return }
+        merged = theirs ? mergeData(theirs, data, base) : data
         put(merged)
       }
     }
     tx.oncomplete = () => { knownRev = next; base = written; resolve(merged) }
     tx.onerror = () => reject(tx.error)
-    tx.onabort = () => reject(tx.error ?? new Error('abort'))
+    tx.onabort = () => reject(tooNew ? new NewerData() : tx.error ?? new Error('abort'))
   })
 }
+
+class NewerData extends Error {}
 
 type Keyed = { id?: string; name?: string }
 const keyOf = (x: Keyed) => x.id ?? x.name ?? ''
 
 /**
- * Junta dos listas con la versión común de la que salieron: lo que añadió cada lado se queda, lo que uno
- * borró (y el otro no tocó) se va, y si los dos cambiaron lo mismo gana `ours`.
+ * Igual de contenido. Lo leído de IndexedDB son copias (nunca el mismo objeto que hay en memoria), así que
+ * comparar con === diría siempre «cambiado». Solo se usa al juntar pestañas, que es raro.
+ */
+const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b)
+
+/** Un valor a tres bandas: si aquí sigue como estaba, vale el de la otra pestaña; si aquí cambió, el de aquí. */
+const pick3 = <T,>(theirs: T, ours: T, common: T | undefined, known: boolean): T => (known && same(ours, common) ? theirs : ours)
+
+/**
+ * Junta dos listas a tres bandas con la versión común de la que salieron:
+ * - en las dos: si aquí no se tocó, la de allí (que quizá sí cambió); si no, la de aquí;
+ * - solo aquí: se queda, salvo que allí se borrara y aquí siga como estaba;
+ * - solo allí: se queda, salvo que aquí se borrara y allí siga como estaba.
  */
 function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefined): T[] {
   const before = new Map((common ?? []).map((x) => [keyOf(x), x]))
-  const mine = new Map(ours.map((x) => [keyOf(x), x]))
-  const out = ours.filter((x) => {
-    const k = keyOf(x)
-    // Lo borraron ellos y aquí sigue igual que antes: se borra.
-    return !(before.get(k) === x && !theirs.some((y) => keyOf(y) === k))
-  })
-  for (const y of theirs) {
-    const k = keyOf(y)
-    if (mine.has(k)) continue
-    // Lo borramos aquí (estaba antes): no se recupera. Si no estaba, lo añadieron ellos.
-    if (before.has(k) && before.get(k) === y) continue
-    out.push(y)
+  const there = new Map(theirs.map((x) => [keyOf(x), x]))
+  const here = new Set(ours.map(keyOf))
+  const out: T[] = []
+  for (const o of ours) {
+    const k = keyOf(o)
+    const t = there.get(k)
+    const b = before.get(k)
+    if (t !== undefined) out.push(pick3(t, o, b, b !== undefined))
+    else if (!(b !== undefined && same(o, b))) out.push(o)
+  }
+  for (const t of theirs) {
+    const k = keyOf(t)
+    if (here.has(k)) continue
+    const b = before.get(k)
+    if (!(b !== undefined && same(t, b))) out.push(t)
   }
   return out
 }
 
+/** Un objeto clave a clave (ajustes, notas…), a tres bandas. */
+function mergeRecord<T extends object>(theirs: T, ours: T, common: T | undefined): T {
+  const out: Record<string, unknown> = {}
+  const t = theirs as Record<string, unknown>, o = ours as Record<string, unknown>, c = common as Record<string, unknown> | undefined
+  for (const k of new Set([...Object.keys(o), ...Object.keys(t)])) {
+    const v = c ? pick3(t[k], o[k], c[k], true) : o[k] ?? t[k]
+    if (v !== undefined) out[k] = v
+  }
+  return out as T
+}
+
 /**
  * Datos de otra pestaña + los de esta, con `common` como la versión de partida de esta pestaña. Las listas
- * que crecen (entrenos, comidas, medidas…) se juntan elemento a elemento; el resto (ajustes, rutinas) es
- * el de esta pestaña, que es la que está guardando ahora.
+ * se juntan elemento a elemento y los ajustes y notas clave a clave: gana lo que cambió cada lado y, si
+ * los dos cambiaron lo mismo, esta pestaña (la que está guardando). Sin `common`, se suman las listas.
  */
 export function mergeData(theirs: AppData, ours: AppData, common?: AppData): AppData {
+  const list = <T extends Keyed>(f: (d: AppData) => T[]) => mergeList(f(theirs), f(ours), common && f(common))
   return {
     ...ours,
-    sessions: mergeList(theirs.sessions, ours.sessions, common?.sessions),
-    measurements: mergeList(theirs.measurements, ours.measurements, common?.measurements),
-    friends: mergeList(theirs.friends, ours.friends, common?.friends),
-    challenges: mergeList(theirs.challenges, ours.challenges, common?.challenges),
-    customExercises: mergeList(theirs.customExercises, ours.customExercises, common?.customExercises),
+    routines: list((d) => d.routines),
+    sessions: list((d) => d.sessions),
+    measurements: list((d) => d.measurements),
+    friends: list((d) => d.friends),
+    challenges: list((d) => d.challenges),
+    customExercises: list((d) => d.customExercises),
+    exerciseNotes: mergeRecord(theirs.exerciseNotes, ours.exerciseNotes, common?.exerciseNotes),
+    settings: mergeRecord(theirs.settings, ours.settings, common?.settings),
     nutrition: {
-      ...ours.nutrition,
-      entries: mergeList(theirs.nutrition.entries, ours.nutrition.entries, common?.nutrition.entries),
-      foods: mergeList(theirs.nutrition.foods, ours.nutrition.foods, common?.nutrition.foods),
-      meals: mergeList(theirs.nutrition.meals, ours.nutrition.meals, common?.nutrition.meals),
+      ...mergeRecord(theirs.nutrition, ours.nutrition, common?.nutrition),
+      entries: list((d) => d.nutrition.entries),
+      foods: list((d) => d.nutrition.foods),
+      meals: list((d) => d.nutrition.meals),
     },
   }
 }
@@ -493,14 +527,16 @@ async function save(data: AppData): Promise<void> {
     if (merged) {
       // Otra pestaña había guardado: se muestra lo junto (y lo cambiado aquí mientras tanto, encima).
       state = state === data ? merged : mergeData(merged, state, data)
-      if (state !== merged) dirty = true
+      // Si aquí cambió algo mientras se guardaba, se vuelve a guardar (si no, quedaría solo en memoria).
+      if (state !== merged) scheduleSave()
       emit()
     }
     channel?.postMessage('saved')
     if (problem?.kind === 'writeError') setProblem(undefined)
   } catch (e) {
     dirty = true
-    setProblem({ kind: 'writeError', detail: e instanceof Error ? e.name : String(e) })
+    if (e instanceof NewerData) setProblem({ kind: 'newer' })
+    else setProblem({ kind: 'writeError', detail: e instanceof Error ? e.name : String(e) })
   }
 }
 
@@ -680,15 +716,19 @@ export const lastPerformed = (d: AppData, routineId: string) =>
     s.routineId === routineId && s.end !== undefined && (max === undefined || s.end > max) ? s.end : max, undefined)
 
 export const routineSets = (r: Routine) => r.exercises.reduce((n, e) => n + e.sets, 0)
-/** Duración estimada: ~40 s por serie de fuerza, el objetivo en las de tiempo, ~10 min en cardio y la preparación. */
+/**
+ * Duración estimada: ~45 s por serie de fuerza, el objetivo en las de tiempo, ~10 min en cardio y la
+ * preparación. Ajustada con entrenos reales (salía corta: un programa de 16 series marcaba ~49 min y se
+ * hacía en más de una hora).
+ */
 export const routineMinutes = (r: Routine) =>
   Math.max(5, Math.round(r.exercises.reduce((n, e, i) => {
     const t = trackingOf(e)
-    const work = t === 'time' ? (e.targetSeconds ?? 45) : t === 'distance_time' ? 600 : 40
+    const work = t === 'time' ? (e.targetSeconds ?? 45) : t === 'distance_time' ? 600 : 45
     // En superseries y circuitos solo se descansa tras el último ejercicio de la ronda.
     const rest = e.groupId && r.exercises[i + 1]?.groupId === e.groupId ? 0 : e.rest
-    // Más ~90 s por ejercicio para prepararlo (cargar discos, ajustar la máquina, calentar).
-    return n + e.sets * (work + rest) + 90
+    // Más ~2,5 min por ejercicio para prepararlo (cargar discos, ajustar la máquina, series de calentamiento).
+    return n + e.sets * (work + rest) + 150
   }, 0) / 60))
 
 /**

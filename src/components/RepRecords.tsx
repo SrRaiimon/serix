@@ -10,7 +10,15 @@ import { Card } from './ui'
 export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: string; sessions: Session[]; unit: Unit }) {
   const list = useMemo(() => repRecords(exerciseId, sessions), [exerciseId, sessions])
   if (!list.some(Boolean)) return null
-  const rows = list.map((r, i) => ({ target: REP_TARGETS[i], r })).filter((x) => x.r)
+  // Si una misma serie es el récord de varias repeticiones (10 reps con un peso valen también para 1, 3 y
+  // 5), una sola fila «1–10» en vez de la misma cifra cuatro veces.
+  const rows: { target: string; r: NonNullable<(typeof list)[number]> }[] = []
+  list.forEach((r, i) => {
+    if (!r) return
+    const prev = rows[rows.length - 1]
+    if (prev && prev.r.weight === r.weight && prev.r.date === r.date) prev.target = `${prev.target.split('–')[0]}–${REP_TARGETS[i]}`
+    else rows.push({ target: String(REP_TARGETS[i]), r })
+  })
   return (
     <Card title={t('Peso máximo por repeticiones', 'Heaviest weight by reps')} icon={Medal}>
       <div className="rep-table">
@@ -18,8 +26,9 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
         {rows.map(({ target, r }) => (
           <Fragment key={target}>
             <span className="rep-target">{target}</span>
-            <strong>{weightValue(r!.weight, unit)}<small> {unit}</small></strong>
-            <span className="small muted">{t(`${r!.reps} reps · ${shortDay(r!.date)}`, `${r!.reps} reps · ${shortDay(r!.date)}`)}</span>
+            {/* Con el peso corporal dentro (dominadas, fondos) salían decimales como 92,82: medio kilo basta. */}
+            <strong>{weightValue(Math.round(r.weight * 2) / 2, unit)}<small> {unit}</small></strong>
+            <span className="small muted">{t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`)}</span>
           </Fragment>
         ))}
       </div>

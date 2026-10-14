@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { CHANGELOG, compareVersions, unseenReleases } from '../lib/changelog'
 import { t } from '../lib/i18n'
@@ -16,15 +16,20 @@ export function NewsCard() {
   if (settings.seenVersion === __APP_VERSION__) return null
   const list = unseenReleases(settings.seenVersion, __APP_VERSION__)
   if (!list.length) return null
-  // Lo más destacado (3 puntos); el resto, en la hoja de novedades.
-  const items = list.flatMap((r) => r.items)
+  // Una línea con lo más destacado; todo, a un toque («Ver»). Tres puntos largos ocupaban media pantalla.
+  const [es, en] = list[0].items[0]
+  const seen = () => updateSettings({ seenVersion: __APP_VERSION__ })
   return (
-    <Card title={t('Novedades', "What's new")} icon={Sparkles}>
-      <ul className="recap-list">{items.slice(0, 3).map(([es, en]) => <li key={es}>{t(es, en)}</li>)}</ul>
-      {items.length > 3 && <button className="link-btn small" style={{ alignSelf: 'flex-start' }} onClick={() => setAll(true)}>{t('Ver todas las novedades', 'See everything new')}</button>}
-      <button className="btn secondary" onClick={() => updateSettings({ seenVersion: __APP_VERSION__ })}>{t('Entendido', 'Got it')}</button>
-      {all && <NewsSheet onClose={() => setAll(false)} />}
-    </Card>
+    <div className="card news-line">
+      <Sparkles size={20} color="var(--accent-text)" aria-hidden="true" style={{ flexShrink: 0 }} />
+      <span className="grow small">
+        <strong style={{ display: 'block' }}>{t(`Novedades de la versión ${__APP_VERSION__}`, `What's new in version ${__APP_VERSION__}`)}</strong>
+        <span className="muted news-line-text">{t(es, en)}</span>
+      </span>
+      <button className="btn secondary btn-sm" onClick={() => setAll(true)}>{t('Ver', 'View')}</button>
+      <button className="hit" onClick={seen} aria-label={t('Entendido', 'Got it')} style={{ color: 'var(--text-2)' }}><X size={18} /></button>
+      {all && <NewsSheet onClose={() => { setAll(false); seen() }} />}
+    </div>
   )
 }
 
