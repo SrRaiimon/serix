@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.82',
+    items: [
+      ['Cuestionario más útil: cada objetivo muestra sus repeticiones y descansos, el resumen te enseña tu primer entreno, puedes deslizar entre preguntas y si cierras la app vuelves donde ibas.', 'A more useful setup: each goal shows its reps and rest, the summary shows your first workout, you can swipe between questions and if you close the app you pick up where you left off.'],
+    ],
+  },
+  {
     version: '0.0.81',
     items: [
       ['Icono nuevo: una mancuerna más clara. Si tienes la app en la pantalla de inicio, bórrala y vuelve a añadirla para verlo.', 'New icon: a clearer dumbbell. If you have the app on your home screen, remove it and add it again to see it.'],

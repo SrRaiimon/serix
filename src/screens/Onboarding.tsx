@@ -1,8 +1,8 @@
 import { ArrowRightLeft, Barcode, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Chip, Segmented, StatBand, useCatalog } from '../components/ui'
-import type { Unit } from '../lib/format'
-import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { rest, type Unit } from '../lib/format'
+import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
@@ -20,11 +20,33 @@ const LAST = 5
 export function OnboardingScreen() {
   const catalog = useCatalog()
   const { settings } = useData()
-  const [step, setStep] = useState(0)
+  // Si se cierra la app a mitad, se vuelve al paso en que ibas (las respuestas ya se guardan en los ajustes).
+  const [step, setStepState] = useState(() => {
+    try { return Math.min(LAST, Number(sessionStorage.getItem('onb-step')) || 0) } catch { return 0 }
+  })
+  const setStep = (to: number | ((s: number) => number)) => setStepState((s) => {
+    const n = typeof to === 'function' ? to(s) : to
+    try { sessionStorage.setItem('onb-step', String(n)) } catch { /* sin almacenamiento: empieza desde el principio */ }
+    return n
+  })
   // Hacia dónde se mueve el cuestionario: al volver atrás, el paso entra por la izquierda.
   const shown = useRef({ step: 0, back: false })
   if (shown.current.step !== step) shown.current = { step, back: step < shown.current.step }
   const back = shown.current.back
+  // Al cambiar de paso, el foco va a la pregunta nueva (el lector de pantalla la anuncia).
+  useEffect(() => { if (step > 0) document.querySelector<HTMLElement>('.onb-question')?.focus({ preventScroll: true }) }, [step])
+  // Deslizar: a la izquierda, siguiente pregunta; a la derecha, la anterior.
+  const touch = useRef<{ x: number; y: number } | undefined>(undefined)
+  const onTouchStart = (e: React.TouchEvent) => { touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touch.current
+    touch.current = undefined
+    if (!start || step === 0) return
+    const dx = e.changedTouches[0].clientX - start.x, dy = e.changedTouches[0].clientY - start.y
+    if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return
+    if (dx > 0) setStep(step - 1)
+    else if (step < LAST) setStep(returnToEnd ? LAST : step + 1)
+  }
   // Tras cambiar una respuesta desde el resumen final, «Continuar» vuelve directo a él.
   const [returnToEnd, setReturnToEnd] = useState(false)
   useEffect(() => { if (step === LAST || step === 0) setReturnToEnd(false) }, [step])
@@ -34,6 +56,9 @@ export function OnboardingScreen() {
     navigator.vibrate?.(8)
     setTimeout(() => setStep((s) => (returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
   }
+  // El primer día del programa que saldría, para el adelanto del resumen (solo en el último paso).
+  const firstDay = useMemo(() => (step === LAST ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0).days[0] : undefined),
+    [step, settings.goal, settings.level, settings.days, settings.minutes, settings.equipment, settings.pullupBar, catalog])
   const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
@@ -129,7 +154,7 @@ export function OnboardingScreen() {
         </div>
       )}
       {/* `key`: cada paso entra con su animación al cambiar. */}
-      <div className={`screen onb-body ${back ? 'back' : ''}`} key={step}>
+      <div className={`screen onb-body ${back ? 'back' : ''}`} key={step} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {step === 0 && (
           <>
             <div className="onb-langs" role="group" aria-label="Idioma · Language">
@@ -159,7 +184,7 @@ export function OnboardingScreen() {
             <Header step={step} title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
             <Choices label={t('Objetivo', 'Goal')}>
               {goals.map((g) => (
-                <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} active={settings.goal === g.id} onClick={() => { updateSettings({ goal: g.id }); next() }} />
+                <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} meta={goalMeta(g.id)} active={settings.goal === g.id} onClick={() => { updateSettings({ goal: g.id }); next() }} />
               ))}
             </Choices>
           </>
@@ -227,6 +252,17 @@ export function OnboardingScreen() {
               { value: settings.minutes, label: t('min / sesión', 'min / session') },
               { value: exerciseCount(settings.minutes), label: t('ejercicios', 'exercises') },
             ]} />
+            {/* Un adelanto del primer entreno: lo que te vas a encontrar al pulsar «Empezar». */}
+            {firstDay && (
+              <section className="onb-block onb-first">
+                <h2 className="onb-label">{t('Tu primer entreno', 'Your first workout')}</h2>
+                <strong className="onb-first-name">{firstDay.name.replace(/^[^·]*·\s*/, '')}</strong>
+                <ol className="onb-first-list">
+                  {firstDay.exercises.slice(0, 4).map((x) => <li key={x.exercise.id}><span className="grow">{x.exercise.name}</span><span className="muted">{x.sets} × {x.repsMin}-{x.repsMax}</span></li>)}
+                </ol>
+                {firstDay.exercises.length > 4 && <span className="small muted">{t(`y ${firstDay.exercises.length - 4} más`, `and ${firstDay.exercises.length - 4} more`)}</span>}
+              </section>
+            )}
             {/* El resumen se puede tocar: cada fila lleva a su pregunta (y al volver, aquí de nuevo). */}
             <div className="list">
               {([
@@ -268,6 +304,7 @@ export function OnboardingScreen() {
         <button className="btn primary block" onClick={() => {
           if (step < LAST) return setStep(returnToEnd && step > 0 ? LAST : step + 1)
           updateSettings({ weeklyGoal: settings.days })
+          try { sessionStorage.removeItem('onb-step') } catch { /* nada que borrar */ }
           setVariation(0)
           setProgram(generate(config, catalog, 0))
         }}>
@@ -301,7 +338,7 @@ function Header({ title, subtitle, step }: { title: string; subtitle: string; st
   return (
     <div className="onb-head">
       {step !== undefined && <span className="small muted onb-step">{t(`Paso ${step} de ${LAST}`, `Step ${step} of ${LAST}`)}</span>}
-      <h1 className="onb-question">{title}</h1>
+      <h1 className="onb-question" tabIndex={-1}>{title}</h1>
       <p className="muted" style={{ margin: 0 }}>{subtitle}</p>
     </div>
   )
@@ -311,7 +348,13 @@ function Feature({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return <li><Icon size={20} color="var(--accent-text)" aria-hidden="true" style={{ flexShrink: 0 }} /><span>{text}</span></li>
 }
 
-function Option({ icon: Icon, title, detail, active, onClick, bars }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void; bars?: number }) {
+/** Cómo serán los básicos con cada objetivo: lo que se nota al entrenar, no solo el nombre. */
+function goalMeta(goal: GeneratorConfig['goal']): string[] {
+  const p = goalPreview(goal)
+  return [`${p.repsMin}-${p.repsMax} reps`, t(`descanso ${rest(p.rest)}`, `${rest(p.rest)} rest`), ...(p.cardio ? [t('+ cardio', '+ cardio')] : [])]
+}
+
+function Option({ icon: Icon, title, detail, active, onClick, bars, meta }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void; bars?: number; meta?: string[] }) {
   return (
     <button className={`option-card onb-option ${active ? 'active' : ''}`} onClick={onClick} role="radio" aria-checked={active}>
       {/* Nivel: tres barras que se llenan (1, 2 o 3) en vez del mismo icono en las tres opciones. */}
@@ -321,6 +364,7 @@ function Option({ icon: Icon, title, detail, active, onClick, bars }: { icon: Lu
       <span className="grow">
         <strong style={{ display: 'block' }}>{title}</strong>
         {detail && <span className="small muted">{detail}</span>}
+        {meta && <span className="onb-meta">{meta.map((m) => <span key={m}>{m}</span>)}</span>}
       </span>
       {active ? <CircleCheck size={24} color="var(--ink)" /> : <Circle size={24} color="var(--text-3)" />}
     </button>

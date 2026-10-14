@@ -167,15 +167,27 @@ export function exerciseCount(minutes: number) {
 /** Tope de series de un mismo músculo principal en una sesión. */
 export const MAX_SETS_PER_SESSION = 10
 
+const SCHEMES: Record<TrainingGoal, Record<Kind, [number, number, number, number]>> = {
+  strength: { compound: [4, 3, 5, 180], accessory: [3, 6, 10, 120], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
+  hypertrophy: { compound: [4, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
+  // Perder grasa: en déficit, los básicos siguen pesados (es lo que conserva el músculo); el gasto
+  // extra lo ponen los accesorios con menos descanso y el bloque de acondicionamiento.
+  fatLoss: { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 60], core: [3, 12, 15, 45], conditioning: [3, 15, 20, 30] },
+  general: { compound: [3, 8, 12, 90], accessory: [3, 10, 15, 60], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
+}
+
+/**
+ * Cómo serán las series con este objetivo (lo enseña el cuestionario): repeticiones de los básicos a los
+ * accesorios y el descanso de los básicos.
+ */
+export function goalPreview(goal: TrainingGoal): { repsMin: number; repsMax: number; rest: number; cardio: boolean } {
+  const [, repsMin, , rest] = SCHEMES[goal].compound
+  const [, , repsMax] = SCHEMES[goal].accessory
+  return { repsMin, repsMax, rest, cardio: goal === 'fatLoss' }
+}
+
 function scheme(kind: Kind, c: GeneratorConfig) {
-  const table: Record<TrainingGoal, Record<Kind, [number, number, number, number]>> = {
-    strength: { compound: [4, 3, 5, 180], accessory: [3, 6, 10, 120], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
-    hypertrophy: { compound: [4, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
-    // Perder grasa: en déficit, los básicos siguen pesados (es lo que conserva el músculo); el gasto
-    // extra lo ponen los accesorios con menos descanso y el bloque de acondicionamiento.
-    fatLoss: { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 60], core: [3, 12, 15, 45], conditioning: [3, 15, 20, 30] },
-    general: { compound: [3, 8, 12, 90], accessory: [3, 10, 15, 60], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
-  }
+  const table = SCHEMES
   let [sets, repsMin, repsMax, rest] = table[c.goal][kind]
   if (c.level === 'beginner' && (kind === 'compound' || kind === 'accessory')) sets = Math.max(2, sets - 1)
   if (c.level === 'advanced' && kind === 'compound') sets += 1

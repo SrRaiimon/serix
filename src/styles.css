@@ -2791,3 +2791,15 @@ a.list-row { color: var(--text); text-decoration: none; }
 .program-day { align-items: center; }
 .program-day-num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--ink); color: var(--on-ink); font-size: 12px; letter-spacing: 0; }
 .program-day-meta { margin-left: auto; font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+/* Objetivo: cómo serán los básicos (repeticiones, descanso), en pastillas pequeñas. */
+.onb-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.onb-meta span { padding: 3px 8px; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 600; color: var(--text-2); }
+.option-card.active .onb-meta span { background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--text); }
+.onb-question:focus { outline: none; }
+/* Resumen: adelanto del primer entreno. */
+.onb-first-name { font-family: var(--font-display); font-weight: 800; font-stretch: 106%; font-size: 22px; line-height: 1.05; }
+.onb-first-list { margin: 0; padding: 0; list-style: none; counter-reset: onb; display: grid; }
+.onb-first-list li { counter-increment: onb; display: flex; gap: 10px; align-items: baseline; padding: 9px 0; font-size: 15px; box-shadow: inset 0 -1px 0 var(--separator); }
+.onb-first-list li:last-child { box-shadow: none; }
+.onb-first-list li::before { content: counter(onb); min-width: 18px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
