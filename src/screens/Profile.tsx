@@ -139,11 +139,10 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
               const on = days.includes(i)
               return (
                 <button key={i} className={`chip ${on ? 'active' : ''}`} aria-pressed={on}
-                  aria-label={[t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')][i]}
                   onClick={() => {
                     const next = on ? days.filter((x) => x !== i) : [...days, i].sort()
                     updateSettings({ trainingDays: next.length ? next : undefined, ...(next.length ? { weeklyGoal: next.length } : {}) })
-                  }}>{letter}</button>
+                  }}><span aria-hidden="true">{letter}</span><span className="sr-only">{[t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')][i]}</span></button>
               )
             })}
           </div>
@@ -336,7 +335,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
         <Row icon={SlidersHorizontal} label={t('General', 'General')} onClick={() => navigate('profile', 'general')} />
         <Row icon={Dumbbell} label={t('Entrenamiento', 'Training')} onClick={() => navigate('profile', 'training')} />
         <Row icon={Bell} label={t('Avisos y sonido', 'Alerts and sound')} onClick={() => navigate('profile', 'alerts')} />
-        <Row icon={Database} label={t('Tus datos', 'Your data')} detail={settings.lastBackupAt ? relative(settings.lastBackupAt) : t('Sin copia', 'No backup')} onClick={() => navigate('profile', 'data')} />
+        <Row icon={Database} label={t('Tus datos', 'Your data')} detail={settings.lastBackupAt ? `${t('Copia', 'Backup')}: ${relative(settings.lastBackupAt).toLowerCase()}` : t('Sin copia', 'No backup')} onClick={() => navigate('profile', 'data')} />
       </div>
 
       <div className="list-header">{t('Ayuda', 'Help')}</div>

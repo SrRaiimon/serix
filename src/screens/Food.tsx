@@ -359,7 +359,9 @@ function DaySummary({ totals, entries, goals, day, canMark }: { totals: Per100; 
           <span className="day-kind small">
             <span className="muted">{goals.training
               ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal`, `Training day: +${int(goals.shift ?? 0)} kcal`)
-              : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal`, `Rest day: −${int(-(goals.shift ?? 0))} kcal`)}</span>
+              : day === dayKey()
+                ? t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal`)
+                : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal`, `Rest day: −${int(-(goals.shift ?? 0))} kcal`)}</span>
             {canMark && <button className="nav-btn small" onClick={() => mark(!goals.training)}>{day === dayKey()
               ? (goals.training ? t('Hoy no entreno', 'Not training today') : t('Hoy entreno', 'Training today'))
               : (goals.training ? t('Mañana no entreno', 'Not training tomorrow') : t('Mañana entreno', 'Training tomorrow'))}</button>}

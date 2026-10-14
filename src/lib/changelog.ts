@@ -8,6 +8,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.70',
+    items: [
+      ['Inicio más despejado: un solo aviso a la vez y el entrenador te enseña su consejo principal (el resto, a un toque).', 'A cleaner Home screen: one notice at a time, and the coach shows its main tip (the rest are one tap away).'],
+      ['Calorías según lo que gastas: los días sin entreno restan el gasto medio de tus entrenos y nunca bajan de tu metabolismo en reposo. Si tienes días de entreno marcados, hoy ya cuenta como día de entreno.', 'Calories based on what you burn: rest days subtract your average workout burn and never go below your resting metabolism. If you have training days set, today already counts as a training day.'],
+      ['Programas más adecuados: nada de ejercicios de experto ni dominadas sin barra para quien empieza, un solo básico pesado de espalda por día y como mucho 10 series de un músculo por sesión.', 'Better-fitting programs: no expert exercises or pull-ups without a bar for beginners, one heavy back-loading lift per day and at most 10 sets per muscle per session.'],
+      ['El peso muerto sube de 5 en 5 kg, el modo porcentaje mira tus últimos 90 días (tras una pausa, un 10 % menos) y en el 5/3/1 un AMRAP saltado cuenta como fallido.', 'Deadlifts go up 5 kg at a time, percentage mode looks at your last 90 days (10% less after a break) and in 5/3/1 a skipped AMRAP counts as missed.'],
+      ['Con la app abierta en dos pestañas, los cambios de las dos se juntan en vez de pisarse.', 'With the app open in two tabs, changes from both are combined instead of overwritten.'],
+      ['Mejor con lector de pantalla: cada pantalla anuncia su título y los días de la semana se leen enteros.', 'Better with screen readers: every screen announces its title and weekdays are read in full.'],
+    ],
+  },
+  {
     version: '0.0.69',
     items: [
       ['Perfil más corto: los ajustes van en cuatro apartados (General, Entrenamiento, Avisos y sonido, Tus datos).', 'Shorter Profile: settings are grouped into four sections (General, Training, Alerts and sound, Your data).'],

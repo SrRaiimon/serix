@@ -333,24 +333,101 @@ export function forgetDB() {
   dbPromise = undefined
 }
 
-async function readData(): Promise<AppData | undefined> {
+const REV = 'rev'
+
+/** Los datos guardados y su número de revisión (sube con cada escritura, de cualquier pestaña). */
+async function readData(): Promise<{ data: unknown; rev: number }> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
-    const req = db.transaction(STORE).objectStore(STORE).get(KEY)
-    req.onsuccess = () => resolve(req.result as AppData | undefined)
+    const os = db.transaction(STORE).objectStore(STORE)
+    const req = os.get(KEY)
+    const revReq = os.get(REV)
+    revReq.onsuccess = () => resolve({ data: req.result, rev: typeof revReq.result === 'number' ? revReq.result : 0 })
     req.onerror = () => reject(req.error)
+    revReq.onerror = () => reject(revReq.error)
   })
 }
 
-async function writeData(data: AppData): Promise<void> {
+/** Revisión de los datos que esta pestaña leyó o escribió por última vez, y esos datos. */
+let knownRev = 0
+let base: AppData | undefined
+
+/**
+ * Escribe los datos si nadie más lo ha hecho desde la última lectura o escritura de esta pestaña. Si otra
+ * pestaña guardó entretanto, junta las dos versiones (`mergeData`) en la misma transacción y devuelve
+ * el resultado para que la interfaz lo muestre.
+ */
+async function writeData(data: AppData): Promise<AppData | undefined> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite')
-    tx.objectStore(STORE).put(data, KEY)
-    tx.oncomplete = () => resolve()
+    const os = tx.objectStore(STORE)
+    let written = data
+    let merged: AppData | undefined
+    let next = knownRev
+    const revReq = os.get(REV)
+    revReq.onsuccess = () => {
+      const rev = typeof revReq.result === 'number' ? revReq.result : 0
+      const put = (d: AppData) => { written = d; next = rev + 1; os.put(d, KEY); os.put(next, REV) }
+      if (rev === knownRev) return put(data)
+      const theirsReq = os.get(KEY)
+      theirsReq.onsuccess = () => {
+        const theirs = theirsReq.result === undefined ? undefined : migrateData(theirsReq.result)
+        merged = theirs && theirs !== 'newer' ? mergeData(theirs, data, base) : data
+        put(merged)
+      }
+    }
+    tx.oncomplete = () => { knownRev = next; base = written; resolve(merged) }
     tx.onerror = () => reject(tx.error)
     tx.onabort = () => reject(tx.error ?? new Error('abort'))
   })
+}
+
+type Keyed = { id?: string; name?: string }
+const keyOf = (x: Keyed) => x.id ?? x.name ?? ''
+
+/**
+ * Junta dos listas con la versión común de la que salieron: lo que añadió cada lado se queda, lo que uno
+ * borró (y el otro no tocó) se va, y si los dos cambiaron lo mismo gana `ours`.
+ */
+function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefined): T[] {
+  const before = new Map((common ?? []).map((x) => [keyOf(x), x]))
+  const mine = new Map(ours.map((x) => [keyOf(x), x]))
+  const out = ours.filter((x) => {
+    const k = keyOf(x)
+    // Lo borraron ellos y aquí sigue igual que antes: se borra.
+    return !(before.get(k) === x && !theirs.some((y) => keyOf(y) === k))
+  })
+  for (const y of theirs) {
+    const k = keyOf(y)
+    if (mine.has(k)) continue
+    // Lo borramos aquí (estaba antes): no se recupera. Si no estaba, lo añadieron ellos.
+    if (before.has(k) && before.get(k) === y) continue
+    out.push(y)
+  }
+  return out
+}
+
+/**
+ * Datos de otra pestaña + los de esta, con `common` como la versión de partida de esta pestaña. Las listas
+ * que crecen (entrenos, comidas, medidas…) se juntan elemento a elemento; el resto (ajustes, rutinas) es
+ * el de esta pestaña, que es la que está guardando ahora.
+ */
+export function mergeData(theirs: AppData, ours: AppData, common?: AppData): AppData {
+  return {
+    ...ours,
+    sessions: mergeList(theirs.sessions, ours.sessions, common?.sessions),
+    measurements: mergeList(theirs.measurements, ours.measurements, common?.measurements),
+    friends: mergeList(theirs.friends, ours.friends, common?.friends),
+    challenges: mergeList(theirs.challenges, ours.challenges, common?.challenges),
+    customExercises: mergeList(theirs.customExercises, ours.customExercises, common?.customExercises),
+    nutrition: {
+      ...ours.nutrition,
+      entries: mergeList(theirs.nutrition.entries, ours.nutrition.entries, common?.nutrition.entries),
+      foods: mergeList(theirs.nutrition.foods, ours.nutrition.foods, common?.nutrition.foods),
+      meals: mergeList(theirs.nutrition.meals, ours.nutrition.meals, common?.nutrition.meals),
+    },
+  }
 }
 
 // MARK: Estado del guardado
@@ -381,29 +458,44 @@ const writable = () => problem?.kind !== 'readError' && problem?.kind !== 'newer
 
 // MARK: Varias pestañas
 
-// Con la app abierta en dos pestañas (o la instalada y el navegador), cada una guardaría su copia
-// encima de la otra. Tras cada guardado se avisa a las demás, que releen los datos si no tienen
-// cambios propios pendientes (si los tienen, los suyos se guardan después y avisan a su vez).
+// Con la app abierta en dos pestañas (o la instalada y el navegador): tras cada guardado se avisa a las
+// demás, que releen los datos si no tienen cambios propios pendientes. Si los tienen, al guardar verán
+// que la revisión cambió y juntarán las dos versiones (writeData).
 const channel = typeof BroadcastChannel === 'undefined' ? undefined : new BroadcastChannel('serix-data')
 // En Node (tests) el canal abierto no deja terminar el proceso.
 ;(channel as { unref?: () => void } | undefined)?.unref?.()
 /** Hay cambios en memoria aún sin escribir. */
 let dirty = false
-channel?.addEventListener('message', () => {
+
+/** Vuelve a leer lo guardado (otra pestaña escribió, o la app vuelve a primer plano), si no hay cambios propios. */
+export async function refreshFromDisk(): Promise<void> {
   if (dirty || !writable()) return
-  void readData().then((stored) => {
-    const migrated = stored === undefined ? undefined : migrateData(stored)
-    if (!migrated || migrated === 'newer' || dirty) return
+  try {
+    const { data, rev } = await readData()
+    if (rev === knownRev || dirty) return
+    const migrated = data === undefined ? undefined : migrateData(data)
+    if (!migrated || migrated === 'newer') return
+    knownRev = rev
+    base = migrated
     state = migrated
     emit()
-  }).catch(() => {})
-})
+  } catch {
+    // Sin poder leer, se sigue con lo que hay: al guardar, la revisión dirá si hay que juntar.
+  }
+}
+channel?.addEventListener('message', () => void refreshFromDisk())
 
 async function save(data: AppData): Promise<void> {
   if (!writable()) return
   dirty = false
   try {
-    await writeData(data)
+    const merged = await writeData(data)
+    if (merged) {
+      // Otra pestaña había guardado: se muestra lo junto (y lo cambiado aquí mientras tanto, encima).
+      state = state === data ? merged : mergeData(merged, state, data)
+      if (state !== merged) dirty = true
+      emit()
+    }
     channel?.postMessage('saved')
     if (problem?.kind === 'writeError') setProblem(undefined)
   } catch (e) {
@@ -472,10 +564,15 @@ function scheduleSave() {
   saveTimer = setTimeout(() => void save(state), 250)
 }
 
-/** Guarda de inmediato (p. ej. al pasar la app a segundo plano); se puede esperar a que termine. */
+/** Guarda de inmediato; se puede esperar a que termine. */
 export function flush(): Promise<void> {
   clearTimeout(saveTimer)
   return save(state)
+}
+
+/** Guarda solo si hay cambios sin escribir (al pasar a segundo plano: sin cambios no se escribe una copia vieja). */
+export function flushPending(): Promise<void> {
+  return dirty ? flush() : Promise.resolve()
 }
 
 export async function loadData(): Promise<void> {
@@ -484,7 +581,9 @@ export async function loadData(): Promise<void> {
   let stored: unknown
   for (let attempt = 0; ; attempt++) {
     try {
-      stored = await readData()
+      const read = await readData()
+      stored = read.data
+      knownRev = read.rev
       break
     } catch (e) {
       if (attempt >= 2) {
@@ -497,7 +596,7 @@ export async function loadData(): Promise<void> {
   }
   const migrated = stored === undefined ? undefined : migrateData(stored)
   if (migrated === 'newer') setProblem({ kind: 'newer' })
-  else if (migrated) state = migrated
+  else if (migrated) state = base = migrated
   // Pide al navegador que no borre los datos si falta espacio.
   void navigator.storage?.persist?.()
   emit()

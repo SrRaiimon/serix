@@ -275,13 +275,20 @@ test('azúcares y sal: semáforo por 100 g y totales del día con los que traen 
 test('calorías gastadas: no se cuentan dos veces los entrenos', () => {
   const goals = computeGoals({ sex: 'm', age: 30, heightCm: 180, weightKg: 80, activity: 1.55, aim: 'keep' })
   const day = '2026-01-05'
-  const rest = goalsForDay(goals, [], day, { carryOver: false, burned: new Map() })
-  const trained = goalsForDay(goals, [], day, { carryOver: false, burned: new Map([[day, 400]]) })
-  // Sin entreno, la base es la sedentaria (no la de «Activo», que ya incluye los entrenos).
-  assert.equal(rest.kcal, restDayKcal(goals))
+  // 4 entrenos de 400 kcal a la semana: los días sin entreno se resta lo que gastan de media por día.
+  const daily = (400 * 4) / 7
+  const rest = goalsForDay(goals, [], day, { carryOver: false, burned: new Map(), burnedDaily: daily })
+  const trained = goalsForDay(goals, [], day, { carryOver: false, burned: new Map([[day, 400]]), burnedDaily: daily })
+  assert.equal(rest.kcal, restDayKcal(goals, daily))
   assert.ok(rest.kcal < goals.kcal)
   assert.equal(trained.kcal, rest.kcal + 400)
   assert.equal(trained.training, true)
+  // La semana suma lo mismo que el objetivo (± redondeos).
+  assert.ok(Math.abs(rest.kcal * 3 + trained.kcal * 4 - goals.kcal * 7) <= 70)
+  // Perdiendo grasa, un día sin entreno nunca baja del metabolismo en reposo.
+  const lose = computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 62, activity: 1.55, aim: 'lose' })
+  const bmr = 10 * 62 + 6.25 * 165 - 5 * 30 - 161
+  assert.ok(restDayKcal(lose, 900) >= Math.round(bmr / 10) * 10)
 })
 
 test('objetivo: nunca por debajo del metabolismo en reposo, y proteína razonable con obesidad', () => {

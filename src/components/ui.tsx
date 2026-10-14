@@ -61,7 +61,8 @@ export function NavBar({ title, left, right, showBack }: { title?: string; left?
         )}
         {left}
       </div>
-      <div className="title">{title}</div>
+      {/* El título de la pantalla es su encabezado principal (lectores de pantalla). */}
+      {title ? <h1 className="title">{title}</h1> : <div className="title" />}
       <div className="right">{right}</div>
     </div>
   )

@@ -154,6 +154,9 @@ function exerciseCount(minutes: number) {
   return 8
 }
 
+/** Tope de series de un mismo músculo principal en una sesión. */
+export const MAX_SETS_PER_SESSION = 10
+
 function scheme(kind: Kind, c: GeneratorConfig) {
   const table: Record<TrainingGoal, Record<Kind, [number, number, number, number]>> = {
     strength: { compound: [4, 3, 5, 180], accessory: [3, 6, 10, 120], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] },
@@ -169,8 +172,35 @@ function scheme(kind: Kind, c: GeneratorConfig) {
   return { sets, repsMin, repsMax, rest }
 }
 
-function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog): Exercise | undefined {
-  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && allowed.has(e.equipment))
+/** Necesitan una barra de dominadas (o algo de donde colgarse): solo se proponen con gimnasio. */
+const NEEDS_BAR = /pull-?up|pullup|chin-?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
+/** Demasiado para empezar aunque el catálogo los ponga de nivel básico: dominadas, nórdico, pistol, pino. */
+const HARD_START = /^(Pullups|Chin-Up|Kipping_Pull_Up|Chest_To_Bar_Pull_Up|Floor_Glute-Ham_Raise|Pistol_Squat|Handstand_Push-Ups)$/
+/** Con carga a mano, la sentadilla sin peso no es un básico (se queda para quien entrena solo con su cuerpo). */
+const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit)$/
+/** Básicos pesados que cargan la columna: uno por día como mucho. */
+export const HEAVY_AXIAL = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift|Romanian_Deadlift|Stiff-Legged_Barbell_Deadlift|Good_Morning)$/
+
+interface PickRules {
+  level?: TrainingLevel
+  /** Hay barra de dominadas. */
+  bar?: boolean
+  /** Ya hay un básico pesado de columna ese día. */
+  axialUsed?: boolean
+  equipment?: EquipmentProfile
+}
+
+function suits(e: Exercise, r: PickRules): boolean {
+  if (r.bar === false && NEEDS_BAR.test(e.id)) return false
+  if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
+  if (r.level === 'intermediate' && e.level === 'expert' && e.equipment === 'bodyweight') return false
+  if (r.equipment && r.equipment !== 'bodyweight' && UNLOADED_SQUAT.test(e.id)) return false
+  if (r.axialUsed && HEAVY_AXIAL.test(e.id)) return false
+  return true
+}
+
+function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules = {}): Exercise | undefined {
+  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && allowed.has(e.equipment) && suits(e, rules))
   for (let offset = 0; offset < preferred.length; offset++) {
     const candidate = preferred[(variant + offset) % preferred.length]
     if (!used.has(candidate.id)) return candidate
@@ -181,7 +211,7 @@ function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<strin
     : slot.muscles.includes(e.muscle) && e.category === 'strength' && (!slot.match || slot.match.test(e.nameEn))
   const levelRank: Record<string, number> = { beginner: 0, intermediate: 1, expert: 2 }
   const fallback = catalog.exercises
-    .filter((e) => fits(e) && allowed.has(e.equipment) && !used.has(e.id))
+    .filter((e) => fits(e) && allowed.has(e.equipment) && !used.has(e.id) && suits(e, rules))
     .sort((a, b) => (levelRank[a.level] ?? 1) - (levelRank[b.level] ?? 1) || a.nameEn.length - b.nameEn.length)
   return fallback.length ? fallback[Math.min(variant, fallback.length - 1)] : undefined
 }
@@ -197,12 +227,24 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
     const exercises: GeneratedExercise[] = []
+    // Series por músculo principal en la sesión: más de ~10 de un mismo músculo en un día ya no suman.
+    const perMuscle = new Map<string, number>()
     for (const [name, variant] of list) {
       const slot: Slot = slots[name]
-      const exercise = pick(slot, variant + variation, allowed, used, catalog)
+      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym', equipment: c.equipment, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
+      const exercise = pick(slot, variant + variation, allowed, used, catalog, rules)
       if (!exercise) continue
+      const s = scheme(slot.kind, c)
+      // Sin carga, las piernas necesitan más repeticiones para que cueste (2×8-12 de sentadilla al aire no basta).
+      if (exercise.equipment === 'bodyweight' && slot.kind === 'compound' && ['quads', 'glutes', 'hamstrings'].includes(exercise.muscle)) Object.assign(s, { repsMin: 12, repsMax: 20 })
+      // Cuenta todo lo de fuerza (también un swing en el bloque de acondicionamiento); el cardio, no.
+      const counts = exercise.category !== 'cardio' && exercise.category !== 'plyometrics'
+      const done = perMuscle.get(exercise.muscle) ?? 0
+      if (counts && done > MAX_SETS_PER_SESSION - 2) continue
+      if (counts) s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
+      if (counts) perMuscle.set(exercise.muscle, done + s.sets)
       used.add(exercise.id)
-      exercises.push({ exercise, ...scheme(slot.kind, c) })
+      exercises.push({ exercise, ...s })
     }
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })

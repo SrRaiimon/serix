@@ -13,7 +13,8 @@ import type { AutoProgress, Progression, Session, SetEntry } from './store'
 //   Al acabar cada ciclo el TM sube 2,5 kg (tren superior) o 5 kg (pierna), salvo que en algún AMRAP no
 //   se llegara a las repeticiones mínimas: entonces el TM baja un 10 % (el «reinicio» de Wendler).
 
-const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors', 'calves'])
+// «spine»: el peso muerto convencional (en el catálogo, su músculo es la zona lumbar).
+const LOWER = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors', 'calves', 'spine'])
 /** Pierna con mancuerna, kettlebell o a una pierna (goblet, zancadas, búlgaras…): sube como el tren superior. */
 const LIGHT_LEG = /dumbbell|kettlebell|goblet|lunge|split|step|single|one[-_]leg|pistol/i
 
@@ -88,7 +89,7 @@ const blank = (weight: number, reps: number, extra: Partial<SetEntry> = {}): Set
  * decidir): entonces se rellena como siempre, con lo de la última vez.
  * `last` son las series de trabajo de la última vez (sin descargas) y `history` las sesiones terminadas.
  */
-export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: Unit): Plan | undefined {
+export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: Unit, now = Date.now()): Plan | undefined {
   if (ex.progression === 'wave531') {
     if (!ex.trainingMax) return undefined
     const since = ex.tmSince ?? 0
@@ -104,8 +105,10 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     let reset = false
     for (let c = 0; c < Math.floor(done.length / 4); c++) {
       const missed = done.slice(c * 4, c * 4 + 3).some((e, w) => {
-        const amrap = e.sets.find((x) => x.kind === 'amrap' && x.done)
-        return amrap !== undefined && amrap.reps < WAVE[w][2][1]
+        // La serie AMRAP; si se cambió de tipo, la más pesada que se hizo. Sin ninguna hecha, cuenta como fallo.
+        const work = e.sets.filter((x) => x.done && !x.warmup && x.kind !== 'drop')
+        const amrap = work.find((x) => x.kind === 'amrap') ?? [...work].sort((a, b) => b.weight - a.weight)[0]
+        return !amrap || amrap.reps < WAVE[w][2][1]
       })
       reset = missed
       tm = missed ? round(tm * 0.9, unit) : tm + progressionStep(ex.muscle, unit)
@@ -114,12 +117,14 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     return { sets, auto: { kind: 'wave', week: week + 1, tm, ...(reset && week === 0 ? { reset: true as const } : {}) }, deload: week === 3 }
   }
   if (ex.progression === 'percent') {
-    // Peso = porcentaje del mejor 1RM estimado de los últimos 90 días (si has bajado tras una pausa, baja
-    // contigo); sin datos recientes, el mejor de siempre, y si aún no hay, se pone a mano.
+    // Peso = porcentaje del mejor 1RM estimado de los últimos 90 días contados desde hoy (si has bajado,
+    // baja contigo). Tras una pausa más larga, el mejor de antes menos un 10 %, para volver con margen; si
+    // aún no hay ninguno, se pone a mano.
     // En dominadas y fondos el máximo incluye el peso corporal: ahí el lastre se pone a mano.
-    const latest = Math.max(0, ...history.map((s) => s.start))
     const best = (h: Session[]) => records(h).find((r) => r.exerciseId === ex.exerciseId && r.added === undefined)?.e1rm
-    const max = best(history.filter((s) => s.start >= latest - 90 * 86400000)) ?? best(history)
+    const recent = best(history.filter((s) => s.start >= now - 90 * 86400000))
+    const old = recent === undefined ? best(history) : undefined
+    const max = recent ?? (old !== undefined ? old * 0.9 : undefined)
     if (!max || !ex.percent) return undefined
     const reps = ex.repsMax || ex.repsMin || 5
     return { sets: Array.from({ length: Math.max(ex.sets, 1) }, () => blank(round(max * ex.percent!, unit), reps)), auto: { kind: 'percent', pct: ex.percent, max } }

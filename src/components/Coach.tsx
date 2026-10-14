@@ -1,5 +1,5 @@
 import { BadgeCheck, Feather, Minus, Plus, Repeat, X } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { applyTip, coachTips, hideTip, type CoachTip } from '../lib/coach'
 import { startOfWeek } from '../lib/format'
 import { t } from '../lib/i18n'
@@ -55,8 +55,12 @@ export function CoachCard() {
   const sessions = useMemo(() => finishedSessions(data), [data])
   const tips = useMemo(() => coachTips({ routines: data.routines, sessions, settings: data.settings, catalog }), [data.routines, sessions, data.settings, catalog])
   const [toast, showToast] = useToast()
+  // El consejo principal a la vista; el resto, a un toque (tres tarjetas seguidas alargaban Inicio).
+  const [all, setAll] = useState(false)
   const easy = data.settings.easyWeek === startOfWeek(Date.now()).getTime()
   if (!tips.length && !easy) return toast
+  const shown = all ? tips : tips.slice(0, easy ? 0 : 1)
+  const more = tips.length - shown.length
   return (
     <Card title={t('Tu entrenador', 'Your coach')} icon={BadgeCheck}>
       {easy && (
@@ -69,7 +73,7 @@ export function CoachCard() {
           <button className="link-btn small" onClick={() => update((d) => { d.settings.easyWeek = undefined })}>{t('Quitar', 'Undo')}</button>
         </div>
       )}
-      {tips.map((tip) => {
+      {shown.map((tip) => {
         const text = tipText(tip)
         const Icon = ICONS[tip.kind]
         return (
@@ -87,6 +91,11 @@ export function CoachCard() {
           </div>
         )
       })}
+      {more > 0 && (
+        <button className="link-btn small" style={{ alignSelf: 'flex-start' }} onClick={() => setAll(true)}>
+          {more === 1 ? t('Ver 1 consejo más', 'See 1 more tip') : t(`Ver ${more} consejos más`, `See ${more} more tips`)}
+        </button>
+      )}
       {toast}
     </Card>
   )

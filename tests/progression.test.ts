@@ -106,10 +106,13 @@ test('pierna con mancuerna o a una pierna sube como el tren superior', () => {
   assert.equal(progressionStep('quads', 'kg', 'Dumbbell_Lunges'), 2.5)
 })
 
-test('porcentaje: usa el 1RM de los últimos 90 días, no el récord de hace un año', () => {
+test('porcentaje: usa el 1RM de los últimos 90 días desde hoy; tras una pausa, el de antes −10 %', () => {
   const lift = { exerciseId: 'bench', muscle: 'pectorals', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent' as const, percent: 0.8 }
   const old = session(0, [exercise('bench', [set(100, 1)])])
   const recent = session(365, [exercise('bench', [set(80, 1)])])
-  assert.equal(plan(lift, [], [old, recent], 'kg')?.sets[0].weight, 65) // 80 × 0,8 = 64 → 65
-  assert.equal(plan(lift, [], [old], 'kg')?.sets[0].weight, 80)
+  const today = recent.start + 86400000
+  assert.equal(plan(lift, [], [old, recent], 'kg', today)?.sets[0].weight, 65) // 80 × 0,8 = 64 → 65
+  // Volviendo de una pausa larga (nada en 90 días): el mejor de antes menos un 10 %.
+  assert.equal(plan(lift, [], [old, recent], 'kg', recent.start + 200 * 86400000)?.sets[0].weight, 72.5) // 100 × 0,9 × 0,8 = 72
+  assert.equal(plan(lift, [], [old], 'kg', today)?.sets[0].weight, 72.5) // 100 × 0,9 × 0,8 = 72
 })

@@ -195,23 +195,34 @@ export interface DayGoalOptions {
   training?: { days: Set<string>; perWeek: number }
   /** En vez de lo anterior: se suman las calorías estimadas de los entrenos de cada día (y nada los de descanso). */
   burned?: Map<string, number>
+  /** Lo que gastan de media tus entrenos repartido por día (kcal), para restarlo de los días sin entreno. */
+  burnedDaily?: number
+}
+
+/** Metabolismo en reposo (Mifflin-St Jeor), si el objetivo se calculó con tus datos. */
+function bmrOf(goals: Pick<NutritionGoals, 'sex' | 'age' | 'heightCm' | 'weightKg'>): number | undefined {
+  const { sex, age, heightCm, weightKg } = goals
+  if (!sex || !age || !heightCm || !weightKg) return undefined
+  return 10 * weightKg + 6.25 * heightCm - 5 * age + (sex === 'm' ? 5 : -161)
 }
 
 /**
- * Calorías de un día sin entreno: el objetivo recalculado con el factor sedentario. Con un objetivo
- * escrito a mano (sin factor de actividad) se toma tal cual.
+ * Calorías de un día sin entreno. El factor de actividad ya cuenta tus entrenos de la semana, así que un
+ * día sin entrenar se resta lo que gastan de media por día (`dailyBurn`) y los días de entreno se suma lo
+ * que gastó ese entreno: la semana suma lo mismo que el objetivo. Nunca por debajo del metabolismo en
+ * reposo. Con un objetivo escrito a mano (sin factor de actividad) se toma tal cual.
  */
-export function restDayKcal(goals: Pick<NutritionGoals, 'kcal' | 'activity'>): number {
-  if (!goals.activity || goals.activity <= SEDENTARY) return goals.kcal
-  return Math.round((goals.kcal * SEDENTARY) / goals.activity / 10) * 10
+export function restDayKcal(goals: Pick<NutritionGoals, 'kcal' | 'activity' | 'sex' | 'age' | 'heightCm' | 'weightKg'>, dailyBurn = 0): number {
+  if (!goals.activity || goals.activity <= SEDENTARY || dailyBurn <= 0) return goals.kcal
+  return Math.round(Math.max(goals.kcal - dailyBurn, bmrOf(goals) ?? 0) / 10) * 10
 }
 
 /** Objetivo base de un día: el de siempre, o el de entreno o descanso. */
 function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): NutritionGoals & { training?: boolean; shift: number } {
   if (opts.burned && !goals.proteinOnly) {
     // El factor de actividad ya cuenta los entrenos («Entrenas 3-5 días»): para no sumarlos dos veces,
-    // la base es la de un día sin entrenar (sedentario) y cada día se suma lo que gastó su entreno.
-    const rest = restDayKcal(goals)
+    // la base es la de un día sin entrenar y cada día se suma lo que gastó su entreno.
+    const rest = restDayKcal(goals, opts.burnedDaily)
     const burned = opts.burned.get(day) ?? 0
     const shift = rest - goals.kcal + burned
     return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: burned > 0, shift }
@@ -245,8 +256,8 @@ export function dayGoalOptions(data: {
   sessions: { start: number; end?: number; exercises?: { tracking?: Tracking }[] }[]
   nutrition: { trainingDays?: string[] }
   measurements?: { date: number; weight?: number }[]
-  settings: { nutritionCarryOver?: boolean; nutritionTrainingSplit?: boolean; nutritionBurned?: boolean; weeklyGoal: number; nutrition?: { weightKg?: number } }
-}): DayGoalOptions {
+  settings: { nutritionCarryOver?: boolean; nutritionTrainingSplit?: boolean; nutritionBurned?: boolean; weeklyGoal: number; trainingDays?: number[]; nutrition?: { weightKg?: number } }
+}, now = Date.now()): DayGoalOptions {
   const carryOver = data.settings.nutritionCarryOver !== false
   if (data.settings.nutritionTrainingSplit === false) return { carryOver }
   if (data.settings.nutritionBurned) {
@@ -256,10 +267,20 @@ export function dayGoalOptions(data: {
       const kcal = sessionKcal({ ...s, exercises: s.exercises }, weightOn(data, s.start))
       if (kcal) burned.set(dayKey(s.start), (burned.get(dayKey(s.start)) ?? 0) + kcal)
     }
-    return { carryOver, burned }
+    // Gasto medio de un entreno (los de las últimas 8 semanas; sin ninguno, una hora de pesas: 2,5 MET netos).
+    const since = dayKey(now - 56 * 86400000)
+    const recent = [...burned].filter(([d]) => d >= since).map(([, k]) => k)
+    const perSession = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 2.5 * (data.settings.nutrition?.weightKg ?? 0)
+    return { carryOver, burned, burnedDaily: (perSession * data.settings.weeklyGoal) / 7 }
   }
   const days = new Set(data.nutrition.trainingDays ?? [])
   for (const s of data.sessions) days.add(dayKey(s.start))
+  // Los días de la semana que tienes marcados para entrenar (Perfil → Entrenamiento) cuentan ya como de
+  // entreno de hoy en adelante: si no, hoy salía «día de descanso» hasta terminar el entreno.
+  for (let i = 0; i < 7 && data.settings.trainingDays?.length; i++) {
+    const at = now + i * 86400000
+    if (data.settings.trainingDays.includes((new Date(at).getDay() + 6) % 7)) days.add(dayKey(at))
+  }
   return { carryOver, training: { days, perWeek: data.settings.weeklyGoal } }
 }
 

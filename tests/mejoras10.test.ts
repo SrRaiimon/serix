@@ -44,12 +44,12 @@ test('metas de fuerza: progreso, previsión y conseguida', () => {
 
 test('por porcentaje del máximo: el peso sale del mejor 1RM estimado', () => {
   const history = [session(0, [exercise('Squat', [set(100, 5)])])]
-  const p = plan({ exerciseId: 'Squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent', percent: 0.8 }, [], history, 'kg')!
+  const p = plan({ exerciseId: 'Squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent', percent: 0.8 }, [], history, 'kg', history[0].start + DAY)!
   assert.equal(p.sets.length, 3)
   assert.equal(p.sets[0].weight, 92.5) // 80 % de ~116,7 → 92,5 con discos de 2,5
   assert.equal(p.sets[0].reps, 5)
   assert.deepEqual(p.auto && p.auto.kind, 'percent')
-  assert.equal(plan({ exerciseId: 'Nuevo', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent', percent: 0.8 }, [], history, 'kg'), undefined)
+  assert.equal(plan({ exerciseId: 'Nuevo', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'percent', percent: 0.8 }, [], history, 'kg', history[0].start + DAY), undefined)
 })
 
 test('rutina por día: el lunes toca la del lunes aunque la rotación diga otra', () => {

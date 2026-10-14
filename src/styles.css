@@ -231,6 +231,8 @@ img {
 }
 
 .nav-bar .title {
+  margin: 0;
+  line-height: inherit;
   font-weight: 700;
   font-size: 17px;
   text-align: center;

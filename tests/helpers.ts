@@ -38,7 +38,8 @@ export function fakeIndexedDB() {
           get: (key: string) => request(data.get(key)),
           put: (value: unknown, key: string) => {
             data.set(key, structuredClone(value))
-            queueMicrotask(() => tx.oncomplete?.())
+            // Al final de la transacción (después de las lecturas y escrituras encadenadas).
+            setTimeout(() => tx.oncomplete?.())
           },
         }),
       }

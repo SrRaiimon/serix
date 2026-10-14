@@ -4,7 +4,7 @@ import { QrCode } from '../components/Qr'
 import { Card, NavBar, useCatalog } from '../components/ui'
 import { migrateCatalog } from '../lib/migrate'
 import { navigate } from '../lib/router'
-import { finishedSessions, flush, getData, replaceData, useData, type AppData } from '../lib/store'
+import { finishedSessions, flush, getData, replaceData, storageProblem, useData, type AppData } from '../lib/store'
 import { addFrame, assemble, emptyReceived, encodeTransfer, isComplete, parseFrame, type Received } from '../lib/transfer'
 import { keepScreenOn } from '../lib/workout'
 import { plural, t } from '../lib/i18n'
@@ -172,7 +172,10 @@ function Receiver() {
     // Por si los datos vienen de una versión antigua con el catálogo anterior.
     migrateCatalog(catalog)
     await flush()
-    navigate('home')
+    if (storageProblem()) {
+      setPhase('error')
+      setError(t('Los datos se han cargado, pero no se han podido guardar en este móvil. Revisa el espacio libre y vuelve a intentarlo.', 'The data was loaded but could not be saved on this phone. Check the free space and try again.'))
+    } else navigate('home')
   }
 
   if (phase === 'done' && result) {

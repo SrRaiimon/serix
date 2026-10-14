@@ -112,6 +112,9 @@ export function WorkoutScreen({ session }: { session: Session }) {
     else runs.push([i])
   })
   const currentSet = session.exercises.flatMap((x) => x.sets).find((x) => !x.done)?.id
+  // El aviso de «estancado», solo en el primer ejercicio que lo esté: en todos a la vez desanimaba
+  // (y la lista entera ya está en Progreso).
+  const stalledAt = session.exercises.findIndex((e) => trackingOf(e) === 'weight_reps' && stall(e.exerciseId, history))
   const [focus, setFocus] = useState(false)
   const block = (i: number) => {
     const e = session.exercises[i]
@@ -133,7 +136,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
         currentSet={currentSet}
-        stalled={trackingOf(e) === 'weight_reps' ? stall(e.exerciseId, history) : undefined}
+        stalled={i === stalledAt ? stall(e.exerciseId, history) : undefined}
         lastPain={lastPain(e.exerciseId, history)}
         startedAt={session.start}
         onInfo={() => setDetail(e.exerciseId)}
