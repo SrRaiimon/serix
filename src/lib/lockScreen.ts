@@ -64,7 +64,7 @@ export function showRestOnLockScreen(endAt: number, total: number, controls: Loc
     session.metadata = new MediaMetadata({
       title: t(`Descanso · termina a las ${end}`, `Rest · ends at ${end}`),
       artist: 'Serix',
-      artwork: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }],
+      artwork: [{ src: 'icons/serix-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icons/serix-512.png', sizes: '512x512', type: 'image/png' }],
     })
     session.playbackState = 'playing'
     // Barra de progreso del descanso en los controles multimedia.
@@ -100,7 +100,7 @@ const restMessage = (endAt: number) => ({
   options: {
     body: t('A por la siguiente serie', 'On to the next set'),
     tag: 'serix-rest', renotify: true, vibrate: [300, 150, 300, 150, 300],
-    icon: 'icons/icon-192.png', badge: 'icons/icon-192.png',
+    icon: 'icons/serix-192.png', badge: 'icons/serix-192.png',
   },
 })
 

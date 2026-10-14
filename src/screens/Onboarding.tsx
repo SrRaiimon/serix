@@ -137,7 +137,7 @@ export function OnboardingScreen() {
             </div>
             <div className="onb-hero">
               <span className="hero-ribbon" aria-hidden="true" />
-              <img className="onb-logo" src="icons/icon-192.png" width={72} height={72} alt="" />
+              <img className="onb-logo" src="icons/serix-192.png" width={72} height={72} alt="" />
               <h1 className="onb-title">{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
               <p className="onb-lead">
                 {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}

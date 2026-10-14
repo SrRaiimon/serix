@@ -33,7 +33,7 @@ export function useFoodReminders(enabled: boolean, entries: FoodEntry[]) {
       void navigator.serviceWorker?.ready.then((r) => r.showNotification('Serix', {
         body: t(`¿Qué has comido? Aún no has apuntado: ${mealLabel(next.m).toLowerCase()}.`, `What did you eat? You have not logged: ${mealLabel(next.m).toLowerCase()}.`),
         tag: `food-${next.m}`,
-        icon: 'icons/icon-192.png',
+        icon: 'icons/serix-192.png',
         data: { url: './#/food' },
       }))
     }, Math.min(next.when - now.getTime() + 1000, 2 ** 31 - 1))

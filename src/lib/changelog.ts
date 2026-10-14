@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.81',
+    items: [
+      ['Icono nuevo: una mancuerna más clara. Si tienes la app en la pantalla de inicio, bórrala y vuelve a añadirla para verlo.', 'New icon: a clearer dumbbell. If you have the app on your home screen, remove it and add it again to see it.'],
+    ],
+  },
+  {
     version: '0.0.80',
     items: [
       ['Arreglos para el icono de la app en iPhone.', 'Fixes for the app icon on iPhone.'],
