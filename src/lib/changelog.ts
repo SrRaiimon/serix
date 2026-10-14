@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.75',
+    items: [
+      ['Cuestionario inicial más rápido y claro: sabes en qué paso vas, el objetivo y la experiencia pasan solos al elegirlos y al final puedes tocar cualquier respuesta para cambiarla.', 'A quicker, clearer setup: you see which step you are on, goal and experience move on by themselves when chosen, and at the end you can tap any answer to change it.'],
+      ['Al elegir días y minutos ves qué semana te saldrá («Torso / Pierna») y cuántos ejercicios por sesión, y cada tipo de material explica qué incluye.', 'When choosing days and minutes you see which week you will get ("Upper / Lower") and how many exercises per session, and each equipment option explains what it includes.'],
+    ],
+  },
+  {
     version: '0.0.74',
     items: [
       ['Programas en casa más completos: remo con toalla o mochila, sin estiramientos colados como series de fuerza y en el gimnasio un peso muerto rumano o hip thrust antes que el swing.', 'More complete home programs: towel or backpack rows, no stretches sneaking in as strength sets, and in the gym a Romanian deadlift or hip thrust before the swing.'],

@@ -1,8 +1,8 @@
-import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useState } from 'react'
+import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Card, Chip, Segmented, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
-import { equipmentInfo, equipmentProfiles, generate, goalInfo, goals, levelInfo, levels, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
@@ -21,6 +21,12 @@ export function OnboardingScreen() {
   const catalog = useCatalog()
   const { settings } = useData()
   const [step, setStep] = useState(0)
+  // Tras cambiar una respuesta desde el resumen final, «Continuar» vuelve directo a él.
+  const [returnToEnd, setReturnToEnd] = useState(false)
+  useEffect(() => { if (step === LAST || step === 0) setReturnToEnd(false) }, [step])
+  // Objetivo y nivel: al elegir se pasa solo a la siguiente pregunta (una pausa breve para ver la marca).
+  const next = () => setTimeout(() => setStep((s) => (returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
+  const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
   const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }
@@ -86,7 +92,8 @@ export function OnboardingScreen() {
         <div className="right"><button className="nav-btn" style={{ color: 'var(--text-2)' }} onClick={() => finish()}>{t('Saltar', 'Skip')}</button></div>
       </div>
       {step > 0 && (
-        <div className="progress" style={{ margin: '0 16px' }}><div style={{ transform: `scaleX(${step / LAST})` }} /></div>
+        <div className="progress" style={{ margin: '0 16px' }} role="progressbar" aria-label={t('Progreso del cuestionario', 'Questionnaire progress')}
+          aria-valuemin={1} aria-valuemax={LAST} aria-valuenow={step}><div style={{ transform: `scaleX(${step / LAST})` }} /></div>
       )}
       <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
         {step === 0 && (
@@ -109,63 +116,86 @@ export function OnboardingScreen() {
         )}
         {step === 1 && (
           <>
-            <Header title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
-            {goals.map((g) => (
-              <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} active={settings.goal === g.id} onClick={() => updateSettings({ goal: g.id })} />
-            ))}
+            <Header step={step} title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
+            <Choices label={t('Objetivo', 'Goal')}>
+              {goals.map((g) => (
+                <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} active={settings.goal === g.id} onClick={() => { updateSettings({ goal: g.id }); next() }} />
+              ))}
+            </Choices>
           </>
         )}
         {step === 2 && (
           <>
-            <Header title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
-            {levels.map((l) => (
-              <Option key={l.id} icon={ChartBar} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => updateSettings({ level: l.id })} />
-            ))}
+            <Header step={step} title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
+            <Choices label={t('Experiencia', 'Experience')}>
+              {levels.map((l) => (
+                <Option key={l.id} icon={ChartBar} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => { updateSettings({ level: l.id }); next() }} />
+              ))}
+            </Choices>
           </>
         )}
         {step === 3 && (
           <>
-            <Header title={t('¿Cuánto tiempo tienes?', 'How much time do you have?')} subtitle={t('Elegiremos la división semanal que mejor encaje.', 'We will pick the weekly split that fits best.')} />
+            <Header step={step} title={t('¿Cuánto tiempo tienes?', 'How much time do you have?')} subtitle={t('Elegiremos la división semanal que mejor encaje.', 'We will pick the weekly split that fits best.')} />
             <Card title={t('Días por semana', 'Days per week')}>
-              <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <div className="row" role="group" aria-label={t('Días por semana', 'Days per week')} style={{ flexWrap: 'wrap', gap: 8 }}>
                 {[2, 3, 4, 5, 6].map((n) => <Chip key={n} label={String(n)} active={settings.days === n} onClick={() => updateSettings({ days: n })} />)}
               </div>
+              <span className="small muted">
+                {/* Lo que va a salir, para que el número no sea a ciegas. */}
+                {t(`Tu semana: ${split.name}.`, `Your week: ${split.name}.`)}{' '}
+                {settings.level === 'beginner'
+                  ? t('Para empezar, lo ideal son 3 o 4 días.', 'When starting out, 3 or 4 days is ideal.')
+                  : t('Con 3-5 días se progresa bien; más, solo si descansas lo suficiente.', 'With 3-5 days you progress well; more only if you rest enough.')}
+              </span>
               {settings.level === 'beginner' && settings.days >= 5 && (
-                <span className="small muted">{t('Para empezar, 3-4 días dan casi lo mismo y recuperas mejor. Si eliges más, el programa reparte el trabajo para no pasarte.', 'When starting out, 3-4 days give nearly the same results and you recover better. If you choose more, the program spreads the work so you do not overdo it.')}</span>
+                <span className="small muted">{t('Si eliges más, el programa reparte el trabajo para no pasarte.', 'If you choose more, the program spreads the work so you do not overdo it.')}</span>
               )}
             </Card>
             <Card title={t('Minutos por sesión', 'Minutes per session')}>
-              <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <div className="row" role="group" aria-label={t('Minutos por sesión', 'Minutes per session')} style={{ flexWrap: 'wrap', gap: 8 }}>
                 {[30, 45, 60, 75, 90].map((n) => <Chip key={n} label={String(n)} active={settings.minutes === n} onClick={() => updateSettings({ minutes: n })} />)}
               </div>
+              <span className="small muted">{t(`Unos ${exerciseCount(settings.minutes)} ejercicios por sesión, con calentamiento incluido.`, `About ${exerciseCount(settings.minutes)} exercises per session, warm-up included.`)}</span>
             </Card>
           </>
         )}
         {step === 4 && (
           <>
-            <Header title={t('¿Con qué material cuentas?', 'What equipment do you have?')} subtitle={t('Solo usaremos ejercicios que puedas hacer.', 'We will only use exercises you can do.')} />
-            {equipmentProfiles.map((p) => (
-              <Option key={p.id} icon={equipmentIcons[p.id]} title={p.label} active={settings.equipment === p.id} onClick={() => updateSettings({ equipment: p.id })} />
-            ))}
+            <Header step={step} title={t('¿Con qué material cuentas?', 'What equipment do you have?')} subtitle={t('Solo usaremos ejercicios que puedas hacer.', 'We will only use exercises you can do.')} />
+            <Choices label={t('Material', 'Equipment')}>
+              {equipmentProfiles.map((p) => (
+                <Option key={p.id} icon={equipmentIcons[p.id]} title={p.label} detail={p.detail} active={settings.equipment === p.id} onClick={() => updateSettings({ equipment: p.id })} />
+              ))}
+            </Choices>
             {settings.equipment !== 'gym' && <div className="list"><PullupBarRow value={!!settings.pullupBar} onChange={(v) => updateSettings({ pullupBar: v || undefined })} /></div>}
           </>
         )}
         {step === 5 && (
           <>
-            <Header title={t('Último detalle', 'One last thing')} subtitle={t('Puedes cambiarlo más adelante en Perfil.', 'You can change it later in Profile.')} />
+            <Header step={step} title={t('Último detalle', 'One last thing')} subtitle={t('Puedes cambiarlo más adelante en Perfil.', 'You can change it later in Profile.')} />
             <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} aria-label={t('Tu nombre', 'Your name')} autoComplete="given-name"
               value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
             <Card title={t('Unidad de peso', 'Weight unit')}>
               <Segmented value={settings.unit} onChange={(u: Unit) => updateSettings({ unit: u })}
                 options={[{ value: 'kg', label: t('Kilogramos (kg)', 'Kilograms (kg)') }, { value: 'lb', label: t('Libras (lb)', 'Pounds (lb)') }]} />
             </Card>
-            <Card title={t('Tu plan', 'Your plan')}>
-              <span className="muted">
-                {goalInfo(settings.goal).label} · {levelInfo(settings.level).label}<br />
-                {t(`${settings.days} días por semana de hasta ${settings.minutes} min`, `${settings.days} days a week, up to ${settings.minutes} min each`)}<br />
-                {equipmentInfo(settings.equipment).label}
-              </span>
-            </Card>
+            {/* El resumen se puede tocar: cada fila lleva a su pregunta (y al volver, aquí de nuevo). */}
+            <div className="list-header">{t('Tu plan', 'Your plan')}</div>
+            <div className="list">
+              {([
+                [1, t('Objetivo', 'Goal'), goalInfo(settings.goal).label],
+                [2, t('Experiencia', 'Experience'), levelInfo(settings.level).label],
+                [3, t('Tiempo', 'Time'), t(`${settings.days} días · hasta ${settings.minutes} min`, `${settings.days} days · up to ${settings.minutes} min`)],
+                [4, t('Material', 'Equipment'), equipmentInfo(settings.equipment).label + (settings.equipment !== 'gym' && settings.pullupBar ? ` + ${t('barra', 'bar')}` : '')],
+              ] as const).map(([target, label, value]) => (
+                <button key={target} className="list-row" onClick={() => { setReturnToEnd(true); setStep(target) }} aria-label={`${label}: ${value}. ${t('Cambiar', 'Change')}`}>
+                  <span className="grow">{label}</span>
+                  <span className="muted">{value}</span>
+                  <ChevronRight size={18} className="chevron" aria-hidden="true" />
+                </button>
+              ))}
+            </div>
             {/* Antes de crear el programa, a la vista y no al pie de la bienvenida. */}
             <div className="card" style={{ gap: 6 }}>
               <HealthNotice />
@@ -176,12 +206,12 @@ export function OnboardingScreen() {
       </div>
       <Footer>
         <button className="btn primary block" onClick={() => {
-          if (step < LAST) return setStep(step + 1)
+          if (step < LAST) return setStep(returnToEnd && step > 0 ? LAST : step + 1)
           updateSettings({ weeklyGoal: settings.days })
           setVariation(0)
           setProgram(generate(config, catalog, 0))
         }}>
-          {step === 0 ? t('Empezar', 'Start') : step === LAST ? t('Crear mi programa', 'Create my program') : t('Continuar', 'Continue')}
+          {step === 0 ? t('Empezar', 'Start') : step === LAST ? t('Crear mi programa', 'Create my program') : returnToEnd ? t('Volver al resumen', 'Back to summary') : t('Continuar', 'Continue')}
         </button>
       </Footer>
     </main>
@@ -196,9 +226,10 @@ function Footer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Header({ title, subtitle }: { title: string; subtitle: string }) {
+function Header({ title, subtitle, step }: { title: string; subtitle: string; step?: number }) {
   return (
     <div>
+      {step !== undefined && <span className="small muted onb-step">{t(`Paso ${step} de ${LAST}`, `Step ${step} of ${LAST}`)}</span>}
       <h1 style={{ fontSize: 32, margin: '0 0 6px', lineHeight: 1.1 }}>{title}</h1>
       <p className="muted" style={{ margin: 0 }}>{subtitle}</p>
     </div>
@@ -213,7 +244,7 @@ function Feature({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
 
 function Option({ icon: Icon, title, detail, active, onClick }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void }) {
   return (
-    <button className={`option-card ${active ? 'active' : ''}`} onClick={onClick} aria-pressed={active}>
+    <button className={`option-card ${active ? 'active' : ''}`} onClick={onClick} role="radio" aria-checked={active}>
       <span className="icon"><Icon size={22} /></span>
       <span className="grow">
         <strong style={{ display: 'block' }}>{title}</strong>
@@ -222,4 +253,9 @@ function Option({ icon: Icon, title, detail, active, onClick }: { icon: LucideIc
       {active ? <CircleCheck size={24} color="var(--accent-text)" /> : <Circle size={24} color="var(--text-3)" />}
     </button>
   )
+}
+
+/** Opciones de una sola elección: el lector de pantalla las anuncia como grupo de radio («2 de 4, marcada»). */
+function Choices({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div role="radiogroup" aria-label={label} style={{ display: 'grid', gap: 12 }}>{children}</div>
 }

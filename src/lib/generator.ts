@@ -21,12 +21,12 @@ export const levels: { id: TrainingLevel; label: string; detail: string }[] = [
   { id: 'advanced', get label() { return t('Avanzado', 'Advanced') }, get detail() { return t('Más de 2 años y dominas la técnica de los básicos.', 'Over 2 years and solid technique on the main lifts.') } },
 ]
 
-export const equipmentProfiles: { id: EquipmentProfile; label: string; allowed: string[] }[] = [
-  { id: 'gym', get label() { return t('Gimnasio completo', 'Full gym') }, allowed: ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'band', 'kettlebell', 'ez-bar', 'medicine-ball', 'exercise-ball'] },
-  { id: 'dumbbells', get label() { return t('Mancuernas y banco', 'Dumbbells and bench') }, allowed: ['dumbbell', 'bodyweight'] },
-  { id: 'kettlebell', get label() { return t('Kettlebells', 'Kettlebells') }, allowed: ['kettlebell', 'bodyweight'] },
-  { id: 'bands', get label() { return t('Bandas elásticas', 'Resistance bands') }, allowed: ['band', 'bodyweight'] },
-  { id: 'bodyweight', get label() { return t('Solo peso corporal', 'Bodyweight only') }, allowed: ['bodyweight'] },
+export const equipmentProfiles: { id: EquipmentProfile; label: string; detail: string; allowed: string[] }[] = [
+  { id: 'gym', get label() { return t('Gimnasio completo', 'Full gym') }, get detail() { return t('Barras, máquinas, poleas y mancuernas.', 'Barbells, machines, cables and dumbbells.') }, allowed: ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'band', 'kettlebell', 'ez-bar', 'medicine-ball', 'exercise-ball'] },
+  { id: 'dumbbells', get label() { return t('Mancuernas y banco', 'Dumbbells and bench') }, get detail() { return t('En casa o en un gimnasio pequeño, con pesos que puedas cambiar.', 'At home or in a small gym, with adjustable weights.') }, allowed: ['dumbbell', 'bodyweight'] },
+  { id: 'kettlebell', get label() { return t('Kettlebells', 'Kettlebells') }, get detail() { return t('Una o varias pesas rusas.', 'One or more kettlebells.') }, allowed: ['kettlebell', 'bodyweight'] },
+  { id: 'bands', get label() { return t('Bandas elásticas', 'Resistance bands') }, get detail() { return t('Gomas de varias resistencias, para casa o de viaje.', 'Bands of several strengths, for home or travel.') }, allowed: ['band', 'bodyweight'] },
+  { id: 'bodyweight', get label() { return t('Solo peso corporal', 'Bodyweight only') }, get detail() { return t('Sin material: en casa, en un parque o de viaje.', 'No equipment: at home, in a park or on the road.') }, allowed: ['bodyweight'] },
 ]
 
 export const goalInfo = (g: TrainingGoal) => goals.find((x) => x.id === g)!
@@ -149,7 +149,14 @@ function split(c: GeneratorConfig): [string, Template[]] {
   return [t('Empuje / Tirón / Pierna ×2', 'Push / Pull / Legs ×2'), [pushA, pullA, legsA, pushB, pullB, legsB]]
 }
 
-function exerciseCount(minutes: number) {
+/** El reparto semanal que saldrá con esta configuración («Torso / Pierna») y cuántos días distintos tiene. */
+export function splitPreview(c: GeneratorConfig): { name: string; days: number } {
+  const [name, templates] = split(c)
+  return { name, days: templates.length }
+}
+
+/** Ejercicios por sesión según los minutos (lo enseña el cuestionario). */
+export function exerciseCount(minutes: number) {
   if (minutes < 40) return 4
   if (minutes < 55) return 5
   if (minutes < 70) return 6
