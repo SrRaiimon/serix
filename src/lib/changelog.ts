@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.77',
+    items: [
+      ['La app se actualiza a la última versión al abrirla: por un fallo podía quedarse una versión atrás.', 'The app updates to the latest version when you open it: a bug could leave it one version behind.'],
+    ],
+  },
+  {
     version: '0.0.76',
     items: [
       ['Un cuestionario inicial rediseñado, con el estilo de la app: cifras grandes para elegir días y minutos, tu semana dibujada y un resumen final con tu plan.', 'A redesigned setup in the app\'s style: big numbers to choose days and minutes, your week drawn out and a final summary of your plan.'],

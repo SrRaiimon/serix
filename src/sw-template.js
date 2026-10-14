@@ -47,9 +47,11 @@ self.addEventListener('fetch', (event) => {
 
   // Navegación: la copia guardada al instante (en el gimnasio la cobertura suele ser mala). Las
   // versiones nuevas llegan con un sw.js nuevo, que vuelve a precargar index.html.
+  // Siempre de la caché de ESTA versión: caches.match() sin abrir una busca en todas, empezando por la más
+  // antigua, y como se conserva la anterior devolvía su index.html (la app abría siempre una versión atrás).
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match('index.html', MATCH).then((hit) => hit || fetch(request)),
+      caches.open(APP_CACHE).then((cache) => cache.match('index.html', MATCH)).then((hit) => hit || fetch(request)),
     )
     return
   }
@@ -68,8 +70,13 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Lo de esta versión primero (los archivos sin huella en el nombre, como exercises_index.json o los iconos,
+  // existen en las dos cachés); la anterior solo para pantallas de una pestaña vieja que ya no estén aquí.
   event.respondWith(
-    caches.match(request, MATCH).then((hit) => hit || fetch(request)),
+    caches.open(APP_CACHE)
+      .then((cache) => cache.match(request, MATCH))
+      .then((hit) => hit || caches.match(request, MATCH))
+      .then((hit) => hit || fetch(request)),
   )
 })
 
