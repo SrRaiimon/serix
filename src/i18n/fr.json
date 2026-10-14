@@ -1990,5 +1990,7 @@
 "Prueba una variante": "Essaie une variante",
 "Si no, en vez de dominadas, remos": "Sinon, des rowings à la place des tractions",
 "Tengo barra de dominadas": "J'ai une barre de traction",
-"Ya haces {0} repeticiones en todas las series: prueba una variante más difícil o añade lastre.": "Tu fais déjà {0} répétitions sur toutes les séries : essaie une variante plus difficile ou ajoute du lest."
+"Ya haces {0} repeticiones en todas las series: prueba una variante más difícil o añade lastre.": "Tu fais déjà {0} répétitions sur toutes les séries : essaie une variante plus difficile ou ajoute du lest.",
+"Calcular tus calorías en la bienvenida carga mucho menos.": "Calculer tes calories dans l'accueil charge beaucoup moins de choses.",
+"La app se pinta antes al abrirla: los estilos van dentro de la página en vez de pedirse aparte.": "L'app s'affiche plus tôt à l'ouverture : les styles sont inclus dans la page au lieu d'être demandés à part."
 }

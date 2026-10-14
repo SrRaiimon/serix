@@ -8,6 +8,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.73',
+    items: [
+      ['La app se pinta antes al abrirla: los estilos van dentro de la página en vez de pedirse aparte.', 'The app draws sooner when you open it: styles come inside the page instead of a separate request.'],
+      ['Calcular tus calorías en la bienvenida carga mucho menos.', 'Working out your calories in the welcome flow loads much less.'],
+    ],
+  },
+  {
     version: '0.0.72',
     items: [
       ['Progresión en ejercicios sin peso: al llegar al máximo en todas las series, la app te propone una repetición más y, pasado el tope, una variante más difícil o lastre.', 'Progression for bodyweight exercises: once you hit the top of the range on every set, the app suggests one more rep and, past the cap, a harder variation or added weight.'],

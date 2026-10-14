@@ -98,9 +98,32 @@ function contentSecurityPolicy(): Plugin {
   }
 }
 
+/**
+ * El CSS de la app (unos 14 KB comprimido) va dentro de index.html en vez de en un archivo aparte: la
+ * hoja externa bloqueaba el primer dibujo esperando otra petición (~150 ms en móvil). El archivo .css se
+ * sigue generando (lo precarga el service worker). Las rutas relativas (la fuente) pasan a ser desde la raíz.
+ */
+function inlineCss(): Plugin {
+  return {
+    name: 'gym-inline-css',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        return html.replace(/<link rel="stylesheet"[^>]*href="\.\/(assets\/[^"]+\.css)"[^>]*>/g, (tag, file: string) => {
+          const asset = ctx.bundle?.[file]
+          if (!asset || asset.type !== 'asset') return tag
+          const css = String(asset.source).replace(/url\(\.\//g, 'url(./assets/')
+          return `<style>${css}</style>`
+        })
+      },
+    },
+  }
+}
+
 export default defineConfig({
   base: './',
   // Versión visible en Perfil y en Legal: la de package.json (se sube el último número en cada publicación).
   define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('package.json', 'utf8')).version) },
-  plugins: [react(), ocrAssets(), serviceWorker(), contentSecurityPolicy()],
+  plugins: [react(), ocrAssets(), serviceWorker(), contentSecurityPolicy(), inlineCss()],
 })

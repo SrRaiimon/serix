@@ -9,7 +9,7 @@ import { HealthNotice } from './Legal'
 import { ProgramPreview, PullupBarRow, saveProgram } from './Routines'
 import { lang, LANGS, t } from '../lib/i18n'
 
-const GoalsSheet = lazy(() => import('./Food').then((m) => ({ default: m.GoalsSheet })))
+const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.GoalsSheet })))
 
 const goalIcons: Record<string, LucideIcon> = { hypertrophy: Dumbbell, strength: Weight, fatLoss: Flame, general: Heart }
 const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
