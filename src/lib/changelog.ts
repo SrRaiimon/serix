@@ -1,3 +1,4 @@
+import { compareVersions } from './versions'
 // Novedades de cada versión, para enseñarlas una vez al actualizar (Inicio) y en Perfil → Novedades.
 // Solo lo que se nota al usar la app, en pocas palabras; la más nueva primero.
 
@@ -7,6 +8,16 @@ export interface Release {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '0.0.74',
+    items: [
+      ['Programas en casa más completos: remo con toalla o mochila, sin estiramientos colados como series de fuerza y en el gimnasio un peso muerto rumano o hip thrust antes que el swing.', 'More complete home programs: towel or backpack rows, no stretches sneaking in as strength sets, and in the gym a Romanian deadlift or hip thrust before the swing.'],
+      ['En dominadas y fondos verás «tu peso + 12,5 kg» en vez de totales con decimales, y la columna «Última vez» del entreno ya no se corta.', 'On pull-ups and dips you will see "bodyweight + 12.5 kg" instead of totals with decimals, and the workout\'s "Last time" column no longer gets cut off.'],
+      ['En ejercicios sin peso el entreno solo pide repeticiones y la progresión nunca te propone menos de lo que ya haces.', 'Bodyweight exercises only ask for reps, and progression never suggests fewer than you already do.'],
+      ['Los programas de la Biblioteca ajustan series y repeticiones al ejercicio que te toca con tu material.', 'Library programs adjust sets and reps to the exercise you get with your equipment.'],
+      ['Mejor con teclado y lector de pantalla: las hojas y menús se anuncian, reciben el foco y se cierran con Escape.', 'Better with keyboard and screen reader: sheets and menus are announced, take focus and close with Escape.'],
+    ],
+  },
   {
     version: '0.0.73',
     items: [
@@ -166,13 +177,7 @@ export const CHANGELOG: Release[] = [
   },
 ]
 
-/** -1, 0 o 1 comparando versiones «0.0.57». */
-export function compareVersions(a: string, b: string): number {
-  const x = a.split('.').map(Number)
-  const y = b.split('.').map(Number)
-  for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) < (y[i] ?? 0) ? -1 : 1
-  return 0
-}
+export { compareVersions } from './versions'
 
 /** Lo nuevo desde la última versión vista (como mucho las 3 últimas); sin haber visto ninguna, solo la actual. */
 export function unseenReleases(seen: string | undefined, current: string): Release[] {

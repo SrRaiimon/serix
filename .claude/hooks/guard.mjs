@@ -16,9 +16,19 @@ const versionAt = (ref) => { try { return JSON.parse(git('show', `${ref}:package
 /** La orden sin lo que va entre comillas: un texto que menciona estas órdenes no es la orden. */
 const unquoted = (command) => command.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, "''")
 
+/**
+ * Lo que se ejecuta de verdad: la orden sin comillas y, además, lo entrecomillado que se pasa a otro
+ * intérprete (`bash -c "…"`, `sh -c '…'`, `eval "…"`, `xargs …`), que sí es una orden.
+ */
+function executed(command) {
+  const inner = [...command.matchAll(/(?:\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-c|\beval|\bxargs(?:\s+-\S+)*)\s+(['"])([\s\S]*?)\1/g)].map((m) => m[2])
+  return [unquoted(command), ...inner].join(' ; ')
+}
+
 /** Borrado recursivo en cualquier forma: -r, -rf, -Rf, -rfv, -r -f, --recursive… */
 function recursiveRm(command) {
-  for (const m of command.matchAll(/(?:^|[;&|(\s])rm((?:\s+-{1,2}[\w-]+)+)/g)) {
+  // `rm`, `/bin/rm`, `\rm`, `command rm`…: lo que haya delante de «rm» no importa.
+  for (const m of command.matchAll(/(?:^|[;&|(\s/\\])rm((?:\s+-{1,2}[\w-]+)+)/g)) {
     const flags = m[1].split(/\s+/).filter(Boolean)
     const short = flags.filter((f) => /^-[^-]/.test(f)).join('')
     const recursive = /[rR]/.test(short) || flags.includes('--recursive')
@@ -30,7 +40,7 @@ function recursiveRm(command) {
 
 function forbidden(command) {
   const bare = unquoted(command)
-  if (recursiveRm(bare)) return 'nada de borrados recursivos: borra solo el archivo temporal que hayas creado, nunca una carpeta entera'
+  if (recursiveRm(executed(command))) return 'nada de borrados recursivos: borra solo el archivo temporal que hayas creado, nunca una carpeta entera'
   if (/git\s+config\s+(--global|--system)\s+user\.email/.test(bare) && !/--get\b|user\.email\s*$/.test(bare)) return 'el email global de git no se cambia sin preguntar'
   return undefined
 }

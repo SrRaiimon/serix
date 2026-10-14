@@ -20,7 +20,8 @@ test('biblioteca: cada programa sale completo con el material indicado', () => {
       for (const day of program.days) {
         assert.ok(day.exercises.length >= Math.min(3, p.templates[0].slots.length), `${p.id} ${equipment}: ${day.name} con ${day.exercises.length} ejercicios`)
         assert.equal(new Set(day.exercises.map((e) => e.exercise.id)).size, day.exercises.length, `${p.id}: ejercicio repetido en ${day.name}`)
-        for (const e of day.exercises) assert.ok(allowed.has(e.exercise.equipment), `${p.id} ${equipment}: ${e.exercise.id} usa ${e.exercise.equipment}`)
+        // La toalla y la mochila valen en casa aunque el catálogo las apunte como «other».
+        for (const e of day.exercises) assert.ok(allowed.has(e.exercise.equipment) || (equipment !== 'gym' && ['Towel_Door_Row', 'Backpack_Row'].includes(e.exercise.id)), `${p.id} ${equipment}: ${e.exercise.id} usa ${e.exercise.equipment}`)
       }
     }
   }

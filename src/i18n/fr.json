@@ -1992,5 +1992,12 @@
 "Tengo barra de dominadas": "J'ai une barre de traction",
 "Ya haces {0} repeticiones en todas las series: prueba una variante más difícil o añade lastre.": "Tu fais déjà {0} répétitions sur toutes les séries : essaie une variante plus difficile ou ajoute du lest.",
 "Calcular tus calorías en la bienvenida carga mucho menos.": "Calculer tes calories dans l'accueil charge beaucoup moins de choses.",
-"La app se pinta antes al abrirla: los estilos van dentro de la página en vez de pedirse aparte.": "L'app s'affiche plus tôt à l'ouverture : les styles sont inclus dans la page au lieu d'être demandés à part."
+"La app se pinta antes al abrirla: los estilos van dentro de la página en vez de pedirse aparte.": "L'app s'affiche plus tôt à l'ouverture : les styles sont inclus dans la page au lieu d'être demandés à part.",
+"Apunta las repeticiones y toca ○ al acabar la serie: el descanso empieza solo.": "Note tes répétitions et touche ○ à la fin de la série : le repos démarre tout seul.",
+"En dominadas y fondos verás «tu peso + 12,5 kg» en vez de totales con decimales, y la columna «Última vez» del entreno ya no se corta.": "Pour les tractions et les dips, tu verras « ton poids + 12,5 kg » au lieu de totaux avec décimales, et la colonne « Dernière fois » de la séance n'est plus coupée.",
+"En ejercicios sin peso el entreno solo pide repeticiones y la progresión nunca te propone menos de lo que ya haces.": "Pour les exercices au poids du corps, la séance ne demande que les répétitions, et la progression ne te propose jamais moins que ce que tu fais déjà.",
+"Los programas de la Biblioteca ajustan series y repeticiones al ejercicio que te toca con tu material.": "Les programmes de la bibliothèque adaptent séries et répétitions à l'exercice qui te revient avec ton matériel.",
+"Mejor con teclado y lector de pantalla: las hojas y menús se anuncian, reciben el foco y se cierran con Escape.": "Meilleur au clavier et avec un lecteur d'écran : les panneaux et menus sont annoncés, reçoivent le focus et se ferment avec Échap.",
+"Programas en casa más completos: remo con toalla o mochila, sin estiramientos colados como series de fuerza y en el gimnasio un peso muerto rumano o hip thrust antes que el swing.": "Programmes maison plus complets : rowing avec une serviette ou un sac à dos, plus d'étirements glissés comme séries de force, et en salle un soulevé de terre roumain ou un hip thrust avant le swing.",
+"Lastre": "Lest"
 }

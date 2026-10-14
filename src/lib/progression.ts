@@ -179,14 +179,16 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
  * difícil o lastre (se avisa). Si aún no se llega, se rellena como siempre.
  */
 function bodyweightPlan(ex: PlanInput, last: SetEntry[]): Plan | undefined {
-  if (ex.progression === 'wave531' || ex.progression === 'percent' || ex.repsMax <= 0) return undefined
+  // Solo con progresión automática (doble o lineal): en «Manual» la decides tú, aunque apuntes 0 kg.
+  if ((ex.progression !== 'double' && ex.progression !== 'linear') || ex.repsMax <= 0) return undefined
   const main = last.filter((s) => s.kind !== 'drop')
   if (!main.length || !main.every((s) => s.weight === 0 && s.reps > 0)) return undefined
   const count = Math.max(ex.sets, 1)
   if (main.length < count || !main.every((s) => s.reps >= ex.repsMax)) return undefined
   const from = Math.min(...main.map((s) => s.reps))
   const cap = ex.repsMax + 5
-  const to = Math.min(cap, from + 1)
+  // Pasado el tope no se sube más, pero tampoco se baja de lo que ya haces.
+  const to = from >= cap ? from : Math.min(cap, from + 1)
   return { sets: Array.from({ length: count }, () => blank(0, to)), auto: { kind: 'reps', from, to, ...(from >= cap ? { harder: true as const } : {}) } }
 }
 

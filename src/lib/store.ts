@@ -394,7 +394,8 @@ async function writeData(data: AppData): Promise<AppData | undefined> {
 class NewerData extends Error {}
 
 type Keyed = { id?: string; name?: string }
-const keyOf = (x: Keyed) => x.id ?? x.name ?? ''
+// Sin id (amigos), por el nombre sin mayúsculas ni espacios de más: «Ana» y «ana » son la misma persona.
+const keyOf = (x: Keyed) => x.id ?? x.name?.trim().toLowerCase() ?? ''
 
 /**
  * Igual de contenido. Lo leído de IndexedDB son copias (nunca el mismo objeto que hay en memoria), así que
@@ -432,6 +433,8 @@ function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefi
   return out
 }
 
+const withoutLists = ({ entries: _e, foods: _f, meals: _m, ...rest }: NutritionData) => rest
+
 /** Un objeto clave a clave (ajustes, notas…), a tres bandas. */
 function mergeRecord<T extends object>(theirs: T, ours: T, common: T | undefined): T {
   const out: Record<string, unknown> = {}
@@ -461,7 +464,8 @@ export function mergeData(theirs: AppData, ours: AppData, common?: AppData): App
     exerciseNotes: mergeRecord(theirs.exerciseNotes, ours.exerciseNotes, common?.exerciseNotes),
     settings: mergeRecord(theirs.settings, ours.settings, common?.settings),
     nutrition: {
-      ...mergeRecord(theirs.nutrition, ours.nutrition, common?.nutrition),
+      // Sin las listas (se juntan aparte): compararlas enteras con JSON serían megas con años de comidas.
+      ...mergeRecord(withoutLists(theirs.nutrition), withoutLists(ours.nutrition), common && withoutLists(common.nutrition)),
       entries: list((d) => d.nutrition.entries),
       foods: list((d) => d.nutrition.foods),
       meals: list((d) => d.nutrition.meals),

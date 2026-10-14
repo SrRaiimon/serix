@@ -1214,9 +1214,9 @@ a.list-row:active {
   line-height: 1.2;
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* En dos líneas si no cabe («92,5×9» y «@7» debajo): cortado con «…» no se veía el esfuerzo. */
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .set-input {
@@ -2368,7 +2368,7 @@ html.scroll-locked body {
 .week .dot.today.done { background: var(--ink); color: var(--on-ink); box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--accent); }
 .segmented { gap: 4px; }
 .share-preview.story { aspect-ratio: 9 / 16; width: 52%; }
-.session-row, .session-head { display: grid; grid-template-columns: minmax(0, 1fr) 60px 68px 50px; align-items: baseline; gap: 6px; }
+.session-row, .session-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(60px, auto) 64px 50px; align-items: baseline; gap: 6px; }
 .session-row > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .session-head > span { white-space: nowrap; }
 .session-row > :not(:first-child), .session-head > :not(:first-child) { text-align: right; }
@@ -2716,3 +2716,6 @@ a.list-row { color: var(--text); text-decoration: none; }
 .list-row .select { min-height: 44px; }
 /* Pesos de 4 cifras o con decimales («142,5») caben en la columna de 62 px. */
 .set-input.long { font-size: 16px; letter-spacing: -0.02em; }
+
+/* Las hojas reciben el foco al abrirse (para el lector de pantalla): sin contorno, lo que se ve es la hoja. */
+.sheet:focus, .dialog:focus { outline: none; }

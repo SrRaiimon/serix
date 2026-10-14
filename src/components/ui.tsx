@@ -149,7 +149,7 @@ export function Row({ icon: Icon, label, detail, onClick, chevron = true, classN
 
 export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
   return (
-    <div className={`segmented ${options.length >= 5 ? 'many' : ''}`}>
+    <div className={`segmented ${options.length >= 4 ? 'many' : ''}`}>
       {options.map((o) => (
         <button key={o.value} className={o.value === value ? 'active' : ''} aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
           <span className="seg-label">{o.label}</span>
@@ -179,6 +179,41 @@ export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: nu
   return <MuscleThumb exercise={exercise} size={size} />
 }
 
+// Pila de hojas abiertas: Escape cierra solo la de arriba y el resto de la app queda inerte mientras haya alguna.
+const dialogStack: object[] = []
+
+/**
+ * Hace de una hoja un diálogo accesible: el foco entra en ella al abrir (y vuelve al botón que la abrió al cerrar),
+ * Escape la cierra, y lo de detrás (#root) queda inerte, así Tab y el lector de pantalla no se salen.
+ */
+function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
+  const close = useRef(onClose)
+  close.current = onClose
+  useEffect(() => {
+    const token = {}
+    dialogStack.push(token)
+    const before = document.activeElement as HTMLElement | null
+    const root = document.getElementById('root')
+    root?.setAttribute('inert', '')
+    // A la hoja misma (no al primer campo: en el móvil abriría el teclado): el lector anuncia su título y el
+    // siguiente Tab ya va a su primer control.
+    ref.current?.focus({ preventScroll: true })
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && dialogStack[dialogStack.length - 1] === token) {
+        e.stopPropagation()
+        close.current()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      dialogStack.splice(dialogStack.indexOf(token), 1)
+      if (!dialogStack.length) root?.removeAttribute('inert')
+      if (before?.isConnected) before.focus({ preventScroll: true })
+    }
+  }, [ref])
+}
+
 /** Hoja modal a pantalla casi completa, como las de iOS. */
 export function Sheet({ title, left, right, footer, children, onClose, scrollKey }: {
   title: string
@@ -195,10 +230,12 @@ export function Sheet({ title, left, right, footer, children, onClose, scrollKey
     body.current?.scrollTo({ top: 0 })
   }, [scrollKey])
   useScrollLock()
+  const dialog = useRef<HTMLDivElement>(null)
+  useDialog(dialog, onClose)
   return (
     <Overlay>
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" ref={dialog} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
         <NavBar title={title} left={left} right={right} />
         <div className="sheet-body" ref={body}>{children}</div>
         {footer && <div className="sheet-footer">{footer}</div>}
@@ -221,10 +258,12 @@ export interface DialogOption {
 
 /** Hoja de acciones (confirmaciones). */
 export function ActionSheet({ title, message, options, onClose }: { title?: string; message?: string; options: DialogOption[]; onClose: () => void }) {
+  const dialog = useRef<HTMLDivElement>(null)
+  useDialog(dialog, onClose)
   return (
     <Overlay>
     <div className="dialog-backdrop" onClick={onClose}>
-      <div className="dialog" onClick={(e) => e.stopPropagation()}>
+      <div className="dialog" ref={dialog} role="dialog" aria-modal="true" aria-label={title ?? t('Opciones', 'Options')} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
         <div className="group">
           {(title || message) && (
             <div className="head">

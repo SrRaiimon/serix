@@ -100,18 +100,21 @@ export function ReportScreen() {
                   ? t(`Peso: de ${weight(w0, unit)} a ${weight(w1, unit)} (${w1 - w0 >= 0 ? '+' : '−'}${weight(Math.abs(w1 - w0), unit)}), ${r.weights.length} pesadas.`, `Weight: from ${weight(w0, unit)} to ${weight(w1, unit)} (${w1 - w0 >= 0 ? '+' : '−'}${weight(Math.abs(w1 - w0), unit)}), ${r.weights.length} weigh-ins.`)
                   : t(`Peso: ${weight(w0, unit)}.`, `Weight: ${weight(w0, unit)}.`)}</p>
               )}
-              {r.lastMeasure && (
-                <p className="small">{t(`Última medida (${day(r.lastMeasure.date)}): `, `Last measurement (${day(r.lastMeasure.date)}): `)}
-                  {[
+              {r.lastMeasure && (() => {
+                // Solo si hay algo que contar (antes salía «Última medida (…): —»), y la fecha en minúscula a media frase.
+                const parts = [
                     w0 === undefined && r.lastMeasure.weight !== undefined && `${t('peso', 'weight')} ${weight(r.lastMeasure.weight, unit)}`,
                     r.lastMeasure.bodyFat !== undefined && `${t('grasa', 'body fat')} ${editable(r.lastMeasure.bodyFat)} %`,
                     r.lastMeasure.waist !== undefined && `${t('cintura', 'waist')} ${editable(r.lastMeasure.waist)} cm`,
                     r.lastMeasure.chest !== undefined && `${t('pecho', 'chest')} ${editable(r.lastMeasure.chest)} cm`,
                     r.lastMeasure.arm !== undefined && `${t('brazo', 'arm')} ${editable(r.lastMeasure.arm)} cm`,
                     r.lastMeasure.thigh !== undefined && `${t('muslo', 'thigh')} ${editable(r.lastMeasure.thigh)} cm`,
-                  ].filter(Boolean).join(' · ') || '—'}
-                </p>
-              )}
+                ].filter(Boolean)
+                const when = day(r.lastMeasure.date)
+                return parts.length > 0 && (
+                  <p className="small">{t(`Última medida (${when.charAt(0).toLowerCase() + when.slice(1)}): `, `Last measurement (${when}): `)}{parts.join(' · ')}</p>
+                )
+              })()}
             </section>
           )}
 

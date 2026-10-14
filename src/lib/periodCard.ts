@@ -1,4 +1,4 @@
-import { addDays, int, startOfDay, startOfWeek, volume, type Unit } from './format'
+import { addDays, int, startOfDay, startOfWeek, type Unit, tons } from './format'
 import { locale, t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { periodStats, setCount, streakWeeks } from './stats'
@@ -150,7 +150,7 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   const tiles: [string, string][] = [
     [int(s.sessions), s.sessions === 1 ? t('entrenamiento', 'workout') : t('entrenamientos', 'workouts')],
     [String(hours), t('horas', 'hours')],
-    [volume(s.volume, unit), t('levantados', 'lifted')],
+    [tons(s.volume, unit), t('levantados', 'lifted')],
     [int(s.records), s.records === 1 ? t('récord batido', 'record broken') : t('récords batidos', 'records broken')],
   ]
   const tileSvg = statBand(60, 270, 960, 175, tiles, 2)

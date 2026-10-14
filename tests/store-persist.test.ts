@@ -89,3 +89,32 @@ test('varias pestañas: al guardar, si otra pestaña escribió antes, se junta e
   assert.equal(stored.get('rev'), 6)
   assert.equal(getData().sessions.length, 1, 'y se ve en esta pestaña')
 }))
+
+test('varias pestañas: rutinas y notas también a tres bandas', () => {
+  const r = (id: string, name: string) => ({ id, name, notes: '', order: 0, createdAt: 0, exercises: [] })
+  const base = migrateData({ version: 1, sessions: [], routines: [r('a', 'Torso'), r('b', 'Pierna')], exerciseNotes: { bench: 'agarre medio' }, settings: {} })
+  assert.ok(base && base !== 'newer')
+  const theirs = structuredClone({ ...base, routines: [r('a', 'Torso A'), base.routines[1]], exerciseNotes: { bench: 'agarre medio', squat: 'barra baja' } })
+  const ours = { ...base, routines: [base.routines[0]] } // aquí se borra «Pierna»
+  const merged = mergeData(theirs, ours, base)
+  assert.deepEqual(merged.routines.map((x) => x.name), ['Torso A'], 'el cambio de nombre de allí y el borrado de aquí')
+  assert.deepEqual(merged.exerciseNotes, { bench: 'agarre medio', squat: 'barra baja' })
+})
+
+test('varias pestañas: si otra pestaña guardó con una versión más nueva, no se escribe encima', serial(async () => {
+  const stored = fakeIndexedDB()
+  stored.set('data', { version: 1, sessions: [], routines: [], settings: {} })
+  forgetDB()
+  await loadData()
+  stored.set('data', { version: DATA_VERSION + 1, sessions: [], routines: [], settings: {}, futuro: true })
+  stored.set('rev', 9)
+  update((d) => { d.settings.name = 'Vieja' })
+  await flush()
+  assert.equal((stored.get('data') as { futuro?: boolean }).futuro, true, 'lo de la versión nueva sigue intacto')
+  assert.equal(storageProblem()?.kind, 'newer')
+  // Restaurar una copia vuelve a permitir guardar (y deja el estado limpio para los demás tests).
+  stored.delete('data'); stored.delete('rev')
+  forgetDB()
+  await loadData()
+  await replaceData({ ...getData(), sessions: [] })
+}))

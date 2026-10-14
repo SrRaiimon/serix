@@ -616,7 +616,7 @@ export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; o
       <div className="list-header">{t('Material disponible', 'Available equipment')}</div>
       <div className="list">
         {equipmentProfiles.map((p) => (
-          <button key={p.id} className="list-row" onClick={() => onChange({ ...config, equipment: p.id })}>
+          <button key={p.id} className="list-row" aria-pressed={config.equipment === p.id} onClick={() => onChange({ ...config, equipment: p.id })}>
             <span className="grow">{p.label}</span>
             {config.equipment === p.id && <span style={{ color: 'var(--accent-text)', fontWeight: 800 }}>✓</span>}
           </button>

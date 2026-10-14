@@ -1,6 +1,6 @@
 import { Medal } from 'lucide-react'
 import { Fragment, useMemo } from 'react'
-import { shortDay, weightValue, type Unit } from '../lib/format'
+import { fromKg, shortDay, toKg, weightValue, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { REP_TARGETS, repRecords } from '../lib/stats'
 import type { Session } from '../lib/store'
@@ -27,7 +27,7 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
           <Fragment key={target}>
             <span className="rep-target">{target}</span>
             {/* Con el peso corporal dentro (dominadas, fondos) salían decimales como 92,82: medio kilo basta. */}
-            <strong>{weightValue(Math.round(r.weight * 2) / 2, unit)}<small> {unit}</small></strong>
+            <strong>{weightValue(toKg(Math.round(fromKg(r.weight, unit) * 2) / 2, unit), unit)}<small> {unit}</small></strong>
             <span className="small muted">{t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`)}</span>
           </Fragment>
         ))}

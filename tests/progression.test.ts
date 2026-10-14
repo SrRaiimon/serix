@@ -118,16 +118,18 @@ test('porcentaje: usa el 1RM de los últimos 90 días desde hoy; tras una pausa,
 })
 
 test('sin peso: al llegar al máximo en todas, una repetición más; pasado el tope, variante más difícil', () => {
-  const push = { exerciseId: 'Pushups', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12 }
+  const push = { exerciseId: 'Pushups', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12, progression: 'double' as const }
   // Aún no llega al máximo en todas: se rellena como siempre.
   assert.equal(plan(push, [set(0, 12), set(0, 12), set(0, 10)], [], 'kg'), undefined)
   const up = plan(push, [set(0, 12), set(0, 13), set(0, 12)], [], 'kg')
   assert.deepEqual(shape(up), ['0x13', '0x13', '0x13'])
   assert.deepEqual(up?.auto, { kind: 'reps', from: 12, to: 13 })
-  // Con progresión doble también (no exige peso).
-  assert.equal(plan({ ...push, progression: 'double' }, [set(0, 12), set(0, 12), set(0, 12)], [], 'kg')?.auto?.kind, 'reps')
+  // En «Manual» (sin progresión) no se toca nada aunque se apunten 0 kg.
+  assert.equal(plan({ ...push, progression: undefined }, [set(0, 12), set(0, 12), set(0, 12)], [], 'kg'), undefined)
   const top = plan(push, [set(0, 17), set(0, 17), set(0, 18)], [], 'kg')
   assert.deepEqual(top?.auto, { kind: 'reps', from: 17, to: 17, harder: true })
+  // Ya por encima del tope: nunca menos de lo que haces.
+  assert.deepEqual(shape(plan(push, [set(0, 20), set(0, 20), set(0, 20)], [], 'kg')), ['0x20', '0x20', '0x20'])
 })
 
 test('5/3/1: dos sesiones en la misma semana cuentan como una semana del ciclo', () => {

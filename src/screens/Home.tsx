@@ -21,12 +21,14 @@ import { BlockStatus } from '../components/Block'
 import { blockWeek } from '../lib/block'
 import { SessionRow } from '../components/SessionRow'
 import { forgottenGroups } from '../lib/forgotten'
-
-const CoachCard = lazy(() => import('../components/Coach').then((m) => ({ default: m.CoachCard })))
-const NewsCard = lazy(() => import('../components/News').then((m) => ({ default: m.NewsCard })))
 import { MAIN_GROUPS } from '../lib/labels'
 import { locale, plural, t } from '../lib/i18n'
 import { shareReminderDue } from '../lib/friendReminder'
+
+// El entrenador tira del generador y de las alternativas; las novedades, de la lista entera: se cargan
+// después de pintar Inicio.
+const CoachCard = lazy(() => import('../components/Coach').then((m) => ({ default: m.CoachCard })))
+const NewsCard = lazy(() => import('../components/News').then((m) => ({ default: m.NewsCard })))
 
 
 export function HomeScreen() {

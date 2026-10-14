@@ -33,7 +33,8 @@ export function fakeIndexedDB() {
   const db = {
     createObjectStore: () => {},
     transaction: () => {
-      const tx: { objectStore: () => unknown; oncomplete?: () => void } = {
+      const tx: { objectStore: () => unknown; oncomplete?: () => void; onabort?: () => void; abort: () => void } = {
+        abort: () => setTimeout(() => tx.onabort?.()),
         objectStore: () => ({
           get: (key: string) => request(data.get(key)),
           put: (value: unknown, key: string) => {

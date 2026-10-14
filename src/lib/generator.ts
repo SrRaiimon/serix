@@ -75,7 +75,7 @@ interface Slot {
 
 const slots = {
   squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Squat', 'Split_Squats'] },
-  hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Barbell_Hip_Thrust', 'Single_Leg_Glute_Bridge'] },
+  hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
   legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Bodyweight_Walking_Lunge'] },
   lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
   legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Floor_Glute-Ham_Raise'] },
@@ -205,8 +205,14 @@ function suits(e: Exercise, r: PickRules): boolean {
   return true
 }
 
+/** Material casero que no es «peso corporal» en el catálogo, pero que hay en cualquier casa (una toalla, una mochila). */
+const HOME_EXTRAS = new Set(['Towel_Door_Row', 'Backpack_Row'])
+
 function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules = {}): Exercise | undefined {
-  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && allowed.has(e.equipment) && suits(e, rules))
+  const usable = (e: Exercise) => allowed.has(e.equipment) || (rules.equipment !== undefined && rules.equipment !== 'gym' && HOME_EXTRAS.has(e.id))
+  // Los estiramientos del catálogo (Superman, Split_Squats…) no cuentan como series de fuerza.
+  const strengthy = (e: Exercise) => slot.kind === 'conditioning' || e.category !== 'stretching'
+  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && usable(e) && strengthy(e) && suits(e, rules))
   for (let offset = 0; offset < preferred.length; offset++) {
     const candidate = preferred[(variant + offset) % preferred.length]
     if (!used.has(candidate.id)) return candidate
@@ -217,7 +223,7 @@ function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<strin
     : slot.muscles.includes(e.muscle) && e.category === 'strength' && (!slot.match || slot.match.test(e.nameEn))
   const levelRank: Record<string, number> = { beginner: 0, intermediate: 1, expert: 2 }
   const fallback = catalog.exercises
-    .filter((e) => fits(e) && allowed.has(e.equipment) && !used.has(e.id) && suits(e, rules))
+    .filter((e) => fits(e) && usable(e) && strengthy(e) && !used.has(e.id) && suits(e, rules))
     .sort((a, b) => (levelRank[a.level] ?? 1) - (levelRank[b.level] ?? 1) || a.nameEn.length - b.nameEn.length)
   return fallback.length ? fallback[Math.min(variant, fallback.length - 1)] : undefined
 }
@@ -249,7 +255,7 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   if (kind === 'conditioning' || kind === 'core') return out
   if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
-  else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20 })
+  else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   return out
 }
@@ -401,17 +407,26 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
   const days = p.templates.map((template, index) => {
     const used = new Set<string>()
     const exercises: GeneratedExercise[] = []
+    const perMuscle = new Map<string, number>()
     for (const [name, variant] of template.slots) {
       // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
       // extra). Lo de un básico pesado por día no: son programas clásicos (el 5×5 junta sentadilla y peso muerto).
-      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment }
+      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment, strict: !(p.extraEquipment ?? []).includes('other') }
       const found = pickOrSubstitute(name, variant, allowed, used, catalog, rules)
       if (!found) continue
       const { exercise, slot } = found
       used.add(exercise.id)
       const [schemeSets, repsMin, repsMax, rest] = p.scheme[slot.kind]
-      const sets = p.setsFor?.[name] ?? schemeSets
-      exercises.push({ exercise, sets, repsMin, repsMax, rest, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
+      // La pauta del programa, ajustada al ejercicio que ha tocado con tu material (un 5×5 sin barra no es
+      // sentadilla al aire a 5 repeticiones) y con el mismo tope de series por músculo que el generador.
+      const s = fitScheme(exercise, slot.kind, { sets: p.setsFor?.[name] ?? schemeSets, repsMin, repsMax, rest })
+      const done = perMuscle.get(exercise.muscle) ?? 0
+      if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') {
+        if (done > MAX_SETS_PER_SESSION - 2) continue
+        s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
+        perMuscle.set(exercise.muscle, done + s.sets)
+      }
+      exercises.push({ exercise, ...s, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
     }
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })

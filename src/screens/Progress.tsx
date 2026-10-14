@@ -403,9 +403,9 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
         {top.map((r) => (
           <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
             <strong>{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
-            <span className="clamp-2">{r.name}</span>
-            {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta. */}
-            {r.added !== undefined && <span className="tiny muted">{t('con tu peso', 'incl. bodyweight')}</span>}
+            {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta.
+                Va con el nombre (no en una línea más) para no descuadrar las columnas. */}
+            <span className="clamp-2">{r.name}{r.added !== undefined && <span className="muted"> · {t('con tu peso', 'incl. bodyweight')}</span>}</span>
             {(r.e1rm - (before.get(r.exerciseId) ?? r.e1rm)) >= 0.5 && (
               <em title={t('Mejora en los últimos 30 días', 'Gain in the last 30 days')}>+{int(fromKg(r.e1rm - before.get(r.exerciseId)!, unit))} {unit} · 30 d</em>
             )}
@@ -751,7 +751,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
           )}
         </Card>
         <RepRecordsCard exerciseId={id} sessions={sessions} unit={unit} />
-        <div className="list-header session-head"><span>{t('Sesiones', 'Sessions')}</span><span>{t('Serie', 'Set')}</span><span>{t('Máx. est.', 'Est. max')}</span><span>{t('Cambio', 'Change')}</span></div>
+        <div className="list-header session-head"><span>{t('Sesiones', 'Sessions')}</span><span>{points.some((p) => p.addedAtMax !== undefined) ? t('Lastre', 'Added') : t('Serie', 'Set')}</span><span>{t('Máx. est.', 'Est. max')}</span><span>{t('Cambio', 'Change')}</span></div>
         <div className="list">
           {sessionRuns(points).map((run, i, runs) => {
             // Cambio del máximo estimado respecto al grupo anterior (el siguiente en la lista, que va de nuevo a viejo).
@@ -763,7 +763,11 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
                   {run.count > 1 ? `${shortDay(run.from)}–${shortDay(run.to)}` : shortDay(run.to)}
                   {run.count > 1 && <span className="tiny muted" style={{ display: 'block' }}>{t(`${run.count} sesiones iguales`, `${run.count} same sessions`)}</span>}
                 </span>
-                <span className="small muted">{weightValue(run.p.maxWeight, unit)} × {run.p.repsAtMax}</span>
+                {/* Con lastre, el lastre («+12,5 kg», «−20 kg» asistida) y no el total con decimales del peso corporal;
+                    en corto para que quepa la fecha (el título de la columna ya dice que va sobre tu peso). */}
+                <span className="small muted">{run.p.addedAtMax !== undefined
+                  ? (run.p.addedAtMax === 0 ? t('tu peso', 'bodyweight') : `${run.p.addedAtMax > 0 ? '+' : '−'}${weight(Math.abs(run.p.addedAtMax), unit)}`)
+                  : weightValue(run.p.maxWeight, unit)} × {run.p.repsAtMax}</span>
                 <span className="bold">{int(fromKg(run.p.e1rm, unit))} {unit}</span>
                 <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))} ${unit}` : '—'}</span>
               </div>

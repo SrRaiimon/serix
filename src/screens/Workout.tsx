@@ -461,7 +461,9 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <div className="howto small">
           <Info size={16} aria-hidden="true" />
           <span>
-            {t('Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter weight and reps and tap ○ when the set is done: rest starts by itself.')}
+            {bodyweight
+              ? t('Apunta las repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter your reps and tap ○ when the set is done: rest starts by itself.')
+              : t('Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter weight and reps and tap ○ when the set is done: rest starts by itself.')}
             {weightHint && !bodyweight ? ` ${t(`Peso: uno con el que llegues a ${exercise.repsMax} repeticiones con 2 de margen.`, `Weight: one you can lift ${exercise.repsMax} times with 2 reps to spare.`)}` : ''}
           </span>
         </div>
@@ -507,7 +509,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         // Tras el lado izquierdo se pasa al derecho sin descanso.
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
-          <SetRow key={set.id} set={set} label={label} previous={prev} fresh={!previous.length} tracking={tracking} current={set.id === currentSet}
+          <SetRow key={set.id} set={set} label={label} previous={prev} fresh={!previous.length} bodyweight={bodyweight} tracking={tracking} current={set.id === currentSet}
             repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} needsWeight={needsWeight && !exercise.assisted} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
@@ -621,10 +623,12 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
 /** Si ya se marcó alguna serie mientras la app está abierta (para no repetir la ayuda del primer día). */
 let firstSetDone = false
 
-function SetRow({ set, label, previous, fresh, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
+function SetRow({ set, label, previous, fresh, bodyweight, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
   set: SetEntry
   /** Ejercicio sin historial: sin columna «Última vez». */
   fresh: boolean
+  /** Peso corporal: el peso es el lastre (0 = sin). */
+  bodyweight: boolean
   current: boolean
   askRpe: boolean
   onAskRpe: () => void
@@ -826,7 +830,8 @@ function SetRow({ set, label, previous, fresh, tracking, current, repsPlaceholde
         onStop={(done) => change({ duration: done })}
         onFinish={(total) => { change({ duration: total }); complete() }} />
     )}
-    {current && !set.done && tracking === 'weight_reps' && !set.warmup && (
+    {/* Sin lastre (peso corporal a 0), los botones de ±2,5 kg sobran. */}
+    {current && !set.done && tracking === 'weight_reps' && !set.warmup && !(bodyweight && set.weight <= 0) && (
       <div className="weight-steps">
         {[-1, 1].map((sign) => {
           const step = increment(unit)
