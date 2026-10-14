@@ -6,7 +6,7 @@ import { equipmentInfo, equipmentProfiles, generate, goalInfo, goals, levelInfo,
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
-import { ProgramPreview, saveProgram } from './Routines'
+import { ProgramPreview, PullupBarRow, saveProgram } from './Routines'
 import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./Food').then((m) => ({ default: m.GoalsSheet })))
@@ -23,7 +23,7 @@ export function OnboardingScreen() {
   const [step, setStep] = useState(0)
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
-  const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment }
+  const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }
 
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
   const [foodStep, setFoodStep] = useState(false)
@@ -147,6 +147,7 @@ export function OnboardingScreen() {
             {equipmentProfiles.map((p) => (
               <Option key={p.id} icon={equipmentIcons[p.id]} title={p.label} active={settings.equipment === p.id} onClick={() => updateSettings({ equipment: p.id })} />
             ))}
+            {settings.equipment !== 'gym' && <div className="list"><PullupBarRow value={!!settings.pullupBar} onChange={(v) => updateSettings({ pullupBar: v || undefined })} /></div>}
           </>
         )}
         {step === 5 && (

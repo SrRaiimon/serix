@@ -1,7 +1,7 @@
-import { fromKg, increment, toKg, uid, type Unit } from './format'
+import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
 import { isIsolation } from './isolation'
 import { records, workingSets } from './stats'
-import type { AutoProgress, Progression, Session, SetEntry } from './store'
+import type { AutoProgress, Progression, Session, SessionExercise, SetEntry } from './store'
 
 // Progresión automática del peso al empezar una rutina.
 //
@@ -92,17 +92,24 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
   if (ex.progression === 'wave531') {
     if (!ex.trainingMax) return undefined
     const since = ex.tmSince ?? 0
-    // Semana del ciclo: cuántas veces se ha hecho el ejercicio desde que se fijó el TM.
-    const done = history
-      .filter((s) => s.start >= since)
-      .sort((a, b) => a.start - b.start)
-      .map((s) => s.exercises.find((e) => e.exerciseId === ex.exerciseId && workingSets(e).length))
-      .filter((e) => e !== undefined)
-    const week = done.length % 4
+    // Semana del ciclo por semanas del calendario (no por sesiones): quien hace la sentadilla dos veces
+    // por semana repite la semana del ciclo en vez de terminarlo en la mitad de tiempo. Cada semana cuenta
+    // con su primera sesión de este ejercicio.
+    const byWeek = new Map<number, SessionExercise>()
+    for (const s of [...history].filter((x) => x.start >= since).sort((a, b) => a.start - b.start)) {
+      const e = s.exercises.find((x) => x.exerciseId === ex.exerciseId && workingSets(x).length)
+      const w = startOfWeek(s.start).getTime()
+      if (e && !byWeek.has(w)) byWeek.set(w, e)
+    }
+    const done = [...byWeek.values()]
+    // Si esta semana ya se hizo, hoy se repite esa semana del ciclo.
+    const thisWeek = byWeek.has(startOfWeek(now).getTime())
+    const index = thisWeek ? done.length - 1 : done.length
+    const week = index % 4
     // Cada ciclo terminado: si en algún AMRAP (semanas 1-3) no se llegó al mínimo, TM −10 %; si no, sube.
     let tm = ex.trainingMax
     let reset = false
-    for (let c = 0; c < Math.floor(done.length / 4); c++) {
+    for (let c = 0; c < Math.floor(index / 4); c++) {
       const missed = done.slice(c * 4, c * 4 + 3).some((e, w) => {
         // La serie AMRAP; si se cambió de tipo, la más pesada que se hizo. Sin ninguna hecha, cuenta como fallo.
         const work = e.sets.filter((x) => x.done && !x.warmup && x.kind !== 'drop')
@@ -130,6 +137,8 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     const reps = ex.repsMax || ex.repsMin || 5
     return { sets: Array.from({ length: Math.max(ex.sets, 1) }, () => blank(round(max * ex.percent!, unit), reps)), auto: { kind: 'percent', pct: ex.percent, max } }
   }
+  const bw = bodyweightPlan(ex, last)
+  if (bw) return bw
   if (ex.progression !== 'double' && ex.progression !== 'linear') return undefined
   const main = last.filter((s) => s.kind !== 'drop' && s.weight > 0)
   if (!main.length || ex.repsMax <= 0) return undefined
@@ -162,6 +171,23 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     sets: Array.from({ length: count }, (_, i) => blank(weight, ex.progression === 'linear' ? ex.repsMax : (main[Math.min(i, main.length - 1)].reps || ex.repsMin))),
     auto: { kind: 'hold', mode: ex.progression },
   }
+}
+
+/**
+ * Sin peso (todas las series de la última vez a 0 kg, con repeticiones): al llegar al máximo del rango en
+ * todas, una repetición más por serie. Pasado el máximo + 5 ya no se sube más: toca una variante más
+ * difícil o lastre (se avisa). Si aún no se llega, se rellena como siempre.
+ */
+function bodyweightPlan(ex: PlanInput, last: SetEntry[]): Plan | undefined {
+  if (ex.progression === 'wave531' || ex.progression === 'percent' || ex.repsMax <= 0) return undefined
+  const main = last.filter((s) => s.kind !== 'drop')
+  if (!main.length || !main.every((s) => s.weight === 0 && s.reps > 0)) return undefined
+  const count = Math.max(ex.sets, 1)
+  if (main.length < count || !main.every((s) => s.reps >= ex.repsMax)) return undefined
+  const from = Math.min(...main.map((s) => s.reps))
+  const cap = ex.repsMax + 5
+  const to = Math.min(cap, from + 1)
+  return { sets: Array.from({ length: count }, () => blank(0, to)), auto: { kind: 'reps', from, to, ...(from >= cap ? { harder: true as const } : {}) } }
 }
 
 // MARK: Programa 5/3/1

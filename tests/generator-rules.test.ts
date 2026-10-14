@@ -68,3 +68,10 @@ test('generador: kipping y nórdico fuera, y la pauta se ajusta al ejercicio', (
     }
   }
 })
+
+test('con barra de dominadas en casa, sí hay dominadas (desde intermedio)', () => {
+  const c: GeneratorConfig = { goal: 'hypertrophy', level: 'intermediate', days: 4, minutes: 60, equipment: 'dumbbells' }
+  const ids = (cfg: GeneratorConfig) => generate(cfg, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
+  assert.ok(!ids(c).some((id) => BAR.test(id)))
+  assert.ok(ids({ ...c, pullupBar: true }).some((id) => BAR.test(id)), ids({ ...c, pullupBar: true }).join(', '))
+})

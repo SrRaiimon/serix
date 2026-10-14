@@ -44,6 +44,10 @@ function autoProgress(v: unknown): AutoProgress | undefined {
     const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
     return from !== undefined && to !== undefined ? { kind: 'down', from, to, mode } : undefined
   }
+  if (v.kind === 'reps') {
+    const from = optNum(v.from, 0, 1000), to = optNum(v.to, 0, 1000)
+    return from !== undefined && to !== undefined ? { kind: 'reps', from: Math.round(from), to: Math.round(to), ...(v.harder === true ? { harder: true as const } : {}) } : undefined
+  }
   if (v.kind === 'percent') {
     const pct = optNum(v.pct, 0.3, 1), max = optNum(v.max, 0, 2000)
     return pct !== undefined && max !== undefined ? { kind: 'percent', pct, max } : undefined
@@ -224,6 +228,7 @@ function settings(v: unknown): Settings {
     nutritionAdviceAt: optNum(s.nutritionAdviceAt, EPOCH_MIN, EPOCH_MAX),
     foodReminders: s.foodReminders === true ? true : undefined,
     easyWeek: optNum(s.easyWeek, EPOCH_MIN, EPOCH_MAX),
+    pullupBar: s.pullupBar === true ? true : undefined,
     coachHidden: isObj(s.coachHidden) && optNum(s.coachHidden.week, EPOCH_MIN, EPOCH_MAX)
       ? { week: s.coachHidden.week as number, ids: list(s.coachHidden.ids, (x) => (typeof x === 'string' ? x.slice(0, 80) : undefined), 30) } : undefined,
     weightGoal: isObj(s.weightGoal) && optNum(s.weightGoal.kg, 20, 400) && optNum(s.weightGoal.from, 20, 400) ? {

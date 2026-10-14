@@ -122,6 +122,9 @@ export type AutoProgress =
   /** `reset`: este ciclo empieza con el TM un 10 % más bajo (algún AMRAP no llegó al mínimo). */
   | { kind: 'wave'; week: number; tm: number; reset?: true }
   | { kind: 'percent'; pct: number; max: number }
+  /** Sin peso (flexiones, dominadas sin lastre…): ya llegas al máximo del rango; una repetición más por serie y,
+   *  pasado el tope (máximo + 5), mejor una variante más difícil o añadir lastre. */
+  | { kind: 'reps'; from: number; to: number; harder?: true }
 
 export interface Session {
   id: string
@@ -242,6 +245,8 @@ export interface Settings {
   foodReminders?: boolean
   /** Semana suave propuesta por el entrenador (lunes de esa semana, ver lib/coach.ts). */
   easyWeek?: number
+  /** Tiene barra de dominadas aunque no entrene en gimnasio (el generador propone dominadas). */
+  pullupBar?: boolean
   /** Consejos del entrenador ocultos esta semana («Ahora no»). */
   coachHidden?: { week: number; ids: string[] }
   /** Meta de peso corporal con fecha opcional (ver lib/goals.ts). */

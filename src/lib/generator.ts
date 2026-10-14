@@ -39,6 +39,8 @@ export interface GeneratorConfig {
   days: number
   minutes: number
   equipment: EquipmentProfile
+  /** Barra de dominadas en casa (en el gimnasio se da por hecha). */
+  pullupBar?: boolean
 }
 
 export interface GeneratedExercise {
@@ -269,7 +271,7 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     const maxTotal = Math.round(c.minutes / 3.4)
     let total = 0
     for (const [name, variant] of list) {
-      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym', equipment: c.equipment, strict: true, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
+      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
       const found = pickOrSubstitute(name, variant + variation, allowed, used, catalog, rules)
       if (!found) continue
       const { exercise, slot } = found
@@ -394,7 +396,7 @@ export const LIBRARY: LibraryProgram[] = [
 ]
 
 /** Un programa de la biblioteca con los ejercicios del material indicado. */
-export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog): GeneratedProgram {
+export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog, pullupBar = false): GeneratedProgram {
   const allowed = new Set([...equipmentInfo(p.equipment ?? equipment).allowed, ...(p.extraEquipment ?? [])])
   const days = p.templates.map((template, index) => {
     const used = new Set<string>()
@@ -402,7 +404,7 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
     for (const [name, variant] of template.slots) {
       // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
       // extra). Lo de un básico pesado por día no: son programas clásicos (el 5×5 junta sentadilla y peso muerto).
-      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other'), equipment: p.equipment ?? equipment }
+      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment }
       const found = pickOrSubstitute(name, variant, allowed, used, catalog, rules)
       if (!found) continue
       const { exercise, slot } = found

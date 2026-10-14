@@ -1,9 +1,9 @@
 import { CalendarCheck, Camera, Check, Flame, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
 import { dayPlan, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
-import { NewsCard, newsDue } from '../components/News'
+import { newsDue } from '../lib/newsDue'
 import { photoDue, streakAtRisk, weighDue } from '../lib/reminders'
 import { fillBodyweights } from '../lib/bodyweight'
 import { addDays, clock, day, int, parseDecimal, relative, startOfDay, startOfWeek, toKg, tons, uid, weight } from '../lib/format'
@@ -20,11 +20,13 @@ import { RECOVERING, useRecovery } from '../components/Recovery'
 import { BlockStatus } from '../components/Block'
 import { blockWeek } from '../lib/block'
 import { SessionRow } from '../components/SessionRow'
-import { CoachCard } from '../components/Coach'
-import { forgottenGroups } from '../lib/coach'
+import { forgottenGroups } from '../lib/forgotten'
+
+const CoachCard = lazy(() => import('../components/Coach').then((m) => ({ default: m.CoachCard })))
+const NewsCard = lazy(() => import('../components/News').then((m) => ({ default: m.NewsCard })))
 import { MAIN_GROUPS } from '../lib/labels'
 import { locale, plural, t } from '../lib/i18n'
-import { copiedToast, shareMine, shareReminderDue } from '../lib/friends'
+import { shareReminderDue } from '../lib/friendReminder'
 
 
 export function HomeScreen() {
@@ -79,7 +81,7 @@ export function HomeScreen() {
             </Card>
           )
           case 'backup': return <BackupCard lastBackupAt={data.settings.lastBackupAt} />
-          case 'news': return <NewsCard />
+          case 'news': return <Suspense fallback={null}><NewsCard /></Suspense>
           case 'recap': return <WeekRecapCard weekStart={weekStart} />
           case 'weigh': return <WeighInCard />
           case 'photo': return <PhotoReminderCard />
@@ -97,7 +99,8 @@ export function HomeScreen() {
 
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} />
 
-      {!active && <CoachCard />}
+      {/* El entrenador tira del generador y de las alternativas: se carga después de pintar Inicio. */}
+      {!active && <Suspense fallback={null}><CoachCard /></Suspense>}
 
       <FoodTodayCard />
 
@@ -456,7 +459,7 @@ function FriendReminderCard({ friends }: { friends: number }) {
       <span className="muted small">{t(`Manda tu resumen a tus amigos para que vean cómo vas en los retos (tienes ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`,
         `Send your summary to your friends so they can see how you're doing in the challenges (you have ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`)}</span>
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={() => void shareMine().then((r) => r === 'copied' && showToast(copiedToast()))}>{t('Compartir', 'Share')}</button>
+        <button className="btn primary grow" onClick={() => void import('../lib/friends').then(({ shareMine, copiedToast }) => shareMine().then((r) => r === 'copied' && showToast(copiedToast())))}>{t('Compartir', 'Share')}</button>
         <button className="btn secondary" onClick={snooze}>{t('Ahora no', 'Not now')}</button>
       </div>
       {toast}

@@ -5,10 +5,6 @@ import { t } from '../lib/i18n'
 import { updateSettings, useData } from '../lib/store'
 import { Card, Sheet } from './ui'
 
-/** Si hay novedades sin ver desde la última actualización. */
-export const newsDue = (seenVersion: string | undefined) =>
-  seenVersion !== __APP_VERSION__ && unseenReleases(seenVersion, __APP_VERSION__).length > 0
-
 /** Tras actualizar: lo nuevo, una sola vez (se cierra con «Entendido»). */
 export function NewsCard() {
   const { settings } = useData()

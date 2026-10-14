@@ -881,6 +881,10 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
     : auto.kind === 'down'
       ? t(`Tres veces sin completar con ${weight(auto.from, unit)}: hoy ${weight(auto.to, unit)} para coger impulso y volver a subir.`, `Three times without completing ${weight(auto.from, unit)}: today ${weight(auto.to, unit)} to build momentum and climb again.`)
+    : auto.kind === 'reps'
+      ? (auto.harder
+        ? t(`Ya haces ${auto.from} repeticiones en todas las series: prueba una variante más difícil o añade lastre.`, `You already do ${auto.from} reps on every set: try a harder variation or add weight.`)
+        : t(`Llegaste al máximo en todas las series: hoy ${auto.to} repeticiones en cada una.`, `You hit the top of the range on every set: today ${auto.to} reps on each.`))
     : auto.kind === 'hold'
       ? (auto.reason === 'rpe'
         ? t('Lo completaste, pero al límite (RPE 9,5-10): mismo peso hasta que salga con algo de margen.', 'You completed it, but at your limit (RPE 9.5-10): same weight until it feels easier.')

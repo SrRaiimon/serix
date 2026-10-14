@@ -1981,5 +1981,14 @@
 "Programas y Biblioteca más adecuados: sin dominadas si no tienes barra, sin nórdico ni pino para quien empieza, y un ejercicio parecido cuando falta material en vez de dejar el hueco.": "Programmes et bibliothèque mieux adaptés : pas de tractions sans barre, pas de nordic curl ni d'équilibre sur les mains pour les débutants, et un exercice similaire quand il manque du matériel au lieu de laisser un trou.",
 "Series y descansos según el ejercicio: goblet o prensa nunca a 3 repeticiones, aislamientos con menos descanso y cada sesión ajustada a tus minutos.": "Séries et repos adaptés à chaque exercice : goblet squat ou presse jamais à 3 répétitions, moins de repos pour l'isolation et chaque séance ajustée à tes minutes.",
 "Última": "Dernière",
-"Ver": "Voir"
+"Ver": "Voir",
+"¿Entrenas en casa con barra de dominadas? Márcalo al generar el programa y tendrás dominadas en vez de solo remos.": "Tu t'entraînes chez toi avec une barre de traction ? Coche-le en générant ton programme et tu auras des tractions au lieu de seulement des rowings.",
+"El 5/3/1 avanza por semanas del calendario: si haces un básico dos veces por semana, repites la semana del ciclo en vez de acabarlo en la mitad de tiempo.": "Le 5/3/1 avance par semaines du calendrier : si tu fais un exercice de base deux fois par semaine, tu répètes la semaine du cycle au lieu de le finir en deux fois moins de temps.",
+"La app abre más rápido: el entrenador y las novedades se cargan después de pintar Inicio.": "L'app s'ouvre plus vite : le coach et les nouveautés se chargent après l'affichage de l'Accueil.",
+"Llegaste al máximo en todas las series: hoy {0} repeticiones en cada una.": "Tu as atteint le maximum sur toutes les séries : aujourd'hui, {0} répétitions par série.",
+"Progresión en ejercicios sin peso: al llegar al máximo en todas las series, la app te propone una repetición más y, pasado el tope, una variante más difícil o lastre.": "Progression sur les exercices au poids du corps : quand tu atteins le maximum sur toutes les séries, l'app te propose une répétition de plus et, au-delà du plafond, une variante plus difficile ou du lest.",
+"Prueba una variante": "Essaie une variante",
+"Si no, en vez de dominadas, remos": "Sinon, des rowings à la place des tractions",
+"Tengo barra de dominadas": "J'ai une barre de traction",
+"Ya haces {0} repeticiones en todas las series: prueba una variante más difícil o añade lastre.": "Tu fais déjà {0} répétitions sur toutes les séries : essaie une variante plus difficile ou ajoute du lest."
 }

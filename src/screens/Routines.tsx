@@ -217,6 +217,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   const auto = planned.auto
   const why = planned.deload ? t('Descarga', 'Deload')
     : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
+      : auto?.kind === 'reps' ? (auto.harder ? t('Prueba una variante', 'Try a harder variation') : `↑ ${auto.to} reps`)
       : auto?.kind === 'wave' && auto.reset ? t('5/3/1 · TM −10 %', '5/3/1 · TM −10%')
       : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
         : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
@@ -225,7 +226,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   return (
     <span className="ex-last">
       <strong>{top.weight > 0 ? `${weight(top.weight, unit)} × ${top.reps}` : `${top.reps} reps`}</strong>
-      <span className={`tiny ${auto?.kind === 'up' ? 'up' : 'muted'}`}>{why}</span>
+      <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>
     </span>
   )
 }
@@ -574,6 +575,19 @@ export function saveProgram(program: GeneratedProgram) {
   })
 }
 
+/** Sin gimnasio, si hay barra de dominadas en casa (si no, el programa usa remos en su lugar). */
+export function PullupBarRow({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="list-row">
+      <span className="grow">
+        {t('Tengo barra de dominadas', 'I have a pull-up bar')}
+        <span className="small muted" style={{ display: 'block' }}>{t('Si no, en vez de dominadas, remos', 'If not, rows instead of pull-ups')}</span>
+      </span>
+      <input type="checkbox" className="toggle" checked={value} onChange={(e) => onChange(e.target.checked)} />
+    </label>
+  )
+}
+
 export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; onChange: (c: GeneratorConfig) => void }) {
   return (
     <>
@@ -607,6 +621,7 @@ export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; o
             {config.equipment === p.id && <span style={{ color: 'var(--accent-text)', fontWeight: 800 }}>✓</span>}
           </button>
         ))}
+        {config.equipment !== 'gym' && <PullupBarRow value={!!config.pullupBar} onChange={(v) => onChange({ ...config, pullupBar: v || undefined })} />}
       </div>
     </>
   )
@@ -643,7 +658,7 @@ function GeneratorSheet({ onClose }: { onClose: () => void }) {
   const catalog = useCatalog()
   const { settings } = useData()
   const [config, setConfig] = useState<GeneratorConfig>({
-    goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment,
+    goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar,
   })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
@@ -713,7 +728,7 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
   const data = useData()
   const [chosen, setChosen] = useState<LibraryProgram>()
   const [equipment, setEquipment] = useState<EquipmentProfile>(data.settings.equipment)
-  const program = useMemo(() => (chosen ? buildLibraryProgram(chosen, equipment, catalog) : undefined), [chosen, equipment, catalog])
+  const program = useMemo(() => (chosen ? buildLibraryProgram(chosen, equipment, catalog, !!data.settings.pullupBar) : undefined), [chosen, equipment, catalog, data.settings.pullupBar])
 
   const add = () => {
     if (!program) return

@@ -457,14 +457,7 @@ export const sameMonth = (at: number, now = Date.now()) => {
 export const STALE_DAYS = 7
 export const isStale = (f: FriendSnapshot, now = Date.now()) => now - f.at > STALE_DAYS * DAY
 
-/** Recordatorio de compartir el resumen: domingo o lunes, si hay amigos y hace 6 días o más. */
-export function shareReminderDue(data: AppData, now = Date.now()): boolean {
-  const { friendShareAt, friendReminderOff, friendReminderSnooze } = data.settings
-  if (friendReminderOff || !data.friends.length) return false
-  if (friendReminderSnooze && now < friendReminderSnooze) return false
-  const weekday = new Date(now).getDay()
-  return (weekday === 0 || weekday === 1) && (!friendShareAt || now - friendShareAt >= 6 * DAY)
-}
+export { shareReminderDue } from './friendReminder'
 
 /**
  * Semanas de un amigo alineadas con las tuyas (las 8 últimas hasta hoy): su resumen termina en la

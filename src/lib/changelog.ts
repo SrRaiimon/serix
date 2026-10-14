@@ -8,6 +8,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.72',
+    items: [
+      ['Progresión en ejercicios sin peso: al llegar al máximo en todas las series, la app te propone una repetición más y, pasado el tope, una variante más difícil o lastre.', 'Progression for bodyweight exercises: once you hit the top of the range on every set, the app suggests one more rep and, past the cap, a harder variation or added weight.'],
+      ['¿Entrenas en casa con barra de dominadas? Márcalo al generar el programa y tendrás dominadas en vez de solo remos.', 'Training at home with a pull-up bar? Tick it when generating your program and you will get pull-ups instead of only rows.'],
+      ['El 5/3/1 avanza por semanas del calendario: si haces un básico dos veces por semana, repites la semana del ciclo en vez de acabarlo en la mitad de tiempo.', '5/3/1 now advances by calendar weeks: if you do a main lift twice a week, you repeat that week of the cycle instead of finishing it in half the time.'],
+      ['La app abre más rápido: el entrenador y las novedades se cargan después de pintar Inicio.', 'The app opens faster: the coach and the news load after Home is drawn.'],
+    ],
+  },
+  {
     version: '0.0.71',
     items: [
       ['Con la app abierta en dos pestañas, los cambios se juntan bien: lo que borras no vuelve y lo que cambias en la otra no se pierde.', 'With the app open in two tabs, changes are merged properly: what you delete stays deleted and what you change in the other tab is kept.'],

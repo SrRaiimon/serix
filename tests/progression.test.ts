@@ -116,3 +116,26 @@ test('porcentaje: usa el 1RM de los últimos 90 días desde hoy; tras una pausa,
   assert.equal(plan(lift, [], [old, recent], 'kg', recent.start + 200 * 86400000)?.sets[0].weight, 57.5) // 80 × 0,9 × 0,8 = 57,6
   assert.equal(plan(lift, [], [old], 'kg', today)?.sets[0].weight, 72.5) // 100 × 0,9 × 0,8 = 72
 })
+
+test('sin peso: al llegar al máximo en todas, una repetición más; pasado el tope, variante más difícil', () => {
+  const push = { exerciseId: 'Pushups', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12 }
+  // Aún no llega al máximo en todas: se rellena como siempre.
+  assert.equal(plan(push, [set(0, 12), set(0, 12), set(0, 10)], [], 'kg'), undefined)
+  const up = plan(push, [set(0, 12), set(0, 13), set(0, 12)], [], 'kg')
+  assert.deepEqual(shape(up), ['0x13', '0x13', '0x13'])
+  assert.deepEqual(up?.auto, { kind: 'reps', from: 12, to: 13 })
+  // Con progresión doble también (no exige peso).
+  assert.equal(plan({ ...push, progression: 'double' }, [set(0, 12), set(0, 12), set(0, 12)], [], 'kg')?.auto?.kind, 'reps')
+  const top = plan(push, [set(0, 17), set(0, 17), set(0, 18)], [], 'kg')
+  assert.deepEqual(top?.auto, { kind: 'reps', from: 17, to: 17, harder: true })
+})
+
+test('5/3/1: dos sesiones en la misma semana cuentan como una semana del ciclo', () => {
+  const lift = { exerciseId: 'squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'wave531' as const, trainingMax: 100, tmSince: 0 }
+  const a = session(0, [exercise('squat', [set(70, 5)])])
+  const b = { ...session(0, [exercise('squat', [set(70, 5)])]), start: a.start + 3600000 }
+  // Más tarde, otra semana: toca la semana 2 del ciclo (no la 3).
+  assert.equal(plan(lift, [], [a, b], 'kg', a.start + 30 * 86400000)?.auto?.kind === 'wave' && (plan(lift, [], [a, b], 'kg', a.start + 30 * 86400000)?.auto as { week: number }).week, 2)
+  // La misma semana: se repite la semana 1.
+  assert.equal((plan(lift, [], [a], 'kg', a.start + 7200000)?.auto as { week: number }).week, 1)
+})
