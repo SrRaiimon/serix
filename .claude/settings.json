@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [{ "type": "command", "command": "PATH=\"$HOME/.nvm/versions/node/v24.15.0/bin:$PATH\" node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\"", "timeout": 20 }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "PATH=\"$HOME/.nvm/versions/node/v24.15.0/bin:$PATH\" node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-types.mjs\"", "timeout": 90 }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "PATH=\"$HOME/.nvm/versions/node/v24.15.0/bin:$PATH\" node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-i18n.mjs\"", "timeout": 60 }]
+      }
+    ]
+  }
+}
