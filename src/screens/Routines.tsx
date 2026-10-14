@@ -628,15 +628,34 @@ export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; o
 }
 
 export function ProgramPreview({ program }: { program: GeneratedProgram }) {
+  // Las cifras del programa, como en el resto de la app: días, ejercicios y series por sesión y su duración
+  // (la misma cuenta que routineMinutes: ~45 s por serie más su descanso y ~2,5 min por ejercicio).
+  const perDay = program.days.map((d) => ({
+    exercises: d.exercises.length,
+    sets: d.exercises.reduce((n, g) => n + g.sets, 0),
+    minutes: Math.round(d.exercises.reduce((n, g) => n + g.sets * (45 + g.rest) + 150, 0) / 60),
+  }))
+  const avg = (f: (x: (typeof perDay)[number]) => number) => Math.round(perDay.reduce((n, x) => n + f(x), 0) / Math.max(1, perDay.length))
   return (
     <>
-      <Card>
-        <strong style={{ fontSize: 19 }}>{program.name}</strong>
+      <section className="program-hero">
+        <span className="hero-ribbon" aria-hidden="true" />
         <span className="small muted">{program.summary}</span>
-      </Card>
-      {program.days.map((d) => (
+        <strong className="program-hero-name">{program.name}</strong>
+      </section>
+      <StatBand items={[
+        { value: program.days.length, label: t('días', 'days') },
+        { value: avg((x) => x.exercises), label: t('ejercicios', 'exercises') },
+        { value: avg((x) => x.sets), label: t('series', 'sets') },
+        { value: `~${avg((x) => x.minutes)}′`, label: t('por sesión', 'per session') },
+      ]} />
+      {program.days.map((d, i) => (
         <div key={d.name} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <h2 className="list-header">{d.name}</h2>
+          <h2 className="list-header program-day">
+            <span className="program-day-num">{i + 1}</span>
+            {d.name.replace(/^[^·]*·\s*/, '')}
+            <span className="program-day-meta">{t(`${perDay[i].exercises} ejercicios · ~${perDay[i].minutes} min`, `${perDay[i].exercises} exercises · ~${perDay[i].minutes} min`)}</span>
+          </h2>
           <div className="list">
             {d.exercises.map((g) => (
               <div key={g.exercise.id} className="list-row">

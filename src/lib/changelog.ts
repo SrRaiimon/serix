@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.78',
+    items: [
+      ['Vista previa del programa más clara (cifras, días numerados y su duración), un paso de comidas a juego y el icono de la app mejor declarado para Android e iPhone.', 'A clearer program preview (figures, numbered days and their length), a matching food step and the app icon declared better for Android and iPhone.'],
+    ],
+  },
+  {
     version: '0.0.77',
     items: [
       ['La app se actualiza a la última versión al abrirla: por un fallo podía quedarse una versión atrás.', 'The app updates to the latest version when you open it: a bug could leave it one version behind.'],

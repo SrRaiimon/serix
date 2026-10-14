@@ -1,5 +1,5 @@
-import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { ArrowRightLeft, Barcode, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Chip, Segmented, StatBand, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
@@ -21,11 +21,19 @@ export function OnboardingScreen() {
   const catalog = useCatalog()
   const { settings } = useData()
   const [step, setStep] = useState(0)
+  // Hacia dónde se mueve el cuestionario: al volver atrás, el paso entra por la izquierda.
+  const shown = useRef({ step: 0, back: false })
+  if (shown.current.step !== step) shown.current = { step, back: step < shown.current.step }
+  const back = shown.current.back
   // Tras cambiar una respuesta desde el resumen final, «Continuar» vuelve directo a él.
   const [returnToEnd, setReturnToEnd] = useState(false)
   useEffect(() => { if (step === LAST || step === 0) setReturnToEnd(false) }, [step])
   // Objetivo y nivel: al elegir se pasa solo a la siguiente pregunta (una pausa breve para ver la marca).
-  const next = () => setTimeout(() => setStep((s) => (returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
+  const next = () => {
+    // Un toque breve al elegir (en los móviles que lo permiten), y a la siguiente pregunta.
+    navigator.vibrate?.(8)
+    setTimeout(() => setStep((s) => (returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
+  }
   const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
@@ -45,13 +53,21 @@ export function OnboardingScreen() {
 
   if (foodStep) {
     return (
-      <main className="app">
-        <div className="screen" style={{ paddingTop: 48, paddingBottom: 160 }}>
-          <Utensils size={56} color="var(--accent-text)" />
-          <Header title={t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}
-            subtitle={t('Con tu peso, altura y edad calculamos las calorías y la proteína que te tocan para tu objetivo. Luego apuntas lo que comes buscando el alimento o escaneando el código de barras.',
-              'With your weight, height and age we work out the calories and protein you need for your goal. Then you log what you eat by searching or scanning the barcode.')} />
-          <span className="small muted">{t('Es opcional: lo puedes activar cuando quieras en la pestaña Comidas.', 'It is optional: you can turn it on any time in the Food tab.')}</span>
+      <main className="app onb">
+        <div className="screen onb-body" style={{ paddingTop: 32 }}>
+          <div className="onb-hero">
+            <span className="hero-ribbon" aria-hidden="true" />
+            <span className="onb-hero-icon"><Utensils size={30} aria-hidden="true" /></span>
+            <span className="small muted onb-step">{t('Programa guardado · Un último paso opcional', 'Program saved · One last optional step')}</span>
+            <h1 className="onb-question">{t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}</h1>
+            <p className="onb-lead">{t('Con tu peso, altura y edad calculamos las calorías y la proteína que te tocan para tu objetivo.', 'With your weight, height and age we work out the calories and protein you need for your goal.')}</p>
+          </div>
+          <ul className="onb-features">
+            <Feature icon={Target} text={t('Calorías y proteína del día, que se ajustan cuando entrenas', 'Daily calories and protein that adjust when you train')} />
+            <Feature icon={Barcode} text={t('Apunta buscando el alimento o escaneando el código de barras', 'Log by searching for the food or scanning the barcode')} />
+            <Feature icon={Sparkles} text={t('Te propone un menú que cuadra con tu objetivo', 'Suggests a menu that fits your goal')} />
+          </ul>
+          <span className="small muted onb-time">{t('Es opcional: lo puedes activar cuando quieras en la pestaña Comidas.', 'It is optional: you can turn it on any time in the Food tab.')}</span>
         </div>
         <Footer>
           <div style={{ display: 'grid', gap: 8 }}>
@@ -104,7 +120,7 @@ export function OnboardingScreen() {
         </div>
       )}
       {/* `key`: cada paso entra con su animación al cambiar. */}
-      <div className="screen onb-body" key={step}>
+      <div className={`screen onb-body ${back ? 'back' : ''}`} key={step}>
         {step === 0 && (
           <>
             <div className="onb-langs">
