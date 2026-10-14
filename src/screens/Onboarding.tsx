@@ -1,6 +1,6 @@
 import { ArrowRightLeft, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Card, Chip, Segmented, useCatalog } from '../components/ui'
+import { Chip, Segmented, StatBand, useCatalog } from '../components/ui'
 import type { Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
@@ -82,33 +82,48 @@ export function OnboardingScreen() {
     )
   }
 
+  // Días de la semana con entreno para el dibujo de «Tu semana» (L a D), según cuántos días elijas.
+  const WEEK_PATTERN: Record<number, number[]> = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] }
+  const weekLetters = t('LMXJVSD', 'MTWTFSS').split('')
+  const trainingDays = WEEK_PATTERN[settings.days] ?? []
+
   return (
-    <main className="app">
-      <div className="nav-bar" style={{ background: 'transparent', borderBottom: 0, backdropFilter: 'none' }}>
+    <main className="app onb">
+      <div className="nav-bar onb-nav">
         <div className="left">
           {step > 0 && <button className="nav-btn" onClick={() => setStep(step - 1)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button>}
         </div>
         <div />
         <div className="right"><button className="nav-btn" style={{ color: 'var(--text-2)' }} onClick={() => finish()}>{t('Saltar', 'Skip')}</button></div>
       </div>
+      {/* Un tramo por pregunta: los hechos en tinta y el actual en naranja (la cinta de «aquí estás»). */}
       {step > 0 && (
-        <div className="progress" style={{ margin: '0 16px' }} role="progressbar" aria-label={t('Progreso del cuestionario', 'Questionnaire progress')}
-          aria-valuemin={1} aria-valuemax={LAST} aria-valuenow={step}><div style={{ transform: `scaleX(${step / LAST})` }} /></div>
+        <div className="onb-steps" role="progressbar" aria-label={t('Progreso del cuestionario', 'Questionnaire progress')}
+          aria-valuemin={1} aria-valuemax={LAST} aria-valuenow={step} aria-valuetext={t(`Paso ${step} de ${LAST}`, `Step ${step} of ${LAST}`)}>
+          {Array.from({ length: LAST }, (_, i) => <span key={i} className={i + 1 < step ? 'done' : i + 1 === step ? 'current' : ''} />)}
+        </div>
       )}
-      <div className="screen" style={{ paddingTop: 16, paddingBottom: 120 }}>
+      {/* `key`: cada paso entra con su animación al cambiar. */}
+      <div className="screen onb-body" key={step}>
         {step === 0 && (
           <>
-            <div className="row" style={{ justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+            <div className="onb-langs">
               {LANGS.map((l) => <Chip key={l.id} label={l.name} active={lang() === l.id} onClick={() => updateSettings({ language: l.id })} />)}
             </div>
-            <Dumbbell size={64} color="var(--accent-text)" style={{ marginTop: 8 }} />
-            <h1 style={{ fontSize: 34, margin: 0, lineHeight: 1.1 }}>{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
-            <p className="muted" style={{ fontSize: 19, margin: 0 }}>
-              {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
-            </p>
-            <Feature icon={WandSparkles} text={t('Programa generado según tu objetivo y tu material', 'A program generated for your goal and equipment')} />
-            <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
-            <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
+            <div className="onb-hero">
+              <span className="hero-ribbon" aria-hidden="true" />
+              <img className="onb-logo" src="icons/icon-192.png" width={72} height={72} alt="" />
+              <h1 className="onb-title">{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
+              <p className="onb-lead">
+                {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
+              </p>
+            </div>
+            <ul className="onb-features">
+              <Feature icon={WandSparkles} text={t('Programa generado según tu objetivo y tu material', 'A program generated for your goal and equipment')} />
+              <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
+              <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
+            </ul>
+            <span className="small muted onb-time">{t('Cuatro preguntas y listo: menos de un minuto.', 'Four questions and you are done: under a minute.')}</span>
             <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
               <ArrowRightLeft size={18} /> {t('¿Vienes de otro móvil? Pasa tus datos', 'Coming from another phone? Move your data')}
             </button>
@@ -128,8 +143,8 @@ export function OnboardingScreen() {
           <>
             <Header step={step} title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
             <Choices label={t('Experiencia', 'Experience')}>
-              {levels.map((l) => (
-                <Option key={l.id} icon={ChartBar} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => { updateSettings({ level: l.id }); next() }} />
+              {levels.map((l, i) => (
+                <Option key={l.id} icon={ChartBar} bars={i + 1} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => { updateSettings({ level: l.id }); next() }} />
               ))}
             </Choices>
           </>
@@ -137,27 +152,27 @@ export function OnboardingScreen() {
         {step === 3 && (
           <>
             <Header step={step} title={t('¿Cuánto tiempo tienes?', 'How much time do you have?')} subtitle={t('Elegiremos la división semanal que mejor encaje.', 'We will pick the weekly split that fits best.')} />
-            <Card title={t('Días por semana', 'Days per week')}>
-              <div className="row" role="group" aria-label={t('Días por semana', 'Days per week')} style={{ flexWrap: 'wrap', gap: 8 }}>
-                {[2, 3, 4, 5, 6].map((n) => <Chip key={n} label={String(n)} active={settings.days === n} onClick={() => updateSettings({ days: n })} />)}
+            <section className="onb-block">
+              <h2 className="onb-label">{t('Días por semana', 'Days per week')}</h2>
+              <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => updateSettings({ days })} />
+              {/* Lo que va a salir, para que el número no sea a ciegas. */}
+              <div className="onb-week" aria-hidden="true">
+                {weekLetters.map((letter, i) => <span key={i} className={trainingDays.includes(i) ? 'on' : ''}>{letter}</span>)}
               </div>
-              <span className="small muted">
-                {/* Lo que va a salir, para que el número no sea a ciegas. */}
-                {t(`Tu semana: ${split.name}.`, `Your week: ${split.name}.`)}{' '}
+              <p className="small onb-note">
+                <strong>{split.name}</strong>
+                {' · '}
                 {settings.level === 'beginner'
                   ? t('Para empezar, lo ideal son 3 o 4 días.', 'When starting out, 3 or 4 days is ideal.')
                   : t('Con 3-5 días se progresa bien; más, solo si descansas lo suficiente.', 'With 3-5 days you progress well; more only if you rest enough.')}
-              </span>
-              {settings.level === 'beginner' && settings.days >= 5 && (
-                <span className="small muted">{t('Si eliges más, el programa reparte el trabajo para no pasarte.', 'If you choose more, the program spreads the work so you do not overdo it.')}</span>
-              )}
-            </Card>
-            <Card title={t('Minutos por sesión', 'Minutes per session')}>
-              <div className="row" role="group" aria-label={t('Minutos por sesión', 'Minutes per session')} style={{ flexWrap: 'wrap', gap: 8 }}>
-                {[30, 45, 60, 75, 90].map((n) => <Chip key={n} label={String(n)} active={settings.minutes === n} onClick={() => updateSettings({ minutes: n })} />)}
-              </div>
-              <span className="small muted">{t(`Unos ${exerciseCount(settings.minutes)} ejercicios por sesión, con calentamiento incluido.`, `About ${exerciseCount(settings.minutes)} exercises per session, warm-up included.`)}</span>
-            </Card>
+                {settings.level === 'beginner' && settings.days >= 5 && ` ${t('Si eliges más, el programa reparte el trabajo para no pasarte.', 'If you choose more, the program spreads the work so you do not overdo it.')}`}
+              </p>
+            </section>
+            <section className="onb-block">
+              <h2 className="onb-label">{t('Minutos por sesión', 'Minutes per session')}</h2>
+              <NumberPicker label={t('Minutos por sesión', 'Minutes per session')} values={[30, 45, 60, 75, 90]} value={settings.minutes} onChange={(minutes) => updateSettings({ minutes })} />
+              <p className="small onb-note">{t(`Unos ${exerciseCount(settings.minutes)} ejercicios por sesión, con calentamiento incluido.`, `About ${exerciseCount(settings.minutes)} exercises per session, warm-up included.`)}</p>
+            </section>
           </>
         )}
         {step === 4 && (
@@ -173,31 +188,44 @@ export function OnboardingScreen() {
         )}
         {step === 5 && (
           <>
-            <Header step={step} title={t('Último detalle', 'One last thing')} subtitle={t('Puedes cambiarlo más adelante en Perfil.', 'You can change it later in Profile.')} />
-            <input className="field" style={{ background: 'var(--card)', padding: 14 }} placeholder={t('¿Cómo te llamas?', 'What is your name?')} aria-label={t('Tu nombre', 'Your name')} autoComplete="given-name"
-              value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
-            <Card title={t('Unidad de peso', 'Weight unit')}>
-              <Segmented value={settings.unit} onChange={(u: Unit) => updateSettings({ unit: u })}
-                options={[{ value: 'kg', label: t('Kilogramos (kg)', 'Kilograms (kg)') }, { value: 'lb', label: t('Libras (lb)', 'Pounds (lb)') }]} />
-            </Card>
+            <Header step={step} title={t('Tu plan', 'Your plan')} subtitle={t('Revísalo y toca cualquier fila para cambiarla.', 'Check it and tap any row to change it.')} />
+            {/* Las cifras del plan, como en el resto de la app (Archivo grande en una banda). */}
+            <StatBand items={[
+              { value: settings.days, label: t('días / semana', 'days / week') },
+              { value: settings.minutes, label: t('min / sesión', 'min / session') },
+              { value: exerciseCount(settings.minutes), label: t('ejercicios', 'exercises') },
+            ]} />
             {/* El resumen se puede tocar: cada fila lleva a su pregunta (y al volver, aquí de nuevo). */}
-            <div className="list-header">{t('Tu plan', 'Your plan')}</div>
             <div className="list">
               {([
                 [1, t('Objetivo', 'Goal'), goalInfo(settings.goal).label],
                 [2, t('Experiencia', 'Experience'), levelInfo(settings.level).label],
-                [3, t('Tiempo', 'Time'), t(`${settings.days} días · hasta ${settings.minutes} min`, `${settings.days} days · up to ${settings.minutes} min`)],
+                [3, t('Semana', 'Week'), split.name],
                 [4, t('Material', 'Equipment'), equipmentInfo(settings.equipment).label + (settings.equipment !== 'gym' && settings.pullupBar ? ` + ${t('barra', 'bar')}` : '')],
               ] as const).map(([target, label, value]) => (
                 <button key={target} className="list-row" onClick={() => { setReturnToEnd(true); setStep(target) }} aria-label={`${label}: ${value}. ${t('Cambiar', 'Change')}`}>
                   <span className="grow">{label}</span>
-                  <span className="muted">{value}</span>
+                  <span className="muted onb-value">{value}</span>
                   <ChevronRight size={18} className="chevron" aria-hidden="true" />
                 </button>
               ))}
             </div>
+            <div className="list-header">{t('Sobre ti', 'About you')}</div>
+            <div className="list">
+              <label className="list-row">
+                <span>{t('Nombre', 'Name')}</span>
+                <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Opcional', 'Optional')} autoComplete="given-name"
+                  value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
+              </label>
+              <div className="list-row">
+                <span className="grow">{t('Unidad de peso', 'Weight unit')}</span>
+                <div style={{ width: 120 }}>
+                  <Segmented value={settings.unit} onChange={(u: Unit) => updateSettings({ unit: u })} options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} />
+                </div>
+              </div>
+            </div>
             {/* Antes de crear el programa, a la vista y no al pie de la bienvenida. */}
-            <div className="card" style={{ gap: 6 }}>
+            <div className="card onb-notice">
               <HealthNotice />
               <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
             </div>
@@ -218,6 +246,17 @@ export function OnboardingScreen() {
   )
 }
 
+/** Números grandes para elegir (días, minutos): como las cifras del resto de la app, en Archivo. */
+function NumberPicker({ label, values, value, onChange }: { label: string; values: number[]; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="onb-numbers" role="radiogroup" aria-label={label}>
+      {values.map((v) => (
+        <button key={v} role="radio" aria-checked={v === value} className={v === value ? 'active' : ''} onClick={() => onChange(v)}>{v}</button>
+      ))}
+    </div>
+  )
+}
+
 function Footer({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(var(--safe-bottom) + 16px)', background: 'var(--bg)', borderTop: '1px solid var(--separator)' }}>
@@ -228,29 +267,30 @@ function Footer({ children }: { children: React.ReactNode }) {
 
 function Header({ title, subtitle, step }: { title: string; subtitle: string; step?: number }) {
   return (
-    <div>
+    <div className="onb-head">
       {step !== undefined && <span className="small muted onb-step">{t(`Paso ${step} de ${LAST}`, `Step ${step} of ${LAST}`)}</span>}
-      <h1 style={{ fontSize: 32, margin: '0 0 6px', lineHeight: 1.1 }}>{title}</h1>
+      <h1 className="onb-question">{title}</h1>
       <p className="muted" style={{ margin: 0 }}>{subtitle}</p>
     </div>
   )
 }
 
 function Feature({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
-  return (
-    <div className="row"><Icon size={24} color="var(--accent-text)" style={{ flexShrink: 0 }} /><span>{text}</span></div>
-  )
+  return <li><Icon size={20} color="var(--accent-text)" aria-hidden="true" style={{ flexShrink: 0 }} /><span>{text}</span></li>
 }
 
-function Option({ icon: Icon, title, detail, active, onClick }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void }) {
+function Option({ icon: Icon, title, detail, active, onClick, bars }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void; bars?: number }) {
   return (
-    <button className={`option-card ${active ? 'active' : ''}`} onClick={onClick} role="radio" aria-checked={active}>
-      <span className="icon"><Icon size={22} /></span>
+    <button className={`option-card onb-option ${active ? 'active' : ''}`} onClick={onClick} role="radio" aria-checked={active}>
+      {/* Nivel: tres barras que se llenan (1, 2 o 3) en vez del mismo icono en las tres opciones. */}
+      {bars !== undefined
+        ? <span className="icon onb-bars" aria-hidden="true">{[1, 2, 3].map((b) => <i key={b} className={b <= bars ? 'on' : ''} style={{ height: 6 + b * 5 }} />)}</span>
+        : <span className="icon"><Icon size={22} /></span>}
       <span className="grow">
         <strong style={{ display: 'block' }}>{title}</strong>
         {detail && <span className="small muted">{detail}</span>}
       </span>
-      {active ? <CircleCheck size={24} color="var(--accent-text)" /> : <Circle size={24} color="var(--text-3)" />}
+      {active ? <CircleCheck size={24} color="var(--ink)" /> : <Circle size={24} color="var(--text-3)" />}
     </button>
   )
 }

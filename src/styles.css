@@ -2722,3 +2722,56 @@ a.list-row { color: var(--text); text-decoration: none; }
 
 /* Cuestionario: «Paso 2 de 5» encima del título. */
 .onb-step { display: block; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.02em; }
+
+/* MARK: Cuestionario inicial
+   El mismo lenguaje que el resto de la app: títulos en Archivo, selección en tinta (nunca naranja) y la cinta
+   naranja solo para «aquí estás» (el tramo actual del progreso, la opción elegida y la bienvenida). */
+.onb-nav { background: transparent; border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.onb-body { padding-top: 12px; padding-bottom: 132px; animation: onb-in 0.32s var(--ease-out); }
+@keyframes onb-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+.onb-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0 16px; }
+.onb-steps span { height: 4px; border-radius: 999px; background: var(--fill); transition: background 0.3s var(--ease-out); }
+.onb-steps span.done { background: var(--ink); }
+.onb-steps span.current { background: var(--accent); }
+
+.onb-head { display: grid; gap: 6px; }
+.onb-step { font-weight: 600; letter-spacing: 0.02em; }
+.onb-question { margin: 0; font-family: var(--font-display); font-weight: 800; font-stretch: 104%; font-size: 34px; line-height: 1.04; letter-spacing: -0.015em; }
+
+/* Bienvenida */
+.onb-langs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.onb-hero { position: relative; display: grid; gap: 14px; padding: 22px 18px 20px; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); overflow: hidden; }
+.onb-hero .hero-ribbon { right: 22px; }
+.onb-logo { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 6px 18px rgba(255, 90, 31, 0.28); }
+.onb-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-stretch: 108%; font-size: 40px; line-height: 0.98; letter-spacing: -0.02em; }
+.onb-lead { margin: 0; font-size: 17px; line-height: 1.4; color: var(--text-2); }
+.onb-features { list-style: none; margin: 0; padding: 0; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); }
+.onb-features li { display: flex; gap: 12px; align-items: center; padding: 14px 16px; min-height: 52px; }
+.onb-features li + li { box-shadow: inset 0 1px 0 var(--separator); }
+.onb-time { text-align: center; }
+
+/* Opciones: la elegida en tinta, con la cinta entrando por la izquierda como la serie actual. */
+.onb-option { position: relative; overflow: hidden; padding: 16px; min-height: 76px; transition: box-shadow 0.2s var(--ease-out), transform 0.12s; }
+.onb-option:active { transform: scale(0.985); }
+.onb-option.active::before { content: ''; position: absolute; left: 0; top: 50%; width: 9px; height: 26px; margin-top: -13px; background: var(--accent); clip-path: polygon(0 0, 100% 0, 60% 50%, 100% 100%, 0 100%); animation: ribbon-slide 0.42s var(--ease-out); }
+.onb-bars { display: flex !important; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 12px; }
+.onb-bars i { width: 5px; border-radius: 2px; background: var(--text-3); }
+.onb-bars i.on { background: currentColor; }
+
+/* Días y minutos: números grandes en Archivo. */
+.onb-block { display: grid; gap: 12px; padding: 16px; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); }
+.onb-label { margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-2); }
+.onb-numbers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.onb-numbers button { min-height: 56px; border-radius: 12px; background: var(--fill); font-family: var(--font-display); font-weight: 800; font-stretch: 106%; font-size: 24px; color: var(--text); transition: background 0.2s var(--ease-out), color 0.2s; }
+.onb-numbers button.active { background: var(--ink); color: var(--on-ink); }
+.onb-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.onb-week span { display: grid; place-items: center; height: 30px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-2); box-shadow: inset 0 0 0 1px var(--separator); }
+.onb-week span.on { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.onb-note { margin: 0; color: var(--text-2); }
+.onb-note strong { color: var(--text); }
+
+.onb-value { text-align: right; max-width: 55%; }
+.onb-notice { gap: 6px; }
+.option-card.active .onb-bars i { background: color-mix(in srgb, var(--on-ink) 28%, transparent); }
+.option-card.active .onb-bars i.on { background: var(--on-ink); }

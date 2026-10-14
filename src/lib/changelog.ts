@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.76',
+    items: [
+      ['Un cuestionario inicial rediseñado, con el estilo de la app: cifras grandes para elegir días y minutos, tu semana dibujada y un resumen final con tu plan.', 'A redesigned setup in the app\'s style: big numbers to choose days and minutes, your week drawn out and a final summary of your plan.'],
+    ],
+  },
+  {
     version: '0.0.75',
     items: [
       ['Cuestionario inicial más rápido y claro: sabes en qué paso vas, el objetivo y la experiencia pasan solos al elegirlos y al final puedes tocar cualquier respuesta para cambiarla.', 'A quicker, clearer setup: you see which step you are on, goal and experience move on by themselves when chosen, and at the end you can tap any answer to change it.'],
