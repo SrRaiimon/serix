@@ -1,7 +1,7 @@
 {
   "name": "Serix",
   "short_name": "Serix",
-  "id": "./",
+  "id": "/serix/",
   "description": "Rutinas, registro de series y progreso en el gimnasio · Gym routines, set logging and progress.",
   "lang": "es",
   "start_url": "./",

@@ -44,6 +44,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
 
   if (url.origin !== self.location.origin) return
+  // Los iconos, siempre de la red: el sistema los pide al añadir la app a la pantalla de inicio y no debe
+  // depender de lo que el service worker tenga guardado (en iPhone salía una «S» en vez del icono).
+  if (url.pathname.includes('/icons/')) return
 
   // Navegación: la copia guardada al instante (en el gimnasio la cobertura suele ser mala). Las
   // versiones nuevas llegan con un sw.js nuevo, que vuelve a precargar index.html.

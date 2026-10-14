@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.79',
+    items: [
+      ['En el cuestionario puedes tocar los días de la semana que entrenas, y el icono para iPhone se pide de nuevo para que salga la mancuerna en vez de una letra.', 'In the setup you can tap the weekdays you train, and the iPhone icon is requested again so the dumbbell shows instead of a letter.'],
+    ],
+  },
+  {
     version: '0.0.78',
     items: [
       ['Vista previa del programa más clara (cifras, días numerados y su duración), un paso de comidas a juego y el icono de la app mejor declarado para Android e iPhone.', 'A clearer program preview (figures, numbered days and their length), a matching food step and the app icon declared better for Android and iPhone.'],

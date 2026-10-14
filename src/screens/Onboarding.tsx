@@ -101,7 +101,16 @@ export function OnboardingScreen() {
   // Días de la semana con entreno para el dibujo de «Tu semana» (L a D), según cuántos días elijas.
   const WEEK_PATTERN: Record<number, number[]> = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] }
   const weekLetters = t('LMXJVSD', 'MTWTFSS').split('')
-  const trainingDays = WEEK_PATTERN[settings.days] ?? []
+  // Los días que has tocado (se guardan como tus días de entreno) o, si no, un reparto orientativo.
+  const trainingDays = settings.trainingDays?.length ? settings.trainingDays : (WEEK_PATTERN[settings.days] ?? [])
+  const dayNames = [t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')]
+  const toggleDay = (i: number) => {
+    const next = trainingDays.includes(i) ? trainingDays.filter((d) => d !== i) : [...trainingDays, i].sort((a, b) => a - b)
+    // Entre 2 y 6 días, como en la lista de números.
+    if (next.length < 2 || next.length > 6) return
+    navigator.vibrate?.(6)
+    updateSettings({ days: next.length, trainingDays: next, weeklyGoal: next.length })
+  }
 
   return (
     <main className="app onb">
@@ -123,7 +132,7 @@ export function OnboardingScreen() {
       <div className={`screen onb-body ${back ? 'back' : ''}`} key={step}>
         {step === 0 && (
           <>
-            <div className="onb-langs">
+            <div className="onb-langs" role="group" aria-label="Idioma · Language">
               {LANGS.map((l) => <Chip key={l.id} label={l.name} active={lang() === l.id} onClick={() => updateSettings({ language: l.id })} />)}
             </div>
             <div className="onb-hero">
@@ -170,11 +179,18 @@ export function OnboardingScreen() {
             <Header step={step} title={t('¿Cuánto tiempo tienes?', 'How much time do you have?')} subtitle={t('Elegiremos la división semanal que mejor encaje.', 'We will pick the weekly split that fits best.')} />
             <section className="onb-block">
               <h2 className="onb-label">{t('Días por semana', 'Days per week')}</h2>
-              <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => updateSettings({ days })} />
-              {/* Lo que va a salir, para que el número no sea a ciegas. */}
-              <div className="onb-week" aria-hidden="true">
-                {weekLetters.map((letter, i) => <span key={i} className={trainingDays.includes(i) ? 'on' : ''}>{letter}</span>)}
+              {/* Elegir el número deja un reparto orientativo (sin días fijos); tocar la semana fija tus días. */}
+              <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => updateSettings({ days, trainingDays: undefined })} />
+              <div className="onb-week" role="group" aria-label={t('Qué días entrenas', 'Which days you train')}>
+                {weekLetters.map((letter, i) => (
+                  <button key={i} className={trainingDays.includes(i) ? 'on' : ''} aria-pressed={trainingDays.includes(i)} onClick={() => toggleDay(i)}>
+                    <span aria-hidden="true">{letter}</span><span className="sr-only">{dayNames[i]}</span>
+                  </button>
+                ))}
               </div>
+              <span className="tiny muted">{settings.trainingDays?.length
+                ? t('Tus días de entreno: Inicio te dirá cuándo toca. Se cambian en Perfil.', 'Your training days: Home will tell you when it is time. Change them in Profile.')
+                : t('Toca los días que te vengan bien para fijarlos (opcional).', 'Tap the days that suit you to set them (optional).')}</span>
               <p className="small onb-note">
                 <strong>{split.name}</strong>
                 {' · '}

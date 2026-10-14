@@ -15,7 +15,7 @@ function serviceWorker(): Plugin {
       // los descarga quien no los usa (ver sw-template.js).
       const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm') && !f.startsWith('ocr/'))
       const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_index.json', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
-        'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-192.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']
+        'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-192.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/ios-icon-180.png', 'icons/ios-icon-167.png', 'icons/ios-icon-152.png']
       // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
       const precache = [...new Set([...statics, ...files])]
       // Lo que no se precarga pero se puede descargar de una vez desde Perfil para usar sin conexión
