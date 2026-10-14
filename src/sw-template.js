@@ -52,6 +52,9 @@ self.addEventListener('fetch', (event) => {
   // versiones nuevas llegan con un sw.js nuevo, que vuelve a precargar index.html.
   // Siempre de la caché de ESTA versión: caches.match() sin abrir una busca en todas, empezando por la más
   // antigua, y como se conserva la anterior devolvía su index.html (la app abría siempre una versión atrás).
+  // Solo la app (todas sus pantallas van por #/…, así que la dirección es siempre la raíz). Cualquier otra
+  // página del sitio (p. ej. /prueba-icono/) se pide a la red tal cual.
+  if (request.mode === 'navigate' && !/\/(index\.html)?$/.test(url.pathname)) return
   if (request.mode === 'navigate') {
     event.respondWith(
       caches.open(APP_CACHE).then((cache) => cache.match('index.html', MATCH)).then((hit) => hit || fetch(request)),
