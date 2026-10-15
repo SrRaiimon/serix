@@ -78,7 +78,7 @@ const slots = {
   hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
   legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Bodyweight_Walking_Lunge'] },
   lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
-  legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Floor_Glute-Ham_Raise'] },
+  legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Single_Leg_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Floor_Glute-Ham_Raise'] },
   legExtension: { kind: 'accessory', muscles: ['quads'], match: /extension|sissy/i, preferred: ['Leg_Extensions', 'Single-Leg_Leg_Extension', 'Weighted_Sissy_Squat'] },
   calves: { kind: 'accessory', muscles: ['calves'], match: /calf/i, preferred: ['Standing_Calf_Raises', 'Standing_Barbell_Calf_Raise', 'Standing_Dumbbell_Calf_Raise', 'Seated_Calf_Raise', 'Calf_Raises_-_With_Bands'] },
   chestPress: { kind: 'compound', muscles: ['pectorals'], preferred: ['Barbell_Bench_Press_-_Medium_Grip', 'Dumbbell_Bench_Press', 'Alternating_Floor_Press', 'Bench_Press_-_With_Bands', 'Pushups'] },
@@ -219,6 +219,8 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
   if (r.level === 'intermediate' && e.level === 'expert' && e.equipment === 'bodyweight') return false
+  // Habilidades de pino (wall walk, flexión en pino): solo para avanzados, nunca como press de hombro corriente.
+  if (r.level !== 'advanced' && /wall_walk|handstand/i.test(e.id)) return false
   if (r.equipment && r.equipment !== 'bodyweight' && UNLOADED_SQUAT.test(e.id)) return false
   if (r.axialUsed && HEAVY_AXIAL.test(e.id)) return false
   return true
@@ -272,7 +274,9 @@ function pickOrSubstitute(name: SlotName, variant: number, allowed: Set<string>,
 function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }) {
   const out = { ...s }
   if (kind === 'conditioning' || kind === 'core') return out
-  if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
+  // El nórdico es durísimo: pocas repeticiones (bajando despacio) y descanso largo, nunca 12-20.
+  if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
+  else if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
   else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })

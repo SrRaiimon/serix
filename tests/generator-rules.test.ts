@@ -62,7 +62,7 @@ test('generador: kipping y nórdico fuera, y la pauta se ajusta al ejercicio', (
         const where = `${c.goal}/${c.level}/${c.equipment}: ${x.exercise.id}`
         assert.ok(!/kipping/i.test(x.exercise.id), where)
         if (c.level === 'beginner') assert.ok(!/Glute_Ham|Glute-Ham|Wall_Walk/.test(x.exercise.id), where)
-        if (x.exercise.equipment !== 'barbell' && x.exercise.category === 'strength') assert.ok(x.repsMin >= 6, `${where} a ${x.repsMin}-${x.repsMax}`)
+        if (x.exercise.equipment !== 'barbell' && x.exercise.category === 'strength' && !/Glute.?Ham/.test(x.exercise.id)) assert.ok(x.repsMin >= 6, `${where} a ${x.repsMin}-${x.repsMax}`)
       }
       assert.ok(day.exercises.reduce((t, x) => t + x.sets, 0) <= Math.round(c.minutes / 3.4), `${c.minutes} min: demasiadas series en ${day.name}`)
     }
@@ -74,4 +74,17 @@ test('con barra de dominadas en casa, sí hay dominadas (desde intermedio)', () 
   const ids = (cfg: GeneratorConfig) => generate(cfg, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
   assert.ok(!ids(c).some((id) => BAR.test(id)))
   assert.ok(ids({ ...c, pullupBar: true }).some((id) => BAR.test(id)), ids({ ...c, pullupBar: true }).join(', '))
+})
+
+test('isquios en casa: un ejercicio de isquios de verdad; nórdico a pocas reps; sin pino salvo avanzados', () => {
+  for (const [c, variation] of configs()) {
+    for (const day of generate(c, catalog, variation).days) {
+      for (const x of day.exercises) {
+        const where = `${c.goal}/${c.level}/${c.equipment}: ${x.exercise.id}`
+        assert.ok(x.exercise.id !== 'Leg_Lift', where)
+        if (/Glute.?Ham/.test(x.exercise.id)) assert.ok(x.repsMax <= 6, `${where} a ${x.repsMin}-${x.repsMax}`)
+        if (c.level !== 'advanced') assert.ok(!/Wall_Walk|Handstand/.test(x.exercise.id), where)
+      }
+    }
+  }
 })

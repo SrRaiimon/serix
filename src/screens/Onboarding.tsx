@@ -6,7 +6,7 @@ import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, go
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { HealthNotice } from './Legal'
-import { ProgramPreview, PullupBarRow, saveProgram } from './Routines'
+import { ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
 import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.GoalsSheet })))

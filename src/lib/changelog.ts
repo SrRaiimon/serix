@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.83',
+    items: [
+      ['Programas en casa con mejor criterio: isquios de verdad sin máquina (peso muerto a una pierna), el nórdico a pocas repeticiones y nada de pino salvo para avanzados.', 'Smarter home programs: real hamstring work without machines (single-leg deadlift), Nordic curls at low reps and no handstand work unless you are advanced.'],
+      ['La bienvenida carga bastante menos y en Inicio, si ya has hecho la rutina, ves tu duración media.', 'The welcome screen loads much less, and on Home you see your average time once you have done the routine.'],
+    ],
+  },
+  {
     version: '0.0.82',
     items: [
       ['Cuestionario más útil: cada objetivo muestra sus repeticiones y descansos, el resumen te enseña tu primer entreno, puedes deslizar entre preguntas y si cierras la app vuelves donde ibas.', 'A more useful setup: each goal shows its reps and rest, the summary shows your first workout, you can swipe between questions and if you close the app you pick up where you left off.'],

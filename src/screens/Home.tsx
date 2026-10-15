@@ -219,7 +219,8 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
       <span className="muted">{muscleSummary(routine)}</span>
       <div className="hero-facts">
         <span className="hero-fact"><strong>{routine.exercises.length}</strong>{routine.exercises.length === 1 ? t('ejercicio', 'exercise') : t('ejercicios', 'exercises')}</span>
-        <span className="hero-fact"><strong>~{expectedMinutes(data, routine).minutes}</strong>{t('minutos', 'minutes')}</span>
+        {/* Si ya la has hecho, es tu duración real (la mediana de las últimas veces), no una estimación. */}
+        <span className="hero-fact"><strong>~{expectedMinutes(data, routine).minutes}</strong>{expectedMinutes(data, routine).measured ? t('min · tu media', 'min · your avg') : t('minutos', 'minutes')}</span>
         <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
       </div>
       {(daysOff !== undefined && daysOff >= 3) || forgotten ? (
