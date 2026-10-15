@@ -2063,5 +2063,6 @@
 "El menú de opciones de un ejercicio se puede desplazar en pantallas pequeñas y en el cuestionario se distinguen los días sugeridos de los elegidos.": "Le menu d'options d'un exercice défile sur les petits écrans et, dans le questionnaire, les jours suggérés se distinguent de ceux choisis.",
 "El menú de cada ejercicio solo enseña lo que le aplica (sin «máquina asistida» en el peso muerto, por ejemplo).": "Le menu de chaque exercice n'affiche que ce qui s'applique (pas de « machine assistée » au soulevé de terre, par exemple).",
 "Inicio explica por qué cambia el objetivo de calorías el día que entrenas, y en dominadas y fondos los récords muestran el lastre («+12,5 kg»).": "L'Accueil explique pourquoi ton objectif de calories change les jours d'entraînement, et pour les tractions et les dips les records montrent le lest (« +12,5 kg »).",
-"Sin entreno de momento: −{0} kcal": "Pas encore d'entraînement : −{0} kcal"
+"Sin entreno de momento: −{0} kcal": "Pas encore d'entraînement : −{0} kcal",
+"La app abre antes la primera vez: la letra de los títulos pesa cuatro veces menos.": "L’app s’ouvre plus vite la première fois : la police des titres est quatre fois plus légère."
 }

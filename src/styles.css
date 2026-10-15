@@ -1,9 +1,9 @@
 /* Archivo (SIL OFL 1.1), incluida en la app: solo para cifras y títulos grandes. El texto usa la del sistema. */
 @font-face {
   font-family: 'Archivo';
-  src: url('./assets/fonts/archivo-latin-wdth.woff2') format('woff2-variations'), url('./assets/fonts/archivo-latin-wdth.woff2') format('woff2');
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
+  src: url('./assets/fonts/archivo-800-wdth.woff2') format('woff2-variations'), url('./assets/fonts/archivo-800-wdth.woff2') format('woff2');
+  font-weight: 800;
+  font-stretch: 100% 112%;
   font-style: normal;
   font-display: swap;
 }
@@ -2607,7 +2607,7 @@ textarea { resize: none; }
 .week .planned .dot:not(.today) { box-shadow: inset 0 0 0 1.5px var(--accent); }
 .recap-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 .set-countdown { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
-.set-countdown-time { font-size: 28px; font-variant-numeric: tabular-nums; font-family: var(--font-display); }
+.set-countdown-time { font-size: 28px; font-variant-numeric: tabular-nums; font-family: var(--font-display); font-weight: 800; }
 .up-text { color: var(--green-text); }
 .down-text { color: var(--red-text); }
 .readiness { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--fill); }
@@ -2659,16 +2659,16 @@ a.list-row { color: var(--text); text-decoration: none; }
 /* Modo foco del entreno: la serie que toca, en grande. */
 .focus-mode { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: flex; flex-direction: column; gap: 14px; padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 20px); overflow-y: auto; }
 .focus-mode h1 { margin: 0; }
-.focus-name { font-family: var(--font-display); font-size: 34px; line-height: 1.05; }
+.focus-name { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.05; }
 .focus-fields { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
 .focus-field { display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; gap: 10px; }
 .focus-step { height: 76px; border-radius: 22px; background: var(--card); border: 1px solid var(--separator); font-size: 38px; font-weight: 700; color: var(--text); }
 .focus-value { display: flex; flex-direction: column; align-items: center; }
-.focus-value strong { font-family: var(--font-display); font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+.focus-value strong { font-family: var(--font-display); font-weight: 800; font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
 .focus-value small { color: var(--text-2); font-size: 15px; }
 .focus-done { margin-top: auto; min-height: 76px; font-size: 24px; }
 .focus-rest { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: auto 0; }
-.focus-rest strong { font-family: var(--font-display); font-size: 88px; line-height: 1; font-variant-numeric: tabular-nums; }
+.focus-rest strong { font-family: var(--font-display); font-weight: 800; font-size: 88px; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Cámara con guía (Fotos de progreso). */
 .guided-camera { position: fixed; inset: 0; z-index: 60; background: #000; color: #fff; display: flex; flex-direction: column; gap: 10px; padding: calc(var(--safe-top) + 10px) 0 calc(var(--safe-bottom) + 16px); }

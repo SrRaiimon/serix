@@ -5,7 +5,7 @@ import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
 import { locale, plural, t } from './i18n'
 import { C, DISPLAY, SANS, cardChrome, cardFooter, cardTitle, esc, rule, statBand } from './cardStyle'
-import archivoUrl from '../assets/fonts/archivo-latin-wdth.woff2?url'
+import archivoUrl from '../assets/fonts/archivo-800-wdth.woff2?url'
 
 // Tarjeta del entrenamiento para compartir como imagen (1080 × 1350, formato 4:5). Se dibuja como SVG
 // con colores fijos y se convierte a PNG en el propio dispositivo: no se envía nada a ningún servidor.
@@ -125,7 +125,7 @@ function embeddedFont(): Promise<string> {
     .then((r) => r.blob())
     .then((b) => new Promise<string>((resolve) => {
       const reader = new FileReader()
-      reader.onload = () => resolve(`@font-face{font-family:'Archivo';src:url(${reader.result}) format('woff2');font-weight:100 900;font-stretch:62% 125%}`)
+      reader.onload = () => resolve(`@font-face{font-family:'Archivo';src:url(${reader.result}) format('woff2');font-weight:800;font-stretch:100% 112%}`)
       reader.onerror = () => resolve('')
       reader.readAsDataURL(b)
     }))

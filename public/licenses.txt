@@ -388,7 +388,8 @@ SOFTWARE.
 --- @fontsource-variable/archivo 5.3.0 (OFL-1.1) ---
 
 Tipografía Archivo (Omnibus-Type, https://github.com/Omnibus-Type/Archivo), empaquetada por
-Fontsource. Se incluye el archivo latin-wdth-normal.woff2 sin modificar (src/assets/fonts).
+Fontsource. Se incluye latin-wdth-normal.woff2 recortada con fonttools (src/assets/fonts/archivo-800-wdth.woff2):
+solo el peso 800, anchura 100-112 % y los caracteres latinos que usa la app; mismo diseño y licencia.
 
 Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo) Archivo-Italic[wdth,wght].ttf: Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo)
 

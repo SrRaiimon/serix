@@ -11,7 +11,8 @@ const DIRS = { 'tesseract.js-core': 'node_modules/tesseract.js/node_modules/tess
 // Autoría que el paquete no recoge en su archivo de licencia.
 const NOTES = {
   '@fontsource-variable/archivo': 'Tipografía Archivo (Omnibus-Type, https://github.com/Omnibus-Type/Archivo), empaquetada por\n' +
-    'Fontsource. Se incluye el archivo latin-wdth-normal.woff2 sin modificar (src/assets/fonts).',
+    'Fontsource. Se incluye latin-wdth-normal.woff2 recortada con fonttools (src/assets/fonts/archivo-800-wdth.woff2):\n' +
+    'solo el peso 800, anchura 100-112 % y los caracteres latinos que usa la app; mismo diseño y licencia.',
   jsqr: 'jsQR, de Cosmo Wolfe y colaboradores (https://github.com/cozmo/jsQR). Parte del código\n' +
     '(corrección de errores Reed-Solomon) está traducido de ZXing (https://github.com/zxing/zxing),\n' +
     'también con licencia Apache 2.0. Se distribuye sin cambios.',

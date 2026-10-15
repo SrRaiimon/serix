@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.87',
+    items: [
+      ['La app abre antes la primera vez: la letra de los títulos pesa cuatro veces menos.', 'The app opens faster the first time: the heading font is four times lighter.'],
+    ],
+  },
+  {
     version: '0.0.86',
     items: [
       ['Inicio explica por qué cambia el objetivo de calorías el día que entrenas, y en dominadas y fondos los récords muestran el lastre («+12,5 kg»).', 'Home explains why your calorie goal changes on training days, and pull-up and dip records show the added weight ("+12.5 kg").'],
