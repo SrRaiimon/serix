@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.84',
+    items: [
+      ['Las pestañas con muchas opciones (como el resumen para compartir) ya no cortan el texto.', 'Tabs with many options (like the shareable summary) no longer cut off their text.'],
+    ],
+  },
+  {
     version: '0.0.83',
     items: [
       ['Programas en casa con mejor criterio: isquios de verdad sin máquina (peso muerto a una pierna), el nórdico a pocas repeticiones y nada de pino salvo para avanzados.', 'Smarter home programs: real hamstring work without machines (single-leg deadlift), Nordic curls at low reps and no handstand work unless you are advanced.'],

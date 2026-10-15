@@ -750,6 +750,9 @@ a.list-row:active {
 /* Con cinco opciones o más, letra algo menor para que quepan enteras en un móvil. */
 /* La elipsis va en el texto: si el botón recortara (overflow), también recortaría su zona táctil ::after. */
 .seg-label { display: block; overflow: hidden; text-overflow: ellipsis; }
+/* Con muchas opciones, el texto pasa a dos líneas antes que cortarse («Mes pasa…»). */
+.segmented.many .seg-label { white-space: normal; line-height: 1.15; overflow-wrap: anywhere; }
+.segmented.many button { min-height: 36px; }
 
 .segmented.many button {
   font-size: 12.5px;
