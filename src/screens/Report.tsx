@@ -67,11 +67,11 @@ export function ReportScreen() {
           <section>
             <h2>{t('Entrenamiento', 'Training')}</h2>
             <div className="report-grid">
-              <div><strong>{r.stats.sessions}</strong><span>{t('entrenos', 'workouts')}</span></div>
+              <div><strong>{r.stats.sessions}</strong><span>{r.stats.sessions === 1 ? t('entreno', 'workout') : t('entrenos', 'workouts')}</span></div>
               <div><strong>{duration(r.stats.time)}</strong><span>{t('entrenando', 'training')}</span></div>
               <div><strong>{tons(r.stats.volume, unit)}</strong><span>{t('peso movido', 'weight moved')}</span></div>
               <div><strong>{r.stats.sets}</strong><span>{t('series', 'sets')}</span></div>
-              <div><strong>{r.stats.records}</strong><span>{t('marcas superadas', 'personal bests')}</span></div>
+              <div><strong>{r.stats.records}</strong><span>{r.stats.records === 1 ? t('marca superada', 'personal best') : t('marcas superadas', 'personal bests')}</span></div>
               <div><strong>{r.streak}</strong><span>{t('semanas seguidas', 'weeks in a row')}</span></div>
             </div>
             {r.beaten.length > 0 && (

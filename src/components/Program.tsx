@@ -2,7 +2,7 @@ import { StatBand, Thumb } from './ui'
 import { rest, uid } from '../lib/format'
 import type { GeneratedProgram } from '../lib/generator'
 import { t } from '../lib/i18n'
-import { update } from '../lib/store'
+import { routineMinutes, update, type Routine } from '../lib/store'
 import { defaultTracking, targetText } from '../lib/tracking'
 
 // Piezas del programa generado que comparten Rutinas y el cuestionario inicial. Aparte de Routines.tsx para
@@ -49,12 +49,12 @@ export function PullupBarRow({ value, onChange }: { value: boolean; onChange: (v
 }
 
 export function ProgramPreview({ program }: { program: GeneratedProgram }) {
-  // Las cifras del programa, como en el resto de la app: días, ejercicios y series por sesión y su duración
-  // (la misma cuenta que routineMinutes: ~45 s por serie más su descanso y ~2,5 min por ejercicio).
+  // Las cifras del programa, como en el resto de la app: días y la media por día de ejercicios, series y duración
+  // (con routineMinutes, la misma cuenta que Inicio y Rutinas).
   const perDay = program.days.map((d) => ({
     exercises: d.exercises.length,
     sets: d.exercises.reduce((n, g) => n + g.sets, 0),
-    minutes: Math.round(d.exercises.reduce((n, g) => n + g.sets * (45 + g.rest) + 150, 0) / 60),
+    minutes: routineMinutes({ exercises: d.exercises.map((g) => ({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine),
   }))
   const avg = (f: (x: (typeof perDay)[number]) => number) => Math.round(perDay.reduce((n, x) => n + f(x), 0) / Math.max(1, perDay.length))
   return (
@@ -66,8 +66,8 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
       </section>
       <StatBand items={[
         { value: program.days.length, label: t('días', 'days') },
-        { value: avg((x) => x.exercises), label: t('ejercicios', 'exercises') },
-        { value: avg((x) => x.sets), label: t('series', 'sets') },
+        { value: avg((x) => x.exercises), label: t('ejercicios / día', 'exercises / day') },
+        { value: avg((x) => x.sets), label: t('series / día', 'sets / day') },
         { value: `~${avg((x) => x.minutes)}′`, label: t('por sesión', 'per session') },
       ]} />
       {program.days.map((d, i) => (

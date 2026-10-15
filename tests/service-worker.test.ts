@@ -13,3 +13,8 @@ test('service worker: la página y los archivos salen de la caché de esta versi
   const last = fetchHandler.slice(fetchHandler.lastIndexOf('event.respondWith'))
   assert.ok(last.indexOf('caches.open(APP_CACHE)') < last.indexOf('caches.match(request'), 'el resto, primero en APP_CACHE')
 })
+
+test('service worker: los iconos, de la red y sin conexión de lo guardado (el logo no se rompe)', () => {
+  const icons = sw.slice(sw.indexOf("'/icons/'"), sw.indexOf("'/icons/'") + 300)
+  assert.ok(/fetch\(request\)\.catch\(\(\) => caches\.match\(request/.test(icons), icons)
+})

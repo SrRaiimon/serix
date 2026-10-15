@@ -601,7 +601,7 @@ function GeneratorSheet({ onClose }: { onClose: () => void }) {
     return (
       <Sheet title={t('Vista previa', 'Preview')} onClose={onClose}
         left={<button className="nav-btn" onClick={() => setProgram(undefined)}>{t('Atrás', 'Back')}</button>}
-        right={<button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra', 'Another')}</button>}
+        right={<button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>}
         footer={<button className="btn primary block" onClick={() => { saveProgram(program); onClose(); navigate('routines') }}>{t('Guardar programa', 'Save program')}</button>}>
         <ProgramPreview program={program} />
       </Sheet>

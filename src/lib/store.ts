@@ -394,8 +394,9 @@ async function writeData(data: AppData): Promise<AppData | undefined> {
 class NewerData extends Error {}
 
 type Keyed = { id?: string; name?: string }
-// Sin id (amigos), por el nombre sin mayúsculas ni espacios de más: «Ana» y «ana » son la misma persona.
-const keyOf = (x: Keyed) => x.id ?? x.name?.trim().toLowerCase() ?? ''
+// Sin id (amigos), por el nombre igual que friendKey (friends.ts): sin tildes, mayúsculas ni espacios de
+// más; «José» y «jose » son la misma persona en la interfaz y al juntar pestañas.
+const keyOf = (x: Keyed) => x.id ?? x.name?.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? ''
 
 /**
  * Igual de contenido. Lo leído de IndexedDB son copias (nunca el mismo objeto que hay en memoria), así que

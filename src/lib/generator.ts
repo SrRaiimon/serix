@@ -74,7 +74,7 @@ interface Slot {
 }
 
 const slots = {
-  squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Squat', 'Split_Squats'] },
+  squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Leg_Press', 'Hack_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Bulgarian_Split_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
   hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
   legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Bodyweight_Walking_Lunge'] },
   lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
@@ -88,7 +88,7 @@ const slots = {
   horizontalPull: { kind: 'compound', muscles: ['upper-back', 'lats'], match: /row/i, preferred: ['Bent_Over_Barbell_Row', 'Seated_Cable_Rows', 'Bent_Over_Two-Dumbbell_Row', 'One-Arm_Dumbbell_Row', 'Two-Arm_Kettlebell_Row', 'Inverted_Row'] },
   shoulderPress: { kind: 'compound', muscles: ['delts'], preferred: ['Barbell_Shoulder_Press', 'Dumbbell_Shoulder_Press', 'Seated_Dumbbell_Press', 'Kettlebell_Seated_Press', 'Shoulder_Press_-_With_Bands', 'Handstand_Push-Ups'] },
   lateralRaise: { kind: 'accessory', muscles: ['delts'], match: /lateral|side|deltoid raise/i, preferred: ['Side_Lateral_Raise', 'Cable_Seated_Lateral_Raise', 'Seated_Side_Lateral_Raise', 'Lateral_Raise_-_With_Bands', 'Kettlebell_Arnold_Press'] },
-  rearDelt: { kind: 'accessory', muscles: ['delts'], match: /rear|reverse fly|face pull|pull apart|back fly/i, preferred: ['Face_Pull', 'Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise', 'Back_Flyes_-_With_Bands', 'Band_Pull_Apart'] },
+  rearDelt: { kind: 'accessory', muscles: ['delts'], match: /rear|reverse fly|face pull|pull apart|back fly/i, preferred: ['Face_Pull', 'Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise', 'Back_Flyes_-_With_Bands', 'Band_Pull_Apart', 'Reverse_Snow_Angels'] },
   shrug: { kind: 'accessory', muscles: ['traps'], match: /shrug|upright|high pull/i, preferred: ['Barbell_Shrug', 'Dumbbell_Shrug', 'Kettlebell_Sumo_High_Pull', 'Upright_Row_-_With_Bands', 'Scapular_Pull-Up'] },
   biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Chin-Up'] },
   hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Chin-Up'] },
@@ -222,6 +222,8 @@ function suits(e: Exercise, r: PickRules): boolean {
   // Habilidades de pino (wall walk, flexión en pino): solo para avanzados, nunca como press de hombro corriente.
   if (r.level !== 'advanced' && /wall_walk|handstand/i.test(e.id)) return false
   if (r.equipment && r.equipment !== 'bodyweight' && UNLOADED_SQUAT.test(e.id)) return false
+  // Solo con el cuerpo, la sentadilla al aire es para empezar: desde intermedio, búlgara y similares.
+  if (r.equipment === 'bodyweight' && r.level !== 'beginner' && /^(Bodyweight_Squat|Wall_Sit)$/.test(e.id)) return false
   if (r.axialUsed && HEAVY_AXIAL.test(e.id)) return false
   return true
 }
@@ -251,7 +253,10 @@ function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<strin
 
 /** Si un hueco se queda sin ejercicio (sin barra, sin material…), otro que trabaje lo mismo. */
 const SUBSTITUTES: Partial<Record<SlotName, string>> = {
-  verticalPull: 'horizontalPull homePull',
+  verticalPull: 'horizontalPull homePull rearDelt',
+  lateralRaise: 'rearDelt',
+  biceps: 'homePull',
+  hammer: 'homePull',
   fnPull: 'homePull',
   horizontalPull: 'homePull',
   shoulderPress: 'homePush',
@@ -276,6 +281,8 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   if (kind === 'conditioning' || kind === 'core') return out
   // El nórdico es durísimo: pocas repeticiones (bajando despacio) y descanso largo, nunca 12-20.
   if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
+  // El hip thrust y el puente: aunque vayan con barra, no son un básico a 3-5 repeticiones.
+  else if (/hip_thrust|glute_bridge/i.test(e.id) && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   else if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
   else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
@@ -442,7 +449,10 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       const [schemeSets, repsMin, repsMax, rest] = p.scheme[slot.kind]
       // La pauta del programa, ajustada al ejercicio que ha tocado con tu material (un 5×5 sin barra no es
       // sentadilla al aire a 5 repeticiones) y con el mismo tope de series por músculo que el generador.
-      const s = fitScheme(exercise, slot.kind, { sets: p.setsFor?.[name] ?? schemeSets, repsMin, repsMax, rest })
+      // setsFor es para el ejercicio pensado (el peso muerto 1×5 del 5×5); si el hueco lo ocupa otro (sin
+      // barra, un puente), lleva las series normales.
+      const own = found.slot === slots[name] && exercise.equipment === 'barbell'
+      const s = fitScheme(exercise, slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest })
       const done = perMuscle.get(exercise.muscle) ?? 0
       if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') {
         if (done > MAX_SETS_PER_SESSION - 2) continue

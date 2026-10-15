@@ -111,7 +111,7 @@ export function HomeScreen() {
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
           { value: thisMonth.length, label: t('Este mes', 'This month') },
           thisWeek.length > 0
-            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Peso movido', 'Weight moved') }
+            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido esta semana', 'Moved this week') }
             : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
@@ -198,6 +198,7 @@ function FoodTodayCard() {
 
 function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[] }) {
   const data = useData()
+  const duration = expectedMinutes(data, routine)
   // Grupos de la rutina (por su músculo principal) que todavía se están recuperando.
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
@@ -220,7 +221,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
       <div className="hero-facts">
         <span className="hero-fact"><strong>{routine.exercises.length}</strong>{routine.exercises.length === 1 ? t('ejercicio', 'exercise') : t('ejercicios', 'exercises')}</span>
         {/* Si ya la has hecho, es tu duración real (la mediana de las últimas veces), no una estimación. */}
-        <span className="hero-fact"><strong>~{expectedMinutes(data, routine).minutes}</strong>{expectedMinutes(data, routine).measured ? t('min · tu media', 'min · your avg') : t('minutos', 'minutes')}</span>
+        <span className="hero-fact"><strong>~{duration.minutes}</strong>{duration.measured ? t('min · tu media', 'min · your avg') : t('minutos', 'minutes')}</span>
         <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
       </div>
       {(daysOff !== undefined && daysOff >= 3) || forgotten ? (

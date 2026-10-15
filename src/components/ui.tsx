@@ -184,7 +184,7 @@ const dialogStack: object[] = []
 
 /**
  * Hace de una hoja un diálogo accesible: el foco entra en ella al abrir (y vuelve al botón que la abrió al cerrar),
- * Escape la cierra, y lo de detrás (#root) queda inerte, así Tab y el lector de pantalla no se salen.
+ * Escape la cierra, y lo de detrás (la app y cualquier hoja de debajo) queda inerte: Tab y el lector no se salen.
  */
 function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
   const close = useRef(onClose)
@@ -193,8 +193,11 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     const token = {}
     dialogStack.push(token)
     const before = document.activeElement as HTMLElement | null
-    const root = document.getElementById('root')
-    root?.setAttribute('inert', '')
+    // Todo lo que hay en body salvo esta hoja (la app y otra hoja de debajo) queda inerte mientras está abierta.
+    let top: Element | null = ref.current
+    while (top && top.parentElement !== document.body) top = top.parentElement
+    const silenced = [...document.body.children].filter((el) => el !== top && !el.hasAttribute('inert'))
+    silenced.forEach((el) => el.setAttribute('inert', ''))
     // A la hoja misma (no al primer campo: en el móvil abriría el teclado): el lector anuncia su título y el
     // siguiente Tab ya va a su primer control.
     ref.current?.focus({ preventScroll: true })
@@ -208,7 +211,7 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     return () => {
       document.removeEventListener('keydown', onKey)
       dialogStack.splice(dialogStack.indexOf(token), 1)
-      if (!dialogStack.length) root?.removeAttribute('inert')
+      silenced.forEach((el) => el.removeAttribute('inert'))
       if (before?.isConnected) before.focus({ preventScroll: true })
     }
   }, [ref])

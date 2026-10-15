@@ -32,6 +32,8 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
     const min = unit === 'kg' ? 1 : 2
     return toKg(Math.max(min, Math.round((fromKg(weight, unit) * 0.05) / fine) * fine), unit)
   }
+  // Mancuernas: van de 2 en 2 kg (o de 2,5 en 2,5 si ya usas esa serie): 24 kg → 26 kg, no 26,5 (no existe).
+  if (unit === 'kg' && /dumbbell/i.test(exerciseId) && weight > 0) return weight % 2.5 === 0 ? 2.5 : 2
   return toKg(increment(unit) * (LOWER.has(muscle) && !LIGHT_LEG.test(exerciseId) ? 2 : 1), unit)
 }
 

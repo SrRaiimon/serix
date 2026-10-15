@@ -44,9 +44,12 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
 
   if (url.origin !== self.location.origin) return
-  // Los iconos, siempre de la red: el sistema los pide al añadir la app a la pantalla de inicio y no debe
-  // depender de lo que el service worker tenga guardado (en iPhone salía una «S» en vez del icono).
-  if (url.pathname.includes('/icons/')) return
+  // Los iconos, primero de la red (el sistema los pide al añadir la app a la pantalla de inicio y deben ser
+  // los de verdad) y, sin conexión, de lo guardado: el logo de la bienvenida y el de los avisos no se rompen.
+  if (url.pathname.includes('/icons/')) {
+    event.respondWith(fetch(request).catch(() => caches.match(request, MATCH)).then((res) => res || Response.error()))
+    return
+  }
 
   // Navegación: la copia guardada al instante (en el gimnasio la cobertura suele ser mala). Las
   // versiones nuevas llegan con un sw.js nuevo, que vuelve a precargar index.html.
@@ -54,7 +57,8 @@ self.addEventListener('fetch', (event) => {
   // antigua, y como se conserva la anterior devolvía su index.html (la app abría siempre una versión atrás).
   // Solo la app (todas sus pantallas van por #/…, así que la dirección es siempre la raíz). Cualquier otra
   // página del sitio (p. ej. /prueba-icono/) se pide a la red tal cual.
-  if (request.mode === 'navigate' && !/\/(index\.html)?$/.test(url.pathname)) return
+  const scope = new URL(self.registration.scope).pathname
+  if (request.mode === 'navigate' && ![scope, scope.replace(/\/$/, ''), `${scope}index.html`].includes(url.pathname)) return
   if (request.mode === 'navigate') {
     event.respondWith(
       caches.open(APP_CACHE).then((cache) => cache.match('index.html', MATCH)).then((hit) => hit || fetch(request)),
@@ -76,8 +80,8 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Lo de esta versión primero (los archivos sin huella en el nombre, como exercises_index.json o los iconos,
-  // existen en las dos cachés); la anterior solo para pantallas de una pestaña vieja que ya no estén aquí.
+  // Lo de esta versión primero (los archivos sin huella en el nombre, como exercises_index.json, existen en
+  // las dos cachés); la anterior solo para pantallas de una pestaña vieja que ya no estén aquí.
   event.respondWith(
     caches.open(APP_CACHE)
       .then((cache) => cache.match(request, MATCH))

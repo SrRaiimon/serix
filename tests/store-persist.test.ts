@@ -118,3 +118,10 @@ test('varias pestañas: si otra pestaña guardó con una versión más nueva, no
   await loadData()
   await replaceData({ ...getData(), sessions: [] })
 }))
+
+test('varias pestañas: los amigos se juntan con la misma regla que la interfaz (sin tildes)', () => {
+  const base = migrateData({ version: 1, sessions: [], routines: [], friends: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const merged = mergeData({ ...base, friends: [{ name: 'José' } as never] }, { ...base, friends: [{ name: 'jose ' } as never] }, base)
+  assert.equal(merged.friends.length, 1)
+})

@@ -88,3 +88,17 @@ test('isquios en casa: un ejercicio de isquios de verdad; nórdico a pocas reps;
     }
   }
 })
+
+test('casa: desde intermedio, sin sentadilla al aire; 5×5 sin barra con series normales en la bisagra', () => {
+  const ids = generate({ goal: 'hypertrophy', level: 'intermediate', days: 4, minutes: 60, equipment: 'bodyweight' }, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
+  assert.ok(!ids.includes('Bodyweight_Squat'), ids.join(', '))
+  const p = LIBRARY.find((x) => x.id === 'strength5x5')!
+  for (const day of buildLibraryProgram(p, 'bodyweight', catalog).days) for (const x of day.exercises) assert.ok(x.sets >= 2, `${day.name}: ${x.exercise.id} ${x.sets} series`)
+  const gym = buildLibraryProgram(p, 'gym', catalog).days.flatMap((d) => d.exercises).find((x) => x.exercise.id === 'Barbell_Deadlift')
+  assert.equal(gym?.sets, 1, 'el peso muerto del 5×5 con barra sigue a 1×5')
+})
+
+test('mancuernas: suben a pesos que existen (24 → 26 kg)', () => {
+  assert.equal(24 + progressionStep('pectorals', 'kg', 'Dumbbell_Bench_Press', 24), 26)
+  assert.equal(25 + progressionStep('pectorals', 'kg', 'Dumbbell_Bench_Press', 25), 27.5)
+})

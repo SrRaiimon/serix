@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Barcode, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Chip, Segmented, StatBand, useCatalog } from '../components/ui'
 import { rest, type Unit } from '../lib/format'
@@ -11,8 +11,9 @@ import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.GoalsSheet })))
 
-const goalIcons: Record<string, LucideIcon> = { hypertrophy: Dumbbell, strength: Weight, fatLoss: Flame, general: Heart }
+const goalIcons: Record<string, LucideIcon> = { hypertrophy: BicepsFlexed, strength: Anvil, fatLoss: Flame, general: Heart }
 const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
+// Iconos distintos a los del material (en la misma pantalla no deben repetirse dos opciones con el mismo dibujo).
 
 const LAST = 5
 
@@ -51,10 +52,16 @@ export function OnboardingScreen() {
   const [returnToEnd, setReturnToEnd] = useState(false)
   useEffect(() => { if (step === LAST || step === 0) setReturnToEnd(false) }, [step])
   // Objetivo y nivel: al elegir se pasa solo a la siguiente pregunta (una pausa breve para ver la marca).
+  // Un solo avance pendiente: si tocas dos opciones seguidas (cambias de idea) o vuelves atrás enseguida,
+  // no se saltan preguntas.
+  const advance = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(advance.current), [])
   const next = () => {
     // Un toque breve al elegir (en los móviles que lo permiten), y a la siguiente pregunta.
     navigator.vibrate?.(8)
-    setTimeout(() => setStep((s) => (returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
+    clearTimeout(advance.current)
+    const from = step
+    advance.current = setTimeout(() => setStep((s) => (s !== from ? s : returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
   }
   // El primer día del programa que saldría, para el adelanto del resumen (solo en el último paso).
   const firstDay = useMemo(() => (step === LAST ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0).days[0] : undefined),
@@ -68,6 +75,8 @@ export function OnboardingScreen() {
   const [foodStep, setFoodStep] = useState(false)
   const [goalsOpen, setGoalsOpen] = useState(false)
   const finish = (p?: GeneratedProgram) => {
+    // «Saltar» o terminar: la próxima vez el cuestionario empieza desde el principio.
+    try { sessionStorage.removeItem('onb-step') } catch { /* sin almacenamiento */ }
     if (p) saveProgram(p)
     // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
     // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
@@ -112,7 +121,7 @@ export function OnboardingScreen() {
           <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
           <h1 className="title" style={{ margin: 0, font: 'inherit' }}>{t('Vista previa', 'Preview')}</h1>
           <div className="right">
-            <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra', 'Another')}</button>
+            <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
           </div>
         </div>
         <div className="screen with-nav" style={{ paddingBottom: 120 }}>
@@ -127,7 +136,9 @@ export function OnboardingScreen() {
   const WEEK_PATTERN: Record<number, number[]> = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] }
   const weekLetters = t('LMXJVSD', 'MTWTFSS').split('')
   // Los días que has tocado (se guardan como tus días de entreno) o, si no, un reparto orientativo.
-  const trainingDays = settings.trainingDays?.length ? settings.trainingDays : (WEEK_PATTERN[settings.days] ?? [])
+  // Fijados (los has tocado) en tinta; sugeridos, solo con borde: no deben parecer elegidos.
+  const fixedDays = !!settings.trainingDays?.length
+  const trainingDays = fixedDays ? settings.trainingDays! : (WEEK_PATTERN[settings.days] ?? [])
   const dayNames = [t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')]
   const toggleDay = (i: number) => {
     const next = trainingDays.includes(i) ? trainingDays.filter((d) => d !== i) : [...trainingDays, i].sort((a, b) => a - b)
@@ -173,7 +184,7 @@ export function OnboardingScreen() {
               <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
               <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
             </ul>
-            <span className="small muted onb-time">{t('Cuatro preguntas y listo: menos de un minuto.', 'Four questions and you are done: under a minute.')}</span>
+            <span className="small muted onb-time">{t('Cuatro preguntas y un resumen: menos de un minuto.', 'Four questions and a summary: under a minute.')}</span>
             <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
               <ArrowRightLeft size={18} /> {t('¿Vienes de otro móvil? Pasa tus datos', 'Coming from another phone? Move your data')}
             </button>
@@ -208,7 +219,7 @@ export function OnboardingScreen() {
               <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => updateSettings({ days, trainingDays: undefined })} />
               <div className="onb-week" role="group" aria-label={t('Qué días entrenas', 'Which days you train')}>
                 {weekLetters.map((letter, i) => (
-                  <button key={i} className={trainingDays.includes(i) ? 'on' : ''} aria-pressed={trainingDays.includes(i)} onClick={() => toggleDay(i)}>
+                  <button key={i} className={trainingDays.includes(i) ? (fixedDays ? 'on' : 'hint') : ''} aria-pressed={fixedDays && trainingDays.includes(i)} onClick={() => toggleDay(i)}>
                     <span aria-hidden="true">{letter}</span><span className="sr-only">{dayNames[i]}</span>
                   </button>
                 ))}
@@ -271,7 +282,7 @@ export function OnboardingScreen() {
                 [3, t('Semana', 'Week'), split.name],
                 [4, t('Material', 'Equipment'), equipmentInfo(settings.equipment).label + (settings.equipment !== 'gym' && settings.pullupBar ? ` + ${t('barra', 'bar')}` : '')],
               ] as const).map(([target, label, value]) => (
-                <button key={target} className="list-row" onClick={() => { setReturnToEnd(true); setStep(target) }} aria-label={`${label}: ${value}. ${t('Cambiar', 'Change')}`}>
+                <button key={target} className="list-row" onClick={() => { setReturnToEnd(true); setStep(target) }}>
                   <span className="grow">{label}</span>
                   <span className="muted onb-value">{value}</span>
                   <ChevronRight size={18} className="chevron" aria-hidden="true" />
@@ -318,9 +329,9 @@ export function OnboardingScreen() {
 /** Números grandes para elegir (días, minutos): como las cifras del resto de la app, en Archivo. */
 function NumberPicker({ label, values, value, onChange }: { label: string; values: number[]; value: number; onChange: (v: number) => void }) {
   return (
-    <div className="onb-numbers" role="radiogroup" aria-label={label}>
+    <div className="onb-numbers" role="group" aria-label={label}>
       {values.map((v) => (
-        <button key={v} role="radio" aria-checked={v === value} className={v === value ? 'active' : ''} onClick={() => onChange(v)}>{v}</button>
+        <button key={v} aria-pressed={v === value} className={v === value ? 'active' : ''} onClick={() => onChange(v)}>{v}</button>
       ))}
     </div>
   )
@@ -356,7 +367,7 @@ function goalMeta(goal: GeneratorConfig['goal']): string[] {
 
 function Option({ icon: Icon, title, detail, active, onClick, bars, meta }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void; bars?: number; meta?: string[] }) {
   return (
-    <button className={`option-card onb-option ${active ? 'active' : ''}`} onClick={onClick} role="radio" aria-checked={active}>
+    <button className={`option-card onb-option ${active ? 'active' : ''}`} onClick={onClick} aria-pressed={active}>
       {/* Nivel: tres barras que se llenan (1, 2 o 3) en vez del mismo icono en las tres opciones. */}
       {bars !== undefined
         ? <span className="icon onb-bars" aria-hidden="true">{[1, 2, 3].map((b) => <i key={b} className={b <= bars ? 'on' : ''} style={{ height: 6 + b * 5 }} />)}</span>
@@ -371,7 +382,7 @@ function Option({ icon: Icon, title, detail, active, onClick, bars, meta }: { ic
   )
 }
 
-/** Opciones de una sola elección: el lector de pantalla las anuncia como grupo de radio («2 de 4, marcada»). */
+/** Opciones de una sola elección: botones con aria-pressed en un grupo con nombre (con Tab, sin flechas). */
 function Choices({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div role="radiogroup" aria-label={label} style={{ display: 'grid', gap: 12 }}>{children}</div>
+  return <div role="group" aria-label={label} style={{ display: 'grid', gap: 12 }}>{children}</div>
 }

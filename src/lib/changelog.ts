@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.85',
+    items: [
+      ['Programas en casa más exigentes desde intermedio (búlgara en vez de sentadilla al aire) y días más completos: si falta material para un ejercicio, otro parecido en su lugar.', 'Tougher home programs from intermediate up (Bulgarian split squats instead of air squats) and fuller days: if equipment is missing for an exercise, a similar one takes its place.'],
+      ['En el gimnasio, la segunda sentadilla del día es prensa o hack en vez de goblet, el hip thrust va a 6-10 repeticiones y las mancuernas suben a pesos que existen (24 → 26 kg).', 'In the gym, the day\'s second squat is a leg press or hack squat instead of a goblet, hip thrusts go at 6-10 reps and dumbbells go up to weights that exist (24 → 26 kg).'],
+      ['El cuestionario ya no se salta preguntas si tocas dos opciones seguidas, y el logo y los iconos de los avisos se ven también sin conexión.', 'The setup no longer skips questions if you tap two options in a row, and the logo and notification icons also show offline.'],
+      ['El menú de opciones de un ejercicio se puede desplazar en pantallas pequeñas y en el cuestionario se distinguen los días sugeridos de los elegidos.', 'An exercise\'s options menu scrolls on small screens, and in the setup suggested days look different from the ones you picked.'],
+    ],
+  },
+  {
     version: '0.0.84',
     items: [
       ['Las pestañas con muchas opciones (como el resumen para compartir) ya no cortan el texto.', 'Tabs with many options (like the shareable summary) no longer cut off their text.'],

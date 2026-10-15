@@ -751,7 +751,8 @@ function SetRow({ set, label, previous, fresh, bodyweight, tracking, current, re
         aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
-      {!fresh && <span className="set-prev">{previous ? setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×') : '—'}</span>}
+      {/* Con lastre (dominadas, fondos), «+12,5×10»: es lo añadido a tu peso, como en el resto de la app. */}
+      {!fresh && <span className="set-prev">{previous ? `${bodyweight && tracking === 'weight_reps' && previous.weight > 0 ? '+' : ''}${setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×')}` : '—'}</span>}
       {tracking === 'weight_reps' && (
         <>
           <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
