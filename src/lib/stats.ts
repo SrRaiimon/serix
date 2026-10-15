@@ -90,6 +90,8 @@ export interface RepRecord {
   weight: number
   /** Repeticiones que se hicieron de verdad (pueden ser más que el objetivo). */
   reps: number
+  /** Dominadas, fondos…: el lastre de esa serie (weight incluye el peso corporal). */
+  added?: number
   date: number
 }
 
@@ -102,7 +104,9 @@ export function repRecords(exerciseId: string, sessions: Session[]): (RepRecord 
       for (const x of loadSets(e)) {
         if (x.weight <= 0) continue
         REP_TARGETS.forEach((target, i) => {
-          if (x.reps >= target && x.weight > (best[i]?.weight ?? 0)) best[i] = { target, weight: x.weight, reps: x.reps, date: x.doneAt ?? s.start }
+          if (x.reps >= target && x.weight > (best[i]?.weight ?? 0)) {
+            best[i] = { target, weight: x.weight, reps: x.reps, date: x.doneAt ?? s.start, ...(e.bodyweight !== undefined ? { added: Math.round((x.weight - e.bodyweight) * 2) / 2 } : {}) }
+          }
         })
       }
     }

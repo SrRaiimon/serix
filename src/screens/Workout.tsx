@@ -566,10 +566,13 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
           { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
-          ...(tracking === 'weight_reps' ? [{
+          // Solo lo que aplica a este ejercicio: «por lados» no con barra, y «asistida» solo en máquinas y
+          // ejercicios con el cuerpo (dominadas, fondos); siempre si ya está activado, para poder quitarlo.
+          ...(tracking === 'weight_reps' && (!barbell || exercise.unilateral) ? [{
             label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
             onSelect: () => setMode({ unilateral: !exercise.unilateral }),
-          }, {
+          }] : []),
+          ...(tracking === 'weight_reps' && ((!barbell && !pairs) || exercise.assisted) ? [{
             label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight = assistance)'),
             onSelect: () => setMode({ assisted: !exercise.assisted }),
           }] : []),

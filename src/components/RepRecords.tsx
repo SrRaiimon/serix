@@ -27,7 +27,10 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
           <Fragment key={target}>
             <span className="rep-target">{target}</span>
             {/* Con el peso corporal dentro (dominadas, fondos) salían decimales como 92,82: medio kilo basta. */}
-            <strong>{weightValue(toKg(Math.round(fromKg(r.weight, unit) * 2) / 2, unit), unit)}<small> {unit}</small></strong>
+            {/* Con lastre, lo añadido a tu peso («+12,5 kg», «tu peso»), como en el resto de la app. */}
+            {r.added !== undefined
+              ? <strong>{r.added === 0 ? t('tu peso', 'bodyweight') : <>{r.added > 0 ? '+' : '−'}{weightValue(Math.abs(r.added), unit)}<small> {unit}</small></>}</strong>
+              : <strong>{weightValue(toKg(Math.round(fromKg(r.weight, unit) * 2) / 2, unit), unit)}<small> {unit}</small></strong>}
             <span className="small muted">{t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`)}</span>
           </Fragment>
         ))}

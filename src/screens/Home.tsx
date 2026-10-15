@@ -182,6 +182,10 @@ function FoodTodayCard() {
             <strong className="food-today-kcal">{int(totals.kcal)}</strong>
             <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
           </span>
+          {/* Si hoy cuenta como día de entreno (o se acaba de empezar uno), se dice: si no, el objetivo cambia sin explicación. */}
+          {!!goals?.shift && <span className="tiny muted">{goals.shift > 0
+            ? t(`Día de entreno: +${int(goals.shift)} kcal`, `Training day: +${int(goals.shift)} kcal`)
+            : t(`Sin entreno de momento: −${int(-goals.shift)} kcal`, `No workout yet: −${int(-goals.shift)} kcal`)}</span>}
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
           <span className="small muted">
             {goals ? [

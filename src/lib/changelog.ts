@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.86',
+    items: [
+      ['Inicio explica por qué cambia el objetivo de calorías el día que entrenas, y en dominadas y fondos los récords muestran el lastre («+12,5 kg»).', 'Home explains why your calorie goal changes on training days, and pull-up and dip records show the added weight ("+12.5 kg").'],
+      ['El menú de cada ejercicio solo enseña lo que le aplica (sin «máquina asistida» en el peso muerto, por ejemplo).', 'Each exercise\'s menu only shows what applies to it (no "assisted machine" on deadlifts, for example).'],
+    ],
+  },
+  {
     version: '0.0.85',
     items: [
       ['Programas en casa más exigentes desde intermedio (búlgara en vez de sentadilla al aire) y días más completos: si falta material para un ejercicio, otro parecido en su lugar.', 'Tougher home programs from intermediate up (Bulgarian split squats instead of air squats) and fuller days: if equipment is missing for an exercise, a similar one takes its place.'],

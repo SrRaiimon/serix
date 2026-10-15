@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { e1rm, exerciseUsage, lastSets, monthToDate, muscleRecovery, newRecords, progressionHint, recoveryHours, records, sessionSets, sessionVolume, stall, stalls } from '../src/lib/stats'
+import { e1rm, exerciseUsage, lastSets, monthToDate, muscleRecovery, newRecords, progressionHint, recoveryHours, records, sessionSets, sessionVolume, stall, stalls, repRecords } from '../src/lib/stats'
 import { DAY, T0, exercise, session, set } from './helpers'
 
 test('1RM estimado (Epley)', () => {
@@ -153,4 +153,12 @@ test('récords: si se iguala una marca, cuenta la fecha de la primera vez (sin i
   const tie = session(10, [exercise('bench', [set(100, 5)])])
   assert.equal(records([tie, first])[0].date, first.start)
   assert.equal(records([first, tie])[0].date, first.start)
+})
+
+test('récords por repeticiones con lastre: guardan lo añadido a tu peso', () => {
+  const s = session(0, [exercise('Pullups', [set(12.5, 10), set(0, 12)], { bodyweight: 80 })])
+  const [one, , , ten] = repRecords('Pullups', [s])
+  assert.equal(ten?.weight, 92.5)
+  assert.equal(ten?.added, 12.5)
+  assert.equal(one?.added, 12.5)
 })

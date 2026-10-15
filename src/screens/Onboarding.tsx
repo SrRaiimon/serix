@@ -74,6 +74,8 @@ export function OnboardingScreen() {
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
   const [foodStep, setFoodStep] = useState(false)
   const [goalsOpen, setGoalsOpen] = useState(false)
+  // Al pasar a la vista previa o al paso de comidas, el foco va a su título (como entre preguntas).
+  useEffect(() => { if (program || foodStep) document.querySelector<HTMLElement>('.onb-screen-title')?.focus({ preventScroll: true }) }, [!!program, foodStep])
   const finish = (p?: GeneratedProgram) => {
     // «Saltar» o terminar: la próxima vez el cuestionario empieza desde el principio.
     try { sessionStorage.removeItem('onb-step') } catch { /* sin almacenamiento */ }
@@ -93,7 +95,7 @@ export function OnboardingScreen() {
             <span className="hero-ribbon" aria-hidden="true" />
             <span className="onb-hero-icon"><Utensils size={30} aria-hidden="true" /></span>
             <span className="small muted onb-step">{t('Programa guardado · Un último paso opcional', 'Program saved · One last optional step')}</span>
-            <h1 className="onb-question">{t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}</h1>
+            <h1 className="onb-question onb-screen-title" tabIndex={-1}>{t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}</h1>
             <p className="onb-lead">{t('Con tu peso, altura y edad calculamos las calorías y la proteína que te tocan para tu objetivo.', 'With your weight, height and age we work out the calories and protein you need for your goal.')}</p>
           </div>
           <ul className="onb-features">
@@ -119,7 +121,7 @@ export function OnboardingScreen() {
       <main className="app">
         <div className="nav-bar">
           <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
-          <h1 className="title" style={{ margin: 0, font: 'inherit' }}>{t('Vista previa', 'Preview')}</h1>
+          <h1 className="title onb-screen-title" tabIndex={-1} style={{ margin: 0, font: 'inherit' }}>{t('Vista previa', 'Preview')}</h1>
           <div className="right">
             <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
           </div>
