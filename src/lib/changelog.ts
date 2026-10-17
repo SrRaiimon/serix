@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.91',
+    items: [
+      ['La primera vez, la bienvenida sale antes: ya no espera a descargar los 900 ejercicios.', 'The first time, the welcome screen shows up sooner: it no longer waits for the 900 exercises to download.'],
+    ],
+  },
+  {
     version: '0.0.90',
     items: [
       ['Con Serix abierta en dos pestañas, al juntar los cambios ya no se cuela un amigo repetido.', 'With Serix open in two tabs, merging the changes no longer lets a duplicate friend slip in.'],

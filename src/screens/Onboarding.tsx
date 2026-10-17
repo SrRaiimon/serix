@@ -1,6 +1,6 @@
 import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Chip, Segmented, StatBand, useCatalog } from '../components/ui'
+import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { CatalogContext, Chip, Segmented, StatBand } from '../components/ui'
 import { rest, type Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
@@ -20,7 +20,9 @@ const LAST = 5
 
 /** Cuestionario inicial: objetivo, nivel, disponibilidad y material; genera el primer programa. */
 export function OnboardingScreen() {
-  const catalog = useCatalog()
+  // Puede no haber llegado aún (la bienvenida no lo espera, ver App): solo hace falta al crear el programa,
+  // y para entonces ya está (tarda ~1 s; el cuestionario, bastante más).
+  const catalog = useContext(CatalogContext)
   const { settings } = useData()
   // Si se cierra la app a mitad, se vuelve al paso en que ibas (las respuestas ya se guardan en los ajustes).
   const [step, setStepState] = useState(() => {
@@ -65,7 +67,7 @@ export function OnboardingScreen() {
     advance.current = setTimeout(() => setStep((s) => (s !== from ? s : returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
   }
   // El primer día del programa que saldría, para el adelanto del resumen (solo en el último paso).
-  const firstDay = useMemo(() => (step === LAST ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0).days[0] : undefined),
+  const firstDay = useMemo(() => (step === LAST && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0).days[0] : undefined),
     [step, settings.goal, settings.level, settings.days, settings.minutes, settings.equipment, settings.pullupBar, catalog])
   const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
@@ -130,7 +132,7 @@ export function OnboardingScreen() {
           <h1 className="sr-only onb-screen-title" tabIndex={-1}>{t('Vista previa', 'Preview')}</h1>
           <div />
           <div className="right">
-            <button className="nav-btn onb-nav-alt" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
+            <button className="nav-btn onb-nav-alt" onClick={() => { if (!catalog) return; setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
           </div>
         </div>
         <div className="screen with-nav" style={{ paddingBottom: 120 }}>
@@ -325,14 +327,15 @@ export function OnboardingScreen() {
         )}
       </div>
       <Footer>
-        <button className="btn primary block" onClick={() => {
+        <button className="btn primary block" disabled={step === LAST && !catalog} onClick={() => {
           if (step < LAST) return setStep(returnToEnd && step > 0 ? LAST : step + 1)
+          if (!catalog) return
           updateSettings({ weeklyGoal: settings.days })
           try { sessionStorage.removeItem('onb-step') } catch { /* nada que borrar */ }
           setVariation(0)
           setProgram(generate(config, catalog, 0))
         }}>
-          {step === 0 ? t('Empezar', 'Start') : step === LAST ? t('Crear mi programa', 'Create my program') : returnToEnd ? t('Volver al resumen', 'Back to summary') : t('Continuar', 'Continue')}
+          {step === 0 ? t('Empezar', 'Start') : step === LAST ? (catalog ? t('Crear mi programa', 'Create my program') : t('Cargando ejercicios…', 'Loading exercises…')) : returnToEnd ? t('Volver al resumen', 'Back to summary') : t('Continuar', 'Continue')}
         </button>
       </Footer>
     </main>

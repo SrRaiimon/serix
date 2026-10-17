@@ -1,5 +1,5 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
 import { fillBodyweights } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
@@ -69,6 +69,7 @@ const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => (
 export default function App() {
   const [raw, setRaw] = useState<CatalogData>()
   const [error, setError] = useState<string>()
+  const [early, setEarly] = useState(false)
   // Se lee para volver a pintar al cambiar de idioma (el idioma sale de los ajustes).
   // También los ejercicios propios, que se suman al catálogo.
   // Cada cambio de datos crea objetos nuevos, así que se compara su contenido: el catálogo solo se
@@ -80,7 +81,19 @@ export default function App() {
   const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey)) : undefined), [raw, language, customKey])
 
   useEffect(() => {
-    Promise.all([loadCatalog(), loadData()])
+    const data = loadData()
+    // Quien aún no ha hecho el cuestionario ve la bienvenida sin esperar al catálogo de ejercicios (~220 KB),
+    // que sigue llegando por detrás: hasta el resumen final no hace falta. Con el diccionario ya listo, para
+    // no enseñarla un momento en español a quien la usa en francés.
+    data.then(dictReady).then(() => { if (!getData().settings.onboarded) setEarly(true) }).catch(() => { /* lo avisa el de abajo */ })
+    // La primera visita (sin service worker todavía, todo por la red): primero el código de la bienvenida y
+    // después el catálogo; a la vez se reparten la red y la bienvenida sale más tarde (medido con 4G lenta:
+    // 1,97 s → 1,84 s). Con la app ya guardada todo sale de la caché: el catálogo, enseguida.
+    const firstVisit = !navigator.serviceWorker?.controller
+    const catalogReady = firstVisit
+      ? data.then(() => (getData().settings.onboarded ? undefined : screens.onboarding().catch(() => undefined))).then(loadCatalog)
+      : loadCatalog()
+    Promise.all([catalogReady, data])
       .then(async ([c]) => {
         await dictReady()
         migrateCatalog(new Catalog(c.exercises, c.legacy))
@@ -93,17 +106,10 @@ export default function App() {
   // Nombres de ejercicios guardados al idioma actual.
   useEffect(() => { if (catalog) relabelExercises(catalog) }, [catalog])
 
-  if (!catalog) {
-    return (
-      <div className="empty" style={{ minHeight: '100dvh', justifyContent: 'center' }}>
-        <Dumbbell size={56} />
-        <p className="muted">{error ?? t('Cargando ejercicios…', 'Loading exercises…')}</p>
-      </div>
-    )
-  }
+  if (!catalog && (!early || error)) return <Loading error={error} />
 
   return (
-    <CatalogContext.Provider value={catalog}>
+    <CatalogContext.Provider value={catalog ?? null}>
       {/* Con otro idioma se vuelve a montar todo, así ningún texto se queda en el anterior. */}
       <ErrorBoundary resetKey={language}>
         <Main key={language} />
@@ -112,8 +118,18 @@ export default function App() {
   )
 }
 
+function Loading({ error }: { error?: string }) {
+  return (
+    <div className="empty" style={{ minHeight: '100dvh', justifyContent: 'center' }}>
+      <Dumbbell size={56} />
+      <p className="muted">{error ?? t('Cargando ejercicios…', 'Loading exercises…')}</p>
+    </div>
+  )
+}
+
 function Main() {
   const data = useData()
+  const catalog = useContext(CatalogContext)
   useFoodReminders(data.settings.foodReminders === true, data.nutrition.entries)
   const route = useRoute()
   const ui = useWorkoutUI()
@@ -151,6 +167,8 @@ function Main() {
     navigate('home')
   }, [route])
 
+  // Sin catálogo todavía solo se puede enseñar el cuestionario (ver `early` en App): lo demás lo necesita.
+  if (!catalog && (data.settings.onboarded || ['import', 'food-import', 'friend', 'transfer', 'go'].includes(route[0]))) return <Loading />
   // Un enlace compartido se abre directamente, aunque sea la primera vez que se usa la app.
   if (route[0] === 'import' && route[1]) return <main className="app"><Suspense fallback={null}><ImportScreen code={route[1]} /></Suspense></main>
   if (route[0] === 'food-import' && route[1]) return <main className="app"><Suspense fallback={null}><FoodImportScreen code={route[1]} /></Suspense></main>
