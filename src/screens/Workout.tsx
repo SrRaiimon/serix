@@ -67,12 +67,12 @@ export function WorkoutScreen({ session }: { session: Session }) {
     const before = repRecords(e.exerciseId, [...history, { ...session, exercises: [{ ...e, sets: today }] }])
     const repRecord = repRecordBeaten(load, set.reps, before)
     if (value <= best + 0.01 && repRecord !== undefined) {
-      showToast(t(`Récord de ${repRecord} repeticiones en ${e.name}: ${shown}`, `${repRecord}-rep record on ${e.name}: ${shown}`))
+      showToast(t(`Récord de ${repRecord} repeticiones en ${e.name}: ${shown}`, `${repRecord}-rep record on ${e.name}: ${shown}`), 'record')
       navigator.vibrate?.([60, 60, 120])
       return
     }
     if (value > best + 0.01) {
-      showToast(t(`Nuevo récord en ${e.name}: ${shown} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${shown} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`))
+      showToast(t(`Nuevo récord en ${e.name}: ${shown} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${shown} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`), 'record')
       navigator.vibrate?.([60, 60, 120])
     }
   }

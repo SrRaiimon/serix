@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.88',
+    items: [
+      ['Los programas de la biblioteca se ajustan a los minutos que tienes por sesión y ya no juntan peso muerto y sentadilla frontal el mismo día.', 'Library programs fit the minutes you have per session and no longer put deadlifts and front squats on the same day.'],
+      ['En casa sin material: curl con mochila para el bíceps, y la segunda pierna de la semana cambia (subidas a una silla, sentadilla con mochila o pistol).', 'At home with no equipment: backpack curls for biceps, and the week\'s second leg day changes (chair step-ups, backpack squats or pistols).'],
+      ['En dominadas y fondos, la gráfica de peso máximo muestra el lastre. Y los récords se celebran con trofeo.', 'On pull-ups and dips, the max weight chart shows the added weight. And records get a trophy.'],
+    ],
+  },
+  {
     version: '0.0.87',
     items: [
       ['La app abre antes la primera vez: la letra de los títulos pesa cuatro veces menos.', 'The app opens faster the first time: the heading font is four times lighter.'],

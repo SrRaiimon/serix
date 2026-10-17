@@ -307,6 +307,8 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
   const sessions = useMemo(() => finishedSessions(data), [data])
   const points = useMemo(() => exerciseHistory(exercise.id, sessions), [exercise.id, sessions])
   const usage = useMemo(() => exerciseUsage(sessions).get(exercise.id), [sessions, exercise.id])
+  // Dominadas, fondos…: el máximo estimado lleva el peso corporal sumado.
+  const weighted = points.some((p) => p.addedAtMax !== undefined)
   // Según lo que se registró de verdad (el tipo se puede cambiar a mano en el entrenamiento).
   const timed = points.length > 0 && points.every((p) => p.maxWeight === 0) && points.some((p) => p.maxDuration > 0 || p.maxDistance > 0)
   const tracking = timed ? (points.some((p) => p.maxDistance > 0) ? 'distance_time' : 'time') : points.length ? 'weight_reps' : defaultTracking(exercise)
@@ -330,13 +332,13 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
         <Card title={t('Tu historial', 'Your history')}>
           <StatBand items={[
             { value: usage ? setShortText(usage.top, 'weight_reps', unit).replace(' × ', '×').replace(/ @[\d,.]+$/, '') : '—', label: usage ? t(`Última vez · ${relative(usage.last).toLowerCase()}`, `Last time · ${relative(usage.last).toLowerCase()}`) : t('Última vez', 'Last time') },
-            { value: `${int(fromKg(Math.max(...points.map((p) => p.e1rm)), unit))} ${unit}`, label: t('Máx. estimado a 1 rep', 'Est. 1-rep max') },
+            { value: `${int(fromKg(Math.max(...points.map((p) => p.e1rm)), unit))} ${unit}`, label: weighted ? t('Máx. estimado con tu peso', 'Est. max with bodyweight') : t('Máx. estimado a 1 rep', 'Est. 1-rep max') },
             { value: points.length, label: points.length === 1 ? t('sesión', 'session') : t('sesiones', 'sessions') },
           ]} />
           {points.length >= 2 && (
             <>
               <LineChart points={points.map((p) => ({ x: p.date, y: fromKg(p.e1rm, unit) }))} />
-              <span className="small muted">{t(`Máximo estimado a 1 repetición en cada sesión (${unit}): el peso que podrías levantar una vez según tus series.`, `Estimated one-rep max per session (${unit}): the weight you could lift once based on your sets.`)}</span>
+              <span className="small muted">{t(`Máximo estimado a 1 repetición en cada sesión (${unit}): el peso que podrías levantar una vez según tus series.`, `Estimated one-rep max per session (${unit}): the weight you could lift once based on your sets.`)}{weighted ? ` ${t('Incluye tu peso corporal.', 'Includes your bodyweight.')}` : ''}</span>
             </>
           )}
           <button className="btn small secondary" style={{ alignSelf: 'flex-start' }} onClick={() => navigate('progress', 'exercise', exercise.id)}>

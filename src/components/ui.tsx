@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Minus, Plus, type LucideIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Minus, Plus, Trophy, type LucideIcon } from 'lucide-react'
 import { createContext, Fragment, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import type { Catalog } from '../lib/catalog'
 import { createPortal } from 'react-dom'
@@ -297,14 +297,18 @@ export function ActionSheet({ title, message, options, onClose }: { title?: stri
   )
 }
 
-export function useToast(): [ReactNode, (text: string) => void] {
-  const [text, setText] = useState<string>()
+/** Aviso breve. Los de récord llevan trofeo, duran más y entran con un pequeño salto: es un momento que se celebra. */
+export function useToast(): [ReactNode, (text: string, kind?: 'record') => void] {
+  const [toast, setToast] = useState<{ text: string; kind?: 'record' }>()
   useEffect(() => {
-    if (!text) return
-    const t = setTimeout(() => setText(undefined), 2000)
+    if (!toast) return
+    const t = setTimeout(() => setToast(undefined), toast.kind === 'record' ? 3500 : 2000)
     return () => clearTimeout(t)
-  }, [text])
-  return [text ? <Overlay><div className="toast">{text}</div></Overlay> : null, setText]
+  }, [toast])
+  const node = toast
+    ? <Overlay><div className={toast.kind === 'record' ? 'toast toast-record' : 'toast'} role="status">{toast.kind === 'record' && <Trophy size={18} aria-hidden="true" />}{toast.text}</div></Overlay>
+    : null
+  return [node, (text, kind) => setToast({ text, kind })]
 }
 
 export function Progress({ value, total, green }: { value: number; total: number; green?: boolean }) {

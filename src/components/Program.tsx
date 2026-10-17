@@ -48,13 +48,16 @@ export function PullupBarRow({ value, onChange }: { value: boolean; onChange: (v
   )
 }
 
+/** Duración estimada de un día de programa, con routineMinutes: la misma cuenta que Inicio y Rutinas. */
+export const programDayMinutes = (d: GeneratedProgram['days'][number]) =>
+  routineMinutes({ exercises: d.exercises.map((g) => ({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine)
+
 export function ProgramPreview({ program }: { program: GeneratedProgram }) {
-  // Las cifras del programa, como en el resto de la app: días y la media por día de ejercicios, series y duración
-  // (con routineMinutes, la misma cuenta que Inicio y Rutinas).
+  // Las cifras del programa, como en el resto de la app: días y la media por día de ejercicios, series y duración.
   const perDay = program.days.map((d) => ({
     exercises: d.exercises.length,
     sets: d.exercises.reduce((n, g) => n + g.sets, 0),
-    minutes: routineMinutes({ exercises: d.exercises.map((g) => ({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine),
+    minutes: programDayMinutes(d),
   }))
   const avg = (f: (x: (typeof perDay)[number]) => number) => Math.round(perDay.reduce((n, x) => n + f(x), 0) / Math.max(1, perDay.length))
   return (

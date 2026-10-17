@@ -17,7 +17,7 @@ import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
 import { nextRoutine, previewRoutine, startEmpty, startRoutine } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
-import { ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
+import { programDayMinutes, ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { QrSheet } from '../components/Qr'
 import { RoutineMuscleMap } from '../components/MuscleMap'
@@ -662,7 +662,8 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
   const data = useData()
   const [chosen, setChosen] = useState<LibraryProgram>()
   const [equipment, setEquipment] = useState<EquipmentProfile>(data.settings.equipment)
-  const program = useMemo(() => (chosen ? buildLibraryProgram(chosen, equipment, catalog, !!data.settings.pullupBar) : undefined), [chosen, equipment, catalog, data.settings.pullupBar])
+  const [minutes, setMinutes] = useState(data.settings.minutes)
+  const program = useMemo(() => (chosen ? buildLibraryProgram(chosen, equipment, catalog, !!data.settings.pullupBar, minutes) : undefined), [chosen, equipment, catalog, data.settings.pullupBar, minutes])
 
   const add = () => {
     if (!program) return
@@ -689,8 +690,15 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
             </select>
           </label>
         )}
+        {/* Los programas abiertos se recortan al tiempo que tienes; el 5×5 y los circuitos tienen su pauta cerrada. */}
+        {!chosen.fixed && (
+          <div className="card">
+            <span className="small muted">{t('Minutos por sesión', 'Minutes per session')}</span>
+            <Segmented value={String(minutes)} options={[30, 45, 60, 75, 90].map((n) => ({ value: String(n), label: String(n) }))} onChange={(v) => setMinutes(Number(v))} />
+          </div>
+        )}
         {program.days.map((d, i) => (
-          <Card key={i} title={d.name}>
+          <Card key={i} title={`${d.name} · ~${programDayMinutes(d)} min`}>
             {d.exercises.map((g) => (
               <div key={g.exercise.id} className="row" style={{ gap: 10 }}>
                 <Thumb exerciseId={g.exercise.id} size={40} />

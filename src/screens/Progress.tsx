@@ -722,7 +722,10 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
   const name = sessions.flatMap((s) => s.exercises).find((e) => e.exerciseId === id)?.name ?? t('Ejercicio', 'Exercise')
   const [metric, setMetric] = useState<Metric>('e1rm')
   const [detail, setDetail] = useState(false)
-  const value = (p: (typeof points)[number]) => fromKg(metric === 'e1rm' ? p.e1rm : metric === 'weight' ? p.maxWeight : p.volume, unit)
+  // Dominadas, fondos…: el peso máximo es el lastre (con el peso corporal sumado, la gráfica sube o baja
+  // con la báscula y no con lo que se mete en el cinturón).
+  const weighted = points.some((p) => p.addedAtMax !== undefined)
+  const value = (p: (typeof points)[number]) => fromKg(metric === 'e1rm' ? p.e1rm : metric === 'weight' ? (weighted ? p.addedAtMax ?? 0 : p.maxWeight) : p.volume, unit)
   const first = points[0]
   const last = points[points.length - 1]
   const change = points.length >= 2 ? value(last) - value(first) : 0
@@ -733,7 +736,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
       <div className="screen with-nav">
         <Segmented value={metric} onChange={setMetric} options={[
           { value: 'e1rm', label: t('Máx. estimado', 'Est. max') },
-          { value: 'weight', label: t('Peso máx.', 'Max weight') },
+          { value: 'weight', label: weighted ? t('Lastre máx.', 'Max added') : t('Peso máx.', 'Max weight') },
           { value: 'volume', label: t('Volumen', 'Volume') },
         ]} />
         <Card>
@@ -744,7 +747,8 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
                 <strong className="delta-big" style={{ color: change >= 0 ? 'var(--text)' : 'var(--red-text)' }}>{change >= 0 ? '+' : ''}{num(Math.round(change * 2) / 2)} {unit}</strong>
                 <span className="small muted">{t('desde el', 'since')} {shortDay(first.date)}</span>
               </span>
-              {metric === 'e1rm' && <span className="small muted">{t('Máximo estimado (1RM): el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated max (1RM): the weight you could lift once, worked out from your sets.')}</span>}
+              {metric === 'e1rm' && <span className="small muted">{t('Máximo estimado (1RM): el peso que podrías levantar una sola vez, calculado a partir de tus series.', 'Estimated max (1RM): the weight you could lift once, worked out from your sets.')}{weighted ? ` ${t('Incluye tu peso corporal.', 'Includes your bodyweight.')}` : ''}</span>}
+              {metric === 'weight' && weighted && <span className="small muted">{t('El peso que añades con cinturón o chaleco en tu mejor serie de cada sesión.', 'The weight you add with a belt or vest in your best set of each session.')}</span>}
             </>
           ) : (
             <span className="muted">{t('Necesitas al menos dos sesiones de este ejercicio para ver la gráfica.', 'You need at least two sessions of this exercise to see the chart.')}</span>

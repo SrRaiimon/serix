@@ -102,3 +102,49 @@ test('mancuernas: suben a pesos que existen (24 → 26 kg)', () => {
   assert.equal(24 + progressionStep('pectorals', 'kg', 'Dumbbell_Bench_Press', 24), 26)
   assert.equal(25 + progressionStep('pectorals', 'kg', 'Dumbbell_Bench_Press', 25), 27.5)
 })
+
+test('biblioteca: se ajusta a los minutos, salvo las pautas cerradas', () => {
+  for (const p of LIBRARY) {
+    for (const minutes of [30, 45, 60]) {
+      const full = buildLibraryProgram(p, p.equipment ?? 'gym', catalog)
+      const fitted = buildLibraryProgram(p, p.equipment ?? 'gym', catalog, false, minutes)
+      fitted.days.forEach((day, i) => {
+        const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
+        if (p.fixed) assert.deepEqual(day.exercises.map((x) => x.exercise.id), full.days[i].exercises.map((x) => x.exercise.id), p.id)
+        else assert.ok(sets <= Math.round(minutes / 3.4), `${p.id} a ${minutes} min: ${sets} series en ${day.name}`)
+      })
+    }
+  }
+})
+
+test('biblioteca: sentadilla y peso muerto con barra no van el mismo día (salvo el 5×5), y el rumano sí tras la sentadilla', () => {
+  const BIG = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift)$/
+  for (const p of LIBRARY.filter((x) => !x.fixed)) {
+    for (const day of buildLibraryProgram(p, p.equipment ?? 'gym', catalog).days) {
+      assert.ok(day.exercises.filter((x) => BIG.test(x.exercise.id)).length <= 1, `${p.id}: ${day.name}`)
+    }
+  }
+  const legsA = buildLibraryProgram(LIBRARY.find((x) => x.id === 'upperlower4')!, 'gym', catalog).days[1].exercises.map((x) => x.exercise.id)
+  assert.ok(legsA.includes('Barbell_Full_Squat') && legsA.includes('Romanian_Deadlift'), legsA.join(', '))
+})
+
+test('en casa sin material: bíceps el día de tirón y dos días de pierna distintos', () => {
+  for (const level of levels.map((l) => l.id)) {
+    const days = generate({ goal: 'hypertrophy', level, days: 3, minutes: 60, equipment: 'bodyweight' }, catalog).days
+    const pull = days.find((d) => /Tirón|Cuerpo completo A/.test(d.name))!
+    assert.ok(pull.exercises.some((x) => x.exercise.muscle === 'biceps'), `${level}: ${pull.exercises.map((x) => x.exercise.id).join(', ')}`)
+    const legs = generate({ goal: 'hypertrophy', level, days: 4, minutes: 60, equipment: 'bodyweight' }, catalog).days.filter((d) => /Pierna/.test(d.name))
+    const [a, b] = legs.map((d) => new Set(d.exercises.map((x) => x.exercise.id)))
+    const shared = [...a].filter((id) => b.has(id)).length
+    assert.ok(shared <= Math.min(a.size, b.size) / 2, `${level}: Pierna A y B comparten ${shared}`)
+  }
+})
+
+test('la mochila solo sustituye a las pesas cuando no hay pesas', () => {
+  for (const equipment of ['gym', 'dumbbells', 'kettlebell'] as const) {
+    for (const level of levels.map((l) => l.id)) {
+      const ids = generate({ goal: 'hypertrophy', level, days: 4, minutes: 60, equipment }, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
+      assert.ok(!ids.some((id) => /^Backpack_(Curl|Squat)$/.test(id)), `${equipment}/${level}: ${ids.join(', ')}`)
+    }
+  }
+})

@@ -74,9 +74,9 @@ interface Slot {
 }
 
 const slots = {
-  squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Leg_Press', 'Hack_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Bulgarian_Split_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
+  squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Leg_Press', 'Hack_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Bulgarian_Split_Squat', 'Pistol_Squat', 'Backpack_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
   hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
-  legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Bodyweight_Walking_Lunge'] },
+  legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Step-up_with_Knee_Raise', 'Bodyweight_Walking_Lunge'] },
   lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
   legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Stiff-Legged_Dumbbell_Deadlift', 'Single_Leg_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Floor_Glute-Ham_Raise'] },
   legExtension: { kind: 'accessory', muscles: ['quads'], match: /extension|sissy/i, preferred: ['Leg_Extensions', 'Single-Leg_Leg_Extension', 'Weighted_Sissy_Squat'] },
@@ -90,8 +90,8 @@ const slots = {
   lateralRaise: { kind: 'accessory', muscles: ['delts'], match: /lateral|side|deltoid raise/i, preferred: ['Side_Lateral_Raise', 'Cable_Seated_Lateral_Raise', 'Seated_Side_Lateral_Raise', 'Lateral_Raise_-_With_Bands'] },
   rearDelt: { kind: 'accessory', muscles: ['delts'], match: /rear|reverse fly|face pull|pull apart|back fly/i, preferred: ['Face_Pull', 'Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise', 'Back_Flyes_-_With_Bands', 'Band_Pull_Apart', 'Reverse_Snow_Angels'] },
   shrug: { kind: 'accessory', muscles: ['traps'], match: /shrug|upright|high pull/i, preferred: ['Barbell_Shrug', 'Dumbbell_Shrug', 'Kettlebell_Sumo_High_Pull', 'Upright_Row_-_With_Bands', 'Scapular_Pull-Up'] },
-  biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Chin-Up'] },
-  hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Chin-Up'] },
+  biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Backpack_Curl', 'Chin-Up'] },
+  hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Backpack_Curl', 'Chin-Up'] },
   triceps: { kind: 'accessory', muscles: ['triceps'], match: /tricep|dip|skull|kickback|pushdown|close/i, preferred: ['Triceps_Pushdown', 'Lying_Triceps_Press', 'Standing_Dumbbell_Triceps_Extension', 'Band_Skull_Crusher', 'Dips_-_Triceps_Version', 'Push-Ups_-_Close_Triceps_Position', 'Bench_Dips'] },
   core: { kind: 'core', muscles: ['abs'], preferred: ['Hanging_Leg_Raise', 'Dead_Bug', 'Crunches', 'Russian_Twist', 'Plank', 'Kettlebell_Windmill', 'Cable_Crunch'] },
   // Acondicionamiento: se elige por tipo (cardio o pliometría), no por músculo.
@@ -202,6 +202,10 @@ const HARD_START = /^(Pullups|Chin-Up|Kipping_Pull_Up|Chest_To_Bar_Pull_Up|Floor
 const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit|Single_Leg_Glute_Bridge)$/
 /** Básicos pesados que cargan la columna: uno por día como mucho. */
 export const HEAVY_AXIAL = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift|Romanian_Deadlift|Stiff-Legged_Barbell_Deadlift|Good_Morning)$/
+/** Los dos grandes (sentadilla y peso muerto con barra): en los programas clásicos, nunca los dos el mismo día. */
+const BIG_LIFT = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift)$/
+/** La mochila sustituye a las pesas: con mancuernas o pesa rusa, mejor las de verdad. */
+const BACKPACK_LOAD = /^Backpack_(Curl|Squat)$/
 
 interface PickRules {
   level?: TrainingLevel
@@ -209,6 +213,8 @@ interface PickRules {
   bar?: boolean
   /** Ya hay un básico pesado de columna ese día. */
   axialUsed?: boolean
+  /** Ya hay sentadilla o peso muerto con barra ese día. */
+  bigLiftUsed?: boolean
   equipment?: EquipmentProfile
   /** Programas de fuerza e hipertrofia: sin gestos de CrossFit como la dominada con kipping. */
   strict?: boolean
@@ -225,20 +231,24 @@ function suits(e: Exercise, r: PickRules): boolean {
   // Solo con el cuerpo, la sentadilla al aire es para empezar: desde intermedio, búlgara y similares.
   if (r.equipment === 'bodyweight' && r.level !== 'beginner' && /^(Bodyweight_Squat|Wall_Sit)$/.test(e.id)) return false
   if (r.axialUsed && HEAVY_AXIAL.test(e.id)) return false
+  if (r.bigLiftUsed && BIG_LIFT.test(e.id)) return false
+  if (r.equipment !== 'bodyweight' && BACKPACK_LOAD.test(e.id)) return false
   return true
 }
 
 /** Material casero que no es «peso corporal» en el catálogo, pero que hay en cualquier casa (una toalla, una mochila). */
-const HOME_EXTRAS = new Set(['Towel_Door_Row', 'Backpack_Row'])
+const HOME_EXTRAS = new Set(['Towel_Door_Row', 'Backpack_Row', 'Backpack_Curl', 'Backpack_Squat'])
 
 function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules = {}): Exercise | undefined {
   const usable = (e: Exercise) => allowed.has(e.equipment) || (rules.equipment !== undefined && rules.equipment !== 'gym' && HOME_EXTRAS.has(e.id))
   // Los estiramientos del catálogo (Superman, Split_Squats…) no cuentan como series de fuerza.
   const strengthy = (e: Exercise) => slot.kind === 'conditioning' || e.category !== 'stretching'
-  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && usable(e) && strengthy(e) && suits(e, rules))
+  // Lo de no juntar sentadilla y peso muerto se mira al elegir, no al ordenar: si no, quitar el peso muerto
+  // correría la variante un puesto y la Pierna A perdería el rumano tras la sentadilla.
+  const preferred = slot.preferred.map((id) => catalog.get(id)).filter((e): e is Exercise => !!e && usable(e) && strengthy(e) && suits(e, { ...rules, bigLiftUsed: false }))
   for (let offset = 0; offset < preferred.length; offset++) {
     const candidate = preferred[(variant + offset) % preferred.length]
-    if (!used.has(candidate.id)) return candidate
+    if (!used.has(candidate.id) && !(rules.bigLiftUsed && BIG_LIFT.test(candidate.id))) return candidate
   }
   // Alternativa: el ejercicio más básico (nombre más corto, nivel más fácil) que encaje.
   const fits = (e: Exercise) => slot.kind === 'conditioning'
@@ -281,6 +291,8 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   if (kind === 'conditioning' || kind === 'core') return out
   // El nórdico es durísimo: pocas repeticiones (bajando despacio) y descanso largo, nunca 12-20.
   if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
+  // La pistol es a una pierna y muy exigente: 6-10 por pierna, no 12-20 como una sentadilla al aire.
+  else if (/pistol/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
   // El hip thrust y el puente: aunque vayan con barra, no son un básico a 3-5 repeticiones.
   else if (/hip_thrust|glute_bridge/i.test(e.id) && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   else if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
@@ -289,6 +301,9 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   return out
 }
+
+/** Tope de series de una sesión según el tiempo (unos 3,4 min por serie con su descanso). */
+const setsForMinutes = (minutes: number) => Math.round(minutes / 3.4)
 
 /** `variation` desplaza la elección en cada hueco para obtener una alternativa al mismo plan. */
 export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): GeneratedProgram {
@@ -303,8 +318,7 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     const exercises: GeneratedExercise[] = []
     // Series por músculo principal en la sesión: más de ~10 de un mismo músculo en un día ya no suman.
     const perMuscle = new Map<string, number>()
-    // Tope de series de la sesión según el tiempo (unos 3,4 min por serie con su descanso).
-    const maxTotal = Math.round(c.minutes / 3.4)
+    const maxTotal = setsForMinutes(c.minutes)
     let total = 0
     for (const [name, variant] of list) {
       const rules: PickRules = { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
@@ -357,6 +371,8 @@ export interface LibraryProgram {
   /** Series de un hueco concreto (en el 5×5, el peso muerto va a 1×5: con 5 series se acumula demasiada fatiga). */
   setsFor?: Partial<Record<SlotName, number>>
   progression?: Progression
+  /** Pauta cerrada que no se recorta por tiempo (el 5×5, los circuitos): su duración ya va en la descripción. */
+  fixed?: boolean
 }
 
 const HYPERTROPHY: Record<Kind, SchemeRow> = { compound: [3, 6, 10, 120], accessory: [3, 10, 15, 75], core: [3, 12, 15, 60], conditioning: [3, 10, 15, 45] }
@@ -392,7 +408,7 @@ export const LIBRARY: LibraryProgram[] = [
   {
     id: 'strength5x5', name: ['Fuerza 5×5 · 3 días', 'Strength 5×5 · 3 days'], days: 3, level: 'beginner', progression: 'linear',
     description: ['Dos sesiones (A y B) que se alternan: 5 series de 5 en los básicos (1 de 5 en peso muerto) y subida de peso en cada sesión si completas todas. Clásico para ganar fuerza rápido al principio.', 'Two sessions (A and B) that alternate: 5 sets of 5 on the main lifts (1 set of 5 on deadlifts) and a weight increase each session if you complete them all. A classic for fast early strength gains.'],
-    templates: [strengthA, strengthB], scheme: STRENGTH_5X5, setsFor: { hinge: 1 },
+    templates: [strengthA, strengthB], scheme: STRENGTH_5X5, setsFor: { hinge: 1 }, fixed: true,
   },
   {
     id: 'ppl3', name: ['Empuje / Tirón / Pierna · 3 días', 'Push / Pull / Legs · 3 days'], days: 3, level: 'intermediate',
@@ -422,26 +438,34 @@ export const LIBRARY: LibraryProgram[] = [
   {
     id: 'functional3', name: ['Funcional · 3 días', 'Functional · 3 days'], days: 3, level: 'intermediate', extraEquipment: ['other'],
     description: ['Al estilo de un box: un básico con barra o mancuernas, gimnásticos (dominadas, pies a la barra) y un bloque de motor (remo, bici, comba). Hazlo seguido, con poco descanso.', 'Box style: a barbell or dumbbell lift, gymnastics (pull-ups, toes to bar) and an engine block (row, bike, rope). Go through it with little rest.'],
-    templates: [functionalA, functionalB, functionalC], scheme: FUNCTIONAL,
+    templates: [functionalA, functionalB, functionalC], scheme: FUNCTIONAL, fixed: true,
   },
   {
     id: 'home-hiit', name: ['HIIT en casa · 3 días', 'Home HIIT · 3 days'], days: 3, level: 'beginner', equipment: 'bodyweight', extraEquipment: ['other'],
     description: ['Intenso y sin material: pierna, empuje, remo con una toalla en la puerta y bloques de burpees, saltos y skipping. Unos 30 minutos.', 'Intense and equipment-free: legs, push, towel door rows and blocks of burpees, jumps and high knees. About 30 minutes.'],
-    templates: [hiitA, hiitB, hiitA], scheme: HIIT,
+    templates: [hiitA, hiitB, hiitA], scheme: HIIT, fixed: true,
   },
 ]
 
-/** Un programa de la biblioteca con los ejercicios del material indicado. */
-export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog, pullupBar = false): GeneratedProgram {
+/**
+ * Un programa de la biblioteca con los ejercicios del material indicado. Con `minutes`, cada día se queda
+ * en las series que caben en ese tiempo (un Torso / Pierna entero son 24 series, más de una hora):
+ * se recortan los últimos ejercicios, que son los accesorios.
+ */
+export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog, pullupBar = false, minutes?: number): GeneratedProgram {
+  const maxTotal = minutes && !p.fixed ? setsForMinutes(minutes) : Infinity
   const allowed = new Set([...equipmentInfo(p.equipment ?? equipment).allowed, ...(p.extraEquipment ?? [])])
   const days = p.templates.map((template, index) => {
     const used = new Set<string>()
     const exercises: GeneratedExercise[] = []
     const perMuscle = new Map<string, number>()
+    let total = 0
     for (const [name, variant] of template.slots) {
       // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
-      // extra). Lo de un básico pesado por día no: son programas clásicos (el 5×5 junta sentadilla y peso muerto).
-      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment, strict: !(p.extraEquipment ?? []).includes('other') }
+      // extra). Sentadilla y peso muerto con barra, no los dos el mismo día (peso muerto y sentadilla frontal
+      // juntos es demasiado; sentadilla y rumano, sí), salvo en las pautas cerradas: el 5×5 los junta a propósito.
+      const bigLiftUsed = !p.fixed && exercises.some((x) => BIG_LIFT.test(x.exercise.id))
+      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment, strict: !(p.extraEquipment ?? []).includes('other'), bigLiftUsed }
       const found = pickOrSubstitute(name, variant, allowed, used, catalog, rules)
       if (!found) continue
       const { exercise, slot } = found
@@ -457,8 +481,11 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') {
         if (done > MAX_SETS_PER_SESSION - 2) continue
         s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
-        perMuscle.set(exercise.muscle, done + s.sets)
       }
+      if (total + s.sets > maxTotal && total + 2 > maxTotal) continue
+      s.sets = Math.min(s.sets, maxTotal - total)
+      total += s.sets
+      if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') perMuscle.set(exercise.muscle, done + s.sets)
       exercises.push({ exercise, ...s, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
     }
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
