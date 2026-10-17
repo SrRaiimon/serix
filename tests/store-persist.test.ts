@@ -125,3 +125,12 @@ test('varias pestañas: los amigos se juntan con la misma regla que la interfaz 
   const merged = mergeData({ ...base, friends: [{ name: 'José' } as never] }, { ...base, friends: [{ name: 'jose ' } as never] }, base)
   assert.equal(merged.friends.length, 1)
 })
+
+test('varias pestañas: un duplicado que ya traía una lista no se arrastra al juntar', () => {
+  const base = migrateData({ version: 1, sessions: [], routines: [], friends: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const ours = { ...base, friends: [{ name: 'José' }, { name: 'jose' }, { name: 'Ana' }] as never[] }
+  const theirs = { ...base, friends: [{ name: 'ANA' }, { name: 'Ana ' }, { name: 'Luis' }] as never[] }
+  const names = mergeData(theirs, ours, base).friends.map((f) => (f as { name: string }).name)
+  assert.deepEqual(names, ['José', 'Ana', 'Luis'])
+})

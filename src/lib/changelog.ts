@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.90',
+    items: [
+      ['Con Serix abierta en dos pestañas, al juntar los cambios ya no se cuela un amigo repetido.', 'With Serix open in two tabs, merging the changes no longer lets a duplicate friend slip in.'],
+      ['Por dentro: las pantallas de Comidas y del entreno, ordenadas en piezas más pequeñas, y pruebas que ejecutan de verdad la parte que funciona sin conexión.', 'Under the hood: the Food and workout screens split into smaller pieces, and tests that actually run the offline part.'],
+    ],
+  },
+  {
     version: '0.0.89',
     items: [
       ['En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.', 'In the setup you now get a message if you try to leave fewer than 2 days or more than 6, and in the preview "Another one" no longer wraps onto two lines.'],

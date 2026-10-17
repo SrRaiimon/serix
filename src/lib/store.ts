@@ -418,18 +418,26 @@ function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefi
   const there = new Map(theirs.map((x) => [keyOf(x), x]))
   const here = new Set(ours.map(keyOf))
   const out: T[] = []
+  // Cada clave una sola vez, aunque una lista ya la traiga repetida (dos «José» de antes de comparar sin
+  // tildes): si no, cada vez que se juntan pestañas se arrastra el duplicado. Lo que no tiene clave se deja.
+  const done = new Set<string>()
+  const add = (k: string, x: T) => {
+    if (k && done.has(k)) return
+    done.add(k)
+    out.push(x)
+  }
   for (const o of ours) {
     const k = keyOf(o)
     const t = there.get(k)
     const b = before.get(k)
-    if (t !== undefined) out.push(pick3(t, o, b, b !== undefined))
-    else if (!(b !== undefined && same(o, b))) out.push(o)
+    if (t !== undefined) add(k, pick3(t, o, b, b !== undefined))
+    else if (!(b !== undefined && same(o, b))) add(k, o)
   }
   for (const t of theirs) {
     const k = keyOf(t)
     if (here.has(k)) continue
     const b = before.get(k)
-    if (!(b !== undefined && same(t, b))) out.push(t)
+    if (!(b !== undefined && same(t, b))) add(k, t)
   }
   return out
 }

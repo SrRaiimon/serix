@@ -58,6 +58,14 @@ interface PlannedExercise {
   tmSince?: number
 }
 
+/** Cambia una sesión (la del entreno en curso) por su id. */
+export function editSession(id: string, fn: (s: Session) => void) {
+  update((d) => {
+    const s = d.sessions.find((x) => x.id === id)
+    if (s) fn(s)
+  })
+}
+
 /**
  * Series por lados: cada serie pendiente se convierte en una del lado izquierdo y otra del derecho
  * (seguidas, con el mismo peso y repeticiones), en su sitio. Las hechas y las de calentamiento no.
