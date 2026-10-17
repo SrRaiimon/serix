@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.89',
+    items: [
+      ['En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.', 'In the setup you now get a message if you try to leave fewer than 2 days or more than 6, and in the preview "Another one" no longer wraps onto two lines.'],
+      ['Al instalarla en Android, la ventana de instalación enseña capturas de la app.', 'When you install it on Android, the install window shows screenshots of the app.'],
+      ['Con teclado o lector de pantalla, el cuestionario no salta solo de pregunta y al terminarlo el foco va al título de Inicio.', 'With a keyboard or screen reader, the setup no longer jumps to the next question on its own, and when you finish, focus goes to the Home title.'],
+    ],
+  },
+  {
     version: '0.0.88',
     items: [
       ['Los programas de la biblioteca se ajustan a los minutos que tienes por sesión y ya no juntan peso muerto y sentadilla frontal el mismo día.', 'Library programs fit the minutes you have per session and no longer put deadlifts and front squats on the same day.'],

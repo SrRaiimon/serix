@@ -5,11 +5,12 @@ import { rest, type Unit } from '../lib/format'
 import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
-import { HealthNotice } from './Legal'
 import { ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
 import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.GoalsSheet })))
+// El aviso de salud está en Legal (textos largos): solo se carga en el último paso, no con la bienvenida.
+const HealthNotice = lazy(() => import('./Legal').then((m) => ({ default: m.HealthNotice })))
 
 const goalIcons: Record<string, LucideIcon> = { hypertrophy: BicepsFlexed, strength: Anvil, fatLoss: Flame, general: Heart }
 const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
@@ -71,6 +72,9 @@ export function OnboardingScreen() {
   const [variation, setVariation] = useState(0)
   const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }
 
+  // Aviso al tocar un día que dejaría la semana con menos de 2 o más de 6.
+  const [dayLimit, setDayLimit] = useState<string>()
+  useEffect(() => setDayLimit(undefined), [step])
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
   const [foodStep, setFoodStep] = useState(false)
   const [goalsOpen, setGoalsOpen] = useState(false)
@@ -121,9 +125,12 @@ export function OnboardingScreen() {
       <main className="app">
         <div className="nav-bar">
           <div className="left"><button className="nav-btn" onClick={() => setProgram(undefined)}><ChevronLeft size={24} /> {t('Atrás', 'Back')}</button></div>
-          <h1 className="title onb-screen-title" tabIndex={-1} style={{ margin: 0, font: 'inherit' }}>{t('Vista previa', 'Preview')}</h1>
+          {/* El título solo para el lector de pantalla (recibe el foco): a la vista ya lo dice la tarjeta del programa,
+              y así «Otra propuesta» cabe en una línea. */}
+          <h1 className="sr-only onb-screen-title" tabIndex={-1}>{t('Vista previa', 'Preview')}</h1>
+          <div />
           <div className="right">
-            <button className="nav-btn" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
+            <button className="nav-btn onb-nav-alt" onClick={() => { setVariation(variation + 1); setProgram(generate(config, catalog, variation + 1)) }}><RotateCcw size={18} /> {t('Otra propuesta', 'Another one')}</button>
           </div>
         </div>
         <div className="screen with-nav" style={{ paddingBottom: 120 }}>
@@ -144,8 +151,12 @@ export function OnboardingScreen() {
   const dayNames = [t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')]
   const toggleDay = (i: number) => {
     const next = trainingDays.includes(i) ? trainingDays.filter((d) => d !== i) : [...trainingDays, i].sort((a, b) => a - b)
-    // Entre 2 y 6 días, como en la lista de números.
-    if (next.length < 2 || next.length > 6) return
+    // Entre 2 y 6 días, como en la lista de números. Si no se puede, se dice (antes el toque no hacía nada).
+    if (next.length < 2 || next.length > 6) {
+      setDayLimit(next.length < 2 ? t('Como mínimo, 2 días por semana.', 'At least 2 days a week.') : t('Como máximo, 6 días: uno para descansar.', 'At most 6 days: keep one to rest.'))
+      return
+    }
+    setDayLimit(undefined)
     navigator.vibrate?.(6)
     updateSettings({ days: next.length, trainingDays: next, weeklyGoal: next.length })
   }
@@ -175,7 +186,7 @@ export function OnboardingScreen() {
             </div>
             <div className="onb-hero">
               <span className="hero-ribbon" aria-hidden="true" />
-              <img className="onb-logo" src="icons/serix-192.png" width={72} height={72} alt="" />
+              <img className="onb-logo" src="icons/serix.svg" width={72} height={72} alt="" />
               <h1 className="onb-title">{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
               <p className="onb-lead">
                 {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
@@ -197,7 +208,7 @@ export function OnboardingScreen() {
             <Header step={step} title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
             <Choices label={t('Objetivo', 'Goal')}>
               {goals.map((g) => (
-                <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} meta={goalMeta(g.id)} active={settings.goal === g.id} onClick={() => { updateSettings({ goal: g.id }); next() }} />
+                <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} meta={goalMeta(g.id)} active={settings.goal === g.id} onClick={(e) => { updateSettings({ goal: g.id }); if (e.detail > 0) next() }} />
               ))}
             </Choices>
           </>
@@ -207,7 +218,7 @@ export function OnboardingScreen() {
             <Header step={step} title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
             <Choices label={t('Experiencia', 'Experience')}>
               {levels.map((l, i) => (
-                <Option key={l.id} icon={ChartBar} bars={i + 1} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={() => { updateSettings({ level: l.id }); next() }} />
+                <Option key={l.id} icon={ChartBar} bars={i + 1} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={(e) => { updateSettings({ level: l.id }); if (e.detail > 0) next() }} />
               ))}
             </Choices>
           </>
@@ -226,7 +237,7 @@ export function OnboardingScreen() {
                   </button>
                 ))}
               </div>
-              <span className="tiny muted">{settings.trainingDays?.length
+              <span className="tiny muted" role="status">{dayLimit ? <strong className="onb-day-limit">{dayLimit}</strong> : settings.trainingDays?.length
                 ? t('Tus días de entreno: Inicio te dirá cuándo toca. Se cambian en Perfil.', 'Your training days: Home will tell you when it is time. Change them in Profile.')
                 : t('Toca los días que te vengan bien para fijarlos (opcional).', 'Tap the days that suit you to set them (optional).')}</span>
               <p className="small onb-note">
@@ -307,7 +318,7 @@ export function OnboardingScreen() {
             </div>
             {/* Antes de crear el programa, a la vista y no al pie de la bienvenida. */}
             <div className="card onb-notice">
-              <HealthNotice />
+              <Suspense fallback={null}><HealthNotice /></Suspense>
               <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
             </div>
           </>
@@ -367,7 +378,12 @@ function goalMeta(goal: GeneratorConfig['goal']): string[] {
   return [`${p.repsMin}-${p.repsMax} reps`, t(`descanso ${rest(p.rest)}`, `${rest(p.rest)} rest`), ...(p.cardio ? [t('+ cardio', '+ cardio')] : [])]
 }
 
-function Option({ icon: Icon, title, detail, active, onClick, bars, meta }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: () => void; bars?: number; meta?: string[] }) {
+/**
+ * Una opción de las preguntas de una sola elección. Al tocarla se pasa sola a la siguiente; con teclado
+ * (Enter o Espacio: el clic llega con `detail` 0) solo se marca y se sigue con «Continuar», para que el
+ * foco no salte a otra pregunta sin pedirlo (WCAG 3.2.2).
+ */
+function Option({ icon: Icon, title, detail, active, onClick, bars, meta }: { icon: LucideIcon; title: string; detail?: string; active: boolean; onClick: (e: React.MouseEvent) => void; bars?: number; meta?: string[] }) {
   return (
     <button className={`option-card onb-option ${active ? 'active' : ''}`} onClick={onClick} aria-pressed={active}>
       {/* Nivel: tres barras que se llenan (1, 2 o 3) en vez del mismo icono en las tres opciones. */}

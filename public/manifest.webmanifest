@@ -102,5 +102,35 @@
         }
       ]
     }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/inicio.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Inicio: el entreno que toca hoy y tu semana"
+    },
+    {
+      "src": "screenshots/programa.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Un programa a tu medida según objetivo, tiempo y material"
+    },
+    {
+      "src": "screenshots/entreno.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Registro de cada serie con descanso automático"
+    },
+    {
+      "src": "screenshots/bienvenida.webp",
+      "sizes": "780x1688",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Tu entrenador de bolsillo"
+    }
   ]
 }

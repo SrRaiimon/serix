@@ -118,6 +118,20 @@ function Main() {
   const route = useRoute()
   const ui = useWorkoutUI()
   const active = activeSession(data)
+  // Al terminar o saltar el cuestionario, el foco va al título de Inicio: si no, se queda en el botón que
+  // ya no existe (en el body) y el lector de pantalla no dice dónde estás. Inicio se carga aparte: se espera.
+  const onboarded = !!data.settings.onboarded
+  const [wasOnboarded] = useState(onboarded)
+  useEffect(() => {
+    if (!onboarded || wasOnboarded) return
+    let tries = 0
+    const id = setInterval(() => {
+      const h = document.querySelector<HTMLElement>('main h1')
+      if (h || ++tries > 40) clearInterval(id)
+      if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }) }
+    }, 50)
+    return () => clearInterval(id)
+  }, [onboarded, wasOnboarded])
   // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento; #/go/food
   // abre el buscador de la comida que toca.
   useEffect(() => {

@@ -2071,5 +2071,10 @@
 "Incluye tu peso corporal.": "Inclut ton poids de corps.",
 "Lastre máx.": "Lest max",
 "Los programas de la biblioteca se ajustan a los minutos que tienes por sesión y ya no juntan peso muerto y sentadilla frontal el mismo día.": "Les programmes de la bibliothèque s’adaptent aux minutes que tu as par séance et ne mettent plus soulevé de terre et squat avant le même jour.",
-"Máx. estimado con tu peso": "Max estimé avec ton poids"
+"Máx. estimado con tu peso": "Max estimé avec ton poids",
+"Como mínimo, 2 días por semana.": "Au moins 2 jours par semaine.",
+"Como máximo, 6 días: uno para descansar.": "6 jours au maximum : garde-en un pour te reposer.",
+"En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.": "Dans le questionnaire, un message s’affiche si tu essaies de garder moins de 2 jours ou plus de 6, et dans l’aperçu « Autre proposition » ne se coupe plus sur deux lignes.",
+"Al instalarla en Android, la ventana de instalación enseña capturas de la app.": "Quand tu l’installes sur Android, la fenêtre d’installation montre des captures de l’app.",
+"Con teclado o lector de pantalla, el cuestionario no salta solo de pregunta y al terminarlo el foco va al título de Inicio.": "Au clavier ou avec un lecteur d’écran, le questionnaire ne passe plus tout seul à la question suivante, et à la fin le focus va sur le titre de l’Accueil."
 }

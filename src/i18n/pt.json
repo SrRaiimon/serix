@@ -2071,5 +2071,10 @@
 "Incluye tu peso corporal.": "Inclui o teu peso corporal.",
 "Lastre máx.": "Lastro máx.",
 "Los programas de la biblioteca se ajustan a los minutos que tienes por sesión y ya no juntan peso muerto y sentadilla frontal el mismo día.": "Os programas da biblioteca ajustam-se aos minutos que tens por sessão e já não juntam peso morto e agachamento frontal no mesmo dia.",
-"Máx. estimado con tu peso": "Máx. estimado com o teu peso"
+"Máx. estimado con tu peso": "Máx. estimado com o teu peso",
+"Como mínimo, 2 días por semana.": "No mínimo, 2 dias por semana.",
+"Como máximo, 6 días: uno para descansar.": "No máximo, 6 dias: deixa um para descansar.",
+"En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.": "No questionário, se tentares deixar menos de 2 dias ou mais de 6 aparece um aviso, e na pré-visualização «Outra proposta» já não se parte em duas linhas.",
+"Al instalarla en Android, la ventana de instalación enseña capturas de la app.": "Ao instalá-la no Android, a janela de instalação mostra capturas da app.",
+"Con teclado o lector de pantalla, el cuestionario no salta solo de pregunta y al terminarlo el foco va al título de Inicio.": "Com teclado ou leitor de ecrã, o questionário já não salta sozinho de pergunta e, ao terminar, o foco vai para o título do Início."
 }
