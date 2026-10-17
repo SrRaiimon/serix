@@ -128,8 +128,10 @@ const legsA = T(['Pierna', 'Legs'], [['squat', 0], ['hinge', 1], ['legPress', 0]
 const pushB = T(['Empuje B', 'Push B'], [['inclinePress', 1], ['shoulderPress', 1], ['chestPress', 1], ['lateralRaise', 1], ['chestFly', 1], ['triceps', 2], ['triceps', 3], ['core', 2]])
 const pullB = T(['Tirón B', 'Pull B'], [['horizontalPull', 2], ['verticalPull', 1], ['horizontalPull', 3], ['rearDelt', 1], ['biceps', 1], ['hammer', 1], ['shrug', 1], ['core', 3]])
 const legsB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['lunge', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['legPress', 1]])
-const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['lateralRaise', 0], ['biceps', 0], ['triceps', 0], ['rearDelt', 0]])
-const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['chestFly', 0], ['hammer', 0], ['triceps', 1], ['lateralRaise', 1]])
+// Torso: con 6 ejercicios (60 min) entran los 6 primeros, así que los brazos se reparten entre los dos días:
+// tríceps y elevación lateral en A; bíceps y aperturas en B (antes los dos días cortaban el tríceps).
+const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['triceps', 0], ['lateralRaise', 0], ['biceps', 0], ['rearDelt', 0]])
+const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
 const lowerA = T(['Pierna A', 'Legs A'], [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
 const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
 
@@ -305,6 +307,68 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
 /** Tope de series de una sesión según el tiempo (unos 3,4 min por serie con su descanso). */
 const setsForMinutes = (minutes: number) => Math.round(minutes / 3.4)
 
+type Chosen = { exercise: Exercise; slot: Slot }
+
+/**
+ * Un día de programa, en dos pasos. Primero se eligen los ejercicios de cada hueco (con el tope de series por
+ * músculo: más de ~10 de un mismo músculo en un día ya no suman). Después se ajusta al tiempo (`fitToTime`).
+ * Lo usan el generador y la biblioteca, así las dos cuentan igual.
+ */
+function buildDay(list: [SlotName, number][], maxTotal: number,
+  choose: (name: SlotName, variant: number, chosen: GeneratedExercise[], used: Set<string>) => Chosen | undefined,
+  schemeFor: (found: Chosen, name: SlotName) => { sets: number; repsMin: number; repsMax: number; rest: number },
+  extra: (found: Chosen) => Partial<GeneratedExercise> = () => ({})): GeneratedExercise[] {
+  const used = new Set<string>()
+  const picked: { ex: GeneratedExercise; kind: Kind }[] = []
+  const perMuscle = new Map<string, number>()
+  const counts = (e: Exercise) => e.category !== 'cardio' && e.category !== 'plyometrics'
+  const full = (e: Exercise) => counts(e) && (perMuscle.get(e.muscle) ?? 0) > MAX_SETS_PER_SESSION - 2
+  for (const [name, variant] of list) {
+    let found = choose(name, variant, picked.map((p) => p.ex), used)
+    // El acondicionamiento no se pierde por el tope de un músculo: si la sentadilla con salto no cabe en un día
+    // de pierna, otro del bloque (comba, escaladores…). «Perder grasa» lo promete cada día.
+    for (let k = 1; found && found.slot.kind === 'conditioning' && full(found.exercise) && k < 8; k++) found = choose(name, variant + k, picked.map((p) => p.ex), used)
+    if (!found) continue
+    const s = schemeFor(found, name)
+    // Cuenta todo lo de fuerza (también un swing en el bloque de acondicionamiento); el cardio, no.
+    const { exercise } = found
+    const done = perMuscle.get(exercise.muscle) ?? 0
+    if (full(exercise)) continue
+    if (counts(exercise)) {
+      s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
+      perMuscle.set(exercise.muscle, done + s.sets)
+    }
+    // Solo lo que entra cuenta como usado: lo descartado aún puede ocupar otro hueco.
+    used.add(exercise.id)
+    picked.push({ ex: { exercise, ...s, ...extra(found) }, kind: found.slot.kind })
+  }
+  return fitToTime(picked, maxTotal)
+}
+
+/**
+ * Deja el día en las series que caben en el tiempo (unos 3,4 min por serie con su descanso). Antes de quitar
+ * un ejercicio entero se quitan series: un tríceps a 2 series vale más que una cuarta serie de press. Por orden:
+ * los básicos de 4-5 series a 3, los accesorios a 2 y, si aún no cabe, fuera ejercicios desde el final. Nunca el
+ * primero (el básico del día) ni el acondicionamiento de «Perder grasa», que es lo que promete ese objetivo.
+ */
+function fitToTime(picked: { ex: GeneratedExercise; kind: Kind }[], maxTotal: number): GeneratedExercise[] {
+  const total = () => picked.reduce((t, p) => t + p.ex.sets, 0)
+  // De atrás adelante y de una en una, para repartir el recorte entre los ejercicios.
+  const trim = (applies: (kind: Kind) => boolean, floor: number) => {
+    for (let changed = true; changed && total() > maxTotal;) {
+      changed = false
+      for (let i = picked.length - 1; i >= 0 && total() > maxTotal; i--) {
+        if (applies(picked[i].kind) && picked[i].ex.sets > floor) { picked[i].ex.sets--; changed = true }
+      }
+    }
+  }
+  trim((k) => k === 'compound', 3)
+  trim((k) => k === 'accessory' || k === 'core', 2)
+  for (let i = picked.length - 1; i > 0 && total() > maxTotal; i--) if (picked[i].kind !== 'conditioning') picked.splice(i, 1)
+  trim(() => true, 2)
+  return picked.map((p) => p.ex)
+}
+
 /** `variation` desplaza la elección en cada hueco para obtener una alternativa al mismo plan. */
 export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): GeneratedProgram {
   const [splitName, templates] = split(c)
@@ -312,32 +376,12 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
   const allowed = new Set(equipmentInfo(c.equipment).allowed)
 
   const days = templates.map((template, index) => {
-    const used = new Set<string>()
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
-    const exercises: GeneratedExercise[] = []
-    // Series por músculo principal en la sesión: más de ~10 de un mismo músculo en un día ya no suman.
-    const perMuscle = new Map<string, number>()
-    const maxTotal = setsForMinutes(c.minutes)
-    let total = 0
-    for (const [name, variant] of list) {
-      const rules: PickRules = { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: exercises.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }
-      const found = pickOrSubstitute(name, variant + variation, allowed, used, catalog, rules)
-      if (!found) continue
-      const { exercise, slot } = found
-      const s = fitScheme(exercise, slot.kind, scheme(slot.kind, c))
-      // Cuenta todo lo de fuerza (también un swing en el bloque de acondicionamiento); el cardio, no.
-      const counts = exercise.category !== 'cardio' && exercise.category !== 'plyometrics'
-      const done = perMuscle.get(exercise.muscle) ?? 0
-      if (counts && done > MAX_SETS_PER_SESSION - 2) continue
-      if (counts) s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
-      if (total + s.sets > maxTotal && total + 2 > maxTotal) continue
-      s.sets = Math.min(s.sets, maxTotal - total)
-      if (counts) perMuscle.set(exercise.muscle, done + s.sets)
-      total += s.sets
-      used.add(exercise.id)
-      exercises.push({ exercise, ...s })
-    }
+    const exercises = buildDay(list, setsForMinutes(c.minutes),
+      (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
+        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: chosen.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }),
+      ({ exercise, slot }) => fitScheme(exercise, slot.kind, scheme(slot.kind, c)))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
 
@@ -456,38 +500,23 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
   const maxTotal = minutes && !p.fixed ? setsForMinutes(minutes) : Infinity
   const allowed = new Set([...equipmentInfo(p.equipment ?? equipment).allowed, ...(p.extraEquipment ?? [])])
   const days = p.templates.map((template, index) => {
-    const used = new Set<string>()
-    const exercises: GeneratedExercise[] = []
-    const perMuscle = new Map<string, number>()
-    let total = 0
-    for (const [name, variant] of template.slots) {
+    const exercises = buildDay(template.slots, maxTotal,
       // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
       // extra). Sentadilla y peso muerto con barra, no los dos el mismo día (peso muerto y sentadilla frontal
       // juntos es demasiado; sentadilla y rumano, sí), salvo en las pautas cerradas: el 5×5 los junta a propósito.
-      const bigLiftUsed = !p.fixed && exercises.some((x) => BIG_LIFT.test(x.exercise.id))
-      const rules: PickRules = { level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment, strict: !(p.extraEquipment ?? []).includes('other'), bigLiftUsed }
-      const found = pickOrSubstitute(name, variant, allowed, used, catalog, rules)
-      if (!found) continue
-      const { exercise, slot } = found
-      used.add(exercise.id)
-      const [schemeSets, repsMin, repsMax, rest] = p.scheme[slot.kind]
+      (name, variant, chosen, used) => pickOrSubstitute(name, variant, allowed, used, catalog, {
+        level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment,
+        strict: !(p.extraEquipment ?? []).includes('other'), bigLiftUsed: !p.fixed && chosen.some((x) => BIG_LIFT.test(x.exercise.id)),
+      }),
       // La pauta del programa, ajustada al ejercicio que ha tocado con tu material (un 5×5 sin barra no es
-      // sentadilla al aire a 5 repeticiones) y con el mismo tope de series por músculo que el generador.
-      // setsFor es para el ejercicio pensado (el peso muerto 1×5 del 5×5); si el hueco lo ocupa otro (sin
-      // barra, un puente), lleva las series normales.
-      const own = found.slot === slots[name] && exercise.equipment === 'barbell'
-      const s = fitScheme(exercise, slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest })
-      const done = perMuscle.get(exercise.muscle) ?? 0
-      if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') {
-        if (done > MAX_SETS_PER_SESSION - 2) continue
-        s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
-      }
-      if (total + s.sets > maxTotal && total + 2 > maxTotal) continue
-      s.sets = Math.min(s.sets, maxTotal - total)
-      total += s.sets
-      if (exercise.category !== 'cardio' && exercise.category !== 'plyometrics') perMuscle.set(exercise.muscle, done + s.sets)
-      exercises.push({ exercise, ...s, ...(p.progression && slot.kind === 'compound' ? { progression: p.progression } : {}) })
-    }
+      // sentadilla al aire a 5 repeticiones). setsFor es para el ejercicio pensado (el peso muerto 1×5 del 5×5);
+      // si el hueco lo ocupa otro (sin barra, un puente), lleva las series normales.
+      (found, name) => {
+        const [schemeSets, repsMin, repsMax, rest] = p.scheme[found.slot.kind]
+        const own = found.slot === slots[name] && found.exercise.equipment === 'barbell'
+        return fitScheme(found.exercise, found.slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest })
+      },
+      (found) => (p.progression && found.slot.kind === 'compound' ? { progression: p.progression } : {}))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
   const level = levelInfo(p.level).label

@@ -7,6 +7,7 @@ import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
 import { dictReady, langKey, onDict, t } from './lib/i18n'
 import { migrateCatalog, relabelExercises } from './lib/migrate'
 import { autoProtect } from './lib/protect'
+import { rememberEquipment } from './lib/progression'
 import { clock } from './lib/format'
 import { currentTab, navigate, useRoute, type Tab } from './lib/router'
 import { activeSession, flush, getData, loadData, useData, useStorageProblem } from './lib/store'
@@ -104,7 +105,12 @@ export default function App() {
       .catch((e: unknown) => setError(t(`No se pudo cargar la app: ${String(e)}`, `The app could not load: ${String(e)}`)))
   }, [])
   // Nombres de ejercicios guardados al idioma actual.
-  useEffect(() => { if (catalog) relabelExercises(catalog) }, [catalog])
+  // Y su material, para que la progresión suba las mancuernas a pesos que existen.
+  useEffect(() => {
+    if (!catalog) return
+    relabelExercises(catalog)
+    rememberEquipment(catalog.exercises)
+  }, [catalog])
 
   if (!catalog && (!early || error)) return <Loading error={error} />
 
@@ -134,20 +140,27 @@ function Main() {
   const route = useRoute()
   const ui = useWorkoutUI()
   const active = activeSession(data)
-  // Al terminar o saltar el cuestionario, el foco va al título de Inicio: si no, se queda en el botón que
-  // ya no existe (en el body) y el lector de pantalla no dice dónde estás. Inicio se carga aparte: se espera.
+  // Al cambiar de pantalla (una subpantalla, «Atrás», terminar el cuestionario…), si el foco se ha quedado en
+  // el aire (el botón pulsado ya no existe: queda en body), va al título de la pantalla nueva y el lector de
+  // pantalla dice dónde estás. Si sigue en algo (la pestaña de abajo que se acaba de tocar), no se mueve.
+  // La pantalla puede tardar en pintarse (se carga aparte; en la primera visita, con el catálogo): se espera.
   const onboarded = !!data.settings.onboarded
-  const [wasOnboarded] = useState(onboarded)
+  const place = `${onboarded}:${route.join('/')}`
+  const [firstPlace] = useState(place)
   useEffect(() => {
-    if (!onboarded || wasOnboarded) return
-    let tries = 0
+    if (place === firstPlace) return
+    const start = Date.now()
+    const lost = () => !document.activeElement || document.activeElement === document.body
     const id = setInterval(() => {
+      if (!lost() || Date.now() - start > 10000) return clearInterval(id)
       const h = document.querySelector<HTMLElement>('main h1')
-      if (h || ++tries > 40) clearInterval(id)
-      if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }) }
+      if (!h) return
+      clearInterval(id)
+      if (!h.hasAttribute('tabindex')) h.tabIndex = -1
+      h.focus({ preventScroll: true })
     }, 50)
     return () => clearInterval(id)
-  }, [onboarded, wasOnboarded])
+  }, [place, firstPlace])
   // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento; #/go/food
   // abre el buscador de la comida que toca.
   useEffect(() => {

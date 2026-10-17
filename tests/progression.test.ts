@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { LIFTS_531, plan, progressionStep, trainingMaxFrom } from '../src/lib/progression'
+import { LIFTS_531, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
 import { exercise, session, set } from './helpers'
 
 const base = { exerciseId: 'bench', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12 }
@@ -141,3 +141,22 @@ test('5/3/1: dos sesiones en la misma semana cuentan como una semana del ciclo',
   // La misma semana: se repite la semana 1.
   assert.equal((plan(lift, [], [a], 'kg', a.start + 7200000)?.auto as { week: number }).week, 1)
 })
+
+test('mancuernas y kettlebells: suben al siguiente peso que existe, por material y no por el nombre', () => {
+  rememberEquipment([{ id: 'Hammer_Curls', equipment: 'dumbbell' }, { id: 'Goblet_Squat', equipment: 'kettlebell' }, { id: 'Incline_Dumbbell_Press', equipment: 'dumbbell' }])
+  // El martillo es de aislamiento: antes 24 → 25 (5 %); la goblet, de pierna: antes 24 → 26,5.
+  assert.equal(progressionStep('biceps', 'kg', 'Hammer_Curls', 24), 2)
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 24), 2)
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 15), 1)
+  // Hasta 10 kg, de 1 en 1; las series de 2 y de 2,5 desde ahí.
+  assert.equal(progressionStep('biceps', 'kg', 'Hammer_Curls', 8), 1)
+  assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 22), 2)
+  assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 22.5), 2.5)
+  // 10, 20, 30 están en las dos series: decide lo que ya se ha usado.
+  assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20), 2)
+  assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20, [15, 17.5, 20]), 2.5)
+  assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20, [16, 18, 20]), 2)
+  // En libras, como siempre.
+  assert.equal(progressionStep('pectorals', 'lb', 'Incline_Dumbbell_Press', 50), progressionStep('pectorals', 'lb'))
+})
+

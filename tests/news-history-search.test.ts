@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CHANGELOG, compareVersions, unseenReleases } from '../src/lib/changelog'
+import { CHANGELOG, compareVersions, headline, unseenReleases } from '../src/lib/changelog'
 import { searchSessions } from '../src/lib/history'
 import { exercise, session, set } from './helpers'
 
@@ -27,3 +27,15 @@ test('buscar en el historial: por ejercicio (sin tildes ni plurales), nombre o p
   assert.deepEqual(searchSessions(all, 'banca 120', 'kg'), [])
   assert.deepEqual(searchSessions(all, '', 'kg'), all)
 })
+
+test('novedades: el titular de Inicio es lo primero que se nota, nunca un «Por dentro» si hay otra cosa', () => {
+  const r = (version: string, ...items: string[]) => ({ version, items: items.map((es) => [es, es] as [string, string]) })
+  assert.equal(headline([r('3', 'Por dentro: tests'), r('2', 'Récords con trofeo', 'Otra')])?.[0], 'Récords con trofeo')
+  assert.equal(headline([r('3', 'Por dentro: tests')])?.[0], 'Por dentro: tests')
+  assert.equal(headline([]), undefined)
+  // Quien viene de la 0.0.84 a la 0.0.92 ve algo de las 8 versiones, no la nota interna de la última.
+  const line = headline(unseenReleases('0.0.84', '0.0.92'))
+  assert.ok(line && !/^Por dentro/.test(line[0]), String(line?.[0]))
+  assert.equal(unseenReleases('0.0.84', '0.0.92').length, 8)
+})
+

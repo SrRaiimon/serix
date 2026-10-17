@@ -4,6 +4,7 @@
 // Uso: node scripts/i18n/missing.mjs
 import { readFileSync } from 'node:fs'
 import { extract } from './extract.mjs'
+import { pathToFileURL } from 'node:url'
 
 const holes = (s) => (s.match(/\{\d+\}/g) ?? []).sort().join()
 export function missing(langs = ['fr', 'pt']) {
@@ -19,7 +20,7 @@ export function missing(langs = ['fr', 'pt']) {
   return out
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const list = missing()
   for (const x of list) console.log(`${x.lang} · ${x.problem}: ${JSON.stringify(x.es)}  (en: ${JSON.stringify(x.en)})`)
   console.log(list.length ? `${list.length} por revisar` : 'Todo traducido')

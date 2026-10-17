@@ -75,7 +75,9 @@ export function OnboardingScreen() {
   const config: GeneratorConfig = { goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }
 
   // Aviso al tocar un día que dejaría la semana con menos de 2 o más de 6.
-  const [dayLimit, setDayLimit] = useState<string>()
+  // Con un número que cambia en cada intento: el mismo texto otra vez no se volvía a pintar y el lector no lo repetía.
+  const [dayLimit, setDayLimitState] = useState<{ text: string; n: number }>()
+  const setDayLimit = (text: string | undefined) => setDayLimitState((d) => (text ? { text, n: (d?.n ?? 0) + 1 } : undefined))
   useEffect(() => setDayLimit(undefined), [step])
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
   const [foodStep, setFoodStep] = useState(false)
@@ -207,7 +209,7 @@ export function OnboardingScreen() {
         )}
         {step === 1 && (
           <>
-            <Header step={step} title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} />
+            <Header step={step} title={t('¿Cuál es tu objetivo?', 'What is your goal?')} subtitle={t('Ajustaremos series, repeticiones y descansos.', 'We will adjust sets, reps and rest.')} autoNext />
             <Choices label={t('Objetivo', 'Goal')}>
               {goals.map((g) => (
                 <Option key={g.id} icon={goalIcons[g.id]} title={g.label} detail={g.detail} meta={goalMeta(g.id)} active={settings.goal === g.id} onClick={(e) => { updateSettings({ goal: g.id }); if (e.detail > 0) next() }} />
@@ -217,7 +219,7 @@ export function OnboardingScreen() {
         )}
         {step === 2 && (
           <>
-            <Header step={step} title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} />
+            <Header step={step} title={t('¿Qué experiencia tienes?', 'How experienced are you?')} subtitle={t('Así calibramos el volumen de trabajo.', 'This is how we set your training volume.')} autoNext />
             <Choices label={t('Experiencia', 'Experience')}>
               {levels.map((l, i) => (
                 <Option key={l.id} icon={ChartBar} bars={i + 1} title={l.label} detail={l.detail} active={settings.level === l.id} onClick={(e) => { updateSettings({ level: l.id }); if (e.detail > 0) next() }} />
@@ -239,7 +241,7 @@ export function OnboardingScreen() {
                   </button>
                 ))}
               </div>
-              <span className="tiny muted" role="status">{dayLimit ? <strong className="onb-day-limit">{dayLimit}</strong> : settings.trainingDays?.length
+              <span className="tiny muted" role="status">{dayLimit ? <strong className="onb-day-limit" key={dayLimit.n}>{dayLimit.text}</strong> : settings.trainingDays?.length
                 ? t('Tus días de entreno: Inicio te dirá cuándo toca. Se cambian en Perfil.', 'Your training days: Home will tell you when it is time. Change them in Profile.')
                 : t('Toca los días que te vengan bien para fijarlos (opcional).', 'Tap the days that suit you to set them (optional).')}</span>
               <p className="small onb-note">
@@ -361,12 +363,16 @@ function Footer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Header({ title, subtitle, step }: { title: string; subtitle: string; step?: number }) {
+/**
+ * `autoNext`: al tocar una opción se pasa sola a la siguiente pregunta. Se dice antes (WCAG 3.2.2 lo permite si
+ * se avisa): con teclado no pasa, pero con VoiceOver o TalkBack el doble toque es un toque más y no se distingue.
+ */
+function Header({ title, subtitle, step, autoNext }: { title: string; subtitle: string; step?: number; autoNext?: boolean }) {
   return (
     <div className="onb-head">
       {step !== undefined && <span className="small muted onb-step">{t(`Paso ${step} de ${LAST}`, `Step ${step} of ${LAST}`)}</span>}
       <h1 className="onb-question" tabIndex={-1}>{title}</h1>
-      <p className="muted" style={{ margin: 0 }}>{subtitle}</p>
+      <p className="muted" style={{ margin: 0 }}>{subtitle}{autoNext && ` ${t('Al elegir, pasas a la siguiente pregunta.', 'Choosing one takes you to the next question.')}`}</p>
     </div>
   )
 }

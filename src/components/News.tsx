@@ -1,6 +1,6 @@
 import { Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
-import { CHANGELOG, compareVersions, unseenReleases } from '../lib/changelog'
+import { CHANGELOG, compareVersions, headline, unseenReleases } from '../lib/changelog'
 import { t } from '../lib/i18n'
 import { updateSettings, useData } from '../lib/store'
 import { Card, Sheet } from './ui'
@@ -13,13 +13,17 @@ export function NewsCard() {
   const list = unseenReleases(settings.seenVersion, __APP_VERSION__)
   if (!list.length) return null
   // Una línea con lo más destacado; todo, a un toque («Ver»). Tres puntos largos ocupaban media pantalla.
-  const [es, en] = list[0].items[0]
+  const line = headline(list)
+  if (!line) return null
+  const [es, en] = line
   const seen = () => updateSettings({ seenVersion: __APP_VERSION__ })
   return (
     <div className="card news-line">
       <Sparkles size={20} color="var(--accent-text)" aria-hidden="true" style={{ flexShrink: 0 }} />
       <span className="grow small">
-        <strong style={{ display: 'block' }}>{t(`Novedades de la versión ${__APP_VERSION__}`, `What's new in version ${__APP_VERSION__}`)}</strong>
+        <strong style={{ display: 'block' }}>{list.length > 1
+          ? t(`Novedades de ${list.length} versiones`, `What's new in ${list.length} versions`)
+          : t(`Novedades de la versión ${__APP_VERSION__}`, `What's new in version ${__APP_VERSION__}`)}</strong>
         <span className="muted news-line-text">{t(es, en)}</span>
       </span>
       <button className="btn secondary btn-sm" onClick={() => setAll(true)}>{t('Ver', 'View')}</button>

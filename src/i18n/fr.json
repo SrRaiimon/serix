@@ -2054,9 +2054,15 @@
 "Como máximo, 6 días: uno para descansar.": "6 jours au maximum : garde-en un pour te reposer.",
 "En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.": "Dans le questionnaire, un message s’affiche si tu essaies de garder moins de 2 jours ou plus de 6, et dans l’aperçu « Autre proposition » ne se coupe plus sur deux lignes.",
 "Al instalarla en Android, la ventana de instalación enseña capturas de la app.": "Quand tu l’installes sur Android, la fenêtre d’installation montre des captures de l’app.",
-"Con teclado o lector de pantalla, el cuestionario no salta solo de pregunta y al terminarlo el foco va al título de Inicio.": "Au clavier ou avec un lecteur d’écran, le questionnaire ne passe plus tout seul à la question suivante, et à la fin le focus va sur le titre de l’Accueil.",
 "Con Serix abierta en dos pestañas, al juntar los cambios ya no se cuela un amigo repetido.": "Avec Serix ouverte dans deux onglets, la fusion des changements ne laisse plus passer un ami en double.",
 "Por dentro: las pantallas de Comidas y del entreno, ordenadas en piezas más pequeñas, y pruebas que ejecutan de verdad la parte que funciona sin conexión.": "En coulisses : les écrans Repas et entraînement découpés en pièces plus petites, et des tests qui exécutent vraiment la partie hors connexion.",
 "La primera vez, la bienvenida sale antes: ya no espera a descargar los 900 ejercicios.": "La première fois, l’écran d’accueil s’affiche plus vite : il n’attend plus le téléchargement des 900 exercices.",
-"Por dentro: al retocar un texto, su traducción al francés y al portugués se conserva (antes se quedaba sin traducir).": "En coulisses : quand un texte est retouché, sa traduction en français et en portugais est conservée (avant, il restait non traduit)."
+"Por dentro: al retocar un texto, su traducción al francés y al portugués se conserva (antes se quedaba sin traducir).": "En coulisses : quand un texte est retouché, sa traduction en français et en portugais est conservée (avant, il restait non traduit).",
+"Al elegir, pasas a la siguiente pregunta.": "En choisissant, tu passes à la question suivante.",
+"Con «Perder grasa», el cardio sale todos los días, y con poco tiempo se quitan series antes que ejercicios: los brazos ya no desaparecen del programa.": "Avec « Perdre du gras », le cardio est présent chaque jour, et quand le temps manque on retire des séries avant des exercices : les bras ne disparaissent plus du programme.",
+"Con teclado o lector de pantalla, al cambiar de pantalla el foco va a su título.": "Au clavier ou avec un lecteur d’écran, en changeant d’écran le focus va sur son titre.",
+"Con teclado, el cuestionario no salta solo de pregunta, y al terminarlo el foco va al título de Inicio.": "Au clavier, le questionnaire ne passe plus tout seul à la question suivante, et à la fin le focus va sur le titre de l’Accueil.",
+"Las mancuernas y las kettlebells suben a pesos que existen (de 24 a 26 kg en el curl martillo o la goblet).": "Les haltères et les kettlebells montent à des poids qui existent (de 24 à 26 kg au curl marteau ou au goblet squat).",
+"Novedades de {0} versiones": "Nouveautés de {0} versions",
+"Tras actualizar, Inicio enseña la novedad más útil de todas las versiones que no habías visto.": "Après une mise à jour, l’Accueil montre la nouveauté la plus utile de toutes les versions que tu n’avais pas vues."
 }

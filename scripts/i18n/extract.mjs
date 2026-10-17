@@ -8,6 +8,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseAst } from 'rolldown/parseAst'
+import { pathToFileURL } from 'node:url'
 
 function files(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -63,7 +64,7 @@ export function extract(root = 'src') {
   return [...found.values()].sort((x, y) => x.es.localeCompare(y.es, 'es'))
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const list = extract()
   writeFileSync('scripts/i18n/strings.json', JSON.stringify(list, null, 1) + '\n')
   console.log(`${list.length} textos (${list.filter((x) => /\{\d+\}/.test(x.es)).length} con huecos)`)

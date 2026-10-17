@@ -22,18 +22,44 @@ const LIGHT_LEG = /dumbbell|kettlebell|goblet|lunge|split|step|single|one[-_]leg
 export { isIsolation } from './isolation'
 
 /**
+ * Material de cada ejercicio, que apunta App al cargar el catálogo: la subida de mancuernas va por el material y
+ * no por el nombre (Goblet_Squat o Hammer_Curls son con mancuerna y no lo dicen).
+ */
+const equipmentById = new Map<string, string>()
+export function rememberEquipment(list: { id: string; equipment: string }[]) {
+  for (const e of list) equipmentById.set(e.id, e.equipment)
+}
+
+/**
+ * El siguiente peso de mancuerna que existe, en kg. Hasta 10 kg van de 1 en 1. Desde ahí hay dos series: de 2 en 2
+ * (12, 14…) y de 2,5 en 2,5 (12,5, 15…). Los pesos de las dos (10, 20, 30) no dicen cuál tienes: lo dicen los
+ * que ya has usado en el ejercicio (si alguno es solo de la de 2,5).
+ */
+function dumbbellStep(weight: number, used: number[]): number {
+  const only25 = (w: number) => w % 2.5 === 0 && w % 2 !== 0
+  if (weight < 10) return weight % 1 === 0 ? 1 : 2.5
+  if (only25(weight)) return 2.5
+  if (weight % 2 === 0 && weight % 2.5 !== 0) return 2
+  return used.some((w) => w >= 10 && only25(w)) ? 2.5 : 2
+}
+
+/**
  * Lo que se sube cada vez: un salto de la unidad (2,5 kg / 5 lb), el doble en los básicos de pierna. En
  * aislamiento, un 5 % del peso (al menos 1 kg / 2 lb), redondeado a 0,5 kg / 1 lb: mancuernas y poleas
  * van de 1-2 kg en 1-2 kg.
  */
-export function progressionStep(muscle: string, unit: Unit, exerciseId = '', weight = 0): number {
+export function progressionStep(muscle: string, unit: Unit, exerciseId = '', weight = 0, used: number[] = []): number {
+  // Mancuernas: a la siguiente que existe (24 → 26 kg, no 26,5), también en aislamiento (un martillo de 24 no
+  // pasa a 25). Antes de la regla del 5 %, que daba pesos que no hay en ningún gimnasio.
+  const equipment = equipmentById.get(exerciseId) ?? (/dumbbell/i.test(exerciseId) ? 'dumbbell' : '')
+  if (unit === 'kg' && equipment === 'dumbbell' && weight > 0) return dumbbellStep(weight, used)
+  // Kettlebells (la goblet del catálogo): de 2 en 2 kg, a la siguiente par.
+  if (unit === 'kg' && equipment === 'kettlebell' && weight > 0) return 2 - (weight % 2)
   if (exerciseId && isIsolation(exerciseId)) {
     const fine = unit === 'kg' ? 0.5 : 1
     const min = unit === 'kg' ? 1 : 2
     return toKg(Math.max(min, Math.round((fromKg(weight, unit) * 0.05) / fine) * fine), unit)
   }
-  // Mancuernas: van de 2 en 2 kg (o de 2,5 en 2,5 si ya usas esa serie): 24 kg → 26 kg, no 26,5 (no existe).
-  if (unit === 'kg' && /dumbbell/i.test(exerciseId) && weight > 0) return weight % 2.5 === 0 ? 2.5 : 2
   return toKg(increment(unit) * (LOWER.has(muscle) && !LIGHT_LEG.test(exerciseId) ? 2 : 1), unit)
 }
 
@@ -164,7 +190,8 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
   }
   if (completed || easy) {
-    const next = weight + progressionStep(ex.muscle, unit, ex.exerciseId, weight)
+    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.map((x) => x.weight)))
+    const next = weight + progressionStep(ex.muscle, unit, ex.exerciseId, weight, used)
     const reps = ex.progression === 'double' ? ex.repsMin : ex.repsMax
     return { sets: Array.from({ length: count }, () => blank(next, reps)), auto: { kind: 'up', from: weight, to: next, mode: ex.progression } }
   }

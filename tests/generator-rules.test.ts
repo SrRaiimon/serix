@@ -148,3 +148,36 @@ test('la mochila solo sustituye a las pesas cuando no hay pesas', () => {
     }
   }
 })
+
+test('perder grasa: el acondicionamiento que promete cabe todos los días, con cualquier tiempo', () => {
+  for (const level of levels.map((l) => l.id)) {
+    for (const minutes of [30, 45, 60, 90]) {
+      for (const equipment of ['gym', 'dumbbells', 'bodyweight'] as const) {
+        for (const day of generate({ goal: 'fatLoss', level, days: 4, minutes, equipment }, catalog).days) {
+          assert.ok(day.exercises.some((x) => ['cardio', 'plyometrics'].includes(x.exercise.category) || /swing|burpee|climber|jump|rope/i.test(x.exercise.id)), `${level}/${equipment}/${minutes}: ${day.name} sin acondicionamiento`)
+        }
+      }
+    }
+  }
+})
+
+test('con poco tiempo se quitan series antes que ejercicios: brazos cada semana y el básico del día siempre', () => {
+  const weekly = (days: { exercises: { exercise: { muscle: string }; sets: number }[] }[], m: string) => days.flatMap((d) => d.exercises).filter((x) => x.exercise.muscle === m).length
+  for (const equipment of ['gym', 'dumbbells'] as const) {
+    for (const level of ['intermediate', 'advanced'] as const) {
+      const days = generate({ goal: 'hypertrophy', level, days: 4, minutes: 60, equipment }, catalog).days
+      assert.ok(weekly(days, 'biceps') >= 1 && weekly(days, 'triceps') >= 1, `${equipment}/${level}: sin brazos`)
+    }
+  }
+  for (const p of LIBRARY.filter((x) => !x.fixed)) {
+    const full = buildLibraryProgram(p, p.equipment ?? 'gym', catalog)
+    for (const minutes of [30, 45, 60]) {
+      buildLibraryProgram(p, p.equipment ?? 'gym', catalog, false, minutes).days.forEach((day, i) => {
+        assert.ok(day.exercises.length >= 3, `${p.id} a ${minutes} min: ${day.name} con ${day.exercises.length}`)
+        assert.equal(day.exercises[0].exercise.id, full.days[i].exercises[0].exercise.id, `${p.id} a ${minutes} min: perdió su básico`)
+      })
+    }
+    const sixty = buildLibraryProgram(p, p.equipment ?? 'gym', catalog, false, 60).days
+    if (p.id === 'upperlower4' || p.id === 'ppl3') assert.ok(weekly(sixty, 'triceps') >= 1 && weekly(sixty, 'biceps') >= 1, `${p.id}: sin brazos a 60 min`)
+  }
+})

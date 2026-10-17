@@ -1,10 +1,13 @@
 // Las traducciones van por el texto en español (src/i18n/<idioma>.json), así que retocar un texto en el
 // código (una coma, una palabra) deja su traducción huérfana con la clave vieja y el texto nuevo sin traducir.
 // Esto las vuelve a juntar: a cada texto sin traducir le pasa la traducción huérfana más parecida (con los
-// mismos huecos {0}…) y quita las huérfanas que ya no se parecen a nada. Sin --write, solo lo enseña.
+// mismos huecos {0}…) y quita las huérfanas que ya no se parecen a nada. Sin --write, solo lo enseña. Con --write
+// solo aplica lo muy parecido (≥ 95 %, una coma, una tilde): lo demás puede haber cambiado el sentido («Activar
+// avisos» → «Desactivar avisos» es un 82 %) y se queda para traducirlo a mano, sin borrar la vieja de referencia.
 //
 // Uso: node scripts/i18n/rekey.mjs [--write]
 import { readFileSync, writeFileSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import { extract } from './extract.mjs'
 
 /** Parecido de 0 a 1 (distancia de edición sobre el más largo). */
@@ -28,6 +31,8 @@ const holes = (s) => (s.match(/\{\d+\}/g) ?? []).sort().join()
  * cambiar el sentido, así que se traduce otra vez.
  */
 export const MIN_SIMILARITY = 0.8
+/** Desde aquí se aplica solo con --write; por debajo, se enseña («REVISA») y se traduce a mano. */
+export const SAFE_SIMILARITY = 0.95
 
 /**
  * Qué hacer con un diccionario: `moves` (clave vieja → nueva, con su parecido) y `orphans` (claves que no usa
@@ -58,7 +63,7 @@ export function plan(dict, used) {
 
 /** El diccionario con las claves movidas y sin huérfanas, en el mismo orden (una entrada por línea). */
 export function apply(dict, { moves, orphans }) {
-  const to = new Map(moves.map((m) => [m.from, m.to]))
+  const to = new Map(moves.filter((m) => m.score >= SAFE_SIMILARITY).map((m) => [m.from, m.to]))
   const drop = new Set(orphans)
   const out = {}
   for (const [k, v] of Object.entries(dict)) {
@@ -70,16 +75,17 @@ export function apply(dict, { moves, orphans }) {
 
 const format = (dict) => '{\n' + Object.entries(dict).map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n') + '\n}\n'
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const write = process.argv.includes('--write')
   const used = new Set(extract().map((x) => x.es))
   for (const lang of ['fr', 'pt']) {
     const path = `src/i18n/${lang}.json`
     const dict = JSON.parse(readFileSync(path, 'utf8'))
     const p = plan(dict, used)
-    for (const m of p.moves) console.log(`${lang} · ${m.score < 0.95 ? 'REVISA ' : ''}${Math.round(m.score * 100)} %: ${JSON.stringify(m.from)}\n     → ${JSON.stringify(m.to)}`)
+    for (const m of p.moves) console.log(`${lang} · ${m.score < SAFE_SIMILARITY ? 'REVISA (a mano) ' : ''}${Math.round(m.score * 100)} %: ${JSON.stringify(m.from)}\n     → ${JSON.stringify(m.to)}`)
     for (const k of p.orphans) console.log(`${lang} · se quita (ya no se usa): ${JSON.stringify(k)}`)
     if (write && (p.moves.length || p.orphans.length)) writeFileSync(path, format(apply(dict, p)))
-    console.log(`${lang}: ${p.moves.length} recolocadas, ${p.orphans.length} quitadas${write ? '' : ' (sin --write no se cambia nada)'}`)
+    const safe = p.moves.filter((m) => m.score >= SAFE_SIMILARITY).length
+    console.log(`${lang}: ${safe} recolocadas, ${p.moves.length - safe} a revisar a mano, ${p.orphans.length} quitadas${write ? '' : ' (sin --write no se cambia nada)'}`)
   }
 }

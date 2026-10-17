@@ -39,7 +39,11 @@ test('idiomas: al retocar un texto, su traducción pasa a la clave nueva; lo que
   const p = (plan as (d: object, u: Set<string>) => Plan)(dict, used)
   assert.deepEqual(p.moves.map((m) => [m.from, m.to]), [['Revísalo y toca cualquier fila para cambiarla', 'Revísalo y toca cualquier fila para cambiarla.'], ['Día de descanso: −{0} kcal', 'Día de descanso, −{0} kcal']])
   assert.deepEqual(p.orphans, ['Texto viejo sin nada que ver'])
+  // Con --write se aplica lo muy parecido (≥ 95 %: un punto, una coma).
   assert.deepEqual((apply as (d: object, p: Plan) => object)(dict, p), { 'Día de descanso, −{0} kcal': 'Jour de repos : −{0} kcal', 'Revísalo y toca cualquier fila para cambiarla.': 'Vérifie-le et touche une ligne pour la modifier.' })
+  // «Activar» → «Desactivar» se parece (82 %) pero dice lo contrario: se propone, no se escribe.
+  const flip = (plan as (d: object, u: Set<string>) => Plan & { moves: { score: number }[] })({ 'Activar avisos de comida': 'x' }, new Set(['Desactivar avisos de comida']))
+  assert.equal(Object.keys((apply as (d: object, p: Plan) => object)({ 'Activar avisos de comida': 'x' }, flip))[0], 'Activar avisos de comida')
   // Huecos distintos: otro texto, aunque se parezca.
   assert.equal((plan as (d: object, u: Set<string>) => Plan)({ 'Hace {0} días': 'x' }, new Set(['Hace días'])).moves.length, 0)
   assert.ok((similarity as (a: string, b: string) => number)('abc', 'abc') === 1)

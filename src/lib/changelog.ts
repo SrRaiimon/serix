@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.93',
+    items: [
+      ['Con «Perder grasa», el cardio sale todos los días, y con poco tiempo se quitan series antes que ejercicios: los brazos ya no desaparecen del programa.', 'With "Lose fat", cardio shows up every day, and when time is short sets are cut before exercises: arms no longer vanish from the program.'],
+      ['Las mancuernas y las kettlebells suben a pesos que existen (de 24 a 26 kg en el curl martillo o la goblet).', 'Dumbbells and kettlebells go up to weights that exist (from 24 to 26 kg on hammer curls or goblet squats).'],
+      ['Tras actualizar, Inicio enseña la novedad más útil de todas las versiones que no habías visto.', 'After an update, Home shows the most useful news from all the versions you had not seen.'],
+      ['Con teclado o lector de pantalla, al cambiar de pantalla el foco va a su título.', 'With a keyboard or screen reader, focus moves to the title when you change screens.'],
+    ],
+  },
+  {
     version: '0.0.92',
     items: [
       ['Por dentro: al retocar un texto, su traducción al francés y al portugués se conserva (antes se quedaba sin traducir).', 'Under the hood: when a text is reworded, its French and Portuguese translation is kept (before, it was left untranslated).'],
@@ -32,7 +41,7 @@ export const CHANGELOG: Release[] = [
     items: [
       ['En el cuestionario, si intentas dejar menos de 2 días o más de 6 se avisa, y en la vista previa «Otra propuesta» ya no se parte en dos líneas.', 'In the setup you now get a message if you try to leave fewer than 2 days or more than 6, and in the preview "Another one" no longer wraps onto two lines.'],
       ['Al instalarla en Android, la ventana de instalación enseña capturas de la app.', 'When you install it on Android, the install window shows screenshots of the app.'],
-      ['Con teclado o lector de pantalla, el cuestionario no salta solo de pregunta y al terminarlo el foco va al título de Inicio.', 'With a keyboard or screen reader, the setup no longer jumps to the next question on its own, and when you finish, focus goes to the Home title.'],
+      ['Con teclado, el cuestionario no salta solo de pregunta, y al terminarlo el foco va al título de Inicio.', 'With a keyboard, the setup no longer jumps to the next question on its own, and when you finish, focus goes to the Home title.'],
     ],
   },
   {
@@ -299,8 +308,21 @@ export const CHANGELOG: Release[] = [
 export { compareVersions } from './versions'
 
 /** Lo nuevo desde la última versión vista (como mucho las 3 últimas); sin haber visto ninguna, solo la actual. */
+/** Los cambios internos (no se notan al usar la app) empiezan así; no valen como titular. */
+const INTERNAL = /^Por dentro:/
+
+/**
+ * La línea que se enseña en Inicio tras actualizar: la primera que se nota al usar la app de todas las versiones
+ * sin ver (de la más nueva a la más vieja). Quien salta varias versiones no debe ver «Por dentro: …» y perderse
+ * lo de las anteriores; si todo es interno, la primera.
+ */
+export function headline(releases: Release[]): [es: string, en: string] | undefined {
+  const items = releases.flatMap((r) => r.items)
+  return items.find(([es]) => !INTERNAL.test(es)) ?? items[0]
+}
+
 export function unseenReleases(seen: string | undefined, current: string): Release[] {
   const upTo = CHANGELOG.filter((r) => compareVersions(r.version, current) <= 0)
   if (!seen) return upTo.slice(0, 1)
-  return upTo.filter((r) => compareVersions(r.version, seen) > 0).slice(0, 3)
+  return upTo.filter((r) => compareVersions(r.version, seen) > 0)
 }
