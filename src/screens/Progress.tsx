@@ -611,7 +611,7 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
           <Thumb exerciseId={x.exerciseId} size={36} />
           <span className="grow">
             <span className="bold clamp-2" style={{ fontSize: 15 }}>{x.name}</span>
-            <span className="small muted">{t(`Igual en las últimas ${STALL_SESSIONS} veces · tu marca: ${int(fromKg(x.best, unit))} ${unit}`, `Same over the last ${STALL_SESSIONS} times · your best: ${int(fromKg(x.best, unit))} ${unit}`)}</span>
+            <span className="small muted">{t(`Igual en las últimas ${STALL_SESSIONS} veces · máx. estimado: ${int(fromKg(x.best, unit))} ${unit}`, `Same over the last ${STALL_SESSIONS} times · est. max: ${int(fromKg(x.best, unit))} ${unit}`)}</span>
           </span>
         </button>
       ))}

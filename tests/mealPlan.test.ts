@@ -256,3 +256,12 @@ test('acceso directo «Apuntar comida»: la comida que toca por la hora y se usa
   assert.equal(takePendingAdd(), 'lunch')
   assert.equal(takePendingAdd(), undefined)
 })
+
+test('objetivos: con pocas calorías la grasa no baja de 0,8 g por kilo', () => {
+  const low = computeGoals({ sex: 'f', age: 40, heightCm: 158, weightKg: 55, activity: 1.2, aim: 'lose' })
+  assert.ok(low.fat >= Math.round(55 * 0.8), `${low.fat} g de grasa con ${low.kcal} kcal`)
+  assert.ok(Math.abs(low.protein * 4 + low.carbs * 4 + low.fat * 9 - low.kcal) <= 15, 'las calorías siguen cuadrando')
+  // Con calorías normales sigue mandando el 25 %.
+  const normal = computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'keep' })
+  assert.equal(normal.fat, Math.round((normal.kcal * 0.25) / 9))
+})

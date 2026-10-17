@@ -89,3 +89,14 @@ test('meta de peso: tendencia, previsión y si es demasiado rápida', () => {
   assert.equal(done.progress, 1)
   assert.ok(done.doneAt)
 })
+
+test('entrenador: un grupo que solo recibe trabajo de rebote también recibe propuesta de ejercicio', () => {
+  // Mucho press (el tríceps trabaja de rebote) y ningún ejercicio propio de tríceps.
+  const routines = [
+    routine('a', [ex('Barbell_Bench_Press_-_Medium_Grip', 'pectorals', 3), ex('Bent_Over_Barbell_Row', 'upper-back', 3), ex('Barbell_Curl', 'biceps', 3)]),
+    routine('b', [ex('Incline_Dumbbell_Press', 'pectorals', 3), ex('Seated_Cable_Rows', 'upper-back', 3), ex('Hammer_Curls', 'biceps', 3)]),
+  ]
+  const tips = coachTips({ routines, sessions: history(), settings, catalog, now: NOW }, 20)
+  const add = tips.find((x) => x.kind === 'addExercise' && catalog.get(x.exercise.id)?.muscle === 'triceps')
+  assert.ok(add && add.kind === 'addExercise', tips.map((x) => x.id).join(', '))
+})

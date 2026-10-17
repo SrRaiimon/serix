@@ -87,11 +87,11 @@ const slots = {
   verticalPull: { kind: 'compound', muscles: ['lats'], match: /pull-?up|pullup|chin|pulldown/i, preferred: ['Pullups', 'Wide-Grip_Lat_Pulldown', 'Full_Range-Of-Motion_Lat_Pulldown', 'Close-Grip_Front_Lat_Pulldown', 'Chin-Up', 'Band_Assisted_Pull-Up'] },
   horizontalPull: { kind: 'compound', muscles: ['upper-back', 'lats'], match: /row/i, preferred: ['Bent_Over_Barbell_Row', 'Seated_Cable_Rows', 'Bent_Over_Two-Dumbbell_Row', 'One-Arm_Dumbbell_Row', 'Two-Arm_Kettlebell_Row', 'Inverted_Row'] },
   shoulderPress: { kind: 'compound', muscles: ['delts'], preferred: ['Barbell_Shoulder_Press', 'Dumbbell_Shoulder_Press', 'Seated_Dumbbell_Press', 'Kettlebell_Seated_Press', 'Shoulder_Press_-_With_Bands', 'Handstand_Push-Ups'] },
-  lateralRaise: { kind: 'accessory', muscles: ['delts'], match: /lateral|side|deltoid raise/i, preferred: ['Side_Lateral_Raise', 'Cable_Seated_Lateral_Raise', 'Seated_Side_Lateral_Raise', 'Lateral_Raise_-_With_Bands'] },
+  lateralRaise: { kind: 'accessory', muscles: ['delts'], match: /^(?!.*press).*(lateral|side|deltoid raise)/i, preferred: ['Side_Lateral_Raise', 'Cable_Seated_Lateral_Raise', 'Seated_Side_Lateral_Raise', 'Lateral_Raise_-_With_Bands'] },
   rearDelt: { kind: 'accessory', muscles: ['delts'], match: /rear|reverse fly|face pull|pull apart|back fly/i, preferred: ['Face_Pull', 'Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise', 'Back_Flyes_-_With_Bands', 'Band_Pull_Apart', 'Reverse_Snow_Angels'] },
   shrug: { kind: 'accessory', muscles: ['traps'], match: /shrug|upright|high pull/i, preferred: ['Barbell_Shrug', 'Dumbbell_Shrug', 'Kettlebell_Sumo_High_Pull', 'Upright_Row_-_With_Bands', 'Scapular_Pull-Up'] },
-  biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Backpack_Curl', 'Chin-Up'] },
-  hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Backpack_Curl', 'Chin-Up'] },
+  biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Kettlebell_Curl', 'Backpack_Curl', 'Chin-Up'] },
+  hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Kettlebell_Curl', 'Backpack_Curl', 'Chin-Up'] },
   triceps: { kind: 'accessory', muscles: ['triceps'], match: /tricep|dip|skull|kickback|pushdown|close/i, preferred: ['Triceps_Pushdown', 'Lying_Triceps_Press', 'Standing_Dumbbell_Triceps_Extension', 'Band_Skull_Crusher', 'Dips_-_Triceps_Version', 'Push-Ups_-_Close_Triceps_Position', 'Bench_Dips'] },
   core: { kind: 'core', muscles: ['abs'], preferred: ['Hanging_Leg_Raise', 'Dead_Bug', 'Crunches', 'Russian_Twist', 'Plank', 'Kettlebell_Windmill', 'Cable_Crunch'] },
   // Acondicionamiento: se elige por tipo (cardio o pliometría), no por músculo.
@@ -226,6 +226,10 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.strict && /kipping/i.test(e.id)) return false
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
+  // Cualquier dominada (barra V, agarre abierto…) es tan dura para empezar como la normal: remos hasta poder.
+  if (r.level === 'beginner' && /pull[-_]?up|chin[-_]?up/i.test(e.id) && !/assisted/i.test(e.id)) return false
+  // Tras nuca: carga el hombro en mala posición sin aportar nada sobre la normal. Nunca en un programa.
+  if (/rear_pull|behind.?(the.?)?neck/i.test(e.id)) return false
   if (r.level === 'intermediate' && e.level === 'expert' && e.equipment === 'bodyweight') return false
   // Habilidades de pino (wall walk, flexión en pino): solo para avanzados, nunca como press de hombro corriente.
   if (r.level !== 'advanced' && /wall_walk|handstand/i.test(e.id)) return false
@@ -288,18 +292,25 @@ function pickOrSubstitute(name: SlotName, variant: number, allowed: Set<string>,
  * de básico; lo que no va con barra, nunca a 3-5 (un goblet o una prensa no se hacen a 3 repeticiones);
  * el swing, a 10-15; y las piernas sin carga, a 12-20 para que cuesten.
  */
-function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }) {
+/** Empujes y remos con el propio cuerpo: desde intermedio se hacen más de 15 seguidas, así que a 12-20. */
+const EASY_BODYWEIGHT = /^(Pushups|Push-Up_Wide|Decline_Push-Up|Push-Ups_-_Close_Triceps_Position|Inverted_Row|Towel_Door_Row|Backpack_Row)$/
+
+function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }, level?: TrainingLevel) {
   const out = { ...s }
+  // Pierna sin carga de verdad (sin material o con la mochila): 12-20 para que cueste.
+  const unloadedLegs = (e.equipment === 'bodyweight' || e.id === 'Backpack_Squat') && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)
   if (kind === 'conditioning' || kind === 'core') return out
   // El nórdico es durísimo: pocas repeticiones (bajando despacio) y descanso largo, nunca 12-20.
   if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
   // La pistol es a una pierna y muy exigente: 6-10 por pierna, no 12-20 como una sentadilla al aire.
   else if (/pistol/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
-  // El hip thrust y el puente: aunque vayan con barra, no son un básico a 3-5 repeticiones.
-  else if (/hip_thrust|glute_bridge/i.test(e.id) && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
+  // El hip thrust y el puente con carga: aunque vayan con barra, no son un básico a 3-5 repeticiones (el puente
+  // sin peso va con la pierna sin carga, más abajo).
+  else if (/hip_thrust|glute_bridge/i.test(e.id) && !unloadedLegs && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   else if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
-  else if (e.equipment === 'bodyweight' && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
+  else if (unloadedLegs) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
+  else if (level && level !== 'beginner' && EASY_BODYWEIGHT.test(e.id)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   return out
 }
@@ -381,13 +392,13 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     const exercises = buildDay(list, setsForMinutes(c.minutes),
       (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
         { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: chosen.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }),
-      ({ exercise, slot }) => fitScheme(exercise, slot.kind, scheme(slot.kind, c)))
+      ({ exercise, slot }) => fitScheme(exercise, slot.kind, scheme(slot.kind, c), c.level))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
 
   return {
     name: `${splitName} · ${goalInfo(c.goal).short}`,
-    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${t(`hasta ${c.minutes} min`, `up to ${c.minutes} min`)} · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
+    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${t(`unos ${c.minutes} min`, `about ${c.minutes} min`)} · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
     days,
   }
 }
@@ -514,7 +525,7 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       (found, name) => {
         const [schemeSets, repsMin, repsMax, rest] = p.scheme[found.slot.kind]
         const own = found.slot === slots[name] && found.exercise.equipment === 'barbell'
-        return fitScheme(found.exercise, found.slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest })
+        return fitScheme(found.exercise, found.slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest }, p.level)
       },
       (found) => (p.progression && found.slot.kind === 'compound' ? { progression: p.progression } : {}))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }

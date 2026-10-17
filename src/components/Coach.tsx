@@ -33,8 +33,10 @@ function tipText(tip: CoachTip): { title: string; detail: string; action: string
       }
     case 'addExercise':
       return {
-        title: t(`Tu programa no trabaja ${groupName(tip.group)}`, `Your program skips ${groupName(tip.group)}`),
-        detail: t(`Ningún ejercicio lo trabaja. Añadir uno equilibra el cuerpo y evita descompensaciones.`, `No exercise works it. Adding one keeps your body balanced.`),
+        title: tip.planned > 0 ? t(`Poco trabajo directo de ${groupName(tip.group)}`, `Little direct ${groupName(tip.group)} work`) : t(`Tu programa no trabaja ${groupName(tip.group)}`, `Your program skips ${groupName(tip.group)}`),
+        detail: tip.planned > 0
+          ? t(`Solo le llega de rebote de otros ejercicios (unas ${tip.planned} series a la semana). Uno propio equilibra el cuerpo.`, `It only gets indirect work from other exercises (about ${tip.planned} sets a week). One of its own keeps your body balanced.`)
+          : t(`Ningún ejercicio lo trabaja. Añadir uno equilibra el cuerpo y evita descompensaciones.`, `No exercise works it. Adding one keeps your body balanced.`),
         action: t(`Añadir ${tip.exercise.name} a ${tip.routineName}`, `Add ${tip.exercise.name} to ${tip.routineName}`),
       }
     case 'fewerSets':

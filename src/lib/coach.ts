@@ -22,7 +22,7 @@ export type CoachTip =
   /** Pocas series semanales de un grupo: una serie más en el ejercicio que ya lo trabaja. */
   | { id: string; kind: 'moreSets'; group: number; planned: number; min: number; routineId: string; index: number; exerciseName: string }
   /** Un grupo que tu programa no trabaja: añadir un ejercicio básico. */
-  | { id: string; kind: 'addExercise'; group: number; exercise: Exercise; routineId: string; routineName: string }
+  | { id: string; kind: 'addExercise'; group: number; exercise: Exercise; routineId: string; routineName: string; planned: number }
   /** Muchas series de un grupo: quitar una. */
   | { id: string; kind: 'fewerSets'; group: number; planned: number; max: number; routineId: string; index: number; exerciseName: string }
 
@@ -110,13 +110,15 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
       if (main) {
         const e = main.routine.exercises[main.index]
         tips.push({ id: `low:${group}`, kind: 'moreSets', group, planned: sets, min, routineId: main.routine.id, index: main.index, exerciseName: e.name })
-      } else if (sets === 0) {
+      } else {
+        // Sin ningún ejercicio propio: aunque le llegue algo de rebote (tríceps en los press), si no llega al
+        // mínimo se propone uno. Antes solo con 0 series, y un programa sin tríceps directo no decía nada.
         const muscles = MAIN_GROUPS[group][1]
         const pick = catalog.exercises
           .filter((e) => muscles.includes(e.muscle) && e.category === 'strength' && allowed.has(e.equipment))
           .sort((a, b) => Number(STAPLES.has(b.id)) - Number(STAPLES.has(a.id)) || a.nameEn.length - b.nameEn.length)[0]
         const target = [...routines].sort((a, b) => a.exercises.length - b.exercises.length)[0]
-        if (pick && target) tips.push({ id: `add:${group}`, kind: 'addExercise', group, exercise: pick, routineId: target.id, routineName: target.name })
+        if (pick && target) tips.push({ id: `add:${group}`, kind: 'addExercise', group, exercise: pick, routineId: target.id, routineName: target.name, planned: sets })
       }
     }
     for (const { sets, group } of [...order].sort((a, b) => b.sets - a.sets)) {

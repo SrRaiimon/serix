@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.94',
+    items: [
+      ['Si ya has cumplido los entrenos de la semana, Inicio te lo dice y el siguiente queda como opcional.', 'If you have already hit your workouts for the week, Home says so and the next one is optional.'],
+      ['Programas más acertados: los principiantes hacen remos en vez de dominadas, las flexiones van a 12-20 desde intermedio, y con kettlebell hay curl y no un press como elevación lateral.', 'Better programs: beginners do rows instead of pull-ups, push-ups go to 12-20 from intermediate up, and with a kettlebell there is a curl and no press posing as a lateral raise.'],
+      ['Las cifras cuadran: «Tu plan» cuenta los ejercicios reales, la mejor serie de una rutina ya no suma tu peso en las dominadas y «máx. estimado» se llama así.', 'The numbers add up: "Your plan" counts the real exercises, a routine\'s best set no longer adds your bodyweight on pull-ups, and "est. max" is called that.'],
+      ['Con muy pocas calorías, la grasa no baja de 0,8 g por kilo, y el entrenador avisa si a un músculo solo le llega trabajo de rebote.', 'On very low calories fat stays at 0.8 g per kilo or more, and the coach tells you when a muscle only gets indirect work.'],
+    ],
+  },
+  {
     version: '0.0.93',
     items: [
       ['Con «Perder grasa», el cardio sale todos los días, y con poco tiempo se quitan series antes que ejercicios: los brazos ya no desaparecen del programa.', 'With "Lose fat", cardio shows up every day, and when time is short sets are cut before exercises: arms no longer vanish from the program.'],

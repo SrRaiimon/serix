@@ -559,9 +559,10 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
           { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
-          // Solo lo que aplica a este ejercicio: «por lados» no con barra, y «asistida» solo en máquinas y
-          // ejercicios con el cuerpo (dominadas, fondos); siempre si ya está activado, para poder quitarlo.
-          ...(tracking === 'weight_reps' && (!barbell || exercise.unilateral) ? [{
+          // Solo lo que aplica a este ejercicio: «por lados» no con barra ni en dominadas y fondos (se hacen con
+          // los dos brazos), y «asistida» solo en máquinas y ejercicios con el cuerpo; siempre si ya está
+          // activado, para poder quitarlo.
+          ...(tracking === 'weight_reps' && ((!barbell && !BODYWEIGHT_LIFTS.has(exercise.exerciseId)) || exercise.unilateral) ? [{
             label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
             onSelect: () => setMode({ unilateral: !exercise.unilateral }),
           }] : []),

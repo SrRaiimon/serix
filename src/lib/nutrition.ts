@@ -467,7 +467,7 @@ export const AIMS: { id: Aim; label: () => string; detail: () => string }[] = [
 /**
  * Objetivo diario: metabolismo en reposo (Mifflin-St Jeor) × actividad, ajustado al objetivo.
  * Proteína por kilo de peso (más alta al perder grasa para conservar músculo), grasa ~25 % de las
- * calorías y el resto, carbohidratos.
+ * calorías (y al menos 0,8 g/kg) y el resto, carbohidratos.
  */
 export function computeGoals(input: { sex: Sex; age: number; heightCm: number; weightKg: number; activity: number; aim: Aim; proteinPerKg?: number }): NutritionGoals {
   const { sex, age, heightCm, weightKg, activity, aim } = input
@@ -480,7 +480,9 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
   const height2 = (heightCm / 100) ** 2
   const reference = weightKg / height2 > 30 ? 25 * height2 : weightKg
   const protein = Math.round(reference * (input.proteinPerKg ?? defaultProteinPerKg(aim)))
-  const fat = Math.round((kcal * 0.25) / 9)
+  // Con pocas calorías el 25 % se queda corto (1160 kcal → 32 g, 0,58 g/kg): al menos 0,8 g por kilo de
+  // referencia, que es lo que piden las hormonas; sale de los hidratos.
+  const fat = Math.round(Math.max((kcal * 0.25) / 9, reference * 0.8))
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { kcal, protein, carbs, fat, ...input }
 }

@@ -3428,6 +3428,7 @@ const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Reverse_Snow_Angels: 'Superman',
   Backpack_Row: 'Bent_Over_Two-Dumbbell_Row',
   Backpack_Curl: 'Dumbbell_Bicep_Curl',
+  Kettlebell_Curl: 'Dumbbell_Bicep_Curl',
   Backpack_Squat: 'Goblet_Squat',
   Towel_Door_Row: 'Inverted_Row',
   Pistol_Squat: ['Kettlebell_Pistol_Squat', []],

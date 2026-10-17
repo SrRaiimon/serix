@@ -1158,6 +1158,33 @@
    ]
   },
   {
+   "id": "Kettlebell_Curl",
+   "name": "Curl con kettlebell",
+   "nameEn": "Kettlebell Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Coge la kettlebell por el asa con una mano, el brazo estirado junto al cuerpo y la palma hacia delante.",
+    "Pega el codo al costado y sube la kettlebell hasta el hombro sin balancear el cuerpo.",
+    "Bájala despacio hasta estirar el brazo y haz todas las repeticiones antes de cambiar de mano.",
+    "Consejo: si la kettlebell pesa demasiado para una mano, cógela por los lados del asa con las dos."
+   ],
+   "instructionsEn": [
+    "Hold the kettlebell by the handle in one hand, arm straight by your side and palm facing forward.",
+    "Keep your elbow against your side and curl the kettlebell up to your shoulder without swinging your body.",
+    "Lower it slowly until your arm is straight, and do all your reps before switching hands.",
+    "Tip: if the kettlebell is too heavy for one hand, hold it by both sides of the handle with two hands."
+   ]
+  },
+  {
    "id": "Backpack_Squat",
    "name": "Sentadilla con mochila",
    "nameEn": "Backpack Squat",

@@ -66,9 +66,12 @@ export function OnboardingScreen() {
     const from = step
     advance.current = setTimeout(() => setStep((s) => (s !== from ? s : returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
   }
-  // El primer día del programa que saldría, para el adelanto del resumen (solo en el último paso).
-  const firstDay = useMemo(() => (step === LAST && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0).days[0] : undefined),
+  // El programa que saldría, para el resumen (solo en el último paso): su primer día de adelanto y los ejercicios
+  // por día de verdad (la cuenta por minutos decía 6 y la vista previa, con el mismo programa, 5).
+  const draft = useMemo(() => (step === LAST && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0) : undefined),
     [step, settings.goal, settings.level, settings.days, settings.minutes, settings.equipment, settings.pullupBar, catalog])
+  const firstDay = draft?.days[0]
+  const perDay = draft ? Math.round(draft.days.reduce((n, d) => n + d.exercises.length, 0) / Math.max(1, draft.days.length)) : exerciseCount(settings.minutes)
   const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
@@ -278,7 +281,7 @@ export function OnboardingScreen() {
             <StatBand items={[
               { value: settings.days, label: t('días / semana', 'days / week') },
               { value: settings.minutes, label: t('min / sesión', 'min / session') },
-              { value: exerciseCount(settings.minutes), label: t('ejercicios', 'exercises') },
+              { value: perDay, label: t('ejercicios / día', 'exercises / day') },
             ]} />
             {/* Un adelanto del primer entreno: lo que te vas a encontrar al pulsar «Empezar». */}
             {firstDay && (

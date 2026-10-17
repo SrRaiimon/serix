@@ -419,11 +419,13 @@ function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefi
   const here = new Set(ours.map(keyOf))
   const out: T[] = []
   // Cada clave una sola vez, aunque una lista ya la traiga repetida (dos «José» de antes de comparar sin
-  // tildes): si no, cada vez que se juntan pestañas se arrastra el duplicado. Lo que no tiene clave se deja.
-  const done = new Set<string>()
+  // tildes): si no, cada vez que se juntan pestañas se arrastra el duplicado. Se queda el último, que es el más
+  // reciente (lo nuevo se añade al final), en el sitio del primero. Lo que no tiene clave se deja.
+  const at = new Map<string, number>()
   const add = (k: string, x: T) => {
-    if (k && done.has(k)) return
-    done.add(k)
+    const i = k ? at.get(k) : undefined
+    if (i !== undefined) { out[i] = x; return }
+    if (k) at.set(k, out.length)
     out.push(x)
   }
   for (const o of ours) {

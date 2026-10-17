@@ -211,12 +211,18 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   // Lo que se nota de un vistazo: días sin entrenar y el grupo que más tiempo llevas sin tocar.
   const daysOff = sessions.length ? Math.floor((startOfDay(Date.now()).getTime() - startOfDay(Math.max(...sessions.map((s) => s.start))).getTime()) / 86400000) : undefined
   const forgotten = forgottenGroups(sessions)[0]
+  // Con el objetivo de la semana ya cumplido, un entreno más es opcional: se dice y el botón pasa a secundario
+  // (antes la semana decía «¡cumplido!» y aquí seguía «Empezar» como si tocara).
+  const weekStart = startOfWeek(Date.now()).getTime()
+  const weekDone = !trainedToday && sessions.filter((s) => s.start >= weekStart).length >= (data.settings.weeklyGoal ?? Infinity)
+  const optional = weekDone || (!!plan && !plan.today && !trainedToday)
   return (
     <section className="hero" aria-labelledby="next-workout">
       <span className="hero-ribbon" aria-hidden="true" />
       <span className="small clamp-1 hero-meta">
         <span className="sr-only">{t('Siguiente entrenamiento', 'Next workout')}: </span>
-        {plan && !trainedToday ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
+        {weekDone ? t('Objetivo de la semana cumplido · uno más es opcional', 'Weekly goal reached · one more is optional')
+          : plan && !trainedToday ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
           : t(`Hoy descansas · el próximo, el ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`, `Rest day · next one on ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`))
           : routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}
       </span>
@@ -241,14 +247,11 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
           <span>
             {t('Aún recuperándose', 'Still recovering')}: {tired.map((g) => `${g.label} (~${g.hoursLeft} h)`).join(', ')}.{' '}
-            <span style={{ fontWeight: 400 }}>
-              {t('Puedes entrenar: baja un poco el peso o haz una serie menos en', 'You can train: lower the weight a little or do one set less on')}{' '}
-              {routine.exercises.filter((e) => tired.some((g) => g.muscles.includes(e.muscle))).map((e) => e.name).join(', ')}.
-            </span>
+            <span style={{ fontWeight: 400 }}>{t('Si entrenas, algo menos de peso en esos ejercicios.', 'If you train, go a little lighter on those exercises.')}</span>
           </span>
         </span>
       )}
-      <button className={`btn ${plan && !plan.today && !trainedToday ? 'secondary' : 'primary'} start`} onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {plan && !plan.today && !trainedToday ? t('Empezar igualmente', 'Start anyway') : t('Empezar', 'Start')}</button>
+      <button className={`btn ${optional ? 'secondary' : 'primary'} start`} onClick={() => startRoutine(routine)}><Play size={19} fill="currentColor" /> {optional ? t('Empezar igualmente', 'Start anyway') : t('Empezar', 'Start')}</button>
     </section>
   )
 }
