@@ -6,6 +6,10 @@ import { installDict, locale, plural, setLang, systemLang, t } from '../src/lib/
 import { muscleLabel } from '../src/lib/labels'
 // @ts-expect-error: script de Node sin tipos
 import { missing } from '../scripts/i18n/missing.mjs'
+// @ts-expect-error: script de Node sin tipos
+import { apply, plan, similarity } from '../scripts/i18n/rekey.mjs'
+// @ts-expect-error: script de Node sin tipos
+import { extract } from '../scripts/i18n/extract.mjs'
 
 installDict('fr', fr)
 installDict('pt', pt)
@@ -18,6 +22,27 @@ function inLang(l: 'fr' | 'pt', fn: () => void) {
 test('idiomas: todos los textos de la app están en francés y portugués, con los mismos huecos', () => {
   const list = (missing as () => { lang: string; es: string; problem: string }[])()
   assert.deepEqual(list.slice(0, 10), [], `${list.length} por traducir (node scripts/i18n/missing.mjs)`)
+})
+
+test('idiomas: sin traducciones huérfanas (de textos que ya no existen; node scripts/i18n/rekey.mjs --write)', () => {
+  const used = new Set((extract as () => { es: string }[])().map((x) => x.es))
+  for (const [lang, dict] of [['fr', fr], ['pt', pt]] as const) {
+    const orphans = Object.keys(dict).filter((k) => !used.has(k))
+    assert.deepEqual(orphans.slice(0, 5), [], `${lang}: ${orphans.length} huérfanas`)
+  }
+})
+
+test('idiomas: al retocar un texto, su traducción pasa a la clave nueva; lo que ya no se parece, se quita', () => {
+  type Plan = { moves: { from: string; to: string }[]; orphans: string[] }
+  const dict = { 'Día de descanso: −{0} kcal': 'Jour de repos : −{0} kcal', 'Revísalo y toca cualquier fila para cambiarla': 'Vérifie-le et touche une ligne pour la modifier.', 'Texto viejo sin nada que ver': 'Vieux texte' }
+  const used = new Set(['Día de descanso, −{0} kcal', 'Revísalo y toca cualquier fila para cambiarla.', 'Algo completamente distinto', 'Sin entreno: {0} kcal'])
+  const p = (plan as (d: object, u: Set<string>) => Plan)(dict, used)
+  assert.deepEqual(p.moves.map((m) => [m.from, m.to]), [['Revísalo y toca cualquier fila para cambiarla', 'Revísalo y toca cualquier fila para cambiarla.'], ['Día de descanso: −{0} kcal', 'Día de descanso, −{0} kcal']])
+  assert.deepEqual(p.orphans, ['Texto viejo sin nada que ver'])
+  assert.deepEqual((apply as (d: object, p: Plan) => object)(dict, p), { 'Día de descanso, −{0} kcal': 'Jour de repos : −{0} kcal', 'Revísalo y toca cualquier fila para cambiarla.': 'Vérifie-le et touche une ligne pour la modifier.' })
+  // Huecos distintos: otro texto, aunque se parezca.
+  assert.equal((plan as (d: object, u: Set<string>) => Plan)({ 'Hace {0} días': 'x' }, new Set(['Hace días'])).moves.length, 0)
+  assert.ok((similarity as (a: string, b: string) => number)('abc', 'abc') === 1)
 })
 
 test('idiomas: textos fijos, plantillas, plurales y tablas', () => {

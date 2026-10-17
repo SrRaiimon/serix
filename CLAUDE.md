@@ -40,6 +40,8 @@ solo cada muchas versiones. Para publicar entera una versión, `/serix-release`;
 - **Textos:** `t('español', 'English')` y `plural(n, [es…], [en…])` de `src/lib/i18n.ts`. Francés y portugués
   van en `src/i18n/fr.json` y `pt.json`, con el texto en español como clave (las plantillas `${x}` pasan a
   `{0}`). Todo texto nuevo necesita sus dos entradas o falla `tests/i18n-dict.test.ts`.
+  Al retocar un texto, `node scripts/i18n/rekey.mjs --write` le pasa la traducción del texto viejo (y quita
+  las que ya no se usan: el test también falla si quedan huérfanas); revisa las que marque «REVISA».
   `dataLang()` para datos que solo existen en es/en (catálogo, alimentos, legal).
 - **Cambios de datos** con `update(d => …)` (Immer) o `updateSettings`; `withUndo` si se puede deshacer.
   Para cambiar la forma de los datos guardados: subir `DATA_VERSION` y añadir el paso en `MIGRATIONS`

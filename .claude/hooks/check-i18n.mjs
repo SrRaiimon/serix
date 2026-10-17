@@ -17,6 +17,6 @@ try {
   const out = (e.stdout ?? '').trim()
   if (!out) process.exit(0)
   const lines = out.split('\n')
-  process.stderr.write(`Serix: faltan traducciones en src/i18n/fr.json y pt.json:\n${lines.slice(0, 20).join('\n')}${lines.length > 21 ? '\n…' : ''}\n`)
+  process.stderr.write(`Serix: faltan traducciones en src/i18n/fr.json y pt.json (si has retocado textos, primero node scripts/i18n/rekey.mjs --write: les pasa su traducción vieja; lo que quede, a mano):\n${lines.slice(0, 20).join('\n')}${lines.length > 21 ? '\n…' : ''}\n`)
   process.exit(2)
 }

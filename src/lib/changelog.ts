@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.92',
+    items: [
+      ['Por dentro: al retocar un texto, su traducción al francés y al portugués se conserva (antes se quedaba sin traducir).', 'Under the hood: when a text is reworded, its French and Portuguese translation is kept (before, it was left untranslated).'],
+    ],
+  },
+  {
     version: '0.0.91',
     items: [
       ['La primera vez, la bienvenida sale antes: ya no espera a descargar los 900 ejercicios.', 'The first time, the welcome screen shows up sooner: it no longer waits for the 900 exercises to download.'],
