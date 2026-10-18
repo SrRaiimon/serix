@@ -4,7 +4,7 @@ import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
 import { ArrowUpRight, BatteryLow, Check, ChevronDown, Ellipsis, Info, Link2, Maximize2, Plus, StickyNote, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActionSheet, Progress, Thumb, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, fromKg, increment, int, num, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
@@ -30,6 +30,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const now = useTick()
   const unit = data.settings.unit
   const history = useMemo(() => finishedSessions(data), [data])
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [])
   const [picker, setPicker] = useState(false)
   const [confirm, setConfirm] = useState<'finish' | 'discard'>()
   const [detail, setDetail] = useState<string>()
@@ -163,6 +165,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
 
   return (
     <div className="fullscreen">
+      {/* Su título para el lector (el nombre se edita en un campo), y el foco al abrir: el entreno es lo que hay. */}
+      <h1 className="sr-only" tabIndex={-1} ref={heading}>{t(`Entrenamiento: ${session.name}`, `Workout: ${session.name}`)}</h1>
       {focus && <FocusMode session={session} unit={unit} onClose={() => setFocus(false)} />}
       <div className="fullscreen-inner">
         <div className="nav-bar">
@@ -369,7 +373,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
   const workKg = exercise.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
   const addWarmup = () => edit((e) => {
-    const sets = warmupSets(workKg, unit, barbell ? barKg : undefined, fromFloor(exercise.exerciseId), exercise.exerciseId)
+    const sets = warmupSets(workKg, unit, barbell ? barKg : undefined, fromFloor(exercise.exerciseId), exercise.exerciseId, previous.map((p) => p.weight))
     e.sets = [
       ...sets.map((w) => ({ id: crypto.randomUUID(), weight: w.weight, reps: w.reps, done: false, warmup: true })),
       ...e.sets.filter((s) => !s.warmup || s.done),

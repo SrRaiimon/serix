@@ -8,7 +8,9 @@ import { defaultTracking, trackingOf, type Tracking } from './tracking'
 import { activeSession, finishedSessions, getData, lastPerformed, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
-import { plan } from './progression'
+import { equipmentOf, plan } from './progression'
+import { BARBELL_EQUIPMENT, plannedWarmup } from './warmup'
+import { BARS } from './plates'
 import { blockWeek } from './block'
 
 // Estado de interfaz del entrenamiento: si la pantalla está abierta y qué resumen mostrar.
@@ -216,7 +218,23 @@ function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
 /** Lo que propondrá cada ejercicio al empezar la rutina (los mismos cálculos), para enseñarlo antes. */
 export function previewRoutine(routine: Routine, d: AppData): SessionExercise[] {
   const history = finishedSessions(d)
-  return routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit)))
+  return withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit))), d)
+}
+
+/**
+ * El calentamiento en series, en el primer ejercicio pesado del día (los siguientes ya llegan calientes). Lo
+ * mismo en el detalle de la rutina y al empezarla: antes el detalle enseñaba una rampa que el entreno no traía.
+ */
+function withWarmup(list: SessionExercise[], d: AppData): SessionExercise[] {
+  const unit = d.settings.unit
+  const bar = (e: SessionExercise) => (BARBELL_EQUIPMENT.has(equipmentOf(e.exerciseId) ?? '') ? d.settings.barKg ?? toKg(BARS[unit][0], unit) : undefined)
+  for (const e of list) {
+    const ramp = plannedWarmup(e, unit, bar(e), lastSets(e.exerciseId, finishedSessions(d)).map((x) => x.weight))
+    if (!ramp.length) continue
+    e.sets = [...ramp.map((w) => ({ id: uid(), weight: w.weight, reps: w.reps, done: false, warmup: true })), ...e.sets]
+    break
+  }
+  return list
 }
 
 export function startRoutine(routine: Routine) {
@@ -229,7 +247,7 @@ export function startRoutine(routine: Routine) {
       routineId: routine.id,
       start: Date.now(),
       notes: '',
-      exercises: routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))),
+      exercises: withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))), d),
     })
   })
   openWorkout()

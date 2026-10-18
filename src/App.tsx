@@ -199,11 +199,14 @@ function Main() {
 
   const tab = currentTab(route)
   const summary = ui.summaryId ? data.sessions.find((s) => s.id === ui.summaryId) : undefined
+  const behind = !!active && ui.open
 
   return (
     <div className={`app ${active && !ui.open ? 'has-active' : ''}`}>
       <StorageBanner />
-      <main>
+      {/* Con el entreno abierto (a pantalla completa, encima), lo de detrás queda inerte: Tab y el lector no
+          se van a Inicio ni a la barra de pestañas tapados. */}
+      <main inert={behind}>
         <ErrorBoundary resetKey={route.join('/')}>
           <Suspense fallback={<div className="screen" />}>
             <Screen route={route} />
@@ -211,7 +214,7 @@ function Main() {
         </ErrorBoundary>
       </main>
       {active && !ui.open && <ActiveBar name={active.name} start={active.start} />}
-      <TabBar tab={tab} />
+      <TabBar tab={tab} inert={behind} />
       <ErrorBoundary resetKey={`${ui.open}-${ui.summaryId ?? ''}`}>
         <Suspense fallback={null}>
           {active && ui.open && <WorkoutScreen session={active} />}
@@ -266,9 +269,9 @@ const tabItems: { id: Tab; label: () => string; icon: typeof House }[] = [
   { id: 'profile', label: () => t('Perfil', 'Profile'), icon: User },
 ]
 
-function TabBar({ tab }: { tab: Tab }) {
+function TabBar({ tab, inert }: { tab: Tab; inert?: boolean }) {
   return (
-    <nav className="tabbar">
+    <nav className="tabbar" inert={inert}>
       {tabItems.map(({ id, label, icon: Icon }) => (
         <button key={id} className={tab === id ? 'active' : ''} onClick={() => navigate(id)} aria-current={tab === id ? 'page' : undefined}>
           <Icon size={24} strokeWidth={tab === id ? 2.4 : 2} />

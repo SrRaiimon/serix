@@ -11,10 +11,15 @@ test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteín
   assert.equal(gain.protein, 144) // 1,8 g/kg
   assert.equal(gain.fat, 84) // 25 % de las calorías
   assert.equal(gain.carbs, Math.round((3010 - 144 * 4 - 84 * 9) / 4))
-  // Mujer que pierde grasa: −20 % y más proteína (2,2 g/kg).
+  // Mujer que pierde grasa: −20 % y más proteína (2,2 g/kg, con el tope del 35 % de las calorías).
   const lose = computeGoals({ sex: 'f', age: 40, heightCm: 165, weightKg: 70, activity: 1.375, aim: 'lose' })
   assert.equal(lose.kcal, Math.round(((10 * 70 + 6.25 * 165 - 5 * 40 - 161) * 1.375 * 0.8) / 10) * 10)
-  assert.equal(lose.protein, 154)
+  // 2,2 g/kg serían 154 g, el 41 % de 1510 kcal: se queda en el 35 % (132 g, 1,9 g/kg).
+  assert.equal(lose.protein, Math.round((lose.kcal * 0.35) / 4))
+  // Dieta muy baja: el suelo de 1200 kcal y la proteína sin comerse los hidratos.
+  const small = computeGoals({ sex: 'f', age: 45, heightCm: 155, weightKg: 55, activity: 1.2, aim: 'lose' })
+  assert.equal(small.kcal, 1200)
+  assert.ok(small.protein <= Math.round((1200 * 0.35) / 4) && small.carbs >= 90, `${small.protein} g P, ${small.carbs} g H`)
   // Proteína por kilo elegida: 80 kg × 2 g.
   assert.equal(computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'gain', proteinPerKg: 2 }).protein, 160)
 })

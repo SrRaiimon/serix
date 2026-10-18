@@ -12,6 +12,15 @@ import { parseTempo, tempoAt } from '../lib/tempo'
 
 // Entreno · una serie: su fila (peso, repeticiones o tiempo), el esfuerzo (RPE), el tempo y la cuenta atrás.
 
+/**
+ * Cierra el teclado del móvil quitando el foco del campo. Solo si el foco está en un campo: con teclado físico
+ * o lector, el foco está en el botón de marcar y quitárselo lo mandaba a la página (y el siguiente Tab, a Inicio).
+ */
+function closeKeyboard() {
+  const el = document.activeElement
+  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) el.blur()
+}
+
 /** Lo que comparten todas las series de un ejercicio (el material, el objetivo, la unidad). */
 export interface SetContext {
   /** Ejercicio sin historial: sin columna «Última vez». */
@@ -112,7 +121,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
       }
       // Se dice qué se ha apuntado, con «Deshacer», para que nada se guarde sin darse cuenta.
       const what = fill.reps ? `${fill.reps} reps${set.weight > 0 ? ` · ${weight(set.weight, unit)}` : ''}` : clock(fill.duration ?? 0)
-      ;(document.activeElement as HTMLElement | null)?.blur()
+      closeKeyboard()
       withUndo(t(`Apuntado: ${what}`, `Logged: ${what}`), () => {
         onChange(fill)
         onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
@@ -127,7 +136,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
     complete()
   }
   const complete = () => {
-    ;(document.activeElement as HTMLElement | null)?.blur()
+    closeKeyboard()
     onChange({ done: true, doneAt: Date.now(), ...(set.kind === 'failure' && !set.warmup ? { rpe: 10 } : {}) })
     carryWeight()
     navigator.vibrate?.(30)

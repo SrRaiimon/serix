@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.97',
+    items: [
+      ['Lo que ves en la rutina es lo que hace el entreno: las mismas repeticiones serie a serie y el calentamiento ya puesto en el primer ejercicio pesado.', 'What you see in the routine is what the workout does: the same reps set by set, and the warm-up already added to the first heavy exercise.'],
+      ['Los programas llenan el tiempo que eliges, con la misma cuenta de minutos que enseña la app: con 90 minutos, más series; con 60, sin pasarse.', 'Programs fill the time you choose, using the same minute count the app shows: more sets with 90 minutes, no overrun with 60.'],
+      ['Comidas: al perder grasa con pocas calorías, la proteína ya no se come los hidratos, y el objetivo no baja de 1200 kcal (1500 en hombres).', 'Food: when losing fat on few calories, protein no longer crowds out carbs, and the target never drops below 1200 kcal (1500 for men).'],
+      ['Progreso › Músculos: el equilibrio cuenta igual que «Series por grupo», en series por semana.', 'Progress › Muscles: balance counts the same way as "Sets per group", in sets per week.'],
+      ['Programas más finos: con kettlebell, el swing cuenta como bisagra; con bandas, el torso vuelve a tener brazos; y el peso muerto convencional va a 5-8 repeticiones.', 'Finer programs: with kettlebells the swing counts as a hinge; with bands, upper days have arm work again; and conventional deadlifts go to 5-8 reps.'],
+      ['Con teclado o lector de pantalla, el entreno ya no deja salir a Inicio por detrás, el foco no se pierde al marcar una serie y los avisos de deshacer se anuncian.', 'With a keyboard or screen reader, the workout no longer lets you tab into Home behind it, focus is not lost when checking off a set, and undo notices are announced.'],
+    ],
+  },
+  {
     version: '0.0.96',
     items: [
       ['Sin material, cada día trae los ejercicios y los minutos que elegiste: con barra en casa, dominadas negativas para empezar, y gemelos a una pierna.', 'With no equipment, every day has the exercises and minutes you chose: with a bar at home, negative pull-ups to start with, and single-leg calf raises.'],

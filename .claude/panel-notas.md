@@ -14,47 +14,44 @@ pasan a cada evaluador la vez siguiente.
 | 0.0.84 | 8,8 | 8,9 | 9,0 | 9,6 | 9,1 |
 | 0.0.92 | 8,9 | 9,1 | 8,9 | 9,7 | 9,2 (9,15) |
 | 0.0.94 | 9,0 | 9,2 | 9,1 | 9,8 | 9,3 (9,28) |
+| 0.0.96 | 9,2 | 9,3 | 9,2 | 9,5 | 9,3 (9,30) |
 
-## Pendientes tras 0.0.94 (resueltos desde 0.0.92: novedades sin «Por dentro», mejor serie y lastre coherentes,
-## «máx. estimado», cardio en «Perder grasa», brazos con poco tiempo a 60 min, buildDay/fitToTime comunes,
-## mancuernas y kettlebells a pesos que existen, kettlebell sin press lateral y con curl, reps sin peso, grasa
-## mínima, entrenador con volumen indirecto, scripts i18n, foco en subpantallas de Perfil, aviso de días)
-## Sin Lighthouse ni axe instalados: perf-a11y mide con Chrome por CDP (scripts en el scratchpad, panel2-perf/).
+## Pendientes tras 0.0.96 (resueltos desde 0.0.94: semana cumplida coherente, peso corporal completo con
+## negativas y gemelos, menú del ejercicio en tres, «descarga», biblioteca por niveles, un botón de programa,
+## nórdico y una bisagra por día, fuerza con un pesado por día, inert por recuento, avisos y foco, iconos SW)
+## Sin Lighthouse ni axe instalados: perf-a11y mide con Chrome por CDP (scripts en el scratchpad, panel3-perf/).
 
-### serix-ux (9,0)
-- Semana cumplida incoherente: el texto del hero se corta («…uno má…»); el entrenador propone «semana más suave ·
-  Hacerla esta semana»; Rutinas marca «TE TOCA HOY»; Comidas «Sin entreno de momento: −360 kcal».
-- Peso corporal: «Tu plan» 5 ejercicios/día frente a 6 en su tarjeta; días de 34-39 min con 60 elegidos; con barra
-  el principiante no recibe nada (ni negativas ni asistidas).
-- Menú del ejercicio: 14 opciones, «Quitar ejercicio» fuera de pantalla; «descarga» frente a «semana más suave».
-- Textos: columna «HOY TOCA» en el detalle de rutina; «El peso sube solo cuando…» ambiguo; «Mismo peso hasta
-  completar todas las reps.» repetido en cada ejercicio; volumen escrito de 4 formas (8068 kg, 12.678 kg, 8,1 t…).
-- Perfil: «Generar nuevo programa» y «Repetir cuestionario inicial» iguales; entrenador + «Instálala» juntos.
-- Biblioteca: «PPL 6 días (Avanzado)» antes de la cabecera «AVANZADO».
+### serix-ux (9,2)
+- Detalle de rutina y entreno no proponen lo mismo: «57,5 × 10» en todas frente a 10/9/8 de la última vez;
+  el detalle enseña calentamiento que el entreno no trae; «× 10» y «Meta: 10 reps» repetidos.
+- Progreso › Músculos: «Series por grupo (7 días)» y «Equilibrio muscular (4 semanas)» cuentan distinto;
+  56:24 cuádriceps/isquios sale como «Bien equilibrado».
+- Descarga escondida en Ajustes del ejercicio aunque Progreso promete proponerla; 13 «sin mejorar» y el
+  entrenador solo propone 2 cambios; «una suave al final» en la tarjeta de Bloque.
+- Volumen con dos verbos («movido» / «levantados»); «Instalar en el móvil» dentro de PROGRAMA en Perfil.
+- Calorías de Inicio saltan 2340 → 2970 al empezar un entreno opcional; botones del entrenador en 2 líneas.
 
-### serix-code (9,2)
-- `progression.ts:193`: `used` incluye calentamiento y drop sets; el calentamiento redondea a 2,5 → 20 pasa a 22,5
-  con mancuernas de 2 en 2. Filtrar y redondear el calentamiento de mancuernas con dumbbellStep.
-- `App.tsx:151`: `place === firstPlace` se salta volver a la pantalla inicial (usar ref de primer montaje).
-- `ui.tsx:199/214`: inert fuera de orden; `ui.tsx:309` role=status creado con texto; `sw-template.js:49` iconos sin
-  tiempo límite.
-- `generator.ts`: el tope por músculo (`full`) va antes de recortar al tiempo: a 45 min en gimnasio, torso sin brazos.
-- ExerciseBlock (~368 líneas, 25 props) y SetRow (24 props); `keyOf` copia friendKey y al quedarse el último no
-  junta campos; comentario viejo de unseenReleases encima de INTERNAL; kettlebells solo de 4 en 4 en muchos gimnasios;
-  rememberEquipment global en los tests.
+### serix-code (9,3)
+- `generator.ts` BACKPACK_LOAD excluye la mochila también con bandas: Torso B con tres remos y sin brazos.
+- `warmup.ts:33` repite la serie de mancuernas sin `used` (juego de 2,5 → calentamiento de 16 kg).
+- «Perder grasa» a 45 min: torso sin brazos (acondicionamiento protegido) sin test que lo fije.
+- `PULLUP` acepta asistidas y negativas pese al comentario: una asistida bloquea la supina.
+- `mergeList` `{...out[i], ...x}` resucita campos quitados a propósito; zona role=status inerte con hoja abierta.
+- Test de propiedades de los 6000 días (todos los materiales); tests de useDialog y foco; ExerciseBlock a su archivo.
 
-### serix-coach (9,1)
-- `coach.ts` plannedGroupSets cuenta cardio, pliometría y el bloque de acondicionamiento: un «Perder grasa» recién
-  generado recibe «quita una serie de escaladores/remo»; biblioteca pide hip thrust de primeras. Test: programa
-  recién generado sin consejos de volumen.
-- legCurl sin máquinas: nórdico para intermedios/avanzados antes que peso muerto a una pierna; no repetir bisagra.
-- Con mancuernas/kettlebell, variantes con carga (búlgara/zancada con mancuernas, goblet) antes que sin peso.
-- Fuerza avanzado 4 días: cada básico 1 vez/semana; Pierna B con 15 series pesadas. Dips en casa sin paralelas;
-  Chin-Up 3×10-15 tras dominadas; sin gemelos en peso corporal.
-- «Perder grasa»: principiante 90 min con 9 ejercicios a 2 series; avanzado 60 min con 6 series/sem de grupos
-  grandes. Dieta muy baja: proteína 2,2 g/kg se come los hidratos (1160 kcal → 121 g P, 70 g H).
+### serix-coach (9,2)
+- «Perder grasa»: principiante 90 min ~62 min reales; intermedio = avanzado; avanzado 6 series/sem de
+  grupos grandes; peso corporal 45 min sin femoral ni tirón vertical.
+- HINGE sin swing: con kettlebell swing + peso muerto a una pierna (el de Pierna B sin carga).
+- Proteína fija 2,2 g/kg en dietas muy bajas (1160 kcal → 70 g H); sin suelo ~1200 kcal.
+- Gimnasio 45 min: 6 series/sem pecho y espalda, sin laterales, 39 min; «General» con peso muerto a 8-12.
+- Fuerza avanzado: sentadilla pesada 1×/sem; prensa + hack tras el peso muerto; sesiones 65/79 min con 60/75.
+- Variantes con carga a medias: puente sin peso con mancuernas; zancada y peso muerto sin carga con kettlebell.
 
-### serix-perf-a11y (9,8)
-- `App.tsx` efecto `place`: al ir a una pantalla que se carga aparte (Rutinas, Comidas, Perfil, detalle de rutina)
-  el intervalo encuentra el h1 oculto de la anterior (Suspense), su focus() no hace nada y se cancela. Ignorar h1
-  no visibles o seguir hasta que activeElement sea el h1.
+### serix-perf-a11y (9,5)
+- Pantalla del entreno (`.fullscreen`, App.tsx:204-218) sin inert sobre main/TabBar/ActiveBar: 21 de 120 Tab
+  caen en Inicio tapado; el entreno no tiene encabezado propio.
+- `WorkoutSet.tsx:115/130` blur() al marcar serie: el foco cae en BODY (solo si está en un input).
+- `UndoToast.tsx` crea su role=status con el texto.
+- Cabeceras de nivel de la biblioteca como div (usar h2.list-header); al elegir programa el foco cae en BODY.
+- Campos del entreno a 40 px (`.set-label`, `.set-input`), nombre del entreno 33 px.

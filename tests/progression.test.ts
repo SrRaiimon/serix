@@ -174,3 +174,9 @@ test('mancuernas: el calentamiento va a pesos que existen y no cambia la serie d
   const p = plan({ exerciseId: 'Incline_Dumbbell_Press', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12, progression: 'double' }, sessions[2].exercises[0].sets.filter((s) => !s.warmup), sessions, 'kg')
   assert.equal(p?.sets[0].weight, 22)
 })
+
+test('mancuernas: el calentamiento usa tu juego (el de 2,5 si ya lo has usado)', () => {
+  rememberEquipment([{ id: 'Incline_Dumbbell_Press', equipment: 'dumbbell' }])
+  const ramp = warmupSets(20, 'kg', undefined, false, 'Incline_Dumbbell_Press', [15, 17.5, 20]).map((w) => w.weight)
+  assert.ok(ramp.every((w) => w < 10 || w % 2.5 === 0), ramp.join(', '))
+})

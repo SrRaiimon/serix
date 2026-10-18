@@ -150,7 +150,7 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   const tiles: [string, string][] = [
     [int(s.sessions), s.sessions === 1 ? t('entrenamiento', 'workout') : t('entrenamientos', 'workouts')],
     [String(hours), t('horas', 'hours')],
-    [tons(s.volume, unit), t('levantados', 'lifted')],
+    [tons(s.volume, unit), t('movidos', 'moved')],
     [int(s.records), s.records === 1 ? t('récord batido', 'record broken') : t('récords batidos', 'records broken')],
   ]
   const tileSvg = statBand(60, 270, 960, 175, tiles, 2)

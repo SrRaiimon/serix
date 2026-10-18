@@ -6,7 +6,9 @@ import type { Session } from './store'
 // Equilibrio muscular: compara las series de las últimas 4 semanas entre músculos que trabajan en
 // sentidos opuestos. Las descompensaciones grandes (mucho empuje y poco tirón, mucho cuádriceps y poco
 // isquiotibial) se asocian a peor postura y más riesgo de molestias, así que se avisa con una
-// sugerencia concreta. Solo cuenta el músculo principal de cada ejercicio.
+// sugerencia concreta. Cuenta igual que «Series por grupo» (weeklyGroupSets): 1 por serie del músculo principal
+// y 0,5 por cada secundario. Antes solo el principal, y el mismo entreno daba 16:15,5 en una tarjeta y 56:24
+// («bien equilibrado») en la otra: el rumano trabaja el isquio aunque su músculo principal sea otro.
 
 export const BALANCE_DAYS = 28
 /** Por debajo de esto no hay datos suficientes para opinar. */
@@ -47,11 +49,15 @@ export function muscleBalance(sessions: Session[], now = Date.now(), secondaryOf
       const n = setCount(e)
       if (!n) continue
       sets.set(e.muscle, (sets.get(e.muscle) ?? 0) + n)
-      for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) worked.add(m)
+      for (const m of secondaryOf(e.exerciseId)) {
+        if (m === e.muscle) continue
+        worked.add(m)
+        sets.set(m, (sets.get(m) ?? 0) + n / 2)
+      }
       total += n
     }
   }
-  const sum = (muscles: string[]) => muscles.reduce((t, m) => t + (sets.get(m) ?? 0), 0)
+  const sum = (muscles: string[]) => Math.round(muscles.reduce((t, m) => t + (sets.get(m) ?? 0), 0) * 2) / 2
   const pair = (p: Omit<BalancePair, 'short'>): BalancePair => {
     const [a, b] = p.sets
     if (a + b < MIN_SETS) return p

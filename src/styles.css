@@ -1121,6 +1121,7 @@ a.list-row:active {
 
 .workout-name {
   width: 100%;
+  min-height: 44px;
   text-overflow: ellipsis;
   font-family: var(--font-display);
   font-size: 23px;
@@ -1191,7 +1192,8 @@ a.list-row:active {
 }
 
 .set-label {
-  height: 40px;
+  /* 44 px como el resto de zonas táctiles (antes 40). */
+  height: 44px;
   border-radius: 8px;
   background: var(--fill);
   font-weight: 700;
@@ -1258,7 +1260,7 @@ a.list-row:active {
 }
 
 .set-input {
-  height: 40px;
+  height: 44px;
   width: 100%;
   border-radius: 8px;
   background: var(--fill);

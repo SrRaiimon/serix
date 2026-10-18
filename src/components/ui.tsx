@@ -187,6 +187,23 @@ const dialogStack: object[] = []
  */
 const inertBy = new Map<Element, number>()
 
+let liveRegion: HTMLElement | undefined
+/**
+ * Lo dice el lector de pantalla. Una sola zona fija, colgada de body y fuera de lo que una hoja vuelve inerte;
+ * se vacía y se escribe en otro turno para que se anuncie aunque el texto se repita (o la zona sea nueva).
+ */
+export function announce(text: string) {
+  if (!liveRegion) {
+    liveRegion = document.createElement('div')
+    liveRegion.className = 'sr-only'
+    liveRegion.setAttribute('role', 'status')
+    document.body.append(liveRegion)
+  }
+  const region = liveRegion
+  region.textContent = ''
+  setTimeout(() => { region.textContent = text }, 60)
+}
+
 /**
  * Hace de una hoja un diálogo accesible: el foco entra en ella al abrir (y vuelve al botón que la abrió al cerrar),
  * Escape la cierra, y lo de detrás (la app y cualquier hoja de debajo) queda inerte: Tab y el lector no se salen.
@@ -202,7 +219,8 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     let top: Element | null = ref.current
     while (top && top.parentElement !== document.body) top = top.parentElement
     // Lo que ya estaba inerte por otra hoja también cuenta; lo que lo estaba por otra cosa, no se toca.
-    const silenced = [...document.body.children].filter((el) => el !== top && (inertBy.has(el) || !el.hasAttribute('inert')))
+    // La zona de avisos del lector (announce) nunca: un aviso con la hoja abierta también se tiene que oír.
+    const silenced = [...document.body.children].filter((el) => el !== top && el !== liveRegion && (inertBy.has(el) || !el.hasAttribute('inert')))
     silenced.forEach((el) => {
       inertBy.set(el, (inertBy.get(el) ?? 0) + 1)
       el.setAttribute('inert', '')
@@ -318,17 +336,15 @@ export function useToast(): [ReactNode, (text: string, kind?: 'record') => void]
   const [toast, setToast] = useState<{ text: string; kind?: 'record' }>()
   useEffect(() => {
     if (!toast) return
+    announce(toast.text)
     const t = setTimeout(() => setToast(undefined), toast.kind === 'record' ? 3500 : 2000)
     return () => clearTimeout(t)
   }, [toast])
-  // La zona que lee el lector existe siempre (vacía sin aviso): una creada ya con el texto no se anuncia en
-  // muchos lectores. El aviso que se ve, aparte y oculto al lector, para que no lo lea dos veces.
-  const node = (
-    <>
-      <span className="sr-only" role="status">{toast?.text ?? ''}</span>
-      {toast && <Overlay><div className={toast.kind === 'record' ? 'toast toast-record' : 'toast'} aria-hidden="true">{toast.kind === 'record' && <Trophy size={18} aria-hidden="true" />}{toast.text}</div></Overlay>}
-    </>
-  )
+  // Lo anuncia `announce` (una zona creada ya con el texto no se lee en muchos lectores); el aviso que se ve va
+  // oculto al lector para que no lo lea dos veces.
+  const node = toast
+    ? <Overlay><div className={toast.kind === 'record' ? 'toast toast-record' : 'toast'} aria-hidden="true">{toast.kind === 'record' && <Trophy size={18} aria-hidden="true" />}{toast.text}</div></Overlay>
+    : null
   return [node, (text, kind) => setToast({ text, kind })]
 }
 

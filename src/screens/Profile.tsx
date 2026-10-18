@@ -308,7 +308,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
             <span className="small muted" style={{ display: 'block' }}>
               {plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} · {duration(sessions.reduce((t, s) => t + sessionDuration(s), 0))}
             </span>
-            <span className="small muted">{tons(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('levantados', 'lifted')}</span>
+            <span className="small muted">{tons(sessions.reduce((t, s) => t + sessionVolume(s), 0), settings.unit)} {t('movidos', 'moved')}</span>
           </div>
         </div>
       </Card>
@@ -331,11 +331,12 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <div className="list">
         {/* Uno solo: «Generar» y «Repetir el cuestionario» acababan en lo mismo (las mismas preguntas y un programa). */}
         <Row icon={WandSparkles} label={t('Generar un programa nuevo', 'Generate a new program')} className="accent" onClick={() => navigate('routines', 'generate')} chevron={false} />
-        {canInstall && <Row icon={Smartphone} label={t('Instalar en el móvil', 'Install on your phone')} className="accent" onClick={() => void promptInstall()} chevron={false} />}
       </div>
 
       <div className="list-header">{t('Ajustes', 'Settings')}</div>
       <div className="list">
+        {/* Instalar es un ajuste de la app, no del programa. */}
+        {canInstall && <Row icon={Smartphone} label={t('Instalar en el móvil', 'Install on your phone')} className="accent" onClick={() => void promptInstall()} chevron={false} />}
         <Row icon={SlidersHorizontal} label={t('General', 'General')} onClick={() => navigate('profile', 'general')} />
         <Row icon={Dumbbell} label={t('Entrenamiento', 'Training')} onClick={() => navigate('profile', 'training')} />
         <Row icon={Bell} label={t('Avisos y sonido', 'Alerts and sound')} onClick={() => navigate('profile', 'alerts')} />

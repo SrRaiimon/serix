@@ -112,6 +112,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   )
 }
 
+const perWeek = (sets: number) => Math.round((sets / 4) * 2) / 2
+
 /** Equilibrio entre músculos opuestos en las últimas 4 semanas (lib/balance.ts). */
 function BalanceCard({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
@@ -119,16 +121,18 @@ function BalanceCard({ sessions }: { sessions: Session[] }) {
   if (balance.total === 0) return null
   return (
     <Card title={t('Equilibrio muscular (4 semanas)', 'Muscle balance (4 weeks)')} icon={Scale}>
+      {/* En series por semana, como «Series por grupo» de arriba: así las cifras de las dos tarjetas se comparan. */}
+      <span className="small muted">{t('Series por semana (media de 4 semanas), contadas como arriba.', 'Sets per week (4-week average), counted as above.')}</span>
       {balance.pairs.map((p) => {
         const [a, b] = p.sets
         const total = a + b
         return (
           <div key={p.id} className="balance">
             <span className="row between small">
-              <span className="bold">{t(...p.sides[0])} <span className="muted">{a}</span></span>
-              <span className="bold">{t(...p.sides[1])} <span className="muted">{b}</span></span>
+              <span className="bold">{t(...p.sides[0])} <span className="muted">{num(perWeek(a))}</span></span>
+              <span className="bold">{t(...p.sides[1])} <span className="muted">{num(perWeek(b))}</span></span>
             </span>
-            <div className="balance-bar" role="img" aria-label={`${t(...p.sides[0])} ${a} ${t('series', 'sets')}, ${t(...p.sides[1])} ${b} ${t('series', 'sets')}`}>
+            <div className="balance-bar" role="img" aria-label={`${t(...p.sides[0])} ${num(perWeek(a))} ${t('series por semana', 'sets per week')}, ${t(...p.sides[1])} ${num(perWeek(b))} ${t('series por semana', 'sets per week')}`}>
               <span style={{ width: `${total ? (a / total) * 100 : 50}%` }} className={p.short === 0 ? 'short' : ''} />
               <span style={{ width: `${total ? (b / total) * 100 : 50}%` }} className={p.short === 1 ? 'short' : ''} />
             </div>

@@ -94,3 +94,11 @@ test('equilibrio: un grupo trabajado como secundario no sale «sin ninguna serie
   assert.ok(muscleBalance(sessions, now).neglected.some(([es]) => es === 'Glúteos'))
   assert.ok(!muscleBalance(sessions, now, (id) => (id === 'quads' ? ['glutes'] : [])).neglected.some(([es]) => es === 'Glúteos'))
 })
+
+test('equilibrio: cuenta como «Series por grupo» (los secundarios a medias)', () => {
+  // Sentadilla (cuádriceps) y rumano (su principal son los glúteos, pero trabaja el isquio): antes 12:0.
+  const secondary = (id: string) => (id === 'rdl' ? ['hamstrings'] : [])
+  const sessions = [s(1, 'quads', 12), { ...s(2, 'glutes', 12), exercises: [{ ...s(2, 'glutes', 12).exercises[0], exerciseId: 'rdl' }] }]
+  const quadsHams = muscleBalance(sessions, now, secondary).pairs.find((p) => p.id === 'quadsHams')!
+  assert.deepEqual(quadsHams.sets, [12, 6])
+})

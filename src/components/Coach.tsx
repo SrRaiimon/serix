@@ -23,7 +23,8 @@ function tipText(tip: CoachTip): { title: string; detail: string; action: string
       return {
         title: t(`Cambia ${tip.name}`, `Swap ${tip.name}`),
         detail: t(`No mejora desde hace varias sesiones. Prueba unas semanas con ${tip.alt.name}: trabaja lo mismo con otro estímulo.`, `It has not improved for several sessions. Try ${tip.alt.name} for a few weeks: same muscles, a new stimulus.`),
-        action: t(`Cambiar por ${tip.alt.name}`, `Swap for ${tip.alt.name}`),
+        // Corto: el ejercicio nuevo ya sale en el texto (con el nombre, el botón ocupaba dos líneas).
+        action: t('Cambiarlo', 'Swap it'),
       }
     case 'moreSets':
       return {

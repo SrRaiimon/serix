@@ -1,6 +1,7 @@
 import type { Catalog, Exercise } from './catalog'
 import { t } from './i18n'
 import { isIsolation } from './isolation'
+import { defaultTracking } from './tracking'
 import type { Progression } from './store'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
@@ -211,10 +212,10 @@ const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit|Single_Leg_Glute_Bridge)$/
 export const HEAVY_AXIAL = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift|Romanian_Deadlift|Stiff-Legged_Barbell_Deadlift|Good_Morning)$/
 /** Los dos grandes (sentadilla y peso muerto con barra): en los programas clásicos, nunca los dos el mismo día. */
 const BIG_LIFT = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift)$/
-/** Bisagras de cadera (pesos muertos y buenos días): una por día. */
-const HINGE = /deadlift|good_morning/i
+/** Bisagras de cadera (pesos muertos, buenos días y el swing): una por día. */
+const HINGE = /deadlift|good_morning|swing/i
 /** Dominadas de verdad (no las de ayuda ni las negativas): tras ellas, otra supina no. */
-const PULLUP = /pull[-_]?up|chin[-_]?up/i
+const PULLUP = /^(?!.*(assisted|negative)).*(pull[-_]?up|chin[-_]?up)/i
 /** La mochila sustituye a las pesas: con mancuernas o pesa rusa, mejor las de verdad. */
 const BACKPACK_LOAD = /^Backpack_(Curl|Squat)$/
 
@@ -263,7 +264,9 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.equipment === 'bodyweight' && r.level !== 'beginner' && /^(Bodyweight_Squat|Wall_Sit)$/.test(e.id)) return false
   if (r.axialUsed && HEAVY_AXIAL.test(e.id)) return false
   if (r.bigLiftUsed && BIG_LIFT.test(e.id)) return false
-  if (r.equipment !== 'bodyweight' && BACKPACK_LOAD.test(e.id)) return false
+  // Solo con pesas de verdad (mancuernas, kettlebell, gimnasio): con bandas tampoco hay curl con banda en el
+  // catálogo, y sin la mochila el día de torso se quedaba sin brazos (tres remos).
+  if (r.equipment !== 'bodyweight' && r.equipment !== 'bands' && BACKPACK_LOAD.test(e.id)) return false
   return true
 }
 
@@ -333,6 +336,9 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
   // La pistol es a una pierna y muy exigente: 6-10 por pierna, no 12-20 como una sentadilla al aire.
   else if (/pistol/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
+  // Peso muerto convencional: a más de 8 repeticiones la técnica se degrada con la fatiga (la espalda baja es lo
+  // primero que cede). A 5-8, el volumen lo ponen otros ejercicios.
+  else if (/^(Barbell_Deadlift|Sumo_Deadlift)$/.test(e.id) && out.repsMax > 8) Object.assign(out, { repsMin: 5, repsMax: 8, rest: Math.max(out.rest, 150) })
   // La negativa es solo la bajada, lenta: pocas y bien hechas.
   else if (/negative/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 90) })
   // Dominadas estrictas: a 6-10 aunque ocupen un hueco de accesorio (unas supinas a 10-15 son para muy pocos).
@@ -348,8 +354,19 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   return out
 }
 
-/** Tope de series de una sesión según el tiempo (unos 3,4 min por serie con su descanso). */
-const setsForMinutes = (minutes: number) => Math.round(minutes / 3.4)
+/**
+ * Minutos de un día con la misma cuenta que enseña la app (routineMinutes en store.ts): ~45 s por serie de fuerza,
+ * 60 s en las de tiempo, 10 min en las de distancia, más el descanso y ~2,5 min por ejercicio para prepararlo.
+ * Antes el generador contaba series (3,4 min cada una) y la app minutos: fuerza, con descansos de 3 min, salía a
+ * 65 min con 60 elegidos, y «Perder grasa» de principiante a 62 con 90.
+ */
+export function dayMinutes(list: GeneratedExercise[]): number {
+  return list.reduce((n, e) => n + e.sets * (setSeconds(e) + e.rest) + 150, 0) / 60
+}
+function setSeconds(e: GeneratedExercise): number {
+  const tracking = defaultTracking(e.exercise)
+  return tracking === 'time' ? 60 : tracking === 'distance_time' ? 600 : 45
+}
 
 type Chosen = { exercise: Exercise; slot: Slot }
 
@@ -360,7 +377,7 @@ type Chosen = { exercise: Exercise; slot: Slot }
  */
 type Picked = { ex: GeneratedExercise; kind: Kind }
 
-function buildDay(list: [SlotName, number][], maxTotal: number,
+function buildDay(list: [SlotName, number][], time: TimeFit,
   choose: (name: SlotName, variant: number, chosen: GeneratedExercise[], used: Set<string>) => Chosen | undefined,
   schemeFor: (found: Chosen, name: SlotName, picked: Picked[]) => { sets: number; repsMin: number; repsMax: number; rest: number },
   extra: (found: Chosen) => Partial<GeneratedExercise> = () => ({}),
@@ -398,22 +415,33 @@ function buildDay(list: [SlotName, number][], maxTotal: number,
     const at = picked.findIndex((p) => p.kind === 'conditioning')
     add(slot, at < 0 ? picked.length : at)
   }
-  return fitToTime(picked, maxTotal)
+  return fitToTime(picked, time)
+}
+
+const TIME_SLACK = 1.1
+
+/** El tiempo de un día: los minutos (Infinity = sin recortar) y, si se rellena hasta ellos, el nivel. */
+interface TimeFit {
+  minutes: number
+  /** Rellenar con series hasta el tiempo elegido (el generador; la biblioteca respeta su pauta). */
+  fill?: TrainingLevel
 }
 
 /**
- * Deja el día en las series que caben en el tiempo (unos 3,4 min por serie con su descanso). Antes de quitar
- * un ejercicio entero se quitan series: un tríceps a 2 series vale más que una cuarta serie de press. Por orden:
- * los básicos de 4-5 series a 3, los accesorios a 2 y, si aún no cabe, fuera ejercicios desde el final. Nunca el
- * primero (el básico del día) ni el acondicionamiento de «Perder grasa», que es lo que promete ese objetivo.
+ * Deja el día en el tiempo elegido. Antes de quitar un ejercicio entero se quitan series: un tríceps a 2 series
+ * vale más que una cuarta serie de press. Por orden: los básicos de 4-5 series a 3, los accesorios a 2 y, si aún
+ * no cabe, fuera ejercicios desde el final. Nunca el primero (el básico del día) ni el acondicionamiento de
+ * «Perder grasa», que es lo que promete ese objetivo. Si sobra tiempo (y `fill`), se añaden series hasta llenarlo:
+ * con 90 minutos, un principiante hacía 20 series en ~62.
  */
-function fitToTime(picked: Picked[], maxTotal: number): GeneratedExercise[] {
-  const total = () => picked.reduce((t, p) => t + p.ex.sets, 0)
+function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExercise[] {
+  // Un 10 % de margen al recortar (30 min dejaban 2 ejercicios: con 3 son ~32); al rellenar, sin pasarse.
+  const over = () => dayMinutes(picked.map((p) => p.ex)) > minutes * TIME_SLACK
   // De atrás adelante y de una en una, para repartir el recorte entre los ejercicios.
   const trim = (applies: (kind: Kind) => boolean, floor: number) => {
-    for (let changed = true; changed && total() > maxTotal;) {
+    for (let changed = true; changed && over();) {
       changed = false
-      for (let i = picked.length - 1; i >= 0 && total() > maxTotal; i--) {
+      for (let i = picked.length - 1; i >= 0 && over(); i--) {
         if (applies(picked[i].kind) && picked[i].ex.sets > floor) { picked[i].ex.sets--; changed = true }
       }
     }
@@ -424,12 +452,33 @@ function fitToTime(picked: Picked[], maxTotal: number): GeneratedExercise[] {
   // segunda espalda (dominadas tras el remo) antes que el único de brazos. Luego, si aún no cabe, cualquiera.
   const repeated = (i: number) => picked.some((p, j) => j !== i && p.kind !== 'conditioning' && p.ex.exercise.bodyPart === picked[i].ex.exercise.bodyPart)
   for (const strict of [true, false]) {
-    for (let i = picked.length - 1; i > 0 && total() > maxTotal; i--) {
+    for (let i = picked.length - 1; i > 0 && over(); i--) {
       if (picked[i].kind !== 'conditioning' && (!strict || repeated(i))) picked.splice(i, 1)
     }
   }
   trim(() => true, 2)
+  if (fill && Number.isFinite(minutes)) fillTime(picked, minutes, fill)
   return picked.map((p) => p.ex)
+}
+
+/**
+ * Series de más hasta llenar el tiempo, de una en una y por orden (los básicos primero), sin pasar del tope por
+ * ejercicio (5 en los básicos y 4 en el resto; uno menos al empezar) ni de MAX_SETS_PER_SESSION por músculo.
+ */
+function fillTime(picked: Picked[], minutes: number, level: TrainingLevel) {
+  const cap = (k: Kind) => (k === 'compound' ? 5 : k === 'conditioning' ? 0 : 4) - (level === 'beginner' ? 1 : 0)
+  const muscleSets = (m: string) => picked.reduce((n, p) => n + (p.ex.exercise.muscle === m ? p.ex.sets : 0), 0)
+  for (const kinds of [['compound'], ['accessory', 'core']] as Kind[][]) {
+    for (let changed = true; changed;) {
+      changed = false
+      for (const p of picked) {
+        if (!kinds.includes(p.kind) || p.ex.sets >= cap(p.kind) || muscleSets(p.ex.exercise.muscle) >= MAX_SETS_PER_SESSION) continue
+        if (dayMinutes(picked.map((x) => x.ex)) + (setSeconds(p.ex) + p.ex.rest) / 60 > minutes) continue
+        p.ex.sets++
+        changed = true
+      }
+    }
+  }
 }
 
 /** `variation` desplaza la elección en cada hueco para obtener una alternativa al mismo plan. */
@@ -441,7 +490,7 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
   const days = templates.map((template, index) => {
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
-    const exercises = buildDay(list, setsForMinutes(c.minutes),
+    const exercises = buildDay(list, { minutes: c.minutes, fill: c.level },
       (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
         { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false }),
       ({ exercise, slot }, _name, picked) => {
@@ -570,10 +619,10 @@ export const LIBRARY: LibraryProgram[] = [
  * se recortan los últimos ejercicios, que son los accesorios.
  */
 export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfile, catalog: Catalog, pullupBar = false, minutes?: number): GeneratedProgram {
-  const maxTotal = minutes && !p.fixed ? setsForMinutes(minutes) : Infinity
+  const time: TimeFit = { minutes: minutes && !p.fixed ? minutes : Infinity }
   const allowed = new Set([...equipmentInfo(p.equipment ?? equipment).allowed, ...(p.extraEquipment ?? [])])
   const days = p.templates.map((template, index) => {
-    const exercises = buildDay(template.slots, maxTotal,
+    const exercises = buildDay(template.slots, time,
       // Las reglas de nivel y material del generador (la barra de dominadas, solo con gimnasio o material
       // extra). Sentadilla y peso muerto con barra, no los dos el mismo día (peso muerto y sentadilla frontal
       // juntos es demasiado; sentadilla y rumano, sí), salvo en las pautas cerradas: el 5×5 los junta a propósito.

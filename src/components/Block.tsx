@@ -70,7 +70,7 @@ export function BlockCard() {
         <button className="card block-offer" onClick={() => setOpen(true)} aria-expanded={false}>
           <span className="grow">
             <strong style={{ display: 'block' }}>{t('Bloque de entrenamiento', 'Training block')}</strong>
-            <span className="small muted">{t('Opcional · semanas cada vez más duras y una suave al final', 'Optional · harder weeks and an easy one at the end')}</span>
+            <span className="small muted">{t('Opcional · semanas cada vez más duras y una de descarga al final', 'Optional · harder weeks and a deload week at the end')}</span>
           </span>
           <ChevronDown size={18} className="chevron" />
         </button>
@@ -79,8 +79,8 @@ export function BlockCard() {
     return (
       <Card title={t('Bloque de entrenamiento', 'Training block')} icon={Layers}>
         <span className="small muted">
-          {t('Semanas cada vez más duras y una suave al final para recuperar. Al principio paras cada serie con 3 repeticiones de margen; al final, con 1.',
-            'Harder weeks each time and an easy one at the end to recover. At first you stop each set with 3 reps to spare; by the end, with 1.')}
+          {t('Semanas cada vez más duras y una de descarga al final para recuperar. Al principio paras cada serie con 3 repeticiones de margen; al final, con 1.',
+            'Harder weeks each time and a deload week at the end to recover. At first you stop each set with 3 reps to spare; by the end, with 1.')}
         </span>
         <Segmented value={String(weeks)} onChange={(v) => setWeeks(Number(v))}
           options={BLOCK_WEEKS.map((n) => ({ value: String(n), label: t(`${n} sem.`, `${n} wk`) }))} />

@@ -6,8 +6,6 @@ import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
-import { BARS } from '../lib/plates'
-import { fromFloor, warmupSets } from '../lib/warmup'
 import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
@@ -195,14 +193,10 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
 
 const BARBELL = new Set(['barbell', 'ez-bar'])
 
-/** En los ejercicios pesados, la rampa de calentamiento hasta el peso de hoy (la misma que añade el entrenamiento). */
-function WarmupLine({ planned, unit, barKg }: { planned: SessionExercise; unit: AppData['settings']['unit']; barKg?: number }) {
-  if (trackingOf(planned) !== 'weight_reps' || planned.assisted) return null
-  const work = planned.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
-  // Con barra desde 40 kg (press militar incluido); con otro material, desde 60 kg.
-  if (work < (barKg ? 40 : 60)) return null
-  const ramp = warmupSets(work, unit, barKg, fromFloor(planned.exerciseId), planned.exerciseId)
-  if (ramp.length < 2) return null
+/** El calentamiento que trae el entreno (en el primer ejercicio pesado): las series de calentamiento previstas. */
+function WarmupLine({ planned, unit }: { planned: SessionExercise; unit: AppData['settings']['unit'] }) {
+  const ramp = planned.sets.filter((s) => s.warmup)
+  if (!ramp.length) return null
   return (
     <span className="warmup-line">
       <Flame size={13} />{t(`Calentamiento (${unit})`, `Warm-up (${unit})`)} <strong>{ramp.map((w) => `${editable(fromKg(w.weight, unit))}×${w.reps}`).join(' · ')}</strong>
@@ -217,6 +211,10 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   const sets = planned.sets.filter((s) => !s.warmup).map((s) => (planned.assisted ? { ...s, weight: 0 } : s))
   const top = sets.reduce<SetEntry | undefined>((a, b) => (!a || b.weight > a.weight ? b : a), undefined)
   if (!top || (top.weight === 0 && top.reps === 0)) return <span className="ex-last"><span className="tiny muted">{t('Primera vez', 'First time')}</span></span>
+  // Las repeticiones de cada serie con ese peso, como las rellena el entreno (10/9/8 si la última vez fueron
+  // esas); antes salía solo la primera («× 10») y el entreno proponía otra cosa.
+  const same = sets.filter((s) => s.weight === top.weight).map((s) => s.reps)
+  const reps = same.every((r) => r === same[0]) ? `${same[0]}` : same.join('/')
   const auto = planned.auto
   const why = planned.deload ? t('Descarga', 'Deload')
     : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
@@ -229,7 +227,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   return (
     <span className="ex-last">
       {/* Dominadas, fondos…: el peso es el lastre, con su «+» como en el entreno. */}
-      <strong>{top.weight > 0 ? `${planned.bodyweight !== undefined ? '+' : ''}${weight(top.weight, unit)} × ${top.reps}` : `${top.reps} reps`}</strong>
+      <strong>{top.weight > 0 ? `${planned.bodyweight !== undefined ? '+' : ''}${weight(top.weight, unit)} × ${reps}` : `${reps} reps`}</strong>
       <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>
     </span>
   )
@@ -250,7 +248,6 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const last = finishedSessions(data).find((s) => s.routineId === routine.id)
   const detailSlots = groupSlots(routine.exercises)
   const duration = expectedMinutes(data, routine)
-  const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
   // La serie con el mayor 1RM estimado de la última vez, con el peso que se mueve (sin el corporal: unas
   // dominadas con lastre no deben tapar al press de banca) y escrita como en el resto de la app.
   const bestSet = last?.exercises.flatMap((e) => workingSets(e).filter((s) => s.weight > 0 && s.reps > 0 && !(e.assisted && e.bodyweight !== undefined)).map((s) => ({
@@ -308,7 +305,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                   </span>
                 </span>
                 {planned[i] && <TodayTarget planned={planned[i]} unit={unit} />}
-                {planned[i] && <WarmupLine planned={planned[i]} unit={unit} barKg={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '') ? barKg : undefined} />}
+                {planned[i] && <WarmupLine planned={planned[i]} unit={unit} />}
               </button>
             )
           })}
@@ -325,7 +322,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
               <button className="list-row" onClick={() => navigate('progress', 'session', last.id)}>
                 <span className="grow">
                   <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
-                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('levantadas', 'lifted')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
+                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('movidos', 'moved')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
                   {bestSet && <span className="small" style={{ display: 'block' }}>{t('Mejor serie', 'Best set')}: <strong>{bestSet.name} {bestSet.text} × {bestSet.reps}</strong></span>}
                 </span>
                 <ChevronRight size={18} className="chevron" />
@@ -685,7 +682,8 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
 
   if (chosen && program) {
     return (
-      <Sheet title={t(...chosen.name)} onClose={onClose}
+      // Con su propia clave: es otra hoja (el foco y el lector van a ella), no la lista con otro título.
+      <Sheet key={chosen.id} title={t(...chosen.name)} onClose={onClose}
         left={<button className="nav-btn" onClick={() => setChosen(undefined)}>{t('Atrás', 'Back')}</button>}
         footer={<button className="btn primary block" onClick={add}>{t('Añadir programa', 'Add program')}</button>}>
         <p className="muted" style={{ margin: 0 }}>{t(...chosen.description)}</p>
@@ -721,7 +719,7 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
   }
 
   return (
-    <Sheet title={t('Biblioteca de programas', 'Program library')} onClose={onClose}
+    <Sheet key="library" title={t('Biblioteca de programas', 'Program library')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
       {/* Por nivel, cada uno con su cabecera: antes el PPL de 6 días (avanzado) iba en la lista general, encima de
           la cabecera «Avanzado» que solo tenía el 5/3/1. */}
@@ -730,7 +728,7 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
         if (!list.length && !(level === 'advanced' && on531)) return null
         return (
           <Fragment key={level}>
-            <div className="list-header">{levelInfo(level).label}</div>
+            <h2 className="list-header">{levelInfo(level).label}</h2>
             <div className="list">
               {list.map((p) => (
                 <button key={p.id} className="list-row" onClick={() => setChosen(p)}>

@@ -42,7 +42,7 @@ function challengeTitle(c: Challenge, unit: Unit, exercise: (c: Challenge) => st
     case 'sessions':
       return goal ? plural(goal, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts']) : t('Más entrenamientos', 'Most workouts')
     case 'volume':
-      return goal ? t(`${tons(goal, unit)} levantados`, `${tons(goal, unit)} lifted`) : t('Más peso levantado', 'Most weight lifted')
+      return goal ? t(`${tons(goal, unit)} movidos`, `${tons(goal, unit)} moved`) : t('Más peso movido', 'Most weight moved')
     case 'sets': {
       const of = c.group !== undefined ? t(` de ${groupName(c.group)}`, ` of ${groupName(c.group)}`) : ''
       return goal ? `${plural(goal, ['serie', 'series'], ['set', 'sets'])}${of}` : t(`Más series${of}`, `Most sets${of}`)

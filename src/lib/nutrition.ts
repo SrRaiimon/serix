@@ -449,6 +449,9 @@ export function adjustGoals(goals: NutritionGoals, change: number): NutritionGoa
 export const PROTEIN_PER_KG = [1.6, 1.8, 2, 2.2]
 export const defaultProteinPerKg = (aim: Aim) => (aim === 'lose' ? 2.2 : 1.8)
 
+/** Calorías mínimas que se proponen. */
+const MIN_KCAL: Record<Sex, number> = { f: 1200, m: 1500 }
+
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
 export const SEDENTARY = 1.2
 export const ACTIVITY = [
@@ -473,13 +476,17 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
   const { sex, age, heightCm, weightKg, activity, aim } = input
   const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (sex === 'm' ? 5 : -161)
   const factor = aim === 'lose' ? 0.8 : aim === 'gain' ? 1.1 : 1
-  // Nunca por debajo del metabolismo en reposo: comer menos no ayuda a perder grasa y cuesta músculo.
-  const kcal = Math.round(Math.max(bmr * activity * factor, bmr) / 10) * 10
+  // Nunca por debajo del metabolismo en reposo ni de 1200 kcal (1500 en hombres), el suelo habitual sin
+  // supervisión médica: comer menos no ayuda a perder grasa y cuesta músculo.
+  const kcal = Math.round(Math.max(bmr * activity * factor, bmr, MIN_KCAL[sex]) / 10) * 10
   // Con obesidad (IMC > 30) la proteína se calcula con el peso de un IMC de 25: con el peso total sale
   // una cifra exagerada que no aporta nada.
   const height2 = (heightCm / 100) ** 2
   const reference = weightKg / height2 > 30 ? 25 * height2 : weightKg
-  const protein = Math.round(reference * (input.proteinPerKg ?? defaultProteinPerKg(aim)))
+  // La de por defecto, como mucho el 35 % de las calorías (sin bajar de 1,8 g/kg): con dietas muy bajas, 2,2 g/kg
+  // se comía los hidratos (1160 kcal → 121 g de proteína y 70 de hidratos). La que eliges tú, tal cual.
+  const protein = Math.round(input.proteinPerKg !== undefined ? reference * input.proteinPerKg
+    : Math.max(Math.min(reference * defaultProteinPerKg(aim), (kcal * 0.35) / 4), reference * 1.8))
   // Con pocas calorías el 25 % se queda corto (1160 kcal → 32 g, 0,58 g/kg): al menos 0,8 g por kilo de
   // referencia, que es lo que piden las hormonas; sale de los hidratos.
   const fat = Math.round(Math.max((kcal * 0.25) / 9, reference * 0.8))

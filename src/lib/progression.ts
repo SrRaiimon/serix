@@ -31,7 +31,8 @@ export function rememberEquipment(list: { id: string; equipment: string }[]) {
   equipmentById.clear()
   for (const e of list) equipmentById.set(e.id, e.equipment)
 }
-export const equipmentOf = (exerciseId: string) => equipmentById.get(exerciseId)
+/** Material del ejercicio; sin catálogo apuntado, por el nombre (Dumbbell_… son con mancuerna). */
+export const equipmentOf = (exerciseId: string) => equipmentById.get(exerciseId) ?? (/dumbbell/i.test(exerciseId) ? 'dumbbell' : undefined)
 
 /**
  * El siguiente peso de mancuerna que existe, en kg. Hasta 10 kg van de 1 en 1. Desde ahí hay dos series: de 2 en 2
@@ -39,12 +40,15 @@ export const equipmentOf = (exerciseId: string) => equipmentById.get(exerciseId)
  * que ya has usado en el ejercicio (si alguno es solo de la de 2,5).
  */
 function dumbbellStep(weight: number, used: number[]): number {
-  const only25 = (w: number) => w % 2.5 === 0 && w % 2 !== 0
   if (weight < 10) return weight % 1 === 0 ? 1 : 2.5
   if (only25(weight)) return 2.5
   if (weight % 2 === 0 && weight % 2.5 !== 0) return 2
-  return used.some((w) => w >= 10 && only25(w)) ? 2.5 : 2
+  return dumbbellSeries(used)
 }
+
+const only25 = (w: number) => w % 2.5 === 0 && w % 2 !== 0
+/** La serie de mancuernas desde 10 kg (de 2 o de 2,5 kg) que dicen los pesos ya usados. La usa también el calentamiento. */
+export const dumbbellSeries = (used: number[]): 2 | 2.5 => (used.some((w) => w >= 10 && only25(w)) ? 2.5 : 2)
 
 /**
  * Lo que se sube cada vez: un salto de la unidad (2,5 kg / 5 lb), el doble en los básicos de pierna. En
@@ -54,7 +58,7 @@ function dumbbellStep(weight: number, used: number[]): number {
 export function progressionStep(muscle: string, unit: Unit, exerciseId = '', weight = 0, used: number[] = []): number {
   // Mancuernas: a la siguiente que existe (24 → 26 kg, no 26,5), también en aislamiento (un martillo de 24 no
   // pasa a 25). Antes de la regla del 5 %, que daba pesos que no hay en ningún gimnasio.
-  const equipment = equipmentById.get(exerciseId) ?? (/dumbbell/i.test(exerciseId) ? 'dumbbell' : '')
+  const equipment = equipmentOf(exerciseId) ?? ''
   if (unit === 'kg' && equipment === 'dumbbell' && weight > 0) return dumbbellStep(weight, used)
   // Kettlebells (la goblet del catálogo): de 2 en 2 kg hasta 16 y de 4 en 4 desde ahí (16, 20, 24…: las que hay en
   // casi todos los gimnasios), a la siguiente que existe.
