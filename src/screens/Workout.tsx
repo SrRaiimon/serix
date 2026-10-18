@@ -22,7 +22,7 @@ import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARS } from '../lib/plates'
 import { fromFloor, warmupSets } from '../lib/warmup'
 import { BODYWEIGHT_LIFTS, bodyweightText } from '../lib/bodyweight'
-import { SetRow } from './WorkoutSet'
+import { SetRow, type SetContext } from './WorkoutSet'
 import { FocusMode, ReadinessCheck, RestBar } from './WorkoutFocus'
 
 export function WorkoutScreen({ session }: { session: Session }) {
@@ -120,10 +120,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
         slot={slots[i]}
         nextName={slots[i].letter && !slots[i].last ? session.exercises[i + 1].name : undefined}
         unit={unit}
-        barbell={BARBELL.has(catalog.get(e.exerciseId)?.equipment ?? '')}
-        bodyweight={catalog.get(e.exerciseId)?.equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(e.exerciseId)}
-        pairs={['dumbbell', 'kettlebell'].includes(catalog.get(e.exerciseId)?.equipment ?? '')}
-        needsWeight={LOADED.has(catalog.get(e.exerciseId)?.equipment ?? '') && !BODYWEIGHT_LIFTS.has(e.exerciseId)}
+        kit={kitOf(e.exerciseId, catalog.get(e.exerciseId)?.equipment)}
         barKg={barKg}
         previous={lastSets(e.exerciseId, history)}
         upcoming={session.exercises.slice(i + 1).find((x) => x.sets.some((s) => !s.done))}
@@ -131,13 +128,15 @@ export function WorkoutScreen({ session }: { session: Session }) {
         stalled={i === stalledAt ? stall(e.exerciseId, history) : undefined}
         lastPain={lastPain(e.exerciseId, history)}
         startedAt={session.start}
-        onInfo={() => setDetail(e.exerciseId)}
-        onGroupNext={() => goToNext(i)}
-        onRoundEnd={() => roundEnd(i)}
         rpeFor={rpeFor}
-        onAskRpe={askRpe}
-        onSetDone={(set) => onSetDone(e, set)}
-        onEffort={onEffort}
+        on={{
+          info: () => setDetail(e.exerciseId),
+          groupNext: () => goToNext(i),
+          roundEnd: () => roundEnd(i),
+          askRpe,
+          setDone: (set) => onSetDone(e, set),
+          effort: onEffort,
+        }}
       />
     )
   }
@@ -248,7 +247,39 @@ const BARBELL = new Set(['barbell', 'ez-bar'])
 /** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
 const LOADED = new Set(['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'machine', 'cable'])
 
-function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, barbell, bodyweight, pairs, needsWeight, barKg, previous, upcoming, currentSet, stalled, onInfo, onGroupNext, onRoundEnd, rpeFor, onAskRpe, onSetDone, onEffort, lastPain: painBefore, startedAt }: {
+/** Lo que el material cambia en el registro de un ejercicio. */
+interface Kit {
+  /** Con barra: discos por lado y calentamiento desde la barra sola. */
+  barbell: boolean
+  /** De peso corporal: el peso apuntado es lastre. */
+  bodyweight: boolean
+  /** Con mancuernas o pesas rusas (se puede apuntar el peso de cada una). */
+  pairs: boolean
+  /** Con barra, mancuernas o máquina: avisar si se marca una serie sin peso. */
+  needsWeight: boolean
+}
+
+const kitOf = (exerciseId: string, equipment = ''): Kit => ({
+  barbell: BARBELL.has(equipment),
+  bodyweight: equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId),
+  pairs: ['dumbbell', 'kettlebell'].includes(equipment),
+  needsWeight: LOADED.has(equipment) && !BODYWEIGHT_LIFTS.has(exerciseId),
+})
+
+/** Lo que un ejercicio le cuenta al entrenamiento. */
+interface ExerciseEvents {
+  info: () => void
+  /** Serie hecha dentro de un grupo: al siguiente ejercicio de la ronda. */
+  groupNext: () => void
+  roundEnd: () => void
+  askRpe: (setId?: string) => void
+  /** Serie recién marcada (para avisar si es récord). */
+  setDone: (set: SetEntry) => void
+  /** Esfuerzo de una serie: ajusta el descanso que empezó (ver adjustRestForEffort). */
+  effort: (setId: string, rpe: number | undefined, base: number) => void
+}
+
+function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit, kit, barKg, previous, upcoming, currentSet, stalled, rpeFor, on, lastPain: painBefore, startedAt }: {
   sessionId: string
   exercise: SessionExercise
   index: number
@@ -257,14 +288,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   /** Siguiente ejercicio del grupo (si no es el último de la ronda). */
   nextName?: string
   unit: Unit
-  /** Ejercicio con barra: discos por lado y calentamiento desde la barra sola. */
-  barbell: boolean
-  /** De peso corporal: el peso apuntado es lastre. */
-  bodyweight: boolean
-  /** Con mancuernas o pesas rusas (se puede apuntar el peso de cada una). */
-  pairs: boolean
-  /** Ejercicio con barra, mancuernas o máquina: avisar si se marca una serie sin peso. */
-  needsWeight: boolean
+  kit: Kit
   barKg: number
   previous: SetEntry[]
   /** Siguiente ejercicio con series pendientes (para el aviso por voz al acabar el descanso). */
@@ -273,21 +297,14 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   currentSet?: string
   /** Estancado en las últimas sesiones (se propone descarga o variante). */
   stalled?: Stall
-  onInfo: () => void
-  onGroupNext: () => void
-  onRoundEnd: () => void
   rpeFor?: string
-  onAskRpe: (setId?: string) => void
-  /** Serie recién marcada (para avisar si es récord). */
-  onSetDone: (set: SetEntry) => void
-  /** Esfuerzo de una serie: ajusta el descanso que empezó (ver adjustRestForEffort). */
-  onEffort: (setId: string, rpe: number | undefined, base: number) => void
+  on: ExerciseEvents
   /** Molestia apuntada la última vez que se hizo este ejercicio. */
   lastPain?: { pain: number; date: number; note?: string }
   startedAt: number
 }) {
-  const [stallOpen, setStallOpen] = useState(false)
-  const [menu, setMenu] = useState(false)
+  const { barbell, bodyweight, needsWeight } = kit
+  const [menu, setMenu] = useState<false | 'main' | 'order' | 'settings'>(false)
   const [restMenu, setRestMenu] = useState(false)
   const [trackingMenu, setTrackingMenu] = useState(false)
   const [replacing, setReplacing] = useState(false)
@@ -338,7 +355,6 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
     fn(s.exercises, i, s)
     normalizeGroups(s.exercises)
   })
-  const isSuperset = slot.size < 3
   const inGroupWithNext = nextName !== undefined
   const tracking = trackingOf(exercise)
   const hasTarget = exercise.repsMax > 0
@@ -371,11 +387,16 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   const lastMax = Math.max(0, ...previous.filter((p) => !p.warmup).map((p) => p.weight))
   const prevDrops = previous.filter((p) => p.kind === 'drop')
   let drops = 0
+  const setContext: SetContext = {
+    fresh: !previous.length, bodyweight, barbell, needsWeight: needsWeight && !exercise.assisted, tracking, unit, lastMax,
+    repsPlaceholder: hasTarget ? target : '0', defaultReps: exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin,
+    timePlaceholder: clock(targetSeconds), targetSeconds, tempo: exercise.tempo,
+  }
 
   return (
     <section className="card" id={`ex-${exercise.id}`}>
       <div className="row">
-        <button className="row grow" style={{ textAlign: 'left' }} onClick={onInfo}>
+        <button className="row grow" style={{ textAlign: 'left' }} onClick={on.info}>
           <Thumb exerciseId={exercise.exerciseId} size={44} />
           <span className="grow">
             <span className="clamp-2 exercise-name">
@@ -388,7 +409,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
             </span>
           </span>
         </button>
-        <button className="icon-btn" onClick={() => setMenu(true)} aria-label={t('Opciones del ejercicio', 'Exercise options')}><Ellipsis size={20} /></button>
+        <button className="icon-btn" onClick={() => setMenu('main')} aria-label={t('Opciones del ejercicio', 'Exercise options')}><Ellipsis size={20} /></button>
       </div>
 
       {note && (
@@ -397,7 +418,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         </button>
       )}
 
-      {exercise.auto && <AutoNote auto={exercise.auto} unit={unit} />}
+      {exercise.auto && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
 
       {exercise.deload && exercise.auto?.kind !== 'wave' ? (
         <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
@@ -405,26 +426,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
           {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
         </span>
       ) : !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
-        // Una línea plegada: no empuja las series hacia abajo; las opciones, al tocarla.
-        <div className={`stall-box ${stallOpen ? 'open' : ''}`}>
-          <button className="stall-line small" onClick={() => setStallOpen(!stallOpen)} aria-expanded={stallOpen}>
-            <TrendingDown size={15} style={{ flexShrink: 0 }} aria-hidden="true" />
-            <span className="grow">{t(`${STALL_SESSIONS} sesiones sin superar tu mejor marca`, `${STALL_SESSIONS} sessions without beating your best`)}</span>
-            <span className="stall-more">{stallOpen ? t('Cerrar', 'Close') : t('Opciones', 'Options')}</span>
-          </button>
-          {stallOpen && (
-            <>
-              <span className="small">
-                {t(`Tu mejor marca: 1RM estimado de ~${int(fromKg(stalled.best, unit))} ${unit}. Una sesión más ligera (descarga: menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
-                  `Your best: estimated 1RM of ~${int(fromKg(stalled.best, unit))} ${unit}. A lighter session (deload: fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
-              </span>
-              <div className="row" style={{ gap: 8 }}>
-                <button className="btn small secondary" onClick={() => edit((e) => applyDeload(e, unit))}>{t('Hacer descarga', 'Deload')}</button>
-                <button className="btn small plain" onClick={() => setReplacing(true)}>{t('Ver variantes', 'Variations')}</button>
-              </div>
-            </>
-          )}
-        </div>
+        <StallBox best={stalled.best} unit={unit} onDeload={() => edit((e) => applyDeload(e, unit))} onVariants={() => setReplacing(true)} />
       )}
 
       {painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
@@ -502,14 +504,15 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         // Tras el lado izquierdo se pasa al derecho sin descanso.
         const sideNext = set.side === 'L' && next?.side === 'R' && !next.done
         return (
-          <SetRow key={set.id} set={set} label={label} previous={prev} fresh={!previous.length} bodyweight={bodyweight} tracking={tracking} current={set.id === currentSet}
-            repsPlaceholder={hasTarget ? target : '0'} defaultReps={exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin} needsWeight={needsWeight && !exercise.assisted} timePlaceholder={clock(targetSeconds)} targetSeconds={targetSeconds} tempo={exercise.tempo} unit={unit} barbell={barbell} lastMax={lastMax}
+          <SetRow key={set.id} set={set} label={label} previous={prev} current={set.id === currentSet} context={setContext}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
-            askRpe={rpeFor === set.id}
-            onAskRpe={() => onAskRpe(set.id)}
-            onRpeDone={() => onAskRpe(undefined)}
-            onRpePicked={(rpe) => onEffort(set.id, rpe, exercise.rest)}
+            rpe={{
+              open: rpeFor === set.id,
+              ask: () => on.askRpe(set.id),
+              done: () => on.askRpe(undefined),
+              picked: (rpe) => on.effort(set.id, rpe, exercise.rest),
+            }}
             carryWeight={() => edit((e) => {
               // El peso de esta serie pasa a las siguientes que aún no tienen: así basta un toque en cada una.
               const i = e.sets.findIndex((x) => x.id === set.id)
@@ -517,19 +520,19 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
               if (w > 0 && !e.sets[i].warmup) for (const x of e.sets.slice(i + 1)) if (!x.done && !x.warmup && x.kind !== 'drop' && x.weight <= 0) x.weight = w
             })}
             onCompleted={() => {
-              onSetDone(set)
-              if (!set.warmup && set.kind !== 'failure') onAskRpe(set.id)
+              on.setDone(set)
+              if (!set.warmup && set.kind !== 'failure') on.askRpe(set.id)
               // Antes de un drop set no se descansa: se quita peso y se sigue. Igual al cambiar de lado y
               // dentro de una superserie. Si quedaba un descanso de antes en marcha, se para: ya se ha acabado.
               if (dropNext || sideNext) return stopRest()
-              if (inGroupWithNext) { stopRest(); return onGroupNext() }
+              if (inGroupWithNext) { stopRest(); return on.groupNext() }
               // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
               const later = exercise.sets.slice(i + 1).find((s) => !s.done)
               const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined
               startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp, set.id)
               // Al fallo es RPE 10: el descanso se alarga ya.
-              if (set.kind === 'failure' && !set.warmup && !simple) onEffort(set.id, 10, exercise.rest)
-              if (slot.letter) onRoundEnd()
+              if (set.kind === 'failure' && !set.warmup && !simple) on.effort(set.id, 10, exercise.rest)
+              if (slot.letter) on.roundEnd()
             }} />
         )
       })}
@@ -549,43 +552,27 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
         <Plus size={18} /> {t('Añadir serie', 'Add set')}
       </button>
 
-      {menu && (
+      {/* El menú, en tres: lo de cada día arriba; ordenar y los ajustes del ejercicio, en sus submenús (con
+          todo junto eran hasta 14 opciones y «Quitar ejercicio» quedaba fuera de la pantalla). */}
+      {menu === 'main' && (
         <ActionSheet title={exercise.name} onClose={() => setMenu(false)} options={[
+          { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
           ...(tracking === 'weight_reps' && workKg > 0 ? [{ label: t('Añadir series de calentamiento', 'Add warm-up sets'), onSelect: addWarmup }] : []),
           ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: t(`Discos para ${weight(workKg, unit)}`, `Plates for ${weight(workKg, unit)}`), onSelect: () => setPlates(true) }] : []),
           ...(tracking === 'weight_reps' && lastWorking && !simple ? [{ label: t('Añadir drop set', 'Add drop set'), onSelect: addDropSet }] : []),
-          ...(tracking === 'weight_reps' && !simple ? [exercise.deload
-            ? { label: t('Quitar marca de descarga', 'Remove deload mark'), onSelect: () => edit((e) => { delete e.deload }) }
-            : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
           { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
-          // Solo lo que aplica a este ejercicio: «por lados» no con barra ni en dominadas y fondos (se hacen con
-          // los dos brazos), y «asistida» solo en máquinas y ejercicios con el cuerpo; siempre si ya está
-          // activado, para poder quitarlo.
-          ...(tracking === 'weight_reps' && ((!barbell && !BODYWEIGHT_LIFTS.has(exercise.exerciseId)) || exercise.unilateral) ? [{
-            label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
-            onSelect: () => setMode({ unilateral: !exercise.unilateral }),
-          }] : []),
-          ...(tracking === 'weight_reps' && ((!barbell && !pairs) || exercise.assisted) ? [{
-            label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight = assistance)'),
-            onSelect: () => setMode({ assisted: !exercise.assisted }),
-          }] : []),
-          ...(tracking === 'weight_reps' && pairs ? [{
-            label: exercise.perHand ? t('Apuntar el peso total (las dos juntas)', 'Log the total weight (both together)') : t('Apuntar el peso de cada mancuerna', 'Log the weight of each dumbbell'),
-            onSelect: () => setMode({ perHand: !exercise.perHand }),
-          }] : []),
-          { label: t('Sustituir ejercicio', 'Replace exercise'), onSelect: () => setReplacing(true) },
-          ...(index < total - 1 && !inGroupWithNext && !simple ? [{
-            label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
-            onSelect: () => editList((list, i) => linkWithNext(list, i)),
-          }] : []),
-          ...(slot.letter ? [{ label: isSuperset ? t('Sacar de la superserie', 'Remove from superset') : t('Sacar del circuito', 'Remove from circuit'), onSelect: () => editList((list, i) => unlink(list, i)) }] : []),
-          { label: `${t('Descanso', 'Rest')}: ${rest(exercise.rest)}`, onSelect: () => setRestMenu(true) },
-          ...(!simple ? [{ label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: () => setTrackingMenu(true) }] : []),
-          ...(index > 0 ? [{ label: t('Subir', 'Move up'), onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
-          ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
+          ...(total > 1 ? [{ label: t('Ordenar y superseries…', 'Order and supersets…'), onSelect: () => setMenu('order') }] : []),
+          { label: t('Ajustes del ejercicio…', 'Exercise settings…'), onSelect: () => setMenu('settings') },
           { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => withUndo(t(`Quitado: ${exercise.name}`, `Removed: ${exercise.name}`), () => editList((list, i) => { list.splice(i, 1) })) },
         ]} />
+      )}
+      {menu === 'order' && (
+        <OrderMenu title={exercise.name} index={index} total={total} slot={slot} inGroupWithNext={inGroupWithNext} simple={simple} editList={editList} onClose={() => setMenu(false)} />
+      )}
+      {menu === 'settings' && (
+        <SettingsMenu exercise={exercise} kit={kit} simple={simple} unit={unit} edit={edit} setMode={setMode}
+          onRest={() => setRestMenu(true)} onTracking={() => setTrackingMenu(true)} onClose={() => setMenu(false)} />
       )}
       {painOpen && (
         <PainSheet exercise={exercise} onClose={() => setPainOpen(false)} onSave={(pain, painNote) => edit((e) => {
@@ -630,8 +617,98 @@ function spokenSet(e: SessionExercise, set: SetEntry, unit: Unit): string {
   return text
 }
 
+/** Ordenar el ejercicio en la lista y juntarlo en superseries o circuitos. */
+function OrderMenu({ title, index, total, slot, inGroupWithNext, simple, editList, onClose }: {
+  title: string
+  index: number
+  total: number
+  slot: GroupSlot
+  inGroupWithNext: boolean
+  simple: boolean
+  editList: (fn: (list: SessionExercise[], i: number) => void) => void
+  onClose: () => void
+}) {
+  const isSuperset = slot.size < 3
+  return (
+    <ActionSheet title={title} onClose={onClose} options={[
+      ...(index > 0 ? [{ label: t('Subir', 'Move up'), onSelect: () => editList((list, i) => { [list[i - 1], list[i]] = [list[i], list[i - 1]] }) }] : []),
+      ...(index < total - 1 ? [{ label: t('Bajar', 'Move down'), onSelect: () => editList((list, i) => { [list[i + 1], list[i]] = [list[i], list[i + 1]] }) }] : []),
+      ...(index < total - 1 && !inGroupWithNext && !simple ? [{
+        label: slot.letter ? (isSuperset ? t('Añadir el siguiente a la superserie', 'Add the next one to the superset') : t('Añadir el siguiente al circuito', 'Add the next one to the circuit')) : t('Hacer superserie con el siguiente', 'Superset with the next one'),
+        onSelect: () => editList((list, i) => linkWithNext(list, i)),
+      }] : []),
+      ...(slot.letter ? [{ label: isSuperset ? t('Sacar de la superserie', 'Remove from superset') : t('Sacar del circuito', 'Remove from circuit'), onSelect: () => editList((list, i) => unlink(list, i)) }] : []),
+    ]} />
+  )
+}
+
+/** Cómo se registra el ejercicio: descanso, tipo de registro, por lados, asistida, por mancuerna y descarga. */
+function SettingsMenu({ exercise, kit: { barbell, pairs }, simple, unit, edit, setMode, onRest, onTracking, onClose }: {
+  exercise: SessionExercise
+  kit: Kit
+  simple: boolean
+  unit: Unit
+  edit: (fn: (e: SessionExercise) => void) => void
+  setMode: (change: { assisted?: boolean; unilateral?: boolean; perHand?: boolean }) => void
+  onRest: () => void
+  onTracking: () => void
+  onClose: () => void
+}) {
+  const tracking = trackingOf(exercise)
+  return (
+    <ActionSheet title={exercise.name} onClose={onClose} options={[
+      { label: `${t('Descanso', 'Rest')}: ${rest(exercise.rest)}`, onSelect: onRest },
+      ...(!simple ? [{ label: `${t('Registrar por', 'Log by')}: ${trackingOptions().find((o) => o.id === tracking)!.label.toLowerCase()}`, onSelect: onTracking }] : []),
+      // Solo lo que aplica a este ejercicio: «por lados» no con barra ni en dominadas y fondos (se hacen con
+      // los dos brazos), y «asistida» solo en máquinas y ejercicios con el cuerpo; siempre si ya está
+      // activado, para poder quitarlo.
+      ...(tracking === 'weight_reps' && ((!barbell && !BODYWEIGHT_LIFTS.has(exercise.exerciseId)) || exercise.unilateral) ? [{
+        label: exercise.unilateral ? t('Quitar «por lados»', 'Stop logging per side') : t('Por lados (a una mano o pierna)', 'Per side (one arm or leg)'),
+        onSelect: () => setMode({ unilateral: !exercise.unilateral }),
+      }] : []),
+      ...(tracking === 'weight_reps' && ((!barbell && !pairs) || exercise.assisted) ? [{
+        label: exercise.assisted ? t('Quitar «máquina asistida»', 'Not an assisted machine') : t('Máquina asistida (el peso ayuda)', 'Assisted machine (weight = assistance)'),
+        onSelect: () => setMode({ assisted: !exercise.assisted }),
+      }] : []),
+      ...(tracking === 'weight_reps' && pairs ? [{
+        label: exercise.perHand ? t('Apuntar el peso total (las dos juntas)', 'Log the total weight (both together)') : t('Apuntar el peso de cada mancuerna', 'Log the weight of each dumbbell'),
+        onSelect: () => setMode({ perHand: !exercise.perHand }),
+      }] : []),
+      ...(tracking === 'weight_reps' && !simple ? [exercise.deload
+        ? { label: t('Quitar la descarga de hoy', 'Undo today\'s deload'), onSelect: () => edit((e) => { delete e.deload }) }
+        : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
+    ]} />
+  )
+}
+
+/** Estancado: una línea plegada (no empuja las series hacia abajo); las opciones, al tocarla. */
+function StallBox({ best, unit, onDeload, onVariants }: { best: number; unit: Unit; onDeload: () => void; onVariants: () => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`stall-box ${open ? 'open' : ''}`}>
+      <button className="stall-line small" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <TrendingDown size={15} style={{ flexShrink: 0 }} aria-hidden="true" />
+        <span className="grow">{t(`${STALL_SESSIONS} sesiones sin superar tu mejor marca`, `${STALL_SESSIONS} sessions without beating your best`)}</span>
+        <span className="stall-more">{open ? t('Cerrar', 'Close') : t('Opciones', 'Options')}</span>
+      </button>
+      {open && (
+        <>
+          <span className="small">
+            {t(`Tu mejor marca: 1RM estimado de ~${int(fromKg(best, unit))} ${unit}. Una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
+              `Your best: estimated 1RM of ~${int(fromKg(best, unit))} ${unit}. A deload session (fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
+          </span>
+          <div className="row" style={{ gap: 8 }}>
+            <button className="btn small secondary" onClick={onDeload}>{t('Hacer descarga', 'Deload')}</button>
+            <button className="btn small plain" onClick={onVariants}>{t('Ver variantes', 'Variations')}</button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 /** Explica lo que ha hecho la progresión automática con este ejercicio. */
-function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
+function AutoNote({ auto, unit, repsMax }: { auto: AutoProgress; unit: Unit; repsMax?: number }) {
   const text = auto.kind === 'up'
     ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
@@ -644,7 +721,9 @@ function AutoNote({ auto, unit }: { auto: AutoProgress; unit: Unit }) {
     : auto.kind === 'hold'
       ? (auto.reason === 'rpe'
         ? t('Lo completaste, pero al límite (RPE 9,5-10): mismo peso hasta que salga con algo de margen.', 'You completed it, but at your limit (RPE 9.5-10): same weight until it feels easier.')
-        : t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.'))
+        // Con la cifra de este ejercicio: la frase genérica salía igual debajo de cada ejercicio.
+        : repsMax ? t(`Para subir de peso: ${repsMax} repeticiones en todas las series.`, `To move up in weight: ${repsMax} reps on every set.`)
+          : t('Mismo peso hasta completar todas las reps.', 'Same weight until you complete every rep.'))
       : auto.kind === 'percent'
         ? t(`${Math.round(auto.pct * 100)} % de tu máximo estimado (${weight(auto.max, unit)}).`, `${Math.round(auto.pct * 100)}% of your estimated max (${weight(auto.max, unit)}).`)
       : auto.week === 4

@@ -74,17 +74,20 @@ interface Slot {
 }
 
 const slots = {
-  squat: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Leg_Press', 'Hack_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Squats_-_With_Bands', 'Bodyweight_Bulgarian_Split_Squat', 'Pistol_Squat', 'Backpack_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
-  hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
+  squat: { kind: 'compound', muscles: ['quads', 'glutes'], match: /squat|lunge|split|step|leg press/i, preferred: ['Barbell_Full_Squat', 'Front_Barbell_Squat', 'Leg_Press', 'Hack_Squat', 'Dumbbell_Squat', 'Goblet_Squat', 'Split_Squat_with_Dumbbells', 'Front_Squats_With_Two_Kettlebells', 'Squats_-_With_Bands', 'Bodyweight_Bulgarian_Split_Squat', 'Pistol_Squat', 'Backpack_Squat', 'Bodyweight_Squat', 'Split_Squats'] },
+  // El respaldo solo acepta bisagras de verdad: sin esto, sin material salían patadas de tijera como «peso muerto».
+  hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], match: /deadlift|good morning|hip thrust|bridge|swing|pull.?through|hyperextension/i, preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
   legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Step-up_with_Knee_Raise', 'Bodyweight_Walking_Lunge'] },
-  lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
-  legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Stiff-Legged_Dumbbell_Deadlift', 'Single_Leg_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Floor_Glute-Ham_Raise'] },
-  legExtension: { kind: 'accessory', muscles: ['quads'], match: /extension|sissy/i, preferred: ['Leg_Extensions', 'Single-Leg_Leg_Extension', 'Weighted_Sissy_Squat'] },
-  calves: { kind: 'accessory', muscles: ['calves'], match: /calf/i, preferred: ['Standing_Calf_Raises', 'Standing_Barbell_Calf_Raise', 'Standing_Dumbbell_Calf_Raise', 'Seated_Calf_Raise', 'Calf_Raises_-_With_Bands'] },
+  lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], match: /lunge|split|step/i, preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Dumbbell_Rear_Lunge', 'Lunge_Pass_Through', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
+  // Sin máquinas, el curl femoral de verdad es el nórdico (desde intermedio); el peso muerto a una pierna queda
+  // para cuando el día no tiene ya otra bisagra (ver `hingeUsed`).
+  legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Natural_Glute_Ham_Raise', 'Floor_Glute-Ham_Raise', 'Stiff-Legged_Dumbbell_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Single_Leg_Deadlift'] },
+  legExtension: { kind: 'accessory', muscles: ['quads'], match: /extension|sissy/i, preferred: ['Leg_Extensions', 'Single-Leg_Leg_Extension', 'Weighted_Sissy_Squat', 'Wall_Sit'] },
+  calves: { kind: 'accessory', muscles: ['calves'], match: /calf/i, preferred: ['Standing_Calf_Raises', 'Standing_Barbell_Calf_Raise', 'Standing_Dumbbell_Calf_Raise', 'Seated_Calf_Raise', 'Calf_Raises_-_With_Bands', 'Single_Leg_Calf_Raise'] },
   chestPress: { kind: 'compound', muscles: ['pectorals'], preferred: ['Barbell_Bench_Press_-_Medium_Grip', 'Dumbbell_Bench_Press', 'Alternating_Floor_Press', 'Bench_Press_-_With_Bands', 'Pushups'] },
   inclinePress: { kind: 'compound', muscles: ['pectorals'], preferred: ['Barbell_Incline_Bench_Press_-_Medium_Grip', 'Incline_Dumbbell_Press', 'One-Arm_Kettlebell_Floor_Press', 'Dips_-_Chest_Version', 'Decline_Push-Up'] },
   chestFly: { kind: 'accessory', muscles: ['pectorals'], match: /fly|flye|cross|butterfly/i, preferred: ['Cable_Crossover', 'Butterfly', 'Dumbbell_Flyes', 'Cross_Over_-_With_Bands', 'Incline_Dumbbell_Flyes', 'Push-Up_Wide'] },
-  verticalPull: { kind: 'compound', muscles: ['lats'], match: /pull-?up|pullup|chin|pulldown/i, preferred: ['Pullups', 'Wide-Grip_Lat_Pulldown', 'Full_Range-Of-Motion_Lat_Pulldown', 'Close-Grip_Front_Lat_Pulldown', 'Chin-Up', 'Band_Assisted_Pull-Up'] },
+  verticalPull: { kind: 'compound', muscles: ['lats'], match: /pull-?up|pullup|chin|pulldown/i, preferred: ['Pullups', 'Wide-Grip_Lat_Pulldown', 'Full_Range-Of-Motion_Lat_Pulldown', 'Close-Grip_Front_Lat_Pulldown', 'Chin-Up', 'Band_Assisted_Pull-Up', 'Negative_Pull-Up'] },
   horizontalPull: { kind: 'compound', muscles: ['upper-back', 'lats'], match: /row/i, preferred: ['Bent_Over_Barbell_Row', 'Seated_Cable_Rows', 'Bent_Over_Two-Dumbbell_Row', 'One-Arm_Dumbbell_Row', 'Two-Arm_Kettlebell_Row', 'Inverted_Row'] },
   shoulderPress: { kind: 'compound', muscles: ['delts'], preferred: ['Barbell_Shoulder_Press', 'Dumbbell_Shoulder_Press', 'Seated_Dumbbell_Press', 'Kettlebell_Seated_Press', 'Shoulder_Press_-_With_Bands', 'Handstand_Push-Ups'] },
   lateralRaise: { kind: 'accessory', muscles: ['delts'], match: /^(?!.*press).*(lateral|side|deltoid raise)/i, preferred: ['Side_Lateral_Raise', 'Cable_Seated_Lateral_Raise', 'Seated_Side_Lateral_Raise', 'Lateral_Raise_-_With_Bands'] },
@@ -132,6 +135,8 @@ const legsB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['lunge', 1
 // tríceps y elevación lateral en A; bíceps y aperturas en B (antes los dos días cortaban el tríceps).
 const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['triceps', 0], ['lateralRaise', 0], ['biceps', 0], ['rearDelt', 0]])
 const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
+// Fuerza: banca y press militar dos veces por semana, cada uno pesado un día y de volumen el otro.
+const strengthUpperB = T(['Torso B', 'Upper B'], [['shoulderPress', 0], ['verticalPull', 1], ['chestPress', 0], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
 const lowerA = T(['Pierna A', 'Legs A'], [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
 const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
 
@@ -142,7 +147,7 @@ function split(c: GeneratorConfig): [string, Template[]] {
       ? [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB, fullBodyC]]
       : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
-  if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), [upperA, lowerA, upperB, lowerB]]
+  if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), [upperA, lowerA, c.goal === 'strength' ? strengthUpperB : upperB, lowerB]]
   // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario.
   if (c.level === 'beginner' && c.days >= 5) {
     return [t('Torso / Pierna + Cuerpo completo', 'Upper / Lower + Full body'), [upperA, lowerA, fullBodyC, upperB, lowerB, ...(c.days >= 6 ? [fullBodyB] : [])]]
@@ -206,6 +211,10 @@ const UNLOADED_SQUAT = /^(Bodyweight_Squat|Wall_Sit|Single_Leg_Glute_Bridge)$/
 export const HEAVY_AXIAL = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift|Romanian_Deadlift|Stiff-Legged_Barbell_Deadlift|Good_Morning)$/
 /** Los dos grandes (sentadilla y peso muerto con barra): en los programas clásicos, nunca los dos el mismo día. */
 const BIG_LIFT = /^(Barbell_(Full_)?Squat|Front_Barbell_Squat|Barbell_Deadlift|Sumo_Deadlift)$/
+/** Bisagras de cadera (pesos muertos y buenos días): una por día. */
+const HINGE = /deadlift|good_morning/i
+/** Dominadas de verdad (no las de ayuda ni las negativas): tras ellas, otra supina no. */
+const PULLUP = /pull[-_]?up|chin[-_]?up/i
 /** La mochila sustituye a las pesas: con mancuernas o pesa rusa, mejor las de verdad. */
 const BACKPACK_LOAD = /^Backpack_(Curl|Squat)$/
 
@@ -220,6 +229,16 @@ interface PickRules {
   equipment?: EquipmentProfile
   /** Programas de fuerza e hipertrofia: sin gestos de CrossFit como la dominada con kipping. */
   strict?: boolean
+  /** Ya hay una dominada ese día. */
+  pullupUsed?: boolean
+  /** Ya hay un peso muerto (o buenos días) ese día. */
+  hingeUsed?: boolean
+}
+
+/** Lo que el día ya lleva y cambia lo que encaja en él (un básico de columna, una dominada, una bisagra). */
+function dayRules(chosen: GeneratedExercise[]): PickRules {
+  const has = (re: RegExp) => chosen.some((x) => re.test(x.exercise.id))
+  return { axialUsed: has(HEAVY_AXIAL), bigLiftUsed: has(BIG_LIFT), pullupUsed: has(PULLUP), hingeUsed: has(HINGE) }
 }
 
 function suits(e: Exercise, r: PickRules): boolean {
@@ -227,7 +246,13 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
   // Cualquier dominada (barra V, agarre abierto…) es tan dura para empezar como la normal: remos hasta poder.
-  if (r.level === 'beginner' && /pull[-_]?up|chin[-_]?up/i.test(e.id) && !/assisted/i.test(e.id)) return false
+  if (r.level === 'beginner' && /pull[-_]?up|chin[-_]?up/i.test(e.id) && !/assisted|negative/i.test(e.id)) return false
+  // Fondos en paralelas: fuera del gimnasio no hay paralelas (los de banco, con una silla, sí).
+  if (r.equipment && r.equipment !== 'gym' && /^Dips_-_/.test(e.id)) return false
+  // Tras unas dominadas, el bíceps no se trabaja con más dominadas (supinas): un curl.
+  if (r.pullupUsed && /chin[-_]?up/i.test(e.id)) return false
+  // Una bisagra por día: con peso muerto o rumano, el femoral va con curl o nórdico, no con otro peso muerto.
+  if (r.hingeUsed && HINGE.test(e.id)) return false
   // Tras nuca: carga el hombro en mala posición sin aportar nada sobre la normal. Nunca en un programa.
   if (/rear_pull|behind.?(the.?)?neck/i.test(e.id)) return false
   if (r.level === 'intermediate' && e.level === 'expert' && e.equipment === 'bodyweight') return false
@@ -246,7 +271,9 @@ function suits(e: Exercise, r: PickRules): boolean {
 const HOME_EXTRAS = new Set(['Towel_Door_Row', 'Backpack_Row', 'Backpack_Curl', 'Backpack_Squat'])
 
 function pick(slot: Slot, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules = {}): Exercise | undefined {
+  // La goblet del catálogo es con kettlebell, pero con una mancuerna es igual (y es la sentadilla de casa por excelencia).
   const usable = (e: Exercise) => allowed.has(e.equipment) || (rules.equipment !== undefined && rules.equipment !== 'gym' && HOME_EXTRAS.has(e.id))
+    || (rules.equipment === 'dumbbells' && e.id === 'Goblet_Squat')
   // Los estiramientos del catálogo (Superman, Split_Squats…) no cuentan como series de fuerza.
   const strengthy = (e: Exercise) => slot.kind === 'conditioning' || e.category !== 'stretching'
   // Lo de no juntar sentadilla y peso muerto se mira al elegir, no al ordenar: si no, quitar el peso muerto
@@ -277,6 +304,8 @@ const SUBSTITUTES: Partial<Record<SlotName, string>> = {
   horizontalPull: 'homePull',
   shoulderPress: 'homePush',
   legCurl: 'hinge',
+  // Sin máquina de extensiones, una zancada o una sentadilla más.
+  legExtension: 'lunge squat',
 }
 
 function pickOrSubstitute(name: SlotName, variant: number, allowed: Set<string>, used: Set<string>, catalog: Catalog, rules: PickRules): { exercise: Exercise; slot: Slot } | undefined {
@@ -304,6 +333,10 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   if (/glute.?ham/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 120) })
   // La pistol es a una pierna y muy exigente: 6-10 por pierna, no 12-20 como una sentadilla al aire.
   else if (/pistol/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
+  // La negativa es solo la bajada, lenta: pocas y bien hechas.
+  else if (/negative/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 90) })
+  // Dominadas estrictas: a 6-10 aunque ocupen un hueco de accesorio (unas supinas a 10-15 son para muy pocos).
+  else if (PULLUP.test(e.id) && !/kipping|chest_to_bar|assisted/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
   // El hip thrust y el puente con carga: aunque vayan con barra, no son un básico a 3-5 repeticiones (el puente
   // sin peso va con la pierna sin carga, más abajo).
   else if (/hip_thrust|glute_bridge/i.test(e.id) && !unloadedLegs && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
@@ -325,33 +358,45 @@ type Chosen = { exercise: Exercise; slot: Slot }
  * músculo: más de ~10 de un mismo músculo en un día ya no suman). Después se ajusta al tiempo (`fitToTime`).
  * Lo usan el generador y la biblioteca, así las dos cuentan igual.
  */
+type Picked = { ex: GeneratedExercise; kind: Kind }
+
 function buildDay(list: [SlotName, number][], maxTotal: number,
   choose: (name: SlotName, variant: number, chosen: GeneratedExercise[], used: Set<string>) => Chosen | undefined,
-  schemeFor: (found: Chosen, name: SlotName) => { sets: number; repsMin: number; repsMax: number; rest: number },
-  extra: (found: Chosen) => Partial<GeneratedExercise> = () => ({})): GeneratedExercise[] {
+  schemeFor: (found: Chosen, name: SlotName, picked: Picked[]) => { sets: number; repsMin: number; repsMax: number; rest: number },
+  extra: (found: Chosen) => Partial<GeneratedExercise> = () => ({}),
+  reserve: [SlotName, number][] = []): GeneratedExercise[] {
   const used = new Set<string>()
-  const picked: { ex: GeneratedExercise; kind: Kind }[] = []
+  const picked: Picked[] = []
   const perMuscle = new Map<string, number>()
   const counts = (e: Exercise) => e.category !== 'cardio' && e.category !== 'plyometrics'
   const full = (e: Exercise) => counts(e) && (perMuscle.get(e.muscle) ?? 0) > MAX_SETS_PER_SESSION - 2
-  for (const [name, variant] of list) {
+  const add = ([name, variant]: [SlotName, number], at = picked.length) => {
     let found = choose(name, variant, picked.map((p) => p.ex), used)
     // El acondicionamiento no se pierde por el tope de un músculo: si la sentadilla con salto no cabe en un día
     // de pierna, otro del bloque (comba, escaladores…). «Perder grasa» lo promete cada día.
     for (let k = 1; found && found.slot.kind === 'conditioning' && full(found.exercise) && k < 8; k++) found = choose(name, variant + k, picked.map((p) => p.ex), used)
-    if (!found) continue
-    const s = schemeFor(found, name)
+    if (!found) return
+    const s = schemeFor(found, name, picked)
     // Cuenta todo lo de fuerza (también un swing en el bloque de acondicionamiento); el cardio, no.
     const { exercise } = found
     const done = perMuscle.get(exercise.muscle) ?? 0
-    if (full(exercise)) continue
+    if (full(exercise)) return
     if (counts(exercise)) {
       s.sets = Math.min(s.sets, MAX_SETS_PER_SESSION - done)
       perMuscle.set(exercise.muscle, done + s.sets)
     }
     // Solo lo que entra cuenta como usado: lo descartado aún puede ocupar otro hueco.
     used.add(exercise.id)
-    picked.push({ ex: { exercise, ...s, ...extra(found) }, kind: found.slot.kind })
+    picked.splice(at, 0, { ex: { exercise, ...s, ...extra(found) }, kind: found.slot.kind })
+  }
+  list.forEach((slot) => add(slot))
+  // Si algún hueco se quedó vacío (sin máquina de extensiones, sin barra…), los siguientes de la plantilla
+  // ocupan su sitio, delante del acondicionamiento: el día tiene los ejercicios prometidos y dura lo elegido.
+  const want = list.filter(([n]) => slots[n].kind !== 'conditioning').length
+  for (const slot of reserve) {
+    if (picked.filter((p) => p.kind !== 'conditioning').length >= want) break
+    const at = picked.findIndex((p) => p.kind === 'conditioning')
+    add(slot, at < 0 ? picked.length : at)
   }
   return fitToTime(picked, maxTotal)
 }
@@ -362,7 +407,7 @@ function buildDay(list: [SlotName, number][], maxTotal: number,
  * los básicos de 4-5 series a 3, los accesorios a 2 y, si aún no cabe, fuera ejercicios desde el final. Nunca el
  * primero (el básico del día) ni el acondicionamiento de «Perder grasa», que es lo que promete ese objetivo.
  */
-function fitToTime(picked: { ex: GeneratedExercise; kind: Kind }[], maxTotal: number): GeneratedExercise[] {
+function fitToTime(picked: Picked[], maxTotal: number): GeneratedExercise[] {
   const total = () => picked.reduce((t, p) => t + p.ex.sets, 0)
   // De atrás adelante y de una en una, para repartir el recorte entre los ejercicios.
   const trim = (applies: (kind: Kind) => boolean, floor: number) => {
@@ -375,7 +420,14 @@ function fitToTime(picked: { ex: GeneratedExercise; kind: Kind }[], maxTotal: nu
   }
   trim((k) => k === 'compound', 3)
   trim((k) => k === 'accessory' || k === 'core', 2)
-  for (let i = picked.length - 1; i > 0 && total() > maxTotal; i--) if (picked[i].kind !== 'conditioning') picked.splice(i, 1)
+  // Fuera ejercicios desde el final, primero los de una zona que ya trabaja otro: a 45 min, el torso pierde la
+  // segunda espalda (dominadas tras el remo) antes que el único de brazos. Luego, si aún no cabe, cualquiera.
+  const repeated = (i: number) => picked.some((p, j) => j !== i && p.kind !== 'conditioning' && p.ex.exercise.bodyPart === picked[i].ex.exercise.bodyPart)
+  for (const strict of [true, false]) {
+    for (let i = picked.length - 1; i > 0 && total() > maxTotal; i--) {
+      if (picked[i].kind !== 'conditioning' && (!strict || repeated(i))) picked.splice(i, 1)
+    }
+  }
   trim(() => true, 2)
   return picked.map((p) => p.ex)
 }
@@ -391,8 +443,18 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
     const exercises = buildDay(list, setsForMinutes(c.minutes),
       (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
-        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, axialUsed: chosen.some((x) => HEAVY_AXIAL.test(x.exercise.id)) }),
-      ({ exercise, slot }) => fitScheme(exercise, slot.kind, scheme(slot.kind, c), c.level))
+        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false }),
+      ({ exercise, slot }, _name, picked) => {
+        const s = scheme(slot.kind, c)
+        // Fuerza: pesado (3-5) solo el básico principal del día; los demás básicos, de volumen. Si no, un día de
+        // pierna eran 15 series a 3-5 (peso muerto, prensa y hack).
+        if (c.goal === 'strength' && slot.kind === 'compound' && picked.some((p) => p.kind === 'compound')) {
+          Object.assign(s, { sets: Math.max(3, s.sets - 1), repsMin: 6, repsMax: 10, rest: 120 })
+        }
+        return fitScheme(exercise, slot.kind, s, c.level)
+      },
+      undefined,
+      template.slots.slice(n).filter(([s]) => s !== 'conditioning'))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
 
@@ -517,7 +579,7 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       // juntos es demasiado; sentadilla y rumano, sí), salvo en las pautas cerradas: el 5×5 los junta a propósito.
       (name, variant, chosen, used) => pickOrSubstitute(name, variant, allowed, used, catalog, {
         level: p.level, bar: (p.equipment ?? equipment) === 'gym' || allowed.has('other') || pullupBar, equipment: p.equipment ?? equipment,
-        strict: !(p.extraEquipment ?? []).includes('other'), bigLiftUsed: !p.fixed && chosen.some((x) => BIG_LIFT.test(x.exercise.id)),
+        strict: !(p.extraEquipment ?? []).includes('other'), ...dayRules(chosen), axialUsed: false, bigLiftUsed: !p.fixed && dayRules(chosen).bigLiftUsed,
       }),
       // La pauta del programa, ajustada al ejercicio que ha tocado con tu material (un 5×5 sin barra no es
       // sentadilla al aire a 5 repeticiones). setsFor es para el ejercicio pensado (el peso muerto 1×5 del 5×5);

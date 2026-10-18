@@ -66,9 +66,9 @@ export function OnboardingScreen() {
     const from = step
     advance.current = setTimeout(() => setStep((s) => (s !== from ? s : returnToEnd ? LAST : Math.min(LAST, s + 1))), 220)
   }
-  // El programa que saldría, para el resumen (solo en el último paso): su primer día de adelanto y los ejercicios
-  // por día de verdad (la cuenta por minutos decía 6 y la vista previa, con el mismo programa, 5).
-  const draft = useMemo(() => (step === LAST && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0) : undefined),
+  // El programa que saldría: su primer día de adelanto en el resumen y los ejercicios por día de verdad, también en
+  // el paso de los minutos (la cuenta por minutos decía 6 y la vista previa, con el mismo programa, 5).
+  const draft = useMemo(() => (step >= 3 && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0) : undefined),
     [step, settings.goal, settings.level, settings.days, settings.minutes, settings.equipment, settings.pullupBar, catalog])
   const firstDay = draft?.days[0]
   const perDay = draft ? Math.round(draft.days.reduce((n, d) => n + d.exercises.length, 0) / Math.max(1, draft.days.length)) : exerciseCount(settings.minutes)
@@ -259,7 +259,7 @@ export function OnboardingScreen() {
             <section className="onb-block">
               <h2 className="onb-label">{t('Minutos por sesión', 'Minutes per session')}</h2>
               <NumberPicker label={t('Minutos por sesión', 'Minutes per session')} values={[30, 45, 60, 75, 90]} value={settings.minutes} onChange={(minutes) => updateSettings({ minutes })} />
-              <p className="small onb-note">{t(`Unos ${exerciseCount(settings.minutes)} ejercicios por sesión, con calentamiento incluido.`, `About ${exerciseCount(settings.minutes)} exercises per session, warm-up included.`)}</p>
+              <p className="small onb-note">{t(`Unos ${perDay} ejercicios por sesión, con calentamiento incluido.`, `About ${perDay} exercises per session, warm-up included.`)}</p>
             </section>
           </>
         )}

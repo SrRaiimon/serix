@@ -1,11 +1,10 @@
 import { dayTotals, type FoodEntry } from './nutrition'
-import { normalize } from './catalog'
 import { addDays, startOfDay, startOfWeek } from './format'
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { canCompress, fromBase64Url, shareLink, toBase64Url, transform } from './share'
 import { periodStats, records, sessionVolume, setCount, streakWeeks, workingSets, type PeriodStats } from './stats'
-import { finishedSessions, getData, updateSettings, type AppData, type Session } from './store'
+import { finishedSessions, getData, nameKey, updateSettings, type AppData, type Session } from './store'
 
 // Retos entre amigos sin servidor: cada uno comparte por enlace (o QR) un resumen de su semana y su
 // mes, y la app compara los resúmenes guardados. Solo viaja lo que se ve aquí; nada más del historial.
@@ -444,7 +443,7 @@ export async function decodeSnapshot(code: string): Promise<FriendSnapshot | und
 export const friendLink = (code: string) => `${location.origin}${location.pathname}#/friend/${code}`
 
 /** Un amigo se identifica por su nombre: un resumen nuevo sustituye al anterior. */
-export const friendKey = (name: string) => normalize(name.trim())
+export const friendKey = nameKey
 
 /** ¿El resumen es de la semana actual? Si no, sus cifras de «esta semana» ya no sirven para comparar. */
 export const sameWeek = (at: number, now = Date.now()) => startOfWeek(at).getTime() === startOfWeek(now).getTime()

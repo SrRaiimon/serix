@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.96',
+    items: [
+      ['Sin material, cada día trae los ejercicios y los minutos que elegiste: con barra en casa, dominadas negativas para empezar, y gemelos a una pierna.', 'With no equipment, every day has the exercises and minutes you chose: with a bar at home, negative pull-ups to start with, and single-leg calf raises.'],
+      ['Programas más finos: nórdico para el femoral sin máquinas, zancadas y búlgaras con carga si tienes pesas, sin fondos en paralelas fuera del gimnasio y, en fuerza, un básico pesado por día y banca y press militar dos veces por semana.', 'Finer programs: Nordic curls for hamstrings without machines, loaded lunges and split squats if you have weights, no parallel-bar dips outside the gym and, for strength, one heavy lift per day with bench and overhead press twice a week.'],
+      ['El menú de cada ejercicio, más corto: ordenar y los ajustes van en sus propios apartados, y «Quitar ejercicio» siempre está a la vista.', 'A shorter menu for each exercise: ordering and settings have their own sections, and "Remove exercise" is always in view.'],
+      ['Textos más claros: el peso movido se escribe siempre igual, la biblioteca va por niveles y en Perfil hay un solo botón para un programa nuevo.', 'Clearer wording: weight moved is always written the same way, the library is grouped by level and Profile has a single button for a new program.'],
+      ['Por dentro: avisos que el lector de pantalla sí anuncia, kettlebells de 4 en 4 desde 16 kg y el entreno ordenado en piezas más pequeñas.', 'Under the hood: notices that screen readers actually announce, kettlebells in 4 kg steps from 16 kg and the workout screen split into smaller pieces.'],
+    ],
+  },
+  {
     version: '0.0.95',
     items: [
       ['Con la semana cumplida, toda la app lo sabe: Inicio y Rutinas dejan el siguiente como opcional, Comidas lo cuenta como día de descanso y el entrenador no propone suavizarla.', 'Once your week is done, the whole app knows: Home and Routines make the next one optional, Food counts it as a rest day, and the coach no longer suggests easing it.'],

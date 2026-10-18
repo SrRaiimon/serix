@@ -3437,6 +3437,8 @@ const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Shuttle_Run: ['Running_Treadmill', []],
   Shadow_Boxing: shadowBox,
   Sprawl: 'Freehand_Jump_Squat',
+  'Negative_Pull-Up': 'Pullups',
+  Single_Leg_Calf_Raise: ['Standing_Dumbbell_Calf_Raise', []],
 }
 for (const [id, like] of Object.entries(SAME_AS)) {
   FIGURES[id] = typeof like === 'string' ? FIGURES[like] : Array.isArray(like) ? { ...FIGURES[like[0]], props: like[1] } : like

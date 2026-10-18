@@ -394,9 +394,13 @@ async function writeData(data: AppData): Promise<AppData | undefined> {
 class NewerData extends Error {}
 
 type Keyed = { id?: string; name?: string }
-// Sin id (amigos), por el nombre igual que friendKey (friends.ts): sin tildes, mayúsculas ni espacios de
-// más; «José» y «jose » son la misma persona en la interfaz y al juntar pestañas.
-const keyOf = (x: Keyed) => x.id ?? x.name?.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? ''
+/**
+ * La clave de un nombre: sin tildes, mayúsculas ni espacios de más. «José» y «jose » son la misma persona en la
+ * interfaz (friendKey) y al juntar pestañas (keyOf): una sola función para que no se separen.
+ */
+export const nameKey = (name: string) => name.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+// Sin id (amigos), por el nombre.
+const keyOf = (x: Keyed) => x.id ?? (x.name === undefined ? '' : nameKey(x.name))
 
 /**
  * Igual de contenido. Lo leído de IndexedDB son copias (nunca el mismo objeto que hay en memoria), así que
@@ -419,12 +423,13 @@ function mergeList<T extends Keyed>(theirs: T[], ours: T[], common: T[] | undefi
   const here = new Set(ours.map(keyOf))
   const out: T[] = []
   // Cada clave una sola vez, aunque una lista ya la traiga repetida (dos «José» de antes de comparar sin
-  // tildes): si no, cada vez que se juntan pestañas se arrastra el duplicado. Se queda el último, que es el más
-  // reciente (lo nuevo se añade al final), en el sitio del primero. Lo que no tiene clave se deja.
+  // tildes): si no, cada vez que se juntan pestañas se arrastra el duplicado. Manda el último, que es el más
+  // reciente (lo nuevo se añade al final), en el sitio del primero; lo que solo tenía el primero (un campo que
+  // el otro no traía) se conserva. Lo que no tiene clave se deja.
   const at = new Map<string, number>()
   const add = (k: string, x: T) => {
     const i = k ? at.get(k) : undefined
-    if (i !== undefined) { out[i] = x; return }
+    if (i !== undefined) { out[i] = { ...out[i], ...x }; return }
     if (k) at.set(k, out.length)
     out.push(x)
   }

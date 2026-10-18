@@ -144,8 +144,9 @@ export function HomeScreen() {
         </>
       )}
 
-      {/* Instalar es un aviso más: solo cuando no hay otro. */}
-      {!notice && <InstallBanner />}
+      {/* Instalar es un aviso más: solo cuando no hay otro, y solo al empezar. Desde el 4.º entreno habla el
+          entrenador (COACH_MIN_SESSIONS) y dos avisos juntos sobran: instalar sigue en Perfil. */}
+      {!notice && sessions.length < 4 && <InstallBanner />}
     </div>
   )
 }

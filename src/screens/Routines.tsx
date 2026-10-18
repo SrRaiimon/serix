@@ -1,7 +1,7 @@
 import { BlockCard } from '../components/Block'
 import { weekDone } from '../lib/schedule'
 import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
@@ -55,9 +55,9 @@ function useQr(showToast: (t: string) => void) {
 const timeTargets = [15, 20, 30, 45, 60, 90, 120, 180, 300, 600, 900, 1200, 1800]
 
 
-export function RoutinesScreen() {
+export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
   const data = useData()
-  const [showGenerator, setShowGenerator] = useState(false)
+  const [showGenerator, setShowGenerator] = useState(generate)
   const [show531, setShow531] = useState(false)
   const [library, setLibrary] = useState(false)
   const [menu, setMenu] = useState(false)
@@ -160,7 +160,7 @@ export function RoutinesScreen() {
           },
         ]} />
       )}
-      {showGenerator && <GeneratorSheet onClose={() => setShowGenerator(false)} />}
+      {showGenerator && <GeneratorSheet onClose={() => { setShowGenerator(false); if (generate) navigate('routines') }} />}
       {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
       {library && <LibrarySheet onClose={() => setLibrary(false)} on531={data.settings.simpleMode ? undefined : () => { setLibrary(false); setShow531(true) }} />}
       {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
@@ -283,9 +283,9 @@ export function RoutineDetailScreen({ id }: { id: string }) {
           { value: `~${duration.minutes}′`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
-        <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Hoy toca', 'Today')}</span>}</div>
+        <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Para hoy', 'Today\'s target')}</span>}</div>
         {routine.exercises.some((e) => e.progression) && (
-          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('El peso sube solo cuando completas todas las repeticiones.', 'The weight goes up when you complete all the reps.')}</p>
+          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Cuando completas todas las repeticiones, la app te sube el peso la sesión siguiente.', 'When you complete every rep, the app raises the weight for you next session.')}</p>
         )}
         <div className="list">
           {routine.exercises.length === 0 && (
@@ -715,7 +715,7 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
             ))}
           </Card>
         ))}
-        <p className="small muted" style={{ margin: 0 }}>{t('El peso sube solo cuando completas las repeticiones. Puedes cambiar cualquier ejercicio después, como en cualquier rutina.', 'The weight goes up automatically when you complete the reps. You can swap any exercise later, like in any routine.')}</p>
+        <p className="small muted" style={{ margin: 0 }}>{t('Cuando completas todas las repeticiones, la app te sube el peso la sesión siguiente. Puedes cambiar cualquier ejercicio después, como en cualquier rutina.', 'When you complete every rep, the app raises the weight for you next session. You can swap any exercise later, like in any routine.')}</p>
       </Sheet>
     )
   }
@@ -723,31 +723,37 @@ function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: () => v
   return (
     <Sheet title={t('Biblioteca de programas', 'Program library')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cerrar', 'Close')}</button>}>
-      <div className="list">
-        {LIBRARY.map((p) => (
-          <button key={p.id} className="list-row" onClick={() => setChosen(p)}>
-            <span className="grow" style={{ textAlign: 'left' }}>
-              <span className="bold" style={{ display: 'block' }}>{t(...p.name)}</span>
-              <span className="small muted clamp-2">{levelInfo(p.level).label}{p.equipment ? ` · ${equipmentInfo(p.equipment).label}` : ''} · {t(...p.description)}</span>
-            </span>
-            <ChevronRight size={18} className="muted" />
-          </button>
-        ))}
-      </div>
-      {on531 && (
-        <>
-          <div className="list-header">{t('Avanzado', 'Advanced')}</div>
-          <div className="list">
-            <button className="list-row" onClick={on531}>
-              <span className="grow" style={{ textAlign: 'left' }}>
-                <span className="bold" style={{ display: 'block' }}>{t('5/3/1 de Jim Wendler · 4 días', 'Jim Wendler\'s 5/3/1 · 4 days')}</span>
-                <span className="small muted clamp-2">{t('Avanzado · Fuerza en los cuatro básicos con ciclos de 4 semanas. Necesitas saber tu 1RM.', 'Advanced · Strength on the four main lifts in 4-week cycles. You need to know your 1RM.')}</span>
-              </span>
-              <ChevronRight size={18} className="muted" />
-            </button>
-          </div>
-        </>
-      )}
+      {/* Por nivel, cada uno con su cabecera: antes el PPL de 6 días (avanzado) iba en la lista general, encima de
+          la cabecera «Avanzado» que solo tenía el 5/3/1. */}
+      {levels.map(({ id: level }) => {
+        const list = LIBRARY.filter((p) => p.level === level)
+        if (!list.length && !(level === 'advanced' && on531)) return null
+        return (
+          <Fragment key={level}>
+            <div className="list-header">{levelInfo(level).label}</div>
+            <div className="list">
+              {list.map((p) => (
+                <button key={p.id} className="list-row" onClick={() => setChosen(p)}>
+                  <span className="grow" style={{ textAlign: 'left' }}>
+                    <span className="bold" style={{ display: 'block' }}>{t(...p.name)}</span>
+                    <span className="small muted clamp-2">{p.equipment ? `${equipmentInfo(p.equipment).label} · ` : ''}{t(...p.description)}</span>
+                  </span>
+                  <ChevronRight size={18} className="muted" />
+                </button>
+              ))}
+              {level === 'advanced' && on531 && (
+                <button className="list-row" onClick={on531}>
+                  <span className="grow" style={{ textAlign: 'left' }}>
+                    <span className="bold" style={{ display: 'block' }}>{t('5/3/1 de Jim Wendler · 4 días', 'Jim Wendler\'s 5/3/1 · 4 days')}</span>
+                    <span className="small muted clamp-2">{t('Fuerza en los cuatro básicos con ciclos de 4 semanas. Necesitas saber tu 1RM.', 'Strength on the four main lifts in 4-week cycles. You need to know your 1RM.')}</span>
+                  </span>
+                  <ChevronRight size={18} className="muted" />
+                </button>
+              )}
+            </div>
+          </Fragment>
+        )
+      })}
     </Sheet>
   )
 }

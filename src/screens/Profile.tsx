@@ -1,9 +1,10 @@
-import { ArrowRightLeft, Bell, BellRing, Database, Dumbbell, SlidersHorizontal, CloudOff, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, RotateCcw, Scale, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
+import { ArrowRightLeft, Bell, BellRing, Database, Dumbbell, SlidersHorizontal, CloudOff, Bug, Lightbulb, Sparkles, Camera, Users, Calculator, FileUp, Table, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Disc, Download, HardDrive, Scale, Smartphone, ShieldCheck, Trash2, Upload, Volume2, WandSparkles } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { day, duration, editable, tons, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
+import { isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
 import { MAX_BACKUP_BYTES, parseBackup } from '../lib/backup'
 import { downloadCsv } from '../lib/exportCsv'
@@ -38,6 +39,8 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
   const sessions = useMemo(() => finishedSessions(data), [data])
   const [confirmReset, setConfirmReset] = useState(false)
   const [toast, showToast] = useToast()
+  // Instalar, cuando el navegador lo permite y aún no está instalada (en Inicio solo se avisa al empezar).
+  const canInstall = useCanPromptInstall() && !isStandalone()
   const [news, setNews] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackKind>()
   const fileInput = useRef<HTMLInputElement>(null)
@@ -326,8 +329,9 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
 
       <div className="list-header">{t('Programa', 'Program')}</div>
       <div className="list">
-        <Row icon={WandSparkles} label={t('Generar nuevo programa', 'Generate a new program')} className="accent" onClick={() => navigate('routines')} chevron={false} />
-        <Row icon={RotateCcw} label={t('Repetir cuestionario inicial', 'Redo the initial questionnaire')} className="accent" onClick={() => updateSettings({ onboarded: false })} chevron={false} />
+        {/* Uno solo: «Generar» y «Repetir el cuestionario» acababan en lo mismo (las mismas preguntas y un programa). */}
+        <Row icon={WandSparkles} label={t('Generar un programa nuevo', 'Generate a new program')} className="accent" onClick={() => navigate('routines', 'generate')} chevron={false} />
+        {canInstall && <Row icon={Smartphone} label={t('Instalar en el móvil', 'Install on your phone')} className="accent" onClick={() => void promptInstall()} chevron={false} />}
       </div>
 
       <div className="list-header">{t('Ajustes', 'Settings')}</div>

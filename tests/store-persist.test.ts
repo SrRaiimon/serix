@@ -134,4 +134,7 @@ test('varias pestañas: un duplicado que ya traía una lista no se arrastra al j
   const names = mergeData(theirs, ours, base).friends.map((f) => (f as { name: string }).name)
   // De «José» y «jose» (los dos aquí) queda el último, el más reciente, en el sitio del primero.
   assert.deepEqual(names, ['jose', 'Ana', 'Luis'])
+  // Y lo que solo traía el primero (su código, su historial) no se pierde al quedarse el último.
+  const withFields = { ...base, friends: [{ name: 'José', code: 'abc' }, { name: 'jose', week: 3 }] as never[] }
+  assert.deepEqual(mergeData(base, withFields, base).friends, [{ name: 'jose', code: 'abc', week: 3 }])
 })

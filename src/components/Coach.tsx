@@ -13,10 +13,10 @@ function tipText(tip: CoachTip): { title: string; detail: string; action: string
   switch (tip.kind) {
     case 'easyWeek':
       return {
-        title: t('Toca una semana más suave', 'Time for an easier week'),
+        title: t('Toca una semana de descarga', 'Time for a deload week'),
         detail: tip.tired
-          ? t('Tus últimos entrenos llegabas cansado. Una semana con menos series y un 10 % menos de peso te deja volver con más fuerza.', 'You arrived tired at your last workouts. A week with fewer sets and 10% less weight lets you come back stronger.')
-          : t(`${tip.stalled} ejercicios llevan semanas sin mejorar. Una semana con menos series y un 10 % menos de peso suele desatascarlos.`, `${tip.stalled} exercises have not improved for weeks. A week with fewer sets and 10% less weight usually gets them moving.`),
+          ? t('Tus últimos entrenos llegabas cansado. Una semana de descarga (menos series y un 10 % menos de peso) te deja volver con más fuerza.', 'You arrived tired at your last workouts. A deload week (fewer sets and 10% less weight) lets you come back stronger.')
+          : t(`${tip.stalled} ejercicios llevan semanas sin mejorar. Una semana de descarga (menos series y un 10 % menos de peso) suele desatascarlos.`, `${tip.stalled} exercises have not improved for weeks. A deload week (fewer sets and 10% less weight) usually gets them moving.`),
         action: t('Hacerla esta semana', 'Do it this week'),
       }
     case 'swap':

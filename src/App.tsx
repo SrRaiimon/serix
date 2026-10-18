@@ -227,7 +227,8 @@ function Screen({ route }: { route: string[] }) {
   const [tab, a, b] = route
   switch (tab) {
     case 'routines':
-      return a ? <RoutineDetailScreen id={a} /> : <RoutinesScreen />
+      // #/routines/generate: Rutinas con el generador abierto (lo usa Perfil → Nuevo programa).
+      return a && a !== 'generate' ? <RoutineDetailScreen id={a} /> : <RoutinesScreen generate={a === 'generate'} />
     case 'exercises':
       return a ? <ExerciseDetailScreen id={a} /> : <ExercisesScreen />
     case 'food':

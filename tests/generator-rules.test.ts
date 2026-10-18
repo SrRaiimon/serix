@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
-import { buildLibraryProgram, equipmentProfiles, generate, HEAVY_AXIAL, levels, LIBRARY, MAX_SETS_PER_SESSION, type GeneratorConfig } from '../src/lib/generator'
+import { buildLibraryProgram, equipmentProfiles, exerciseCount, generate, HEAVY_AXIAL, levels, LIBRARY, MAX_SETS_PER_SESSION, type GeneratorConfig } from '../src/lib/generator'
 import { progressionStep } from '../src/lib/progression'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
@@ -134,7 +134,8 @@ test('en casa sin material: bíceps el día de tirón y dos días de pierna dist
     const pull = days.find((d) => /Tirón|Cuerpo completo A/.test(d.name))!
     assert.ok(pull.exercises.some((x) => x.exercise.muscle === 'biceps'), `${level}: ${pull.exercises.map((x) => x.exercise.id).join(', ')}`)
     const legs = generate({ goal: 'hypertrophy', level, days: 4, minutes: 60, equipment: 'bodyweight' }, catalog).days.filter((d) => /Pierna/.test(d.name))
-    const [a, b] = legs.map((d) => new Set(d.exercises.map((x) => x.exercise.id)))
+    // Los gemelos sin material son siempre el mismo ejercicio (y es normal repetirlo): no cuentan.
+    const [a, b] = legs.map((d) => new Set(d.exercises.filter((x) => x.exercise.muscle !== 'calves').map((x) => x.exercise.id)))
     const shared = [...a].filter((id) => b.has(id)).length
     assert.ok(shared <= Math.min(a.size, b.size) / 2, `${level}: Pierna A y B comparten ${shared}`)
   }
@@ -180,4 +181,42 @@ test('con poco tiempo se quitan series antes que ejercicios: brazos cada semana 
     const sixty = buildLibraryProgram(p, p.equipment ?? 'gym', catalog, false, 60).days
     if (p.id === 'upperlower4' || p.id === 'ppl3') assert.ok(weekly(sixty, 'triceps') >= 1 && weekly(sixty, 'biceps') >= 1, `${p.id}: sin brazos a 60 min`)
   }
+})
+
+test('sin material: cada día llega a los ejercicios prometidos; con barra, el principiante tiene negativas', () => {
+  for (const level of levels.map((l) => l.id)) {
+    for (const days of [3, 4]) {
+      const c: GeneratorConfig = { goal: 'hypertrophy', level, days, minutes: 60, equipment: 'bodyweight' }
+      // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno).
+      for (const day of generate(c, catalog).days) {
+        const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
+        assert.ok(day.exercises.length >= exerciseCount(60) || sets >= Math.round(60 / 3.4), `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
+      }
+    }
+  }
+  const beginner = generate({ goal: 'hypertrophy', level: 'beginner', days: 4, minutes: 60, equipment: 'bodyweight', pullupBar: true }, catalog)
+  const ids = beginner.days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
+  assert.ok(ids.includes('Negative_Pull-Up'), ids.join(', '))
+  assert.ok(ids.includes('Single_Leg_Calf_Raise'), 'gemelos sin material')
+})
+
+test('reglas de casa y de fuerza: sin paralelas fuera del gimnasio, sin supinas tras dominadas, un básico pesado por día', () => {
+  for (const [c, variation] of configs()) {
+    for (const day of generate(c, catalog, variation).days) {
+      const ids = day.exercises.map((x) => x.exercise.id)
+      const where = `${c.goal}/${c.level}/${c.equipment}: ${ids.join(', ')}`
+      if (c.equipment !== 'gym') assert.ok(!ids.some((id) => /^Dips_-_/.test(id)), where)
+      if (ids.some((id) => /^(Pullups|Wide-Grip_Pull_Up)$/.test(id))) assert.ok(!ids.includes('Chin-Up'), where)
+      for (const x of day.exercises) if (/^(Pullups|Chin-Up)$/.test(x.exercise.id)) assert.ok(x.repsMax <= 10, `${where} a ${x.repsMin}-${x.repsMax}`)
+      if (c.goal === 'strength') assert.ok(day.exercises.filter((x) => x.repsMax <= 5).length <= 1, where)
+    }
+  }
+  // Fuerza 4 días: banca y press militar, cada uno dos veces por semana.
+  const weekly = generate({ goal: 'strength', level: 'advanced', days: 4, minutes: 60, equipment: 'gym' }, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
+  for (const id of ['Barbell_Bench_Press_-_Medium_Grip', 'Barbell_Shoulder_Press']) assert.equal(weekly.filter((x) => x === id).length, 2, id)
+})
+
+test('a 45 min, el torso pierde la segunda espalda antes que los brazos', () => {
+  const days = generate({ goal: 'hypertrophy', level: 'intermediate', days: 4, minutes: 45, equipment: 'gym' }, catalog).days.filter((d) => /Torso/.test(d.name))
+  for (const d of days) assert.ok(d.exercises.some((x) => ['biceps', 'triceps'].includes(x.exercise.muscle)), `${d.name}: ${d.exercises.map((x) => x.exercise.id).join(', ')}`)
 })

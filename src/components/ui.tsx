@@ -181,6 +181,11 @@ export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: nu
 
 // Pila de hojas abiertas: Escape cierra solo la de arriba y el resto de la app queda inerte mientras haya alguna.
 const dialogStack: object[] = []
+/**
+ * Cuántas hojas abiertas tienen inerte cada elemento. Si se cierra antes la de debajo (fuera de orden), lo de
+ * detrás sigue inerte mientras quede alguna: antes la primera en cerrarse se lo quitaba aunque la otra siguiera.
+ */
+const inertBy = new Map<Element, number>()
 
 /**
  * Hace de una hoja un diálogo accesible: el foco entra en ella al abrir (y vuelve al botón que la abrió al cerrar),
@@ -196,8 +201,12 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     // Todo lo que hay en body salvo esta hoja (la app y otra hoja de debajo) queda inerte mientras está abierta.
     let top: Element | null = ref.current
     while (top && top.parentElement !== document.body) top = top.parentElement
-    const silenced = [...document.body.children].filter((el) => el !== top && !el.hasAttribute('inert'))
-    silenced.forEach((el) => el.setAttribute('inert', ''))
+    // Lo que ya estaba inerte por otra hoja también cuenta; lo que lo estaba por otra cosa, no se toca.
+    const silenced = [...document.body.children].filter((el) => el !== top && (inertBy.has(el) || !el.hasAttribute('inert')))
+    silenced.forEach((el) => {
+      inertBy.set(el, (inertBy.get(el) ?? 0) + 1)
+      el.setAttribute('inert', '')
+    })
     // A la hoja misma (no al primer campo: en el móvil abriría el teclado): el lector anuncia su título y el
     // siguiente Tab ya va a su primer control.
     ref.current?.focus({ preventScroll: true })
@@ -211,7 +220,14 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     return () => {
       document.removeEventListener('keydown', onKey)
       dialogStack.splice(dialogStack.indexOf(token), 1)
-      silenced.forEach((el) => el.removeAttribute('inert'))
+      silenced.forEach((el) => {
+        const n = (inertBy.get(el) ?? 1) - 1
+        if (n > 0) inertBy.set(el, n)
+        else {
+          inertBy.delete(el)
+          el.removeAttribute('inert')
+        }
+      })
       if (before?.isConnected) before.focus({ preventScroll: true })
     }
   }, [ref])
@@ -305,9 +321,14 @@ export function useToast(): [ReactNode, (text: string, kind?: 'record') => void]
     const t = setTimeout(() => setToast(undefined), toast.kind === 'record' ? 3500 : 2000)
     return () => clearTimeout(t)
   }, [toast])
-  const node = toast
-    ? <Overlay><div className={toast.kind === 'record' ? 'toast toast-record' : 'toast'} role="status">{toast.kind === 'record' && <Trophy size={18} aria-hidden="true" />}{toast.text}</div></Overlay>
-    : null
+  // La zona que lee el lector existe siempre (vacía sin aviso): una creada ya con el texto no se anuncia en
+  // muchos lectores. El aviso que se ve, aparte y oculto al lector, para que no lo lea dos veces.
+  const node = (
+    <>
+      <span className="sr-only" role="status">{toast?.text ?? ''}</span>
+      {toast && <Overlay><div className={toast.kind === 'record' ? 'toast toast-record' : 'toast'} aria-hidden="true">{toast.kind === 'record' && <Trophy size={18} aria-hidden="true" />}{toast.text}</div></Overlay>}
+    </>
+  )
   return [node, (text, kind) => setToast({ text, kind })]
 }
 

@@ -12,41 +12,54 @@ import { parseTempo, tempoAt } from '../lib/tempo'
 
 // Entreno · una serie: su fila (peso, repeticiones o tiempo), el esfuerzo (RPE), el tempo y la cuenta atrás.
 
-export function SetRow({ set, label, previous, fresh, bodyweight, tracking, current, repsPlaceholder, defaultReps, needsWeight, carryWeight, timePlaceholder, unit, barbell, askRpe, onAskRpe, onRpeDone, onRpePicked, onChange, onDelete, onCompleted, lastMax, targetSeconds, tempo }: {
-  set: SetEntry
+/** Lo que comparten todas las series de un ejercicio (el material, el objetivo, la unidad). */
+export interface SetContext {
   /** Ejercicio sin historial: sin columna «Última vez». */
   fresh: boolean
   /** Peso corporal: el peso es el lastre (0 = sin). */
   bodyweight: boolean
-  current: boolean
-  askRpe: boolean
-  onAskRpe: () => void
-  onRpeDone: () => void
-  /** RPE elegido (para ajustar el descanso). */
-  onRpePicked: (rpe: number | undefined) => void
-  label: string
-  previous?: SetEntry
+  barbell: boolean
+  /** Con barra, mancuernas o máquina: una serie sin peso es casi siempre un olvido. */
+  needsWeight: boolean
   tracking: Tracking
+  unit: Unit
   repsPlaceholder: string
   /** Repeticiones que se apuntan al marcar la serie sin escribirlas (el mínimo del objetivo; 0 = ninguna). */
   defaultReps: number
-  /** Con barra, mancuernas o máquina: una serie sin peso es casi siempre un olvido. */
-  needsWeight: boolean
-  /** Copia el peso de esta serie a las siguientes que no tienen. */
-  carryWeight: () => void
   timePlaceholder: string
-  unit: Unit
-  barbell: boolean
-  onChange: (patch: Partial<SetEntry>) => void
-  onDelete: () => void
-  onCompleted: () => void
-  /** Mayor peso apuntado en este ejercicio la última vez (kg), para avisar de un peso imposible. */
-  lastMax: number
   /** Objetivo de las series por tiempo (s), para la cuenta atrás. */
   targetSeconds: number
   /** Tempo de las repeticiones («3-1-1»), para marcar el ritmo. */
   tempo?: string
+  /** Mayor peso apuntado en este ejercicio la última vez (kg), para avisar de un peso imposible. */
+  lastMax: number
+}
+
+/** La pregunta del esfuerzo (RPE) de una serie. */
+export interface SetRpe {
+  /** Está abierta en esta serie. */
+  open: boolean
+  ask: () => void
+  done: () => void
+  /** RPE elegido (para ajustar el descanso). */
+  picked: (rpe: number | undefined) => void
+}
+
+export function SetRow({ set, label, previous, current, context, rpe, onChange, onDelete, onCompleted, carryWeight }: {
+  set: SetEntry
+  label: string
+  previous?: SetEntry
+  current: boolean
+  context: SetContext
+  rpe: SetRpe
+  onChange: (patch: Partial<SetEntry>) => void
+  onDelete: () => void
+  onCompleted: () => void
+  /** Copia el peso de esta serie a las siguientes que no tienen. */
+  carryWeight: () => void
 }) {
+  const { fresh, bodyweight, barbell, needsWeight, tracking, unit, repsPlaceholder, defaultReps, timePlaceholder, targetSeconds, tempo, lastMax } = context
+  const { open: askRpe, ask: onAskRpe, done: onRpeDone, picked: onRpePicked } = rpe
   const simple = useData().settings.simpleMode === true
   const [check, setCheck] = useState<string>()
   const [weightText, setWeightText] = useState(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')

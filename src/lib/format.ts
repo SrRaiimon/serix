@@ -30,8 +30,12 @@ export const num = (v: number) => fmt().number.format(Math.round(v * 100) / 100)
 export const int = (v: number) => fmt().int.format(Math.round(v))
 export const weightValue = (kg: number, unit: Unit) => num(fromKg(kg, unit))
 export const weight = (kg: number, unit: Unit) => `${weightValue(kg, unit)} ${unit}`
-export const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
-/** Volumen en toneladas a partir de 1000 (« 6 t », « 11,1 t »): el mismo formato en imágenes y resúmenes. */
+const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
+/**
+ * Volumen (peso movido), siempre así: en kg hasta 1000 y en toneladas desde ahí (« 640 kg », « 6 t », « 11,1 t »).
+ * Antes convivían cuatro formatos (8068 kg, 12.678 kg, 8,1 t…): el separador de miles del español solo sale
+ * desde 5 cifras, así que el mismo dato cambiaba de aspecto según la pantalla.
+ */
 export const tons = (kg: number, unit: Unit) => (fromKg(kg, unit) < 1000 ? volume(kg, unit) : tonnes(kg, unit))
 
 /** Siempre en toneladas con un decimal («0,4 t»): para comparar con una cifra que ya va en toneladas. */

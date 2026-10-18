@@ -26,7 +26,9 @@ export { isIsolation } from './isolation'
  * no por el nombre (Goblet_Squat o Hammer_Curls son con mancuerna y no lo dicen).
  */
 const equipmentById = new Map<string, string>()
+/** Sustituye lo apuntado (no lo suma): así cada test empieza limpio y no depende del orden. */
 export function rememberEquipment(list: { id: string; equipment: string }[]) {
+  equipmentById.clear()
   for (const e of list) equipmentById.set(e.id, e.equipment)
 }
 export const equipmentOf = (exerciseId: string) => equipmentById.get(exerciseId)
@@ -54,8 +56,9 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
   // pasa a 25). Antes de la regla del 5 %, que daba pesos que no hay en ningún gimnasio.
   const equipment = equipmentById.get(exerciseId) ?? (/dumbbell/i.test(exerciseId) ? 'dumbbell' : '')
   if (unit === 'kg' && equipment === 'dumbbell' && weight > 0) return dumbbellStep(weight, used)
-  // Kettlebells (la goblet del catálogo): de 2 en 2 kg, a la siguiente par.
-  if (unit === 'kg' && equipment === 'kettlebell' && weight > 0) return 2 - (weight % 2)
+  // Kettlebells (la goblet del catálogo): de 2 en 2 kg hasta 16 y de 4 en 4 desde ahí (16, 20, 24…: las que hay en
+  // casi todos los gimnasios), a la siguiente que existe.
+  if (unit === 'kg' && equipment === 'kettlebell' && weight > 0) return weight >= 16 ? 4 - (weight % 4) : 2 - (weight % 2)
   if (exerciseId && isIsolation(exerciseId)) {
     const fine = unit === 'kg' ? 0.5 : 1
     const min = unit === 'kg' ? 1 : 2

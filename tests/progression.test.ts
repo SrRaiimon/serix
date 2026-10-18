@@ -145,9 +145,11 @@ test('5/3/1: dos sesiones en la misma semana cuentan como una semana del ciclo',
 
 test('mancuernas y kettlebells: suben al siguiente peso que existe, por material y no por el nombre', () => {
   rememberEquipment([{ id: 'Hammer_Curls', equipment: 'dumbbell' }, { id: 'Goblet_Squat', equipment: 'kettlebell' }, { id: 'Incline_Dumbbell_Press', equipment: 'dumbbell' }])
-  // El martillo es de aislamiento: antes 24 → 25 (5 %); la goblet, de pierna: antes 24 → 26,5.
+  // El martillo es de aislamiento: antes 24 → 25 (5 %); la goblet, de pierna: antes 24 → 26,5 (ahora 28).
   assert.equal(progressionStep('biceps', 'kg', 'Hammer_Curls', 24), 2)
-  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 24), 2)
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 24), 4, 'desde 16, de 4 en 4: 24 → 28')
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 18), 2, '18 → 20')
+  assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 12), 2)
   assert.equal(progressionStep('quads', 'kg', 'Goblet_Squat', 15), 1)
   // Hasta 10 kg, de 1 en 1; las series de 2 y de 2,5 desde ahí.
   assert.equal(progressionStep('biceps', 'kg', 'Hammer_Curls', 8), 1)

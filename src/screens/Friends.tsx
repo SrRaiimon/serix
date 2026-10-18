@@ -2,7 +2,7 @@ import { BellRing, ChartColumn, Flag, Medal, MessageCircle, Plus, QrCode as QrIc
 import { useEffect, useMemo, useState } from 'react'
 import { QrSheet } from '../components/Qr'
 import { ActionSheet, Card, Chip, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
-import { addDays, int, relative, shortDay, startOfWeek, toKg, volume, weight, type Unit } from '../lib/format'
+import { addDays, int, relative, shortDay, startOfWeek, toKg, tons, weight, type Unit } from '../lib/format'
 import {
   alignWeeks, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
   mySnapshot, newChallenge, trophyCounts, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
@@ -42,7 +42,7 @@ function challengeTitle(c: Challenge, unit: Unit, exercise: (c: Challenge) => st
     case 'sessions':
       return goal ? plural(goal, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts']) : t('Más entrenamientos', 'Most workouts')
     case 'volume':
-      return goal ? t(`${volume(goal, unit)} levantados`, `${volume(goal, unit)} lifted`) : t('Más peso levantado', 'Most weight lifted')
+      return goal ? t(`${tons(goal, unit)} levantados`, `${tons(goal, unit)} lifted`) : t('Más peso levantado', 'Most weight lifted')
     case 'sets': {
       const of = c.group !== undefined ? t(` de ${groupName(c.group)}`, ` of ${groupName(c.group)}`) : ''
       return goal ? `${plural(goal, ['serie', 'series'], ['set', 'sets'])}${of}` : t(`Más series${of}`, `Most sets${of}`)
@@ -59,7 +59,7 @@ function challengeTitle(c: Challenge, unit: Unit, exercise: (c: Challenge) => st
 }
 
 const challengeValue = (c: Challenge, v: number, unit: Unit) =>
-  c.metric === 'volume' ? volume(v, unit) : c.metric === 'reps' ? plural(v, ['rep.', 'rep.'], ['rep', 'reps'])
+  c.metric === 'volume' ? tons(v, unit) : c.metric === 'reps' ? plural(v, ['rep.', 'rep.'], ['rep', 'reps'])
     : c.metric === 'logDays' || c.metric === 'proteinDays' ? plural(v, ['día', 'días'], ['day', 'days']) : int(v)
 
 function challengeWhen(c: Challenge, now = Date.now()): string {
@@ -387,7 +387,7 @@ function Ranking({ title, rows, unit, pick }: { title: string; rows: Row[]; unit
           </span>
           <span className="small" style={{ textAlign: 'right' }}>
             <strong>{plural(pick(r).sessions, ['entreno', 'entrenos'], ['workout', 'workouts'])}</strong>
-            <span className="muted" style={{ display: 'block' }}>{volume(pick(r).volume, unit)} · {plural(pick(r).sets, ['serie', 'series'], ['set', 'sets'])}</span>
+            <span className="muted" style={{ display: 'block' }}>{tons(pick(r).volume, unit)} · {plural(pick(r).sets, ['serie', 'series'], ['set', 'sets'])}</span>
           </span>
         </div>
       ))}
@@ -516,7 +516,7 @@ export function FriendDetailScreen({ id }: { id: string }) {
   const labels = Array.from({ length: WEEKS }, (_, i) => shortDay(addDays(current, -7 * (WEEKS - 1 - i))))
   const pick = (w: [number, number] | undefined) => (w === undefined ? undefined : measure === 'sessions' ? w[0] : w[1])
   const myWeeks = (mine.weeks ?? []).map((w) => pick(w) ?? 0)
-  const format = (v: number) => (measure === 'sessions' ? int(v) : volume(v, unit))
+  const format = (v: number) => (measure === 'sessions' ? int(v) : tons(v, unit))
   const myWeight = latestBodyWeight(data)
   const ratio = (lift?: number, bw?: number) => (lift && bw ? `×${(lift / bw).toLocaleString(t('es-ES', 'en-GB'), { maximumFractionDigits: 2, minimumFractionDigits: 2 })}` : '—')
   const lift = (kg?: number) => (kg ? weight(kg, unit) : '—')

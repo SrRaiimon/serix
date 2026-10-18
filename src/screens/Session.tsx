@@ -1,7 +1,7 @@
 import { ArrowUpDown, BadgeCheck, Flame, Wind, ChevronRight, Dumbbell, ImageIcon, Pencil, RotateCcw, Share2, StickyNote, Trash2, Trophy, Utensils } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
-import { day, duration, int, shortDay, time, tons, volume, weight, type Unit } from '../lib/format'
+import { day, duration, int, shortDay, time, tons, weight, type Unit } from '../lib/format'
 import { bodyweightAt, bodyweightText } from '../lib/bodyweight'
 import { sessionKcal } from '../lib/burn'
 import { focusFor } from '../lib/warmupRoutine'
@@ -27,7 +27,7 @@ function setNotes(id: string, notes: string) {
 export function shareText(s: Session, unit: Unit): string {
   const lines = [
     `${s.name} — ${day(s.start)}`,
-    `${duration(sessionDuration(s))} · ${volume(sessionVolume(s), unit)} · ${plural(sessionSets(s), ['serie', 'series'], ['set', 'sets'])}`,
+    `${duration(sessionDuration(s))} · ${tons(sessionVolume(s), unit)} · ${plural(sessionSets(s), ['serie', 'series'], ['set', 'sets'])}`,
     '',
   ]
   const slots = groupSlots(s.exercises)

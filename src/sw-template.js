@@ -17,6 +17,13 @@ const OPTIONAL = __OPTIONAL__
 // con cabecera Origin, así que sin esto no coinciden con lo precargado y fallan sin conexión.
 const MATCH = { ignoreSearch: true, ignoreVary: true }
 
+const ICON_TIMEOUT = 3000
+/** La promesa, o un fallo si tarda más de `ms`. */
+const withTimeout = (promise, ms) => new Promise((resolve, reject) => {
+  const id = setTimeout(() => reject(new Error('timeout')), ms)
+  promise.then((v) => { clearTimeout(id); resolve(v) }, (e) => { clearTimeout(id); reject(e) })
+})
+
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(APP_CACHE).then((cache) => cache.addAll(PRECACHE)))
   self.skipWaiting()
@@ -46,8 +53,14 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
   // Los iconos, primero de la red (el sistema los pide al añadir la app a la pantalla de inicio y deben ser
   // los de verdad) y, sin conexión, de lo guardado: el logo de la bienvenida y el de los avisos no se rompen.
+  // Con cobertura mala la red no falla, se queda colgada: a los 3 s, lo guardado (o seguir esperando a la red).
   if (url.pathname.includes('/icons/')) {
-    event.respondWith(fetch(request).catch(() => caches.match(request, MATCH)).then((res) => res || Response.error()))
+    const net = fetch(request)
+    event.respondWith(
+      withTimeout(net, ICON_TIMEOUT)
+        .catch(() => caches.match(request, MATCH).then((hit) => hit || net))
+        .then((res) => res || Response.error(), () => Response.error()),
+    )
     return
   }
 

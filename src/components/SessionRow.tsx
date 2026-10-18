@@ -1,5 +1,5 @@
 import { Clock, Layers, Weight } from 'lucide-react'
-import { duration, relative, volume, type Unit } from '../lib/format'
+import { duration, relative, tons, type Unit } from '../lib/format'
 import { sessionDuration, sessionSets, sessionVolume } from '../lib/stats'
 import type { Session } from '../lib/store'
 
@@ -14,7 +14,7 @@ export function SessionRow({ session, unit, onClick }: { session: Session; unit:
         </span>
         <span className="small muted row" style={{ gap: 12, marginTop: 2 }}>
           <span className="row" style={{ gap: 4 }}><Clock size={13} /> {duration(sessionDuration(session))}</span>
-          <span className="row" style={{ gap: 4 }}><Weight size={13} /> {volume(sessionVolume(session), unit)}</span>
+          <span className="row" style={{ gap: 4 }}><Weight size={13} /> {tons(sessionVolume(session), unit)}</span>
           <span className="row" style={{ gap: 4 }}><Layers size={13} /> {sessionSets(session)}</span>
         </span>
         <span className="small clamp-1" style={{ color: 'var(--text-2)', display: 'block', marginTop: 2 }}>

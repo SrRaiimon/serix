@@ -1412,6 +1412,59 @@
     "Jump your feet back in and stand up quickly.",
     "Tip: it is a burpee without the push-up; great for going fast."
    ]
+  },
+  {
+   "id": "Negative_Pull-Up",
+   "name": "Dominada negativa",
+   "nameEn": "Negative Pull-Up",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Sube a la posición alta de la dominada con ayuda de una silla o de un salto: barbilla por encima de la barra.",
+    "Baja despacio, en 3-5 segundos, hasta estirar los brazos del todo.",
+    "Apoya los pies, vuelve a subir con la silla y repite. Cada repetición es solo la bajada.",
+    "Consejo: es el paso previo a la dominada completa; cuando bajes controlado en 5 segundos, prueba a subir tú."
+   ],
+   "instructionsEn": [
+    "Get to the top of a pull-up using a chair or a jump: chin above the bar.",
+    "Lower yourself slowly, over 3-5 seconds, until your arms are fully straight.",
+    "Put your feet down, climb back up with the chair and repeat. Each rep is only the lowering.",
+    "Tip: it is the step before a full pull-up; once you can lower yourself under control for 5 seconds, try pulling yourself up."
+   ]
+  },
+  {
+   "id": "Single_Leg_Calf_Raise",
+   "name": "Elevación de gemelo a una pierna",
+   "nameEn": "Single-Leg Calf Raise",
+   "muscle": "calves",
+   "secondaryMuscles": [],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De pie sobre un escalón con la punta de un pie, el talón por fuera y la otra pierna doblada. Apóyate en la pared para no perder el equilibrio.",
+    "Sube de puntillas todo lo que puedas y aguanta un segundo arriba.",
+    "Baja despacio hasta que el talón quede por debajo del escalón y vuelve a subir.",
+    "Consejo: haz todas las repeticiones con una pierna antes de cambiar; si se queda corto, coge una mochila con peso."
+   ],
+   "instructionsEn": [
+    "Stand on a step on the ball of one foot, heel hanging off and the other leg bent. Hold the wall for balance.",
+    "Rise onto your toes as high as you can and hold for a second at the top.",
+    "Lower slowly until your heel is below the step, then rise again.",
+    "Tip: do all your reps on one leg before switching; if it gets too easy, hold a loaded backpack."
+   ]
   }
  ],
  "tags": {

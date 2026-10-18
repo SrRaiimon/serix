@@ -617,8 +617,8 @@ function Stalls({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       ))}
       {list.length > 3 && <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => setAll(!all)}>{all ? t('Ver menos', 'Show fewer') : t(`Ver todos (${list.length})`, `Show all (${list.length})`)}</button>}
       <span className="small muted">
-        {t('Es normal atascarse. Cuando toque uno de estos, te propondremos un día más suave (menos series y un 10 % menos de peso) o cambiarlo por un ejercicio parecido.',
-          'Getting stuck is normal. When one of these comes up we will suggest an easier day (fewer sets and 10% less weight) or swapping it for a similar exercise.')}
+        {t('Es normal atascarse. Cuando toque uno de estos, te propondremos una sesión de descarga (menos series y un 10 % menos de peso) o cambiarlo por un ejercicio parecido.',
+          'Getting stuck is normal. When one of these comes up we will suggest a deload session (fewer sets and 10% less weight) or swapping it for a similar exercise.')}
       </span>
     </Card>
   )

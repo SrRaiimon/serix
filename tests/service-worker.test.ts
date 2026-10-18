@@ -38,9 +38,12 @@ function load(version: string, { online = true, precache = ['./', 'index.html', 
   const listeners = new Map<string, Listener>()
   const caches = new FakeCacheStorage()
   const fetched: string[] = []
+  let hang = false
   const network = async (r: Request | string) => {
     const url = typeof r === 'string' ? r : r.url
     fetched.push(url)
+    // Cobertura mala: la red ni contesta ni falla.
+    if (hang) await new Promise(() => undefined)
     if (!online) throw new TypeError('sin conexión')
     return new Response(`red:${new URL(url).pathname}`)
   }
@@ -52,7 +55,8 @@ function load(version: string, { online = true, precache = ['./', 'index.html', 
     clients: { claim: async () => undefined },
   }
   const code = source.replace('__VERSION__', version).replace('__PRECACHE__', JSON.stringify(precache)).replace('__OPTIONAL__', '[]')
-  runInNewContext(code, { self, caches, fetch: network, Request, Response, URL, console })
+  // Los temporizadores, cien veces más rápidos: el tiempo límite de los iconos (3 s) en 30 ms.
+  runInNewContext(code, { self, caches, fetch: network, Request, Response, URL, console, setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms / 100), clearTimeout })
   /** Lanza un evento y espera lo que el service worker deje pendiente (waitUntil o respondWith). */
   const fire = async (type: string, extra: Record<string, unknown> = {}) => {
     let pending: Promise<unknown> | undefined
@@ -68,7 +72,7 @@ function load(version: string, { online = true, precache = ['./', 'index.html', 
     const { responded, value } = await fire('fetch', { request })
     return responded ? await (value as Response).text() : undefined
   }
-  return { caches, fire, get, fetched, setOnline: (v: boolean) => { online = v } }
+  return { caches, fire, get, fetched, setOnline: (v: boolean) => { online = v }, setHang: (v: boolean) => { hang = v } }
 }
 
 test('service worker: la página y los archivos salen de la caché de esta versión, no de la anterior', async () => {
@@ -105,6 +109,9 @@ test('service worker: los iconos, de la red y sin conexión de lo guardado (el l
   assert.ok(sw.fetched.some((u) => u.endsWith('/icons/serix-192.png')), 'pedido a la red')
   sw.setOnline(false)
   assert.equal(await sw.get('icons/serix-192.png'), 'red:icons/serix-192.png', 'el guardado al instalar')
+  // Con la red colgada no se espera para siempre: pasado el tiempo límite, el guardado.
+  sw.setHang(true)
+  assert.equal(await sw.get('icons/serix-192.png'), 'red:icons/serix-192.png', 'red colgada')
 })
 
 test('service worker: al activarse conserva la versión anterior y borra las más viejas, nunca lo ajeno', async () => {
