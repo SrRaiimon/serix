@@ -1,4 +1,5 @@
 import { GoalsSheet } from './FoodGoals'
+import { weekDone } from '../lib/schedule'
 import { Bell, CalendarDays, Star, Check, Droplet, ChevronLeft, ChevronRight, Ellipsis, Shuffle, Sparkles, HeartPulse, Minus, Plus, RotateCcw, Target, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Chip, LargeTitle, Sheet, useTick, useToast } from '../components/ui'
@@ -310,6 +311,8 @@ export function FoodScreen() {
 
 /** Calorías del día frente al objetivo y los tres macronutrientes. */
 function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Per100; entries: FoodEntry[]; goals: NutritionGoals & { carried?: number; training?: boolean; shift?: number }; base: NutritionGoals; day: string; canMark: boolean }) {
+  // Hoy sin entreno: con la semana ya cumplida es un día de descanso, no un entreno que falta (ver weekDone).
+  const data = useData()
   const fiber = dayFiber(entries)
   // Hoy sin entreno todavía: se puede marcar que vas a entrenar para tener ya el objetivo de entreno.
   const mark = (on: boolean) => update((d) => {
@@ -353,7 +356,9 @@ function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Pe
             <span className="muted">{goals.training
               ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal sobre tus ${int(base.kcal)}`, `Training day: +${int(goals.shift ?? 0)} kcal over your ${int(base.kcal)}`)
               : day === dayKey()
-                ? t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)
+                ? (weekDone(data)
+                  ? t(`Hoy, día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)
+                  : t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`))
                 : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)}</span>
             {canMark && <button className="btn secondary btn-sm" onClick={() => mark(!goals.training)}>{day === dayKey()
               ? (goals.training ? t('Hoy no entreno', 'Not training today') : t('Hoy entreno', 'Training today'))

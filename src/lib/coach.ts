@@ -9,6 +9,7 @@ import { readinessScore } from './readiness'
 import { stalls, streakWeeks } from './stats'
 import { defaultTracking } from './tracking'
 import type { AppData, Routine, Session, Settings } from './store'
+import { weekDone } from './schedule'
 
 // El entrenador de la semana: junta lo que ya calcula la app (estancamientos, volumen por grupo,
 // cómo llegas a entrenar) y lo convierte en pocos consejos con un botón que lo aplica a tus rutinas.
@@ -39,12 +40,19 @@ export function programRoutines(d: Pick<AppData, 'routines' | 'settings'>): Rout
  * Series semanales previstas por grupo (orden de MAIN_GROUPS) con tu programa: cada rutina se hace
  * `weeklyGoal / rutinas` veces por semana; el músculo principal cuenta 1 y cada secundario 0,5.
  */
+/** Ejercicios de acondicionamiento que el catálogo apunta como fuerza (la sentadilla con salto, por ejemplo). */
+const CONDITIONING_ONLY = /jump|burpee|climber|skater|jack|sprawl|high_knees|battling/i
+
 export function plannedGroupSets(routines: Routine[], weeklyGoal: number, catalog: Catalog): number[] {
   if (!routines.length) return MAIN_GROUPS.map(() => 0)
   const times = weeklyGoal / routines.length
   const load = new Map<string, number>()
   for (const r of routines) {
     for (const e of r.exercises) {
+      // El cardio y los saltos (escaladores, burpees, sentadilla con salto) son para el gasto, no series de
+      // fuerza: contados, «Perder grasa» recién generado salía con «quita una serie de escaladores».
+      const c = catalog.get(e.exerciseId)
+      if (c?.category === 'cardio' || c?.category === 'plyometrics' || CONDITIONING_ONLY.test(e.exerciseId)) continue
       load.set(e.muscle, (load.get(e.muscle) ?? 0) + e.sets * times)
       for (const m of catalog.get(e.exerciseId)?.secondaryMuscles ?? []) if (m !== e.muscle) load.set(m, (load.get(m) ?? 0) + (e.sets * times) / 2)
     }
@@ -86,7 +94,8 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
   const recent = [...sessions].filter((s) => s.readiness).sort((a, b) => b.start - a.start).slice(0, 3)
   const tired = recent.length === 3 && recent.reduce((n, s) => n + readinessScore(s.readiness!), 0) / 3 < 2.5
   const easing = settings.easyWeek === week || blockWeek(settings.block, now)?.deload
-  if (!easing && streakWeeks(sessions, now) >= 4 && (stuck.length >= 3 || tired)) {
+  // Con la semana ya cumplida, «hacerla esta semana» no tiene sentido: se propone la que viene, el lunes.
+  if (!easing && !weekDone({ sessions, settings }, now) && streakWeeks(sessions, now) >= 4 && (stuck.length >= 3 || tired)) {
     tips.push({ id: 'easy', kind: 'easyWeek', stalled: stuck.length, tired })
   }
 
@@ -98,8 +107,13 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
     if (alt) tips.push({ id: `swap:${s.exerciseId}`, kind: 'swap', exerciseId: s.exerciseId, name: catalog.get(s.exerciseId)?.name ?? s.name, alt, routines: owners.map((r) => r.id) })
   }
 
-  if (routines.length) {
-    const [min, maxSets] = weeklyRange(settings.goal)
+  // Volumen: solo con el programa ya en marcha (dos semanas entrenándolo). Recién creado no se corrige: el
+  // generador y la biblioteca lo montan a propósito (un Empuje/Tirón/Pierna de 3 días da 8 series por grupo)
+  // y la app no debe contradecirse antes del primer entreno; con la práctica, el entrenador lo ajusta.
+  const ids = new Set(routines.map((r) => r.id))
+  const firstUse = Math.min(...sessions.filter((s) => s.routineId && ids.has(s.routineId)).map((s) => s.start))
+  if (routines.length && now - firstUse >= 14 * DAY) {
+    const [min, maxSets] = weeklyRange(settings.goal, settings.level)
     const planned = plannedGroupSets(routines, settings.weeklyGoal, catalog)
     const allowed = new Set(equipmentInfo(settings.equipment).allowed)
     // Del que más falta al que menos; el abdomen no (lo trabajan de rebote casi todos los básicos).

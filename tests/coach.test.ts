@@ -6,6 +6,8 @@ import { applyTip, coachTips, forgottenGroups, hideTip, plannedGroupSets } from 
 import { weightGoalStatus } from '../src/lib/goals'
 import { defaultSettings, type AppData, type Routine, type Settings } from '../src/lib/store'
 import { DAY, exercise, session, set, T0 } from './helpers'
+import { buildLibraryProgram, generate, LIBRARY, type GeneratedProgram } from '../src/lib/generator'
+import { weekDone } from '../src/lib/schedule'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
 
@@ -19,7 +21,7 @@ function history() {
   return Array.from({ length: 10 }, (_, i) => session(i * 4, [
     exercise('Barbell_Bench_Press_-_Medium_Grip', [set(80, 8), set(80, 8)], { muscle: 'pectorals' }),
     exercise('Barbell_Full_Squat', [set(100 + i * 2.5, 5)], { muscle: 'quads' }),
-  ]))
+  ], { routineId: 'a' }))
 }
 
 test('entrenador: volumen previsto del programa por grupo', () => {
@@ -99,4 +101,34 @@ test('entrenador: un grupo que solo recibe trabajo de rebote también recibe pro
   const tips = coachTips({ routines, sessions: history(), settings, catalog, now: NOW }, 20)
   const add = tips.find((x) => x.kind === 'addExercise' && catalog.get(x.exercise.id)?.muscle === 'triceps')
   assert.ok(add && add.kind === 'addExercise', tips.map((x) => x.id).join(', '))
+})
+
+test('entrenador: un programa recién creado no recibe consejos de volumen (ni el generado ni los de la biblioteca)', () => {
+  const asRoutines = (p: GeneratedProgram) => p.days.map((d, i) => routine(`r${i}`, d.exercises.map((g) => ex(g.exercise.id, g.exercise.muscle, g.sets))))
+  // Diez entrenos de antes (de otro programa): el entrenador ya habla, pero este programa aún no se ha usado.
+  const before = history().map((s) => ({ ...s, routineId: 'viejo' }))
+  const volume = (p: GeneratedProgram, s: Settings) => coachTips({ routines: asRoutines(p), sessions: before, settings: { ...s, weeklyGoal: p.days.length }, catalog, now: NOW }, 20)
+    .filter((x) => x.kind === 'moreSets' || x.kind === 'fewerSets' || x.kind === 'addExercise')
+  for (const goal of ['hypertrophy', 'fatLoss', 'strength'] as const) {
+    for (const equipment of ['gym', 'bodyweight'] as const) {
+      const c = { goal, level: 'intermediate' as const, days: 4, minutes: 60, equipment }
+      assert.deepEqual(volume(generate(c, catalog), { ...settings, ...c }).map((x) => x.id), [], `${goal}/${equipment}`)
+    }
+  }
+  for (const p of LIBRARY) assert.deepEqual(volume(buildLibraryProgram(p, p.equipment ?? 'gym', catalog, false, 60), settings).map((x) => x.id), [], p.id)
+})
+
+test('entrenador: el cardio y los saltos no cuentan como series de fuerza', () => {
+  const planned = plannedGroupSets([routine('a', [ex('Mountain_Climbers', 'quads', 3), ex('Freehand_Jump_Squat', 'quads', 3), ex('Barbell_Full_Squat', 'quads', 3)])], 1, catalog)
+  assert.equal(planned[5], 3)
+})
+
+
+test('semana cumplida: weekDone y sin «semana más suave» para esta semana', () => {
+  const monday = new Date(NOW); monday.setHours(0, 0, 0, 0); monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7))
+  const week = (n: number) => Array.from({ length: n }, (_, i) => ({ start: monday.getTime() + i * 3600000, end: monday.getTime() + i * 3600000 + 60000 }))
+  // Si hoy es lunes, lo de hoy no cuenta como semana cumplida (hoy aún se entrena).
+  const today = new Date(NOW).getDay() === 1
+  assert.equal(weekDone({ sessions: week(3), settings: { weeklyGoal: 3 } }, NOW), !today)
+  assert.equal(weekDone({ sessions: week(2), settings: { weeklyGoal: 3 } }, NOW), false)
 })

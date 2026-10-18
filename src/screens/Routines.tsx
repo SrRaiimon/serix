@@ -1,4 +1,5 @@
 import { BlockCard } from '../components/Block'
+import { weekDone } from '../lib/schedule'
 import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, RotateCcw, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Segmented, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
@@ -175,7 +176,7 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
   return (
     <div className={`list-row routine-row ${next ? 'next' : ''}`}>
       <button className="routine-main" onClick={() => navigate('routines', routine.id)}>
-        {next && <span className="routine-next">{t('Te toca hoy', 'Up next')}</span>}
+        {next && <span className="routine-next">{weekDone(data) ? t('La siguiente', 'Next one') : t('Te toca hoy', 'Up next')}</span>}
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
         <span className="small muted clamp-2">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
         <span className="small routine-meta">
@@ -200,7 +201,7 @@ function WarmupLine({ planned, unit, barKg }: { planned: SessionExercise; unit: 
   const work = planned.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
   // Con barra desde 40 kg (press militar incluido); con otro material, desde 60 kg.
   if (work < (barKg ? 40 : 60)) return null
-  const ramp = warmupSets(work, unit, barKg, fromFloor(planned.exerciseId))
+  const ramp = warmupSets(work, unit, barKg, fromFloor(planned.exerciseId), planned.exerciseId)
   if (ramp.length < 2) return null
   return (
     <span className="warmup-line">

@@ -2065,11 +2065,18 @@
 "Con muy pocas calorías, la grasa no baja de 0,8 g por kilo, y el entrenador avisa si a un músculo solo le llega trabajo de rebote.": "Avec très peu de calories, les lipides ne descendent pas sous 0,8 g par kilo, et le coach prévient quand un muscle ne reçoit que du travail indirect.",
 "Igual en las últimas {0} veces · máx. estimado: {1} {2}": "Identique sur les {0} dernières fois · max estimé : {1} {2}",
 "Las cifras cuadran: «Tu plan» cuenta los ejercicios reales, la mejor serie de una rutina ya no suma tu peso en las dominadas y «máx. estimado» se llama así.": "Les chiffres collent : « Ton plan » compte les vrais exercices, la meilleure série d’une routine n’ajoute plus ton poids aux tractions et le « max estimé » s’appelle ainsi.",
-"Objetivo de la semana cumplido · uno más es opcional": "Objectif de la semaine atteint · un de plus est optionnel",
 "Poco trabajo directo de {0}": "Peu de travail direct : {0}",
 "Programas más acertados: los principiantes hacen remos en vez de dominadas, las flexiones van a 12-20 desde intermedio, y con kettlebell hay curl y no un press como elevación lateral.": "Des programmes plus justes : les débutants font des rowings au lieu de tractions, les pompes passent à 12-20 dès le niveau intermédiaire, et avec un kettlebell il y a un curl et plus de développé en guise d’élévation latérale.",
 "Si entrenas, algo menos de peso en esos ejercicios.": "Si tu t’entraînes, un peu moins de poids sur ces exercices.",
 "Si ya has cumplido los entrenos de la semana, Inicio te lo dice y el siguiente queda como opcional.": "Si tu as déjà fait tes entraînements de la semaine, l’Accueil te le dit et le suivant devient optionnel.",
 "Solo le llega de rebote de otros ejercicios (unas {0} series a la semana). Uno propio equilibra el cuerpo.": "Il ne reçoit que du travail indirect d’autres exercices (environ {0} séries par semaine). Un exercice dédié équilibre le corps.",
-"unos {0} min": "environ {0} min"
+"unos {0} min": "environ {0} min",
+"Con la semana cumplida, toda la app lo sabe: Inicio y Rutinas dejan el siguiente como opcional, Comidas lo cuenta como día de descanso y el entrenador no propone suavizarla.": "Une fois ta semaine faite, toute l’app le sait : l’Accueil et les Routines rendent la suivante optionnelle, les Repas la comptent comme jour de repos et le coach ne propose plus de l’alléger.",
+"Con teclado o lector de pantalla, el foco llega al título también en Rutinas, Comidas, Perfil y al volver a Inicio.": "Au clavier ou avec un lecteur d’écran, le focus arrive aussi sur le titre dans Routines, Repas, Profil et en revenant à l’Accueil.",
+"Día de descanso: −{0} kcal": "Jour de repos : −{0} kcal",
+"El entrenador ya no corrige un programa recién creado ni cuenta el cardio como series de fuerza: espera a que lo lleves dos semanas.": "Le coach ne corrige plus un programme tout juste créé et ne compte plus le cardio comme séries de force : il attend que tu le suives depuis deux semaines.",
+"Hoy, día de descanso: −{0} kcal de tus {1}": "Aujourd’hui, jour de repos : −{0} kcal sur tes {1}",
+"La siguiente": "La suivante",
+"Las mancuernas siguen en pesos que existen también tras calentar.": "Les haltères restent sur des poids qui existent, même après l’échauffement.",
+"Semana cumplida · este es opcional": "Semaine faite · celui-ci est optionnel"
 }

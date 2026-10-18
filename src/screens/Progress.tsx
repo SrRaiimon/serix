@@ -81,7 +81,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const { settings } = useData()
   const groups = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
   if (!groups.some((g) => g.sets > 0)) return null
-  const [min, max] = weeklyRange(settings.goal)
+  const [min, max] = weeklyRange(settings.goal, settings.level)
   const scale = Math.max(max * 1.25, ...groups.map((g) => g.sets))
   const pct = (v: number) => `${(v / scale) * 100}%`
   const low = groups.filter((g) => g.sets < min).map((g) => t(...g.name).toLowerCase())

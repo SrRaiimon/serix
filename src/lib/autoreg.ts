@@ -1,6 +1,6 @@
 import { blockWeek, type TrainingBlock } from './block'
 import { fromKg, increment, toKg, type Unit } from './format'
-import type { TrainingGoal } from './generator'
+import type { TrainingGoal, TrainingLevel } from './generator'
 import { MAIN_GROUPS } from './labels'
 import { setCount, workingSets } from './stats'
 import type { Session, SessionExercise } from './store'
@@ -12,9 +12,14 @@ import type { Session, SessionExercise } from './store'
 
 // MARK: Volumen semanal
 
-/** Series semanales orientativas por grupo según el objetivo (series efectivas, cerca del fallo). */
-export function weeklyRange(goal: TrainingGoal): [min: number, max: number] {
-  return goal === 'hypertrophy' ? [10, 20] : goal === 'strength' ? [6, 12] : [6, 15]
+/**
+ * Series semanales orientativas por grupo según el objetivo (series efectivas, cerca del fallo). Perder grasa
+ * pide casi lo de ganar músculo: en déficit, el volumen es lo que lo conserva. En fuerza, hasta 15: con los
+ * press, el hombro suma mucho de rebote sin que sea de más. Quien empieza progresa con menos: desde 6.
+ */
+export function weeklyRange(goal: TrainingGoal, level?: TrainingLevel): [min: number, max: number] {
+  const [min, max]: [number, number] = goal === 'hypertrophy' ? [10, 20] : goal === 'fatLoss' ? [8, 20] : [6, 15]
+  return [level === 'beginner' ? Math.min(min, 6) : min, max]
 }
 
 export interface GroupVolume {

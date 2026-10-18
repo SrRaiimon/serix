@@ -29,6 +29,7 @@ const equipmentById = new Map<string, string>()
 export function rememberEquipment(list: { id: string; equipment: string }[]) {
   for (const e of list) equipmentById.set(e.id, e.equipment)
 }
+export const equipmentOf = (exerciseId: string) => equipmentById.get(exerciseId)
 
 /**
  * El siguiente peso de mancuerna que existe, en kg. Hasta 10 kg van de 1 en 1. Desde ahí hay dos series: de 2 en 2
@@ -190,7 +191,8 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
   }
   if (completed || easy) {
-    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.map((x) => x.weight)))
+    // Solo las series de trabajo: el calentamiento (redondeado a 2,5) y los drop sets no dicen qué juego tienes.
+    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
     const next = weight + progressionStep(ex.muscle, unit, ex.exerciseId, weight, used)
     const reps = ex.progression === 'double' ? ex.repsMin : ex.repsMax
     return { sets: Array.from({ length: count }, () => blank(next, reps)), auto: { kind: 'up', from: weight, to: next, mode: ex.progression } }

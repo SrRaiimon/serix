@@ -1,5 +1,5 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
-import { lazy, Suspense, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
 import { fillBodyweights } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
@@ -146,21 +146,26 @@ function Main() {
   // La pantalla puede tardar en pintarse (se carga aparte; en la primera visita, con el catálogo): se espera.
   const onboarded = !!data.settings.onboarded
   const place = `${onboarded}:${route.join('/')}`
-  const [firstPlace] = useState(place)
+  // Solo el primer pintado no cuenta (la app recién abierta): volver luego a esa misma pantalla, sí.
+  const mounted = useRef(false)
   useEffect(() => {
-    if (place === firstPlace) return
+    if (!mounted.current) { mounted.current = true; return }
     const start = Date.now()
     const lost = () => !document.activeElement || document.activeElement === document.body
+    // El título visible: mientras la pantalla nueva se carga, la anterior sigue en el DOM pero oculta (Suspense)
+    // y su h1 no admite el foco. Se insiste hasta que el foco está de verdad en el nuevo.
+    const visible = () => [...document.querySelectorAll<HTMLElement>('main h1')].find((h) => h.getClientRects().length > 0 && getComputedStyle(h).visibility !== 'hidden' && !h.closest('[hidden]'))
+    let target: HTMLElement | undefined
     const id = setInterval(() => {
-      if (!lost() || Date.now() - start > 10000) return clearInterval(id)
-      const h = document.querySelector<HTMLElement>('main h1')
-      if (!h) return
-      clearInterval(id)
+      if (Date.now() - start > 10000 || (target && document.activeElement === target) || (!target && !lost())) return clearInterval(id)
+      const h = visible()
+      if (!h || (!lost() && document.activeElement !== target)) return
       if (!h.hasAttribute('tabindex')) h.tabIndex = -1
+      target = h
       h.focus({ preventScroll: true })
     }, 50)
     return () => clearInterval(id)
-  }, [place, firstPlace])
+  }, [place])
   // Accesos directos del icono (manifest): #/go/free y #/go/next empiezan un entrenamiento; #/go/food
   // abre el buscador de la comida que toca.
   useEffect(() => {

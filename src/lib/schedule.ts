@@ -50,3 +50,20 @@ export function trainingCalendar(days: number[], time: string, title: string, al
     'END:VEVENT', 'END:VCALENDAR', '',
   ].join('\r\n')
 }
+
+/**
+ * Si ya están hechos los entrenos de la semana (lunes a domingo) sin contar uno de hoy: entonces hoy es
+ * descanso y otro entreno, opcional. Lo usan Inicio, Comidas, Rutinas y el entrenador, para que no digan
+ * cosas distintas (antes la semana decía «¡cumplido!» y Rutinas seguía con «Te toca hoy»).
+ */
+export function weekDone(data: { sessions: { start: number; end?: number }[]; settings: Pick<Settings, 'weeklyGoal'> }, now = Date.now()): boolean {
+  const monday = new Date(now)
+  monday.setHours(0, 0, 0, 0)
+  monday.setDate(monday.getDate() - weekdayIndex(monday))
+  const today = new Date(now)
+  today.setHours(0, 0, 0, 0)
+  const done = data.sessions.filter((s) => s.end !== undefined && s.start >= monday.getTime())
+  if (done.some((s) => s.start >= today.getTime())) return false
+  return data.settings.weeklyGoal > 0 && done.length >= data.settings.weeklyGoal
+}
+

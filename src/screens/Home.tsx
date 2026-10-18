@@ -1,7 +1,7 @@
 import { CalendarCheck, Camera, Check, Flame, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
-import { dayPlan, weekdayIndex } from '../lib/schedule'
+import { dayPlan, weekDone, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
 import { newsDue } from '../lib/newsDue'
 import { photoDue, streakAtRisk, weighDue } from '../lib/reminders'
@@ -185,7 +185,8 @@ function FoodTodayCard() {
           {/* Si hoy cuenta como día de entreno (o se acaba de empezar uno), se dice: si no, el objetivo cambia sin explicación. */}
           {!!goals?.shift && <span className="tiny muted">{goals.shift > 0
             ? t(`Día de entreno: +${int(goals.shift)} kcal`, `Training day: +${int(goals.shift)} kcal`)
-            : t(`Sin entreno de momento: −${int(-goals.shift)} kcal`, `No workout yet: −${int(-goals.shift)} kcal`)}</span>}
+            : weekDone(data) ? t(`Día de descanso: −${int(-goals.shift)} kcal`, `Rest day: −${int(-goals.shift)} kcal`)
+              : t(`Sin entreno de momento: −${int(-goals.shift)} kcal`, `No workout yet: −${int(-goals.shift)} kcal`)}</span>}
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
           <span className="small muted">
             {goals ? [
@@ -213,15 +214,14 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   const forgotten = forgottenGroups(sessions)[0]
   // Con el objetivo de la semana ya cumplido, un entreno más es opcional: se dice y el botón pasa a secundario
   // (antes la semana decía «¡cumplido!» y aquí seguía «Empezar» como si tocara).
-  const weekStart = startOfWeek(Date.now()).getTime()
-  const weekDone = !trainedToday && sessions.filter((s) => s.start >= weekStart).length >= (data.settings.weeklyGoal ?? Infinity)
-  const optional = weekDone || (!!plan && !plan.today && !trainedToday)
+  const done = weekDone(data)
+  const optional = done || (!!plan && !plan.today && !trainedToday)
   return (
     <section className="hero" aria-labelledby="next-workout">
       <span className="hero-ribbon" aria-hidden="true" />
-      <span className="small clamp-1 hero-meta">
+      <span className="small clamp-2 hero-meta">
         <span className="sr-only">{t('Siguiente entrenamiento', 'Next workout')}: </span>
-        {weekDone ? t('Objetivo de la semana cumplido · uno más es opcional', 'Weekly goal reached · one more is optional')
+        {done ? t('Semana cumplida · este es opcional', 'Week done · this one is optional')
           : plan && !trainedToday ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
           : t(`Hoy descansas · el próximo, el ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`, `Rest day · next one on ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`))
           : routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}

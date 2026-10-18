@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { LIFTS_531, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
 import { exercise, session, set } from './helpers'
+import { warmupSets } from '../src/lib/warmup'
 
 const base = { exerciseId: 'bench', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12 }
 const shape = (p: ReturnType<typeof plan>) => p?.sets.map((s) => `${s.weight}x${s.reps}${s.kind ? ':' + s.kind : ''}`)
@@ -160,3 +161,14 @@ test('mancuernas y kettlebells: suben al siguiente peso que existe, por material
   assert.equal(progressionStep('pectorals', 'lb', 'Incline_Dumbbell_Press', 50), progressionStep('pectorals', 'lb'))
 })
 
+
+test('mancuernas: el calentamiento va a pesos que existen y no cambia la serie de la subida', () => {
+  rememberEquipment([{ id: 'Incline_Dumbbell_Press', equipment: 'dumbbell' }])
+  // Con 20 kg de trabajo, el calentamiento era 10 y 15 (redondeo a 2,5): 15 no existe en un juego de 2 en 2.
+  const ramp = warmupSets(20, 'kg', undefined, false, 'Incline_Dumbbell_Press').map((w) => w.weight)
+  assert.ok(ramp.every((w) => w < 10 || w % 2 === 0), ramp.join(', '))
+  // Y aunque el historial tenga un calentamiento de 15 (de antes), la subida de 20 sigue la serie de 2 en 2.
+  const sessions = [16, 18, 20].map((w, i) => session(i * 4, [exercise('Incline_Dumbbell_Press', [{ ...set(15, 4), warmup: true }, set(w, 12), set(w, 12), set(w, 12)], { muscle: 'pectorals' })]))
+  const p = plan({ exerciseId: 'Incline_Dumbbell_Press', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12, progression: 'double' }, sessions[2].exercises[0].sets.filter((s) => !s.warmup), sessions, 'kg')
+  assert.equal(p?.sets[0].weight, 22)
+})

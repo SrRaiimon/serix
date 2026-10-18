@@ -353,7 +353,7 @@ function ExerciseBlock({ sessionId, exercise, index, total, slot, nextName, unit
   // Calentamiento: rampa hasta el peso de la primera serie efectiva (sustituye al pendiente que hubiera).
   const workKg = exercise.sets.find((s) => !s.warmup && s.weight > 0)?.weight ?? 0
   const addWarmup = () => edit((e) => {
-    const sets = warmupSets(workKg, unit, barbell ? barKg : undefined, fromFloor(exercise.exerciseId))
+    const sets = warmupSets(workKg, unit, barbell ? barKg : undefined, fromFloor(exercise.exerciseId), exercise.exerciseId)
     e.sets = [
       ...sets.map((w) => ({ id: crypto.randomUUID(), weight: w.weight, reps: w.reps, done: false, warmup: true })),
       ...e.sets.filter((s) => !s.warmup || s.done),

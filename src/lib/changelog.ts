@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.95',
+    items: [
+      ['Con la semana cumplida, toda la app lo sabe: Inicio y Rutinas dejan el siguiente como opcional, Comidas lo cuenta como día de descanso y el entrenador no propone suavizarla.', 'Once your week is done, the whole app knows: Home and Routines make the next one optional, Food counts it as a rest day, and the coach no longer suggests easing it.'],
+      ['El entrenador ya no corrige un programa recién creado ni cuenta el cardio como series de fuerza: espera a que lo lleves dos semanas.', 'The coach no longer corrects a brand-new program or counts cardio as strength sets: it waits until you have followed it for two weeks.'],
+      ['Las mancuernas siguen en pesos que existen también tras calentar.', 'Dumbbells stay on weights that exist after warming up too.'],
+      ['Con teclado o lector de pantalla, el foco llega al título también en Rutinas, Comidas, Perfil y al volver a Inicio.', 'With a keyboard or screen reader, focus reaches the title in Routines, Food, Profile and when going back to Home too.'],
+    ],
+  },
+  {
     version: '0.0.94',
     items: [
       ['Si ya has cumplido los entrenos de la semana, Inicio te lo dice y el siguiente queda como opcional.', 'If you have already hit your workouts for the week, Home says so and the next one is optional.'],
@@ -316,7 +325,6 @@ export const CHANGELOG: Release[] = [
 
 export { compareVersions } from './versions'
 
-/** Lo nuevo desde la última versión vista (como mucho las 3 últimas); sin haber visto ninguna, solo la actual. */
 /** Los cambios internos (no se notan al usar la app) empiezan así; no valen como titular. */
 const INTERNAL = /^Por dentro:/
 
@@ -330,6 +338,7 @@ export function headline(releases: Release[]): [es: string, en: string] | undefi
   return items.find(([es]) => !INTERNAL.test(es)) ?? items[0]
 }
 
+/** Lo nuevo desde la última versión vista (todas, para elegir el titular); sin haber visto ninguna, solo la actual. */
 export function unseenReleases(seen: string | undefined, current: string): Release[] {
   const upTo = CHANGELOG.filter((r) => compareVersions(r.version, current) <= 0)
   if (!seen) return upTo.slice(0, 1)
