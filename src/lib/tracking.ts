@@ -38,6 +38,21 @@ export const trackingOf = (e: { tracking?: Tracking }): Tracking => e.tracking ?
 
 export const defaultTargetSeconds = 45
 
+/** Objetivo de las series por tiempo en los programas generados (lo que se guarda al crear el programa). */
+export const PROGRAM_TARGET_SECONDS = 60
+
+/**
+ * Segundos estimados de un ejercicio: ~45 s por serie de fuerza, el objetivo en las de tiempo, ~10 min en las de
+ * distancia, más el descanso de cada serie y ~2,5 min para prepararlo (cargar discos, ajustar la máquina, calentar).
+ * La única cuenta de duración: la usan la app (routineMinutes) y el generador (dayMinutes), para que el programa
+ * dure lo que dice la app que dura.
+ */
+export function exerciseSeconds(e: { sets: number; rest: number; tracking?: Tracking; targetSeconds?: number }, rest = e.rest): number {
+  const t = trackingOf(e)
+  const work = t === 'time' ? (e.targetSeconds ?? defaultTargetSeconds) : t === 'distance_time' ? 600 : 45
+  return e.sets * (work + rest) + 150
+}
+
 // MARK: Entrada de tiempo tipo "microondas": los dígitos se rellenan por la derecha (1,3,0 → 1:30).
 
 export function digitsToSeconds(digits: string): number {

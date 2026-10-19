@@ -185,17 +185,26 @@ const dialogStack: object[] = []
 
 let liveRegion: HTMLElement | undefined
 /**
- * Lo dice el lector de pantalla. Una sola zona fija, colgada de body y fuera de lo que una hoja vuelve inerte;
- * se vacía y se escribe en otro turno para que se anuncie aunque el texto se repita (o la zona sea nueva).
+ * La zona de avisos, creada vacía al cargar la app (no con el primer aviso: VoiceOver en iOS no lee el primer cambio
+ * de una zona recién puesta).
  */
-export function announce(text: string) {
-  if (!liveRegion) {
+function liveZone(): HTMLElement | undefined {
+  if (!liveRegion && typeof document !== 'undefined') {
     liveRegion = document.createElement('div')
     liveRegion.className = 'sr-only'
     liveRegion.setAttribute('role', 'status')
     document.body.append(liveRegion)
   }
-  const region = liveRegion
+  return liveRegion
+}
+if (typeof document !== 'undefined') liveZone()
+/**
+ * Lo dice el lector de pantalla. Una sola zona fija, colgada de body y fuera de lo que una hoja vuelve inerte;
+ * se vacía y se escribe en otro turno para que se anuncie aunque el texto se repita (o la zona sea nueva).
+ */
+export function announce(text: string) {
+  const region = liveZone()
+  if (!region) return
   region.textContent = ''
   setTimeout(() => { region.textContent = text }, 60)
 }

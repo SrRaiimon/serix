@@ -226,7 +226,9 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   return (
     <span className="ex-last">
       {/* Dominadas, fondos…: el peso es el lastre, con su «+» como en el entreno. */}
-      <strong>{top.weight > 0 ? `${planned.bodyweight !== undefined ? '+' : ''}${weight(top.weight, unit)} × ${reps}` : `${reps} reps`}</strong>
+      {/* El peso arriba y las repeticiones debajo: en una línea («57,5 kg × 10/9/8/7») le quitaba el sitio al nombre. */}
+      <strong>{top.weight > 0 ? `${planned.bodyweight !== undefined ? '+' : ''}${weight(top.weight, unit)}` : `${reps} reps`}</strong>
+      {top.weight > 0 && <span className="tiny">× {reps}</span>}
       <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>
     </span>
   )

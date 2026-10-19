@@ -15,43 +15,41 @@ pasan a cada evaluador la vez siguiente.
 | 0.0.92 | 8,9 | 9,1 | 8,9 | 9,7 | 9,2 (9,15) |
 | 0.0.94 | 9,0 | 9,2 | 9,1 | 9,8 | 9,3 (9,28) |
 | 0.0.96 | 9,2 | 9,3 | 9,2 | 9,5 | 9,3 (9,30) |
+| 0.0.99 | 9,3 | 9,4 | 9,3 | 9,7 | 9,4 (9,43) |
 
-## Pendientes tras 0.0.96 (resueltos desde 0.0.94: semana cumplida coherente, peso corporal completo con
-## negativas y gemelos, menú del ejercicio en tres, «descarga», biblioteca por niveles, un botón de programa,
-## nórdico y una bisagra por día, fuerza con un pesado por día, inert por recuento, avisos y foco, iconos SW)
-## Sin Lighthouse ni axe instalados: perf-a11y mide con Chrome por CDP (scripts en el scratchpad, panel3-perf/).
+## Pendientes tras 0.0.99 (resueltos desde 0.0.96: detalle = entreno con calentamiento, equilibrio por semana,
+## «movidos», tiempo por minutos con relleno, swing como bisagra, proteína con tope y suelo, sentadilla 2× en
+## fuerza, entreno modal con h1, foco al marcar, avisos por announce, biblioteca h2, campos a 44 px)
+## Sin Lighthouse ni axe instalados: perf-a11y mide con Chrome por CDP (scripts en el scratchpad, panel4-perf/).
 
-### serix-ux (9,2)
-- Detalle de rutina y entreno no proponen lo mismo: «57,5 × 10» en todas frente a 10/9/8 de la última vez;
-  el detalle enseña calentamiento que el entreno no trae; «× 10» y «Meta: 10 reps» repetidos.
-- Progreso › Músculos: «Series por grupo (7 días)» y «Equilibrio muscular (4 semanas)» cuentan distinto;
-  56:24 cuádriceps/isquios sale como «Bien equilibrado».
-- Descarga escondida en Ajustes del ejercicio aunque Progreso promete proponerla; 13 «sin mejorar» y el
-  entrenador solo propone 2 cambios; «una suave al final» en la tarjeta de Bloque.
-- Volumen con dos verbos («movido» / «levantados»); «Instalar en el móvil» dentro de PROGRAMA en Perfil.
-- Calorías de Inicio saltan 2340 → 2970 al empezar un entreno opcional; botones del entrenador en 2 líneas.
+### serix-ux (9,3)
+- Progreso › Músculos: «Series por grupo (7 días)» deja fuera el lunes anterior y avisa «por debajo» con la semana
+  a medias; el equilibrio (4 semanas) dice «bien equilibrado».
+- Comidas: un lunes de entreno planificado resta 360 kcal hasta pulsar Empezar (salto de 630 kcal).
+- Series: Inicio/Rutinas/detalle «19» y el entreno «0 de 22» (cuenta el calentamiento).
+- Detalle de rutina a 375 px: nombres cortados por la columna de la derecha.
+- Textos: «1RM estimado» en la tarjeta de estancado (resto «máx. estimado»); «+ 1 suave» en Bloque; 37,5 t
+  repetido en Inicio; «Última vez: 12 oct» frente a «hace 6 días»; botón del entrenador colocado distinto.
 
-### serix-code (9,3)
-- `generator.ts` BACKPACK_LOAD excluye la mochila también con bandas: Torso B con tres remos y sin brazos.
-- `warmup.ts:33` repite la serie de mancuernas sin `used` (juego de 2,5 → calentamiento de 16 kg).
-- «Perder grasa» a 45 min: torso sin brazos (acondicionamiento protegido) sin test que lo fije.
-- `PULLUP` acepta asistidas y negativas pese al comentario: una asistida bloquea la supina.
-- `mergeList` `{...out[i], ...x}` resucita campos quitados a propósito; zona role=status inerte con hoja abierta.
-- Test de propiedades de los 6000 días (todos los materiales); tests de useDialog y foco; ExerciseBlock a su archivo.
+### serix-code (9,4)
+- `nutrition.ts:481` suelo de 1200/1500 por encima del mantenimiento (60 años, 45 kg → superávit «para perder»).
+- `FoodGoals.tsx` dice 2,2 g/kg y `computeGoals` recorta al 35 %; si eliges 2,2 a mano, sin tope.
+- `generator.ts` dayMinutes duplica routineMinutes; tests con 10 % y código con 3 min; `Math.round(60/3.4)` viejo.
+- `withWarmup`/`plannedWarmup` sin test; `repeatSession` sin calentamiento; finishedSessions en cada vuelta.
+- `fillTime`: principiante a 75-90 min no llega (73-77 min); test solo de fatLoss en gimnasio.
+- Foco/inert de App.tsx sin test; Food.tsx (805), Progress.tsx (789), Profile.tsx (750) grandes.
 
-### serix-coach (9,2)
-- «Perder grasa»: principiante 90 min ~62 min reales; intermedio = avanzado; avanzado 6 series/sem de
-  grupos grandes; peso corporal 45 min sin femoral ni tirón vertical.
-- HINGE sin swing: con kettlebell swing + peso muerto a una pierna (el de Pierna B sin carga).
-- Proteína fija 2,2 g/kg en dietas muy bajas (1160 kcal → 70 g H); sin suelo ~1200 kcal.
-- Gimnasio 45 min: 6 series/sem pecho y espalda, sin laterales, 39 min; «General» con peso muerto a 8-12.
-- Fuerza avanzado: sentadilla pesada 1×/sem; prensa + hack tras el peso muerto; sesiones 65/79 min con 60/75.
-- Variantes con carga a medias: puente sin peso con mancuernas; zancada y peso muerto sin carga con kettlebell.
+### serix-coach (9,3)
+- Sin mínimo semanal por músculo: tríceps 3 series/sem (hipertrofia intermedio 5 días), kettlebell fatLoss tríceps 2,
+  gemelo 2, femoral 15; avanzado fatLoss pecho y hombro 8.
+- `fillTime` en principiante fatLoss 90 min: 30 series/sesión; techo ~18 y el resto, cardio.
+- Peso corporal fatLoss 45 min: 0 femoral y 0 core a la semana.
+- `lowerB` (no fuerza): peso muerto + prensa + hack; prensa en las dos piernas del híbrido de 5 días.
+- Intermedio 3 días = PPL (1×/sem por músculo); `trainingShift` baja de 1200 a 1020 kcal los días de descanso.
+- Kettlebell: zancada sin peso y remo con mochila teniendo la pesa (BACKPACK_LOAD sin el remo).
 
-### serix-perf-a11y (9,5)
-- Pantalla del entreno (`.fullscreen`, App.tsx:204-218) sin inert sobre main/TabBar/ActiveBar: 21 de 120 Tab
-  caen en Inicio tapado; el entreno no tiene encabezado propio.
-- `WorkoutSet.tsx:115/130` blur() al marcar serie: el foco cae en BODY (solo si está en un input).
-- `UndoToast.tsx` crea su role=status con el texto.
-- Cabeceras de nivel de la biblioteca como div (usar h2.list-header); al elegir programa el foco cae en BODY.
-- Campos del entreno a 40 px (`.set-label`, `.set-input`), nombre del entreno 33 px.
+### serix-perf-a11y (9,7)
+- Al eliminar una serie el foco cae en BODY (`useDialog` devuelve el foco a un botón que ya no existe).
+- `announce()` crea la zona role=status en el primer aviso: crearla vacía al arrancar.
+- Botones a 36-38 px en el entreno (`.icon-btn`, «Terminar», «Añadir serie», ±2,5 kg), `.undo-toast button` y
+  la hoja del programa (Atrás, minutos).

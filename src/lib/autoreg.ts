@@ -28,11 +28,21 @@ export interface GroupVolume {
 }
 
 /**
- * Series de los últimos 7 días por grupo principal: 1 por serie del músculo principal y 0,5 por
- * cada secundario (el criterio habitual de series fraccionadas).
+ * Semanas con las que se hace la media (hasta 4): con menos historial, las que hay. Con 7 días a secas, un lunes
+ * dejaba fuera el entreno del lunes anterior y quien cumplía su plan salía «por debajo».
+ */
+export function volumeWeeks(sessions: Session[], now = Date.now()): number {
+  const first = sessions.reduce((min, s) => Math.min(min, s.start), now)
+  return Math.min(4, Math.max(1, Math.ceil((now - first) / (7 * 86400000))))
+}
+
+/**
+ * Series por semana y grupo principal, de media en las últimas semanas (volumeWeeks): 1 por serie del músculo
+ * principal y 0,5 por cada secundario (el criterio habitual de series fraccionadas).
  */
 export function weeklyGroupSets(sessions: Session[], secondaryOf: (exerciseId: string) => string[], now = Date.now()): GroupVolume[] {
-  const since = now - 7 * 86400000
+  const weeks = volumeWeeks(sessions, now)
+  const since = now - weeks * 7 * 86400000
   const load = new Map<string, number>()
   for (const s of sessions) {
     if (s.start < since || s.start > now) continue
@@ -43,7 +53,7 @@ export function weeklyGroupSets(sessions: Session[], secondaryOf: (exerciseId: s
       for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load.set(m, (load.get(m) ?? 0) + n / 2)
     }
   }
-  return MAIN_GROUPS.map(([name, muscles]) => ({ name, sets: Math.round(muscles.reduce((t, m) => t + (load.get(m) ?? 0), 0) * 2) / 2 }))
+  return MAIN_GROUPS.map(([name, muscles]) => ({ name, sets: Math.round((muscles.reduce((t, m) => t + (load.get(m) ?? 0), 0) / weeks) * 2) / 2 }))
 }
 
 // MARK: Autorregulación por RPE

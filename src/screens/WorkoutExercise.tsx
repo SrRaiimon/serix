@@ -282,7 +282,16 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         return (
           <SetRow key={set.id} set={set} label={label} previous={prev} current={set.id === currentSet} context={setContext}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
-            onDelete={() => withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))}
+            onDelete={() => {
+              withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))
+              // El botón que tenía el foco (el de la serie) ya no existe: a la serie de al lado o a «Añadir serie»,
+              // no al principio de la página (con teclado o lector no se llegaba al «Deshacer»).
+              requestAnimationFrame(() => {
+                const card = document.getElementById(`ex-${exercise.id}`)
+                const target = card?.querySelector<HTMLElement>('.set-label') ?? card?.querySelector<HTMLElement>('.add-set')
+                target?.focus()
+              })
+            }}
             rpe={{
               open: rpeFor === set.id,
               ask: () => on.askRpe(set.id),
@@ -313,7 +322,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         )
       })}
 
-      <button className="nav-btn" style={{ justifyContent: 'center', fontWeight: 600 }} onClick={() => edit((e) => {
+      <button className="nav-btn add-set" style={{ justifyContent: 'center', fontWeight: 600 }} onClick={() => edit((e) => {
         const last = [...e.sets].reverse().find((s) => s.kind !== 'drop') ?? e.sets[e.sets.length - 1]
         const fresh = (side?: 'L' | 'R'): SetEntry => ({
           id: crypto.randomUUID(), weight: last?.weight ?? 0, reps: last?.reps ?? 0, done: false, warmup: false,
@@ -470,8 +479,8 @@ function StallBox({ best, unit, onDeload, onVariants }: { best: number; unit: Un
       {open && (
         <>
           <span className="small">
-            {t(`Tu mejor marca: 1RM estimado de ~${int(fromKg(best, unit))} ${unit}. Una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
-              `Your best: estimated 1RM of ~${int(fromKg(best, unit))} ${unit}. A deload session (fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
+            {t(`Tu mejor marca: máx. estimado de ~${int(fromKg(best, unit))} ${unit}. Una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
+              `Your best: est. max of ~${int(fromKg(best, unit))} ${unit}. A deload session (fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
           </span>
           <div className="row" style={{ gap: 8 }}>
             <button className="btn small secondary" onClick={onDeload}>{t('Hacer descarga', 'Deload')}</button>

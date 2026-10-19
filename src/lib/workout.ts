@@ -218,18 +218,18 @@ function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
 /** Lo que propondrá cada ejercicio al empezar la rutina (los mismos cálculos), para enseñarlo antes. */
 export function previewRoutine(routine: Routine, d: AppData): SessionExercise[] {
   const history = finishedSessions(d)
-  return withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit))), d)
+  return withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit))), d, history)
 }
 
 /**
  * El calentamiento en series, en el primer ejercicio pesado del día (los siguientes ya llegan calientes). Lo
  * mismo en el detalle de la rutina y al empezarla: antes el detalle enseñaba una rampa que el entreno no traía.
  */
-function withWarmup(list: SessionExercise[], d: AppData): SessionExercise[] {
+export function withWarmup(list: SessionExercise[], d: AppData, history = finishedSessions(d)): SessionExercise[] {
   const unit = d.settings.unit
   const bar = (e: SessionExercise) => (BARBELL_EQUIPMENT.has(equipmentOf(e.exerciseId) ?? '') ? d.settings.barKg ?? toKg(BARS[unit][0], unit) : undefined)
   for (const e of list) {
-    const ramp = plannedWarmup(e, unit, bar(e), lastSets(e.exerciseId, finishedSessions(d)).map((x) => x.weight))
+    const ramp = plannedWarmup(e, unit, bar(e), lastSets(e.exerciseId, history).map((x) => x.weight))
     if (!ramp.length) continue
     e.sets = [...ramp.map((w) => ({ id: uid(), weight: w.weight, reps: w.reps, done: false, warmup: true })), ...e.sets]
     break
@@ -247,7 +247,7 @@ export function startRoutine(routine: Routine) {
       routineId: routine.id,
       start: Date.now(),
       notes: '',
-      exercises: withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))), d),
+      exercises: withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))), d, history),
     })
   })
   openWorkout()
@@ -267,11 +267,12 @@ export function repeatSession(past: Session) {
       ...(past.routineId && d.routines.some((r) => r.id === past.routineId) ? { routineId: past.routineId } : {}),
       start: Date.now(),
       notes: '',
-      exercises: past.exercises.map((e) => blockDeload(d, sessionExercise({
+      // Con el calentamiento, como al empezar una rutina.
+      exercises: withWarmup(past.exercises.map((e) => blockDeload(d, sessionExercise({
         exerciseId: e.exerciseId, name: e.name, muscle: e.muscle, rest: e.rest, repsMin: e.repsMin, repsMax: e.repsMax,
         sets: Math.max(1, e.sets.filter((x) => !x.warmup && x.kind !== 'drop' && x.side !== 'R').length),
         tracking: e.tracking, targetSeconds: e.targetSeconds, groupId: e.groupId,
-      }, history))),
+      }, history))), d, history),
     })
   })
   openWorkout()

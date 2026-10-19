@@ -222,7 +222,7 @@ function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): N
   if (opts.burned && !goals.proteinOnly) {
     // El factor de actividad ya cuenta los entrenos («Entrenas 3-5 días»): para no sumarlos dos veces,
     // la base es la de un día sin entrenar y cada día se suma lo que gastó su entreno.
-    const rest = restDayKcal(goals, opts.burnedDaily)
+    const rest = Math.max(restDayKcal(goals, opts.burnedDaily), dayFloor(goals))
     const burned = opts.burned.get(day) ?? 0
     const shift = rest - goals.kcal + burned
     return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: burned > 0, shift }
@@ -230,7 +230,8 @@ function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): N
   if (!opts.training || goals.proteinOnly) return { ...goals, shift: 0 }
   const { up, down } = trainingShift(goals.kcal, opts.training.perWeek)
   const training = opts.training.days.has(day)
-  const shift = training ? up : -down
+  // El día de descanso tampoco baja del suelo (1200 kcal con 6 días de entreno daban 1020 los de descanso).
+  const shift = training ? up : -Math.min(down, Math.max(0, goals.kcal - dayFloor(goals)))
   return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training, shift }
 }
 
@@ -260,6 +261,13 @@ export function dayGoalOptions(data: {
 }, now = Date.now()): DayGoalOptions {
   const carryOver = data.settings.nutritionCarryOver !== false
   if (data.settings.nutritionTrainingSplit === false) return { carryOver }
+  // Sin días marcados, hoy cuenta ya como de entreno si es tu costumbre: 3 de las 4 últimas semanas entrenaste este
+  // mismo día. Si no, un lunes de entreno restaba 360 kcal hasta pulsar Empezar (y saltaba 630 al empezar).
+  const today = dayKey(now)
+  const usual = !data.settings.trainingDays?.length && [1, 2, 3, 4].filter((w) => {
+    const day = dayKey(now - w * 7 * 86400000)
+    return data.sessions.some((s) => s.end !== undefined && dayKey(s.start) === day)
+  }).length >= 3
   if (data.settings.nutritionBurned) {
     const burned = new Map<string, number>()
     for (const s of data.sessions) {
@@ -272,10 +280,12 @@ export function dayGoalOptions(data: {
     const recent = [...burned].filter(([d]) => d >= since).map(([, k]) => k)
     const kg = weightOn(data, now) ?? 70
     const perSession = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 2.5 * kg
+    if (usual && !burned.has(today)) burned.set(today, perSession)
     return { carryOver, burned, burnedDaily: (perSession * data.settings.weeklyGoal) / 7 }
   }
   const days = new Set(data.nutrition.trainingDays ?? [])
   for (const s of data.sessions) days.add(dayKey(s.start))
+  if (usual) days.add(today)
   // Los días de la semana que tienes marcados para entrenar (Perfil → Entrenamiento) cuentan ya como de
   // entreno de hoy en adelante: si no, hoy salía «día de descanso» hasta terminar el entreno.
   for (let i = 0; i < 7 && data.settings.trainingDays?.length; i++) {
@@ -449,8 +459,26 @@ export function adjustGoals(goals: NutritionGoals, change: number): NutritionGoa
 export const PROTEIN_PER_KG = [1.6, 1.8, 2, 2.2]
 export const defaultProteinPerKg = (aim: Aim) => (aim === 'lose' ? 2.2 : 1.8)
 
-/** Calorías mínimas que se proponen. */
+/** Calorías mínimas que se proponen (si no pasan del mantenimiento). */
 const MIN_KCAL: Record<Sex, number> = { f: 1200, m: 1500 }
+
+/**
+ * Peso con el que se calcula la proteína: el tuyo, o con obesidad (IMC > 30) el de un IMC de 25 (con el peso total
+ * sale una cifra exagerada que no aporta nada).
+ */
+export function proteinReference(weightKg: number, heightCm: number): number {
+  const height2 = (heightCm / 100) ** 2
+  return weightKg / height2 > 30 ? 25 * height2 : weightKg
+}
+
+/** Mantenimiento (metabolismo en reposo × actividad): para avisar si no hay déficit posible. */
+export function maintenanceKcal(g: Pick<NutritionGoals, 'sex' | 'age' | 'heightCm' | 'weightKg' | 'activity'>): number | undefined {
+  const bmr = bmrOf(g)
+  return bmr && g.activity ? Math.round((bmr * g.activity) / 10) * 10 : undefined
+}
+
+/** Lo mínimo de un día (también los de descanso): el suelo, sin pasar del objetivo. Sin tus datos, nada. */
+const dayFloor = (g: Pick<NutritionGoals, 'kcal' | 'sex'>) => (g.sex ? Math.min(MIN_KCAL[g.sex], g.kcal) : 0)
 
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
 export const SEDENTARY = 1.2
@@ -477,16 +505,18 @@ export function computeGoals(input: { sex: Sex; age: number; heightCm: number; w
   const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (sex === 'm' ? 5 : -161)
   const factor = aim === 'lose' ? 0.8 : aim === 'gain' ? 1.1 : 1
   // Nunca por debajo del metabolismo en reposo ni de 1200 kcal (1500 en hombres), el suelo habitual sin
-  // supervisión médica: comer menos no ayuda a perder grasa y cuesta músculo.
-  const kcal = Math.round(Math.max(bmr * activity * factor, bmr, MIN_KCAL[sex]) / 10) * 10
+  // supervisión médica: comer menos no ayuda a perder grasa y cuesta músculo. El suelo no pasa del mantenimiento:
+  // a una mujer de 60 años y 45 kg (mantiene con ~1110) le daba 1200 «para perder», un superávit.
+  const maintenance = bmr * activity
+  const kcal = Math.round(Math.max(bmr * activity * factor, bmr, Math.min(MIN_KCAL[sex], maintenance)) / 10) * 10
   // Con obesidad (IMC > 30) la proteína se calcula con el peso de un IMC de 25: con el peso total sale
   // una cifra exagerada que no aporta nada.
-  const height2 = (heightCm / 100) ** 2
-  const reference = weightKg / height2 > 30 ? 25 * height2 : weightKg
-  // La de por defecto, como mucho el 35 % de las calorías (sin bajar de 1,8 g/kg): con dietas muy bajas, 2,2 g/kg
-  // se comía los hidratos (1160 kcal → 121 g de proteína y 70 de hidratos). La que eliges tú, tal cual.
-  const protein = Math.round(input.proteinPerKg !== undefined ? reference * input.proteinPerKg
-    : Math.max(Math.min(reference * defaultProteinPerKg(aim), (kcal * 0.35) / 4), reference * 1.8))
+  const reference = proteinReference(weightKg, heightCm)
+  // Como mucho el 35 % de las calorías (sin bajar de 1,8 g/kg, o de lo elegido si es menos): con dietas muy bajas,
+  // 2,2 g/kg se comía los hidratos (1160 kcal → 121 g de proteína y 70 de hidratos). También con la elegida a mano:
+  // si no, el mismo 2,2 daba 132 g por defecto y 154 al tocarlo.
+  const perKg = input.proteinPerKg ?? defaultProteinPerKg(aim)
+  const protein = Math.round(Math.max(Math.min(reference * perKg, (kcal * 0.35) / 4), reference * Math.min(perKg, 1.8)))
   // Con pocas calorías el 25 % se queda corto (1160 kcal → 32 g, 0,58 g/kg): al menos 0,8 g por kilo de
   // referencia, que es lo que piden las hormonas; sale de los hidratos.
   const fat = Math.round(Math.max((kcal * 0.25) / 9, reference * 0.8))

@@ -138,8 +138,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
 
   const allSets = session.exercises.flatMap((e) => e.sets)
-  const done = allSets.filter((s) => s.done).length
-  const pending = allSets.length - done
+  const pending = allSets.filter((s) => !s.done).length
+  // La cuenta de arriba, sin el calentamiento: la misma que Inicio y Rutinas («19 series», no «0 de 22»).
+  const working = allSets.filter((s) => !s.warmup)
+  const done = working.filter((s) => s.done).length
 
   useScrollLock()
   // El audio se prepara cuando el móvil está libre, no al marcar la primera serie.
@@ -177,10 +179,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
         <div className="screen with-nav" style={{ paddingBottom: 140 }}>
           <div className="card">
             <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
-            {allSets.length > 0 && (
+            {working.length > 0 && (
               <>
-                <span className="small muted">{t(`${done} de ${allSets.length} series`, `${done} of ${allSets.length} sets`)}</span>
-                <Progress value={done} total={allSets.length} />
+                <span className="small muted">{t(`${done} de ${working.length} series`, `${done} of ${working.length} sets`)}</span>
+                <Progress value={done} total={working.length} />
               </>
             )}
             <BlockStatus at={session.start} />

@@ -84,7 +84,7 @@ export function CoachCard() {
             <Icon size={18} className="coach-icon" aria-hidden="true" />
             <span className="grow">
               <span className="bold" style={{ display: 'block' }}>{text.title}</span>
-              <span className="small muted">{text.detail}</span>
+              <span className="small muted" style={{ display: 'block' }}>{text.detail}</span>
               <button className="btn secondary btn-sm coach-action" onClick={() => {
                 update((d) => applyTip(d, tip))
                 showToast(t('Hecho: ya está en tus rutinas', 'Done: it is in your routines'))

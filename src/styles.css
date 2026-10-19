@@ -2719,7 +2719,8 @@ a.list-row { color: var(--text); text-decoration: none; }
 .coach-tip { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--separator); }
 .card-title + .coach-tip { border-top: 0; padding-top: 0; }
 .coach-icon { flex-shrink: 0; margin-top: 2px; color: var(--accent-text); }
-.coach-action { margin-top: 8px; max-width: 100%; text-align: left; white-space: normal; }
+/* Siempre en su propia línea, debajo del texto (corto, a veces quedaba pegado al final de la frase). */
+.coach-action { display: flex; width: fit-content; margin-top: 8px; max-width: 100%; text-align: left; white-space: normal; }
 .coach-hide { width: 30px; height: 30px; flex-shrink: 0; color: var(--text-3); }
 
 /* MARK: WOD del día (screens/Wod.tsx) */
@@ -2742,8 +2743,8 @@ a.list-row { color: var(--text); text-decoration: none; }
 /* MARK: Zonas táctiles de al menos 44 × 44 px (WCAG 2.5.8 y guía de iOS) sin cambiar el dibujo:
    un área invisible centrada en el botón. :where() no suma especificidad, así que un botón ya
    posicionado (absolute, sticky…) conserva su posición. */
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button) { position: relative; }
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button)::after {
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button) { position: relative; }
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button)::after {
   content: '';
   position: absolute;
   top: 50%;

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
-import { goalsForDay, restDayKcal, amountOf, barcodeVariants, dayOptional, stem, traffic, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
+import { dayGoalOptions, goalsForDay, maintenanceKcal, restDayKcal, amountOf, barcodeVariants, dayOptional, stem, traffic, computeGoals, fold, searchAesan, type AesanProduct, dayKey, dayTotals, doubtfulValues, matches, parseNutritionLabel, portionLabel, parseOffProduct, quickEntryAmount, rankProducts, recentFoods, searchOff, shiftDay, shownGrams, suspectValue, validBarcode, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 
 test('objetivo: Mifflin-St Jeor × actividad, ajustado al objetivo, con proteína por kilo', () => {
   // Hombre, 30 años, 178 cm, 80 kg: 10·80 + 6,25·178 − 5·30 + 5 = 1767,5 kcal en reposo.
@@ -302,4 +302,28 @@ test('objetivo: nunca por debajo del metabolismo en reposo, y proteína razonabl
   assert.ok(tiny.kcal >= Math.round(bmr / 10) * 10 - 5)
   const heavy = computeGoals({ sex: 'm', age: 40, heightCm: 175, weightKg: 130, activity: 1.375, aim: 'lose' })
   assert.equal(heavy.protein, Math.round(25 * 1.75 ** 2 * 2.2), 'con el peso de un IMC de 25')
+})
+
+test('objetivos: el suelo de calorías no pasa del mantenimiento ni lo saltan los días de descanso', () => {
+  // Mujer de 60 años, 150 cm, 45 kg y sedentaria: mantiene con ~1110 kcal. «Perder» no puede ser 1200.
+  const small = computeGoals({ sex: 'f', age: 60, heightCm: 150, weightKg: 45, activity: 1.2, aim: 'lose' })
+  assert.ok(small.kcal <= maintenanceKcal(small)!, `${small.kcal} kcal con un mantenimiento de ${maintenanceKcal(small)}`)
+  // 1200 kcal y 6 días de entreno: el día de descanso no baja de 1200.
+  const goals = computeGoals({ sex: 'f', age: 45, heightCm: 155, weightKg: 55, activity: 1.2, aim: 'lose' })
+  const rest = goalsForDay(goals, [], '2026-10-19', { carryOver: false, training: { days: new Set(), perWeek: 6 } })
+  assert.ok(rest.kcal >= 1200, `${rest.kcal} kcal el día de descanso`)
+  // La proteína elegida a mano también tiene el tope: 2,2 elegido = 2,2 por defecto.
+  const lose = { sex: 'f' as const, age: 40, heightCm: 165, weightKg: 70, activity: 1.375, aim: 'lose' as const }
+  assert.equal(computeGoals({ ...lose, proteinPerKg: 2.2 }).protein, computeGoals(lose).protein)
+})
+
+test('objetivos: hoy cuenta como día de entreno si es tu costumbre (3 de las 4 últimas semanas)', () => {
+  const now = Date.UTC(2026, 9, 19, 9)
+  const week = 7 * 86400000
+  const sessions = [1, 2, 3].map((w) => ({ start: now - w * week, end: now - w * week + 3600000 }))
+  const base = { nutrition: {}, settings: { weeklyGoal: 3 } }
+  const usual = dayGoalOptions({ ...base, sessions }, now)
+  assert.ok(usual.training?.days.has(dayKey(now)), 'tres lunes seguidos: hoy, de entreno')
+  const once = dayGoalOptions({ ...base, sessions: sessions.slice(0, 1) }, now)
+  assert.ok(!once.training?.days.has(dayKey(now)), 'una sola vez no es costumbre')
 })

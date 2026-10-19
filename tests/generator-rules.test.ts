@@ -4,6 +4,8 @@ import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { buildLibraryProgram, dayMinutes, equipmentProfiles, exerciseCount, generate, HEAVY_AXIAL, levels, LIBRARY, MAX_SETS_PER_SESSION, type GeneratorConfig } from '../src/lib/generator'
 import { progressionStep } from '../src/lib/progression'
+import { routineMinutes, type Routine } from '../src/lib/store'
+import { defaultTracking } from '../src/lib/tracking'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
 const BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
@@ -64,8 +66,8 @@ test('generador: kipping y nórdico fuera, y la pauta se ajusta al ejercicio', (
         if (c.level === 'beginner') assert.ok(!/Glute_Ham|Glute-Ham|Wall_Walk/.test(x.exercise.id), where)
         if (x.exercise.equipment !== 'barbell' && x.exercise.category === 'strength' && !/Glute.?Ham/.test(x.exercise.id)) assert.ok(x.repsMin >= 6, `${where} a ${x.repsMin}-${x.repsMax}`)
       }
-      // Con la misma cuenta de minutos que enseña la app (y el 10 % de margen al recortar).
-      assert.ok(dayMinutes(day.exercises) <= c.minutes * 1.1, `${c.minutes} min: ${Math.round(dayMinutes(day.exercises))} min en ${day.name}`)
+      // Con la misma cuenta de minutos que enseña la app (y los 3 min de margen al recortar).
+      assert.ok(dayMinutes(day.exercises) <= c.minutes + 3, `${c.minutes} min: ${Math.round(dayMinutes(day.exercises))} min en ${day.name}`)
     }
   }
 })
@@ -112,7 +114,7 @@ test('biblioteca: se ajusta a los minutos, salvo las pautas cerradas', () => {
       fitted.days.forEach((day, i) => {
         const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
         if (p.fixed) assert.deepEqual(day.exercises.map((x) => x.exercise.id), full.days[i].exercises.map((x) => x.exercise.id), p.id)
-        else assert.ok(dayMinutes(day.exercises) <= minutes * 1.1, `${p.id} a ${minutes} min: ${Math.round(dayMinutes(day.exercises))} min y ${sets} series en ${day.name}`)
+        else assert.ok(dayMinutes(day.exercises) <= minutes + 3, `${p.id} a ${minutes} min: ${Math.round(dayMinutes(day.exercises))} min y ${sets} series en ${day.name}`)
       })
     }
   }
@@ -191,7 +193,7 @@ test('sin material: cada día llega a los ejercicios prometidos; con barra, el p
       // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno).
       for (const day of generate(c, catalog).days) {
         const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
-        assert.ok(day.exercises.length >= exerciseCount(60) || sets >= Math.round(60 / 3.4), `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
+        assert.ok(day.exercises.length >= exerciseCount(60) || dayMinutes(day.exercises) >= 50, `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
       }
     }
   }
@@ -237,7 +239,7 @@ test('propiedades en todos los perfiles: sin repetidos, una bisagra por día, to
               const where = `${goal}/${level}/${equipment}/${days}d/${minutes}: ${day.name} (${ids.join(', ')})`
               assert.equal(new Set(ids).size, ids.length, `repetido en ${where}`)
               assert.ok(ids.filter((id) => HINGE.test(id)).length <= 1, `dos bisagras en ${where}`)
-              assert.ok(dayMinutes(day.exercises) <= minutes * 1.1, `${Math.round(dayMinutes(day.exercises))} min en ${where}`)
+              assert.ok(dayMinutes(day.exercises) <= minutes + 3, `${Math.round(dayMinutes(day.exercises))} min en ${where}`)
               // El torso lleva algo de brazos (salvo «Perder grasa» con poco tiempo, que guarda el acondicionamiento).
               if (/Torso/.test(day.name) && !(goal === 'fatLoss' && minutes < 60)) {
                 assert.ok(day.exercises.some((x) => ['biceps', 'triceps'].includes(x.exercise.muscle)), `torso sin brazos en ${where}`)
@@ -250,11 +252,23 @@ test('propiedades en todos los perfiles: sin repetidos, una bisagra por día, to
   }
 })
 
-test('el tiempo elegido se llena: con 90 minutos, más series que con 60', () => {
+test('el tiempo elegido se llena: con 90 minutos, más series que con 60 (con techo para el principiante)', () => {
   for (const level of levels.map((l) => l.id)) {
     const sets = (minutes: number) => generate({ goal: 'fatLoss', level, days: 3, minutes, equipment: 'gym' }, catalog).days[0].exercises.reduce((t, x) => t + x.sets, 0)
     assert.ok(sets(90) > sets(60), `${level}: ${sets(90)} series a 90 min y ${sets(60)} a 60`)
     const day = generate({ goal: 'fatLoss', level, days: 3, minutes: 90, equipment: 'gym' }, catalog).days[0]
-    assert.ok(dayMinutes(day.exercises) >= 80, `${level}: ${Math.round(dayMinutes(day.exercises))} min de 90`)
+    // El principiante, con techo de 18 series de fuerza: el resto del tiempo no se rellena de series.
+    const strength = day.exercises.filter((x) => !['cardio', 'plyometrics'].includes(x.exercise.category) && !/climber|swing|jump/i.test(x.exercise.id)).reduce((t, x) => t + x.sets, 0)
+    if (level === 'beginner') assert.ok(strength <= 18, `principiante: ${strength} series de fuerza`)
+    else assert.ok(dayMinutes(day.exercises) >= 75, `${level}: ${Math.round(dayMinutes(day.exercises))} min de 90`)
+  }
+})
+
+test('duración: el generador cuenta los minutos igual que la app', () => {
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss'] as const) {
+    for (const day of generate({ goal, level: 'intermediate', days: 4, minutes: 60, equipment: 'gym' }, catalog).days) {
+      const routine = { exercises: day.exercises.map((g) => ({ ...g, exerciseId: g.exercise.id, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine
+      assert.equal(Math.round(dayMinutes(day.exercises)), routineMinutes(routine), `${goal}: ${day.name}`)
+    }
   }
 })

@@ -1,7 +1,7 @@
 import type { Catalog, Exercise } from './catalog'
 import { t } from './i18n'
 import { isIsolation } from './isolation'
-import { defaultTracking } from './tracking'
+import { defaultTracking, exerciseSeconds, PROGRAM_TARGET_SECONDS } from './tracking'
 import type { Progression } from './store'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
@@ -79,7 +79,7 @@ const slots = {
   // El respaldo solo acepta bisagras de verdad: sin esto, sin material salían patadas de tijera como «peso muerto».
   hinge: { kind: 'compound', muscles: ['hamstrings', 'glutes'], match: /deadlift|good morning|hip thrust|bridge|swing|pull.?through|hyperextension/i, preferred: ['Barbell_Deadlift', 'Romanian_Deadlift', 'Stiff-Legged_Dumbbell_Deadlift', 'Barbell_Hip_Thrust', 'One-Arm_Kettlebell_Swings', 'Band_Good_Morning', 'Single_Leg_Glute_Bridge'] },
   legPress: { kind: 'compound', muscles: ['quads', 'glutes'], preferred: ['Leg_Press', 'Barbell_Walking_Lunge', 'Dumbbell_Lunges', 'Lunge_Pass_Through', 'Dumbbell_Step_Ups', 'Step-up_with_Knee_Raise', 'Bodyweight_Walking_Lunge'] },
-  lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], match: /lunge|split|step/i, preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Dumbbell_Rear_Lunge', 'Lunge_Pass_Through', 'Bodyweight_Walking_Lunge', 'Split_Squats'] },
+  lunge: { kind: 'accessory', muscles: ['quads', 'glutes'], match: /lunge|split|step/i, preferred: ['Dumbbell_Lunges', 'Barbell_Lunge', 'Split_Squat_with_Dumbbells', 'Dumbbell_Rear_Lunge', 'Lunge_Pass_Through', 'Bodyweight_Walking_Lunge', 'Step-up_with_Knee_Raise', 'Split_Squats'] },
   // Sin máquinas, el curl femoral de verdad es el nórdico (desde intermedio); el peso muerto a una pierna queda
   // para cuando el día no tiene ya otra bisagra (ver `hingeUsed`).
   legCurl: { kind: 'accessory', muscles: ['hamstrings'], match: /curl|glute.?ham/i, preferred: ['Lying_Leg_Curls', 'Seated_Leg_Curl', 'Ball_Leg_Curl', 'Natural_Glute_Ham_Raise', 'Floor_Glute-Ham_Raise', 'Stiff-Legged_Dumbbell_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Single_Leg_Deadlift'] },
@@ -133,21 +133,26 @@ const pushB = T(['Empuje B', 'Push B'], [['inclinePress', 1], ['shoulderPress', 
 const pullB = T(['Tirón B', 'Pull B'], [['horizontalPull', 2], ['verticalPull', 1], ['horizontalPull', 3], ['rearDelt', 1], ['biceps', 1], ['hammer', 1], ['shrug', 1], ['core', 3]])
 const legsB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['lunge', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['legPress', 1]])
 // Torso: con 6 ejercicios (60 min) entran los 6 primeros, así que los brazos se reparten entre los dos días:
-// tríceps y elevación lateral en A; bíceps y aperturas en B (antes los dos días cortaban el tríceps).
+// tríceps y elevación lateral en A; bíceps y tríceps en B (con aperturas en B, el tríceps se quedaba en 3 series
+// a la semana en el híbrido de 5 días).
 const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 0], ['shoulderPress', 0], ['verticalPull', 0], ['triceps', 0], ['lateralRaise', 0], ['biceps', 0], ['rearDelt', 0]])
-const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
+const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['hammer', 0], ['triceps', 1], ['chestFly', 0], ['lateralRaise', 1]])
 // Fuerza: banca y press militar dos veces por semana, cada uno pesado un día y de volumen el otro.
 const strengthUpperB = T(['Torso B', 'Upper B'], [['shoulderPress', 0], ['verticalPull', 1], ['chestPress', 0], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
 // Y la sentadilla dos veces: pesada el día A y frontal (de volumen) tras el peso muerto el día B, en vez de
 // prensa y hack seguidas.
 const strengthLowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['legCurl', 1], ['lunge', 1], ['calves', 1], ['core', 2], ['legPress', 0], ['legExtension', 0]])
 const lowerA = T(['Pierna A', 'Legs A'], [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
-const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
+// Pierna B: peso muerto, una sentadilla de máquina y zancada (antes peso muerto, prensa y hack seguidas, y la
+// prensa repetida con la Pierna del híbrido de 5 días).
+const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['lunge', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['legPress', 0]])
 
 function split(c: GeneratorConfig): [string, Template[]] {
   if (c.days <= 2) return [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB]]
   if (c.days === 3) {
-    return c.level === 'beginner' || c.goal === 'fatLoss'
+    // Con 3 días, cuerpo completo salvo para avanzados: cada músculo dos o tres veces por semana. El empuje / tirón /
+    // pierna de 3 días entrena cada uno una sola vez (sigue en la biblioteca para quien lo quiera).
+    return c.level !== 'advanced' || c.goal === 'fatLoss'
       ? [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB, fullBodyC]]
       : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
@@ -174,6 +179,9 @@ export function exerciseCount(minutes: number) {
   if (minutes < 85) return 7
   return 8
 }
+
+/** Tope de series de fuerza por sesión al rellenar el tiempo, por nivel. */
+const MAX_DAY_SETS: Record<TrainingLevel, number> = { beginner: 18, intermediate: 24, advanced: 28 }
 
 /** Tope de series de un mismo músculo principal en una sesión. */
 export const MAX_SETS_PER_SESSION = 10
@@ -223,7 +231,7 @@ const HINGE = /deadlift|good_morning|swing/i
 /** Dominadas de verdad (no las de ayuda ni las negativas): tras ellas, otra supina no. */
 const PULLUP = /^(?!.*(assisted|negative)).*(pull[-_]?up|chin[-_]?up)/i
 /** La mochila sustituye a las pesas: con mancuernas o pesa rusa, mejor las de verdad. */
-const BACKPACK_LOAD = /^Backpack_(Curl|Squat)$/
+const BACKPACK_LOAD = /^Backpack_(Curl|Squat|Row)$/
 
 interface PickRules {
   level?: TrainingLevel
@@ -361,18 +369,17 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
 }
 
 /**
- * Minutos de un día con la misma cuenta que enseña la app (routineMinutes en store.ts): ~45 s por serie de fuerza,
- * 60 s en las de tiempo, 10 min en las de distancia, más el descanso y ~2,5 min por ejercicio para prepararlo.
- * Antes el generador contaba series (3,4 min cada una) y la app minutos: fuerza, con descansos de 3 min, salía a
- * 65 min con 60 elegidos, y «Perder grasa» de principiante a 62 con 90.
+ * Minutos de un día con la misma cuenta que enseña la app (exerciseSeconds, también en routineMinutes). Antes el
+ * generador contaba series (3,4 min cada una) y la app minutos: fuerza, con descansos de 3 min, salía a 65 min con
+ * 60 elegidos, y «Perder grasa» de principiante a 62 con 90.
  */
 export function dayMinutes(list: GeneratedExercise[]): number {
-  return list.reduce((n, e) => n + e.sets * (setSeconds(e) + e.rest) + 150, 0) / 60
+  return list.reduce((n, e) => n + exerciseSeconds(asRoutineExercise(e)), 0) / 60
 }
-function setSeconds(e: GeneratedExercise): number {
-  const tracking = defaultTracking(e.exercise)
-  return tracking === 'time' ? 60 : tracking === 'distance_time' ? 600 : 45
-}
+/** Un ejercicio generado como quedará en la rutina (registro y objetivo de tiempo). */
+const asRoutineExercise = (e: GeneratedExercise) => ({ sets: e.sets, rest: e.rest, tracking: defaultTracking(e.exercise), targetSeconds: PROGRAM_TARGET_SECONDS })
+/** Lo que añade una serie más (para rellenar el tiempo). */
+const setSeconds = (e: GeneratedExercise) => exerciseSeconds({ ...asRoutineExercise(e), sets: 1 }) - 150 - e.rest
 
 type Chosen = { exercise: Exercise; slot: Slot }
 
@@ -456,7 +463,10 @@ function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExerc
   trim((k) => k === 'accessory' || k === 'core', 2)
   // Fuera ejercicios desde el final, primero los de una zona que ya trabaja otro: a 45 min, el torso pierde la
   // segunda espalda (dominadas tras el remo) antes que el único de brazos. Luego, si aún no cabe, cualquiera.
-  const repeated = (i: number) => picked.some((p, j) => j !== i && p.kind !== 'conditioning' && p.ex.exercise.bodyPart === picked[i].ex.exercise.bodyPart)
+  // En pierna, por músculo: el femoral o el core no se van porque haya sentadilla (con peso corporal a 45 min, cero
+  // series de femoral y de core a la semana).
+  const zone = (e: Exercise) => (e.bodyPart === 'legs' ? e.muscle : e.bodyPart)
+  const repeated = (i: number) => picked.some((p, j) => j !== i && p.kind !== 'conditioning' && zone(p.ex.exercise) === zone(picked[i].ex.exercise))
   for (const strict of [true, false]) {
     for (let i = picked.length - 1; i > 0 && over(); i--) {
       if (picked[i].kind !== 'conditioning' && (!strict || repeated(i))) picked.splice(i, 1)
@@ -473,12 +483,16 @@ function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExerc
  */
 function fillTime(picked: Picked[], minutes: number, level: TrainingLevel) {
   const cap = (k: Kind) => (k === 'compound' ? 5 : k === 'conditioning' ? 0 : 4) - (level === 'beginner' ? 1 : 0)
+  // Techo de series de fuerza por sesión: más no suma y cansa (un principiante a 90 min llegaba a 30). El tiempo que
+  // sobra queda para calentar, el cardio o irse antes.
+  const maxSets = MAX_DAY_SETS[level]
+  const strengthSets = () => picked.reduce((n, p) => n + (p.kind === 'conditioning' ? 0 : p.ex.sets), 0)
   const muscleSets = (m: string) => picked.reduce((n, p) => n + (p.ex.exercise.muscle === m ? p.ex.sets : 0), 0)
   for (const kinds of [['compound'], ['accessory', 'core']] as Kind[][]) {
     for (let changed = true; changed;) {
       changed = false
       for (const p of picked) {
-        if (!kinds.includes(p.kind) || p.ex.sets >= cap(p.kind) || muscleSets(p.ex.exercise.muscle) >= MAX_SETS_PER_SESSION) continue
+        if (!kinds.includes(p.kind) || p.ex.sets >= cap(p.kind) || muscleSets(p.ex.exercise.muscle) >= MAX_SETS_PER_SESSION || strengthSets() >= maxSets) continue
         if (dayMinutes(picked.map((x) => x.ex)) + (setSeconds(p.ex) + p.ex.rest) / 60 > minutes) continue
         p.ex.sets++
         changed = true

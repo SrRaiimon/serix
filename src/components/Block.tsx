@@ -85,7 +85,7 @@ export function BlockCard() {
         <Segmented value={String(weeks)} onChange={(v) => setWeeks(Number(v))}
           options={BLOCK_WEEKS.map((n) => ({ value: String(n), label: t(`${n} sem.`, `${n} wk`) }))} />
         <span className="tiny muted">
-          {t(`${weeks - 1} semanas de carga + 1 suave. Si dudas, 5 semanas.`, `${weeks - 1} loading weeks + 1 easy week. If unsure, 5 weeks.`)}{' '}
+          {t(`${weeks - 1} semanas de carga + 1 de descarga. Si dudas, 5 semanas.`, `${weeks - 1} loading weeks + 1 deload week. If unsure, 5 weeks.`)}{' '}
           {thisWeek ? t('Empieza esta semana.', 'Starts this week.') : t(`Empieza el lunes ${day(start).split(', ').pop()}, para no perder la primera semana.`, `Starts on Monday ${day(start).split(', ').pop()}, so the first week is not lost.`)}
         </span>
         <button className="btn secondary" onClick={() => updateSettings({ block: { start, weeks } })}>{thisWeek ? t('Empezar bloque', 'Start block') : t('Programar bloque', 'Schedule block')}</button>

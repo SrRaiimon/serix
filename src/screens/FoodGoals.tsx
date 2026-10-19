@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { Segmented, Sheet } from '../components/ui'
 import { editable, fromKg, int, parseDecimal } from '../lib/format'
 import { t } from '../lib/i18n'
-import { ACTIVITY, adjustGoals, AIMS, CARRY_OVER_MAX, computeGoals, trainingShift, defaultProteinPerKg, PROTEIN_PER_KG, activeMeals, type Aim, type Sex } from '../lib/nutrition'
+import { ACTIVITY, adjustGoals, AIMS, CARRY_OVER_MAX, computeGoals, maintenanceKcal, proteinReference, trainingShift, defaultProteinPerKg, PROTEIN_PER_KG, activeMeals, type Aim, type Sex } from '../lib/nutrition'
 import { updateSettings, useData } from '../lib/store'
 import { reminderTime } from '../lib/foodReminders'
 
@@ -46,6 +46,12 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const [keepAdjust, setKeepAdjust] = useState(true)
   const adjust = saved?.adjust && keepAdjust ? saved.adjust : 0
   const result = manual ? ownGoals : computed && adjust ? adjustGoals(computed, adjust) : computed
+  // La proteína por kilo que sale de verdad (con su tope) y si no hay déficit posible al perder grasa.
+  const reference = ready ? proteinReference(w!, h!) : 0
+  const realPerKg = computed && reference ? Math.round((computed.protein / reference) * 10) / 10 : perKgValue
+  const capped = !!computed && realPerKg < perKgValue - 0.05
+  const maintenance = computed && maintenanceKcal(computed)
+  const noDeficit = aim === 'lose' && !!computed && !!maintenance && computed.kcal >= maintenance - 50
   const save = () => {
     if (!result) return
     updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry, nutritionTrainingSplit: split, nutritionBurned: (split && burned) || undefined, foodReminders: remind || undefined })
@@ -132,9 +138,12 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
               ? t('Para perder grasa: si en 2-3 semanas no bajas de peso, quita 100-200 kcal.', 'To lose fat: if your weight has not gone down after 2-3 weeks, remove 100-200 kcal.')
               : t('Para mantener: si en 2-3 semanas tu peso cambia más de 1 kg, ajusta 100-200 kcal.', 'To maintain: if your weight changes by more than 1 kg in 2-3 weeks, adjust by 100-200 kcal.')}
           <br />
+          {/* Lo que sale de verdad (con el tope del 35 % de las calorías), no lo elegido: antes decía 2,2 y daba 1,9. */}
           {aim === 'lose'
-            ? t(`Proteína: ${editable(perKgValue)} g por kilo; al perder grasa ayuda a no perder músculo.`, `Protein: ${editable(perKgValue)} g per kg; when losing fat it helps keep muscle.`)
-            : t(`Proteína: ${editable(perKgValue)} g por kilo (con 1,6 g basta a la mayoría).`, `Protein: ${editable(perKgValue)} g per kg (1.6 g is enough for most people).`)}
+            ? t(`Proteína: ${editable(realPerKg)} g por kilo; al perder grasa ayuda a no perder músculo.`, `Protein: ${editable(realPerKg)} g per kg; when losing fat it helps keep muscle.`)
+            : t(`Proteína: ${editable(realPerKg)} g por kilo (con 1,6 g basta a la mayoría).`, `Protein: ${editable(realPerKg)} g per kg (1.6 g is enough for most people).`)}
+          {capped && ` ${t('Con estas calorías no pasa del 35 % de ellas, para dejar sitio a los hidratos.', 'With these calories it stays at 35% of them, to leave room for carbs.')}`}
+          {noDeficit && <><br /><strong>{t(`Con tus datos gastas unas ${int(maintenance!)} kcal: comer menos no es recomendable sin supervisión médica. Para perder grasa, mejor sumar actividad (caminar, entrenar).`, `With your details you burn about ${int(maintenance!)} kcal: eating less is not advisable without medical supervision. To lose fat, add activity instead (walking, training).`)}</strong></>}
         </p>
       )}
       {!manual && <p className="tiny muted" style={{ margin: 0 }}>{t('Calorías estimadas con la fórmula de Mifflin-St Jeor.', 'Calories estimated with the Mifflin-St Jeor formula.')}</p>}

@@ -17,7 +17,7 @@ import { RecoveryCard } from '../components/Recovery'
 import { YearMap } from '../components/YearMap'
 import { RepRecordsCard } from '../components/RepRecords'
 import { balanceTip, muscleBalance } from '../lib/balance'
-import { weeklyGroupSets, weeklyRange } from '../lib/autoreg'
+import { volumeWeeks, weeklyGroupSets, weeklyRange } from '../lib/autoreg'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
@@ -80,6 +80,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
   const { settings } = useData()
   const groups = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
+  const weeks = volumeWeeks(sessions)
   if (!groups.some((g) => g.sets > 0)) return null
   const [min, max] = weeklyRange(settings.goal, settings.level)
   const scale = Math.max(max * 1.25, ...groups.map((g) => g.sets))
@@ -87,7 +88,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const low = groups.filter((g) => g.sets < min).map((g) => t(...g.name).toLowerCase())
   const high = groups.filter((g) => g.sets > max).map((g) => t(...g.name).toLowerCase())
   return (
-    <Card title={t('Series por grupo (7 días)', 'Sets per group (7 days)')} icon={Dumbbell}>
+    <Card title={t('Series por semana y grupo', 'Weekly sets per group')} icon={Dumbbell}>
       <div className="volume-rows">
         {groups.map((g) => {
           const state = g.sets < min ? 'low' : g.sets > max ? 'high' : 'ok'
@@ -104,7 +105,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
         })}
       </div>
       <span className="small muted">
-        {t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
+        {weeks > 1 ? t(`Media de las últimas ${weeks} semanas.`, `Average of the last ${weeks} weeks.`) : t('Esta semana.', 'This week.')}
+        {' '}{t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
         {low.length > 0 && ` ${t(`Por debajo: ${low.join(', ')}.`, `Below: ${low.join(', ')}.`)}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
       </span>
@@ -122,7 +124,7 @@ function BalanceCard({ sessions }: { sessions: Session[] }) {
   return (
     <Card title={t('Equilibrio muscular (4 semanas)', 'Muscle balance (4 weeks)')} icon={Scale}>
       {/* En series por semana, como «Series por grupo» de arriba: así las cifras de las dos tarjetas se comparan. */}
-      <span className="small muted">{t('Series por semana (media de 4 semanas), contadas como arriba.', 'Sets per week (4-week average), counted as above.')}</span>
+      <span className="small muted">{t('Series por semana (media de 4 semanas), contadas igual que arriba.', 'Sets per week (4-week average), counted the same way as above.')}</span>
       {balance.pairs.map((p) => {
         const [a, b] = p.sets
         const total = a + b

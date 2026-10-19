@@ -110,9 +110,13 @@ export function HomeScreen() {
         <StatBand items={[
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
           { value: thisMonth.length, label: t('Este mes', 'This month') },
+          // Sin entrenos aún esta semana, lo de la pasada; salvo si ya sale en su resumen de arriba (la misma cifra
+          // dos veces): entonces, lo movido este mes.
           thisWeek.length > 0
             ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido esta semana', 'Moved this week') }
-            : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
+            : notice === 'recap'
+              ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
+              : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
 

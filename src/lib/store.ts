@@ -15,7 +15,7 @@ import { emptyNutrition, setMealSettings, type MealKey, type NutritionData, type
 // Immer no congela los datos: congelar decenas de miles de series al arrancar cuesta y la app no lo
 // necesita (los datos solo se cambian con update).
 setAutoFreeze(false)
-import { trackingOf, type Tracking } from './tracking'
+import { exerciseSeconds, type Tracking } from './tracking'
 
 // Los pesos se guardan siempre en kg; la unidad solo afecta a cómo se muestran.
 
@@ -742,19 +742,13 @@ export const lastPerformed = (d: AppData, routineId: string) =>
 
 export const routineSets = (r: Routine) => r.exercises.reduce((n, e) => n + e.sets, 0)
 /**
- * Duración estimada: ~45 s por serie de fuerza, el objetivo en las de tiempo, ~10 min en cardio y la
- * preparación. Ajustada con entrenos reales (salía corta: un programa de 16 series marcaba ~49 min y se
- * hacía en más de una hora).
+ * Duración estimada (exerciseSeconds, la misma cuenta que usa el generador). Ajustada con entrenos reales (salía
+ * corta: un programa de 16 series marcaba ~49 min y se hacía en más de una hora).
  */
 export const routineMinutes = (r: Routine) =>
-  Math.max(5, Math.round(r.exercises.reduce((n, e, i) => {
-    const t = trackingOf(e)
-    const work = t === 'time' ? (e.targetSeconds ?? 45) : t === 'distance_time' ? 600 : 45
+  Math.max(5, Math.round(r.exercises.reduce((n, e, i) =>
     // En superseries y circuitos solo se descansa tras el último ejercicio de la ronda.
-    const rest = e.groupId && r.exercises[i + 1]?.groupId === e.groupId ? 0 : e.rest
-    // Más ~2,5 min por ejercicio para prepararlo (cargar discos, ajustar la máquina, series de calentamiento).
-    return n + e.sets * (work + rest) + 150
-  }, 0) / 60))
+    n + exerciseSeconds(e, e.groupId && r.exercises[i + 1]?.groupId === e.groupId ? 0 : e.rest), 0) / 60))
 
 /**
  * Duración esperada de una rutina: la mediana de las últimas veces que se hizo (sin las que se

@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.0',
+    items: [
+      ['Comidas, más acertada: si sueles entrenar hoy, ya cuenta como día de entreno; los días de descanso no bajan de 1200 kcal (1500 en hombres); y nunca te propone comer más de lo que gastas «para perder».', 'Food, more accurate: if you usually train today it already counts as a training day; rest days never drop below 1200 kcal (1500 for men); and it never suggests eating more than you burn "to lose".'],
+      ['La proteína que ves es la que se calcula: con pocas calorías, como mucho el 35 % de ellas, también si la eliges tú.', 'The protein you see is the one calculated: on few calories, at most 35% of them, also when you choose it.'],
+      ['Programas más equilibrados: con 3 días, cuerpo completo (cada músculo varias veces por semana); tríceps también en el segundo día de torso; el segundo día de pierna ya no junta prensa y hack; y femoral y core no se pierden con poco tiempo.', 'Better balanced programs: on 3 days, full body (each muscle several times a week); triceps on the second upper day too; the second leg day no longer stacks leg press and hack squat; and hamstrings and core are kept on short sessions.'],
+      ['Los principiantes no pasan de 18 series por sesión aunque elijan mucho tiempo.', 'Beginners stay at 18 sets per session at most, even with plenty of time.'],
+      ['Progreso › Músculos: series por semana de media (hasta 4 semanas), sin avisos de «por debajo» con la semana a medias; y el entreno cuenta las series sin el calentamiento, como Inicio y Rutinas.', 'Progress › Muscles: weekly sets as an average (up to 4 weeks), no "below" warnings mid-week; and the workout counts sets without the warm-up, like Home and Routines.'],
+      ['Con teclado o lector de pantalla, al eliminar una serie el foco va a la de al lado y el primer aviso también se anuncia.', 'With a keyboard or screen reader, deleting a set moves focus to the next one and the first notice is announced too.'],
+    ],
+  },
+  {
     version: '0.0.99',
     items: [
       ['«Perder grasa» avanzado: accesorios con 15 s menos de descanso, más trabajo en el mismo tiempo y ya distinto del intermedio.', '"Lose fat" for advanced lifters: accessories with 15 s less rest, more work in the same time and now different from intermediate.'],
