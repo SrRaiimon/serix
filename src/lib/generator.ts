@@ -138,6 +138,9 @@ const upperA = T(['Torso A', 'Upper A'], [['chestPress', 0], ['horizontalPull', 
 const upperB = T(['Torso B', 'Upper B'], [['inclinePress', 0], ['verticalPull', 1], ['shoulderPress', 1], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
 // Fuerza: banca y press militar dos veces por semana, cada uno pesado un día y de volumen el otro.
 const strengthUpperB = T(['Torso B', 'Upper B'], [['shoulderPress', 0], ['verticalPull', 1], ['chestPress', 0], ['horizontalPull', 1], ['hammer', 0], ['chestFly', 0], ['triceps', 1], ['lateralRaise', 1]])
+// Y la sentadilla dos veces: pesada el día A y frontal (de volumen) tras el peso muerto el día B, en vez de
+// prensa y hack seguidas.
+const strengthLowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['squat', 1], ['legCurl', 1], ['lunge', 1], ['calves', 1], ['core', 2], ['legPress', 0], ['legExtension', 0]])
 const lowerA = T(['Pierna A', 'Legs A'], [['squat', 0], ['hinge', 1], ['legCurl', 0], ['lunge', 0], ['calves', 0], ['core', 0], ['legExtension', 0], ['core', 1]])
 const lowerB = T(['Pierna B', 'Legs B'], [['hinge', 0], ['legPress', 0], ['squat', 1], ['legCurl', 1], ['legExtension', 0], ['calves', 1], ['core', 2], ['lunge', 1]])
 
@@ -148,7 +151,7 @@ function split(c: GeneratorConfig): [string, Template[]] {
       ? [t('Cuerpo completo', 'Full body'), [fullBodyA, fullBodyB, fullBodyC]]
       : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
-  if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), [upperA, lowerA, c.goal === 'strength' ? strengthUpperB : upperB, lowerB]]
+  if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), c.goal === 'strength' ? [upperA, lowerA, strengthUpperB, strengthLowerB] : [upperA, lowerA, upperB, lowerB]]
   // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario.
   if (c.level === 'beginner' && c.days >= 5) {
     return [t('Torso / Pierna + Cuerpo completo', 'Upper / Lower + Full body'), [upperA, lowerA, fullBodyC, upperB, lowerB, ...(c.days >= 6 ? [fullBodyB] : [])]]
@@ -418,7 +421,7 @@ function buildDay(list: [SlotName, number][], time: TimeFit,
   return fitToTime(picked, time)
 }
 
-const TIME_SLACK = 1.1
+const TIME_SLACK = 3
 
 /** El tiempo de un día: los minutos (Infinity = sin recortar) y, si se rellena hasta ellos, el nivel. */
 interface TimeFit {
@@ -435,8 +438,8 @@ interface TimeFit {
  * con 90 minutos, un principiante hacía 20 series en ~62.
  */
 function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExercise[] {
-  // Un 10 % de margen al recortar (30 min dejaban 2 ejercicios: con 3 son ~32); al rellenar, sin pasarse.
-  const over = () => dayMinutes(picked.map((p) => p.ex)) > minutes * TIME_SLACK
+  // 3 minutos de margen al recortar (30 min dejaban 2 ejercicios: con 3 son ~32); al rellenar, sin pasarse.
+  const over = () => dayMinutes(picked.map((p) => p.ex)) > minutes + TIME_SLACK
   // De atrás adelante y de una en una, para repartir el recorte entre los ejercicios.
   const trim = (applies: (kind: Kind) => boolean, floor: number) => {
     for (let changed = true; changed && over();) {
@@ -492,7 +495,8 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
     const exercises = buildDay(list, { minutes: c.minutes, fill: c.level },
       (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
-        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false }),
+        // En la Pierna B de fuerza, la sentadilla frontal (secundaria, a 6-10) sí va tras el peso muerto pesado.
+        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false, ...(template === strengthLowerB && name === 'squat' ? { axialUsed: false } : {}) }),
       ({ exercise, slot }, _name, picked) => {
         const s = scheme(slot.kind, c)
         // Fuerza: pesado (3-5) solo el básico principal del día; los demás básicos, de volumen. Si no, un día de

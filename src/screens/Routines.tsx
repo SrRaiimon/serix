@@ -7,6 +7,7 @@ import type { Exercise } from '../lib/catalog'
 import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { LIFTS_531, trainingMaxFrom } from '../lib/progression'
 import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals, LIBRARY, levelInfo, levels, type EquipmentProfile, type GeneratedProgram, type GeneratorConfig, type LibraryProgram } from '../lib/generator'
+import { BARBELL_EQUIPMENT } from '../lib/warmup'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { expectedMinutes, finishedSessions, lastPerformed, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
@@ -191,8 +192,6 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
   )
 }
 
-const BARBELL = new Set(['barbell', 'ez-bar'])
-
 /** El calentamiento que trae el entreno (en el primer ejercicio pesado): las series de calentamiento previstas. */
 function WarmupLine({ planned, unit }: { planned: SessionExercise; unit: AppData['settings']['unit'] }) {
   const ramp = planned.sets.filter((s) => s.warmup)
@@ -376,7 +375,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
       exerciseId: e.id, name: e.name, muscle: e.muscle,
       sets: base?.sets ?? 3, repsMin: base?.repsMin ?? 8, repsMax: base?.repsMax ?? 12,
       // Los básicos con barra (sentadilla, peso muerto, press…) piden descansos largos: al menos 3 min.
-      rest: base?.rest ?? (BARBELL.has(e.equipment) && e.category === 'strength' && !['arms', 'core'].includes(e.bodyPart) ? Math.max(180, data.settings.defaultRest) : data.settings.defaultRest),
+      rest: base?.rest ?? (BARBELL_EQUIPMENT.has(e.equipment) && e.category === 'strength' && !['arms', 'core'].includes(e.bodyPart) ? Math.max(180, data.settings.defaultRest) : data.settings.defaultRest),
       tracking, ...(tracking === 'time' ? { targetSeconds: defaultTargetSeconds } : {}),
     }
   }

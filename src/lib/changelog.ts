@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.98',
+    items: [
+      ['Fuerza con 4 días: la sentadilla dos veces por semana, pesada el primer día de pierna y frontal tras el peso muerto el segundo (antes, prensa y hack seguidas).', 'Strength on 4 days: squats twice a week, heavy on the first leg day and front squats after deadlifts on the second (before, leg press and hack squat back to back).'],
+      ['Las sesiones no se pasan más de 3 minutos del tiempo que eliges.', 'Sessions run at most 3 minutes over the time you choose.'],
+      ['Por dentro: cada ejercicio del entreno va en su propio archivo.', 'Under the hood: each workout exercise lives in its own file.'],
+    ],
+  },
+  {
     version: '0.0.97',
     items: [
       ['Lo que ves en la rutina es lo que hace el entreno: las mismas repeticiones serie a serie y el calentamiento ya puesto en el primer ejercicio pesado.', 'What you see in the routine is what the workout does: the same reps set by set, and the warm-up already added to the first heavy exercise.'],

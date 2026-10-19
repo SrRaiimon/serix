@@ -215,6 +215,9 @@ test('reglas de casa y de fuerza: sin paralelas fuera del gimnasio, sin supinas 
   // Fuerza 4 días: banca y press militar, cada uno dos veces por semana.
   const weekly = generate({ goal: 'strength', level: 'advanced', days: 4, minutes: 60, equipment: 'gym' }, catalog).days.flatMap((d) => d.exercises.map((x) => x.exercise.id))
   for (const id of ['Barbell_Bench_Press_-_Medium_Grip', 'Barbell_Shoulder_Press']) assert.equal(weekly.filter((x) => x === id).length, 2, id)
+  // Y la sentadilla dos veces: pesada en la Pierna A y frontal tras el peso muerto en la B (no prensa y hack seguidas).
+  assert.ok(weekly.includes('Barbell_Full_Squat') && weekly.includes('Front_Barbell_Squat'), weekly.join(', '))
+  assert.ok(!(weekly.includes('Leg_Press') && weekly.includes('Hack_Squat')), weekly.join(', '))
 })
 
 test('a 45 min, el torso pierde la segunda espalda antes que los brazos', () => {
