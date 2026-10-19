@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { back } from '../lib/router'
 import { MuscleThumb } from './MuscleMap'
 import { t } from '../lib/i18n'
+import { release, silence } from '../lib/inertStack'
 
 // Bloqueo de desplazamiento compartido por hojas y entrenamiento, con contador para que cerrar una
 // hoja dentro del entrenamiento no lo libere. Solo overflow:hidden en html y body: fijar el body con
@@ -181,11 +182,6 @@ export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: nu
 
 // Pila de hojas abiertas: Escape cierra solo la de arriba y el resto de la app queda inerte mientras haya alguna.
 const dialogStack: object[] = []
-/**
- * Cuántas hojas abiertas tienen inerte cada elemento. Si se cierra antes la de debajo (fuera de orden), lo de
- * detrás sigue inerte mientras quede alguna: antes la primera en cerrarse se lo quitaba aunque la otra siguiera.
- */
-const inertBy = new Map<Element, number>()
 
 let liveRegion: HTMLElement | undefined
 /**
@@ -218,13 +214,8 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     // Todo lo que hay en body salvo esta hoja (la app y otra hoja de debajo) queda inerte mientras está abierta.
     let top: Element | null = ref.current
     while (top && top.parentElement !== document.body) top = top.parentElement
-    // Lo que ya estaba inerte por otra hoja también cuenta; lo que lo estaba por otra cosa, no se toca.
     // La zona de avisos del lector (announce) nunca: un aviso con la hoja abierta también se tiene que oír.
-    const silenced = [...document.body.children].filter((el) => el !== top && el !== liveRegion && (inertBy.has(el) || !el.hasAttribute('inert')))
-    silenced.forEach((el) => {
-      inertBy.set(el, (inertBy.get(el) ?? 0) + 1)
-      el.setAttribute('inert', '')
-    })
+    const silenced = silence(document.body.children, (el) => el === top || el === liveRegion)
     // A la hoja misma (no al primer campo: en el móvil abriría el teclado): el lector anuncia su título y el
     // siguiente Tab ya va a su primer control.
     ref.current?.focus({ preventScroll: true })
@@ -238,14 +229,7 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     return () => {
       document.removeEventListener('keydown', onKey)
       dialogStack.splice(dialogStack.indexOf(token), 1)
-      silenced.forEach((el) => {
-        const n = (inertBy.get(el) ?? 1) - 1
-        if (n > 0) inertBy.set(el, n)
-        else {
-          inertBy.delete(el)
-          el.removeAttribute('inert')
-        }
-      })
+      release(silenced)
       if (before?.isConnected) before.focus({ preventScroll: true })
     }
   }, [ref])

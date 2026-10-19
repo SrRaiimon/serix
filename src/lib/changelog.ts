@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.0.99',
+    items: [
+      ['«Perder grasa» avanzado: accesorios con 15 s menos de descanso, más trabajo en el mismo tiempo y ya distinto del intermedio.', '"Lose fat" for advanced lifters: accessories with 15 s less rest, more work in the same time and now different from intermediate.'],
+      ['Por dentro: Rutinas en piezas más pequeñas (el generador, la biblioteca y el 5/3/1 aparte) y pruebas de las hojas apiladas.', 'Under the hood: Routines split into smaller pieces (generator, library and 5/3/1 apart) and tests for stacked sheets.'],
+    ],
+  },
+  {
     version: '0.0.98',
     items: [
       ['Fuerza con 4 días: la sentadilla dos veces por semana, pesada el primer día de pierna y frontal tras el peso muerto el segundo (antes, prensa y hack seguidas).', 'Strength on 4 days: squats twice a week, heavy on the first leg day and front squats after deadlifts on the second (before, leg press and hack squat back to back).'],

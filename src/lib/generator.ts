@@ -202,6 +202,9 @@ function scheme(kind: Kind, c: GeneratorConfig) {
   let [sets, repsMin, repsMax, rest] = table[c.goal][kind]
   if (c.level === 'beginner' && (kind === 'compound' || kind === 'accessory')) sets = Math.max(2, sets - 1)
   if (c.level === 'advanced' && kind === 'compound') sets += 1
+  // «Perder grasa» avanzado: más densidad (accesorios y core con 15 s menos de descanso). En el mismo tiempo
+  // caben más series; si no, con los minutos llenos, intermedio y avanzado salían idénticos.
+  if (c.goal === 'fatLoss' && c.level === 'advanced' && (kind === 'accessory' || kind === 'core')) rest = Math.max(30, rest - 15)
   return { sets, repsMin, repsMax, rest }
 }
 
