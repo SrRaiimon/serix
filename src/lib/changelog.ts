@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.1',
+    items: [
+      ['En móviles pequeños, las pestañas de Progreso ya no parten las palabras por la mitad.', 'On small phones, the Progress tabs no longer split words in half.'],
+      ['Informe del mes: «1 semana seguida» en singular y cada serie («20 kg × 8») en una sola línea.', 'Monthly report: "1 week in a row" in the singular and each set ("20 kg × 8") on one line.'],
+      ['WOD y Ejercicios te mandan a «Perfil → Generar un programa nuevo», que es donde está ahora.', 'WOD and Exercises point to "Profile → Generate a new program", which is where it is now.'],
+    ],
+  },
+  {
     version: '0.1.0',
     items: [
       ['Comidas, más acertada: si sueles entrenar hoy, ya cuenta como día de entreno; los días de descanso no bajan de 1200 kcal (1500 en hombres); y nunca te propone comer más de lo que gastas «para perder».', 'Food, more accurate: if you usually train today it already counts as a training day; rest days never drop below 1200 kcal (1500 for men); and it never suggests eating more than you burn "to lose".'],

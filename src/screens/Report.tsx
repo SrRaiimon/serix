@@ -72,13 +72,13 @@ export function ReportScreen() {
               <div><strong>{tons(r.stats.volume, unit)}</strong><span>{t('peso movido', 'weight moved')}</span></div>
               <div><strong>{r.stats.sets}</strong><span>{t('series', 'sets')}</span></div>
               <div><strong>{r.stats.records}</strong><span>{r.stats.records === 1 ? t('marca superada', 'personal best') : t('marcas superadas', 'personal bests')}</span></div>
-              <div><strong>{r.streak}</strong><span>{t('semanas seguidas', 'weeks in a row')}</span></div>
+              <div><strong>{r.streak}</strong><span>{r.streak === 1 ? t('semana seguida', 'week in a row') : t('semanas seguidas', 'weeks in a row')}</span></div>
             </div>
             {r.beaten.length > 0 && (
               <table>
                 <thead><tr><th>{t('Mejores marcas del mes', 'Best lifts this month')}</th><th>{t('Serie', 'Set')}</th><th>{t('Máx. est.', 'Est. max')}</th></tr></thead>
                 <tbody>{r.beaten.map((x) => (
-                  <tr key={x.exerciseId}><td>{x.name}</td><td>{x.added === undefined ? weight(x.weight, unit) : bodyweightText(x.added, unit)} × {x.reps}</td><td>{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
+                  <tr key={x.exerciseId}><td>{x.name}</td><td className="report-set">{x.added === undefined ? weight(x.weight, unit) : bodyweightText(x.added, unit)} × {x.reps}</td><td>{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
                 ))}</tbody>
               </table>
             )}

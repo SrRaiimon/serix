@@ -90,7 +90,7 @@ function FilterBar({ filter, setFilter }: { filter: ExerciseFilter; setFilter: (
             <label className="list-row">
               <span className="grow">
                 {t('Solo con mi material', 'Only with my equipment')}
-                <span className="small muted" style={{ display: 'block' }}>{myGear.label} · {t('se cambia en Perfil → Repetir cuestionario inicial', 'change it in Profile → Redo the initial questionnaire')}</span>
+                <span className="small muted" style={{ display: 'block' }}>{myGear.label} · {t('se cambia en Perfil → Generar un programa nuevo', 'change it in Profile → Generate a new program')}</span>
               </span>
               <input type="checkbox" className="toggle" checked={Boolean(filter.allowedEquipment)}
                 onChange={(e) => setFilter({ ...filter, allowedEquipment: e.target.checked ? myGear.allowed : undefined })} />

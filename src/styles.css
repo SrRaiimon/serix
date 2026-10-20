@@ -758,6 +758,10 @@ a.list-row:active {
   font-size: 12.5px;
   padding: 7px 2px;
 }
+/* En móviles de 320 px, cinco pestañas de una palabra («Resumen», «Historial») se partían por la mitad. */
+@media (max-width: 359px) {
+  .segmented.many button { font-size: 11px; padding: 7px 1px; letter-spacing: -0.01em; }
+}
 
 .segmented button.active {
   background: var(--ink);
@@ -2662,6 +2666,8 @@ textarea { resize: none; }
 .report-page table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
 .report-page th { text-align: left; font-size: 11px; color: var(--text-2); font-weight: 700; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--separator); }
 .report-page td { padding: 5px 6px 5px 0; border-bottom: 1px solid var(--separator); font-variant-numeric: tabular-nums; }
+/* «20 kg × 8» en una línea: partido en dos se leía como dos datos. */
+.report-set { white-space: nowrap; }
 @media print {
   @page { margin: 14mm; }
   body, .app, main { background: #fff !important; }

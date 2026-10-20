@@ -88,8 +88,8 @@ export function WodScreen() {
         )}
 
         <p className="small muted" style={{ margin: 0 }}>
-          {t('Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El WOD cambia cada día según tu material y tu nivel (Perfil → Repetir cuestionario).',
-            'Scale it if you need to: fewer reps, less weight or an easier exercise. What matters is moving well and keeping going. The WOD changes every day based on your equipment and level (Profile → Redo questionnaire).')}
+          {t('Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El WOD cambia cada día según tu material y tu nivel (Perfil → Generar un programa nuevo).',
+            'Scale it if you need to: fewer reps, less weight or an easier exercise. What matters is moving well and keeping going. The WOD changes every day based on your equipment and level (Profile → Generate a new program).')}
         </p>
 
         {history.length > 0 && (

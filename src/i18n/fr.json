@@ -59,7 +59,6 @@
 "Actualizar a {0}": "Mettre à jour {0}",
 "Adelante": "C'est parti",
 "Aductores": "Adducteurs",
-"Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El WOD cambia cada día según tu material y tu nivel (Perfil → Repetir cuestionario).": "Adapte si besoin : moins de répétitions, moins de poids ou un exercice plus facile. L'important est de bien bouger sans t'arrêter. Le WOD change chaque jour selon ton matériel et ton niveau (Profil → Refaire le questionnaire).",
 "Agarra un soporte alto y deja caer la cadera hacia atrás, brazos estirados.": "Tiens un support en hauteur et recule les hanches, bras tendus.",
 "Agua": "Eau",
 "Agujetas": "Courbatures",
@@ -1738,7 +1737,6 @@
 "récord batido": "record battu",
 "récords": "records",
 "récords batidos": "records battus",
-"se cambia en Perfil → Repetir cuestionario inicial": "à changer dans Profil → Refaire le questionnaire initial",
 "se guarda para las próximas veces": "enregistré pour les prochaines fois",
 "semana": "semaine",
 "semanas": "semaines",
@@ -2110,5 +2108,11 @@
 "Programas más equilibrados: con 3 días, cuerpo completo (cada músculo varias veces por semana); tríceps también en el segundo día de torso; el segundo día de pierna ya no junta prensa y hack; y femoral y core no se pierden con poco tiempo.": "Des programmes plus équilibrés : sur 3 jours, corps complet (chaque muscle plusieurs fois par semaine) ; triceps aussi le deuxième jour haut du corps ; le deuxième jour jambes n'enchaîne plus presse et hack ; et ischios et gainage ne disparaissent plus avec peu de temps.",
 "Los principiantes no pasan de 18 series por sesión aunque elijan mucho tiempo.": "Les débutants ne dépassent pas 18 séries par séance, même avec beaucoup de temps.",
 "Progreso › Músculos: series por semana de media (hasta 4 semanas), sin avisos de «por debajo» con la semana a medias; y el entreno cuenta las series sin el calentamiento, como Inicio y Rutinas.": "Progrès › Muscles : séries par semaine en moyenne (jusqu'à 4 semaines), sans alerte « en dessous » en milieu de semaine ; et l'entraînement compte les séries sans l'échauffement, comme l'Accueil et les Routines.",
-"Con teclado o lector de pantalla, al eliminar una serie el foco va a la de al lado y el primer aviso también se anuncia.": "Au clavier ou avec un lecteur d'écran, supprimer une série déplace le focus sur la suivante et la première notification est aussi annoncée."
+"Con teclado o lector de pantalla, al eliminar una serie el foco va a la de al lado y el primer aviso también se anuncia.": "Au clavier ou avec un lecteur d'écran, supprimer une série déplace le focus sur la suivante et la première notification est aussi annoncée.",
+"Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El WOD cambia cada día según tu material y tu nivel (Perfil → Generar un programa nuevo).": "Adapte si besoin : moins de répétitions, moins de poids ou un exercice plus facile. L'important est de bien bouger sans t'arrêter. Le WOD change chaque jour selon ton matériel et ton niveau (Profil → Générer un nouveau programme).",
+"se cambia en Perfil → Generar un programa nuevo": "à changer dans Profil → Générer un nouveau programme",
+"semana seguida": "semaine d'affilée",
+"En móviles pequeños, las pestañas de Progreso ya no parten las palabras por la mitad.": "Sur les petits téléphones, les onglets de Progrès ne coupent plus les mots en deux.",
+"Informe del mes: «1 semana seguida» en singular y cada serie («20 kg × 8») en una sola línea.": "Rapport du mois : « 1 semaine d'affilée » au singulier et chaque série (« 20 kg × 8 ») sur une seule ligne.",
+"WOD y Ejercicios te mandan a «Perfil → Generar un programa nuevo», que es donde está ahora.": "WOD et Exercices renvoient à « Profil → Générer un nouveau programme », là où c'est maintenant."
 }
