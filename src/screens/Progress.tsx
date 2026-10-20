@@ -26,7 +26,7 @@ import { insights, type Insight } from '../lib/insights'
 import { ExercisePicker } from './Exercises'
 import type { Exercise } from '../lib/catalog'
 import { blankPastSession, SessionEditSheet } from './SessionEdit'
-import { bodyweightText } from '../lib/bodyweight'
+import { addsLoad, liftText } from '../lib/bodyweight'
 import { weeklyIntake } from '../lib/nutrition'
 
 type Section = 'summary' | 'muscles' | 'history' | 'records' | 'achievements'
@@ -408,7 +408,7 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <div className="best-lifts">
         {top.map((r) => (
           <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
-            <strong>{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
+            <strong>{r.added === undefined && addsLoad(r.exerciseId) ? '+' : ''}{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
             {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta.
                 Va con el nombre (no en una línea más) para no descuadrar las columnas. */}
             <span className="clamp-2">{r.name}{r.added !== undefined && <span className="muted"> · {t('con tu peso', 'incl. bodyweight')}</span>}</span>
@@ -691,10 +691,10 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             <Thumb exerciseId={r.exerciseId} size={44} />
             <span className="grow">
               <span className="bold clamp-2" style={{ fontSize: 15 }}>{r.name}</span>
-              <span className="small muted">{r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × {r.reps} · {shortDay(r.date)}</span>
+              <span className="small muted">{liftText(r, unit, addsLoad(r.exerciseId))} × {r.reps} · {shortDay(r.date)}</span>
             </span>
             <span style={{ textAlign: 'right' }}>
-              <span className="bold" style={{ display: 'block' }}>{int(fromKg(r.e1rm, unit))} {unit}</span>
+              <span className="bold" style={{ display: 'block' }}>{r.added === undefined && addsLoad(r.exerciseId) ? '+' : ''}{int(fromKg(r.e1rm, unit))} {unit}</span>
               <span className="tiny muted">{t('máx. est.', 'est. max')}</span>
             </span>
           </button>
@@ -725,6 +725,8 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
   const unit = data.settings.unit
   const sessions = useMemo(() => finishedSessions(data), [data])
   const points = useMemo(() => exerciseHistory(id, sessions), [id, sessions])
+  // Dominadas, fondos… sin peso corporal conocido: lo apuntado es solo el lastre, con su «+».
+  const lastre = addsLoad(id)
   const name = sessions.flatMap((s) => s.exercises).find((e) => e.exerciseId === id)?.name ?? t('Ejercicio', 'Exercise')
   const [metric, setMetric] = useState<Metric>('e1rm')
   const [detail, setDetail] = useState(false)
@@ -777,8 +779,8 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
                     en corto para que quepa la fecha (el título de la columna ya dice que va sobre tu peso). */}
                 <span className="small muted">{run.p.addedAtMax !== undefined
                   ? (run.p.addedAtMax === 0 ? t('tu peso', 'bodyweight') : `${run.p.addedAtMax > 0 ? '+' : '−'}${weight(Math.abs(run.p.addedAtMax), unit)}`)
-                  : weightValue(run.p.maxWeight, unit)} × {run.p.repsAtMax}</span>
-                <span className="bold">{int(fromKg(run.p.e1rm, unit))} {unit}</span>
+                  : `${lastre && run.p.maxWeight > 0 ? '+' : ''}${weightValue(run.p.maxWeight, unit)}`} × {run.p.repsAtMax}</span>
+                <span className="bold">{lastre && run.p.addedAtMax === undefined ? '+' : ''}{int(fromKg(run.p.e1rm, unit))} {unit}</span>
                 <span className="session-delta">{Math.abs(diff) >= 0.5 ? `${diff > 0 ? '+' : '−'}${int(Math.abs(diff))} ${unit}` : '—'}</span>
               </div>
             )

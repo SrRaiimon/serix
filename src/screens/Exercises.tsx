@@ -15,6 +15,7 @@ import { alternatives } from '../lib/alternatives'
 import { equipmentInfo, STAPLES } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
+import { addsLoad } from '../lib/bodyweight'
 import { dataLang, plural, t } from '../lib/i18n'
 
 // Las figuras de movimiento pesan bastante: se cargan aparte, al abrir la ficha de un ejercicio.
@@ -142,7 +143,7 @@ function ExerciseRowContent({ exercise, favorite, thumb = 56, usage, unit }: { e
       </span>
       {usage && unit && (
         <span className="ex-last">
-          <strong>{setShortText(usage.top, trackingOf(usage.exercise), unit).replace(' × ', '×').replace(/ @[\d,.]+$/, '')}</strong>
+          <strong>{setShortText(usage.top, trackingOf(usage.exercise), unit, !usage.exercise.assisted && addsLoad(exercise.id, exercise.equipment)).replace(' × ', '×').replace(/ @[\d,.]+$/, '')}</strong>
           <span className="tiny muted">{relative(usage.last)}</span>
         </span>
       )}
@@ -331,7 +332,7 @@ export function ExerciseDetailContent({ exercise, actions }: { exercise: Exercis
       {points.length > 0 && tracking === 'weight_reps' && (
         <Card title={t('Tu historial', 'Your history')}>
           <StatBand items={[
-            { value: usage ? setShortText(usage.top, 'weight_reps', unit).replace(' × ', '×').replace(/ @[\d,.]+$/, '') : '—', label: usage ? t(`Última vez · ${relative(usage.last).toLowerCase()}`, `Last time · ${relative(usage.last).toLowerCase()}`) : t('Última vez', 'Last time') },
+            { value: usage ? setShortText(usage.top, 'weight_reps', unit, !usage.exercise.assisted && addsLoad(exercise.id, exercise.equipment)).replace(' × ', '×').replace(/ @[\d,.]+$/, '') : '—', label: usage ? t(`Última vez · ${relative(usage.last).toLowerCase()}`, `Last time · ${relative(usage.last).toLowerCase()}`) : t('Última vez', 'Last time') },
             { value: `${int(fromKg(Math.max(...points.map((p) => p.e1rm)), unit))} ${unit}`, label: weighted ? t('Máx. estimado con tu peso', 'Est. max with bodyweight') : t('Máx. estimado a 1 rep', 'Est. 1-rep max') },
             { value: points.length, label: points.length === 1 ? t('sesión', 'session') : t('sesiones', 'sessions') },
           ]} />

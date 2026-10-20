@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Printer } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { NavBar } from '../components/ui'
-import { bodyweightText } from '../lib/bodyweight'
+import { addsLoad, liftText } from '../lib/bodyweight'
 import { day, duration, editable, fromKg, int, shortDay, tons, weight } from '../lib/format'
 import { locale, t } from '../lib/i18n'
 import { dayGoalOptions, dayStatus, dayTotals, goalsForDay } from '../lib/nutrition'
@@ -78,7 +78,7 @@ export function ReportScreen() {
               <table>
                 <thead><tr><th>{t('Mejores marcas del mes', 'Best lifts this month')}</th><th>{t('Serie', 'Set')}</th><th>{t('Máx. est.', 'Est. max')}</th></tr></thead>
                 <tbody>{r.beaten.map((x) => (
-                  <tr key={x.exerciseId}><td>{x.name}</td><td className="report-set">{x.added === undefined ? weight(x.weight, unit) : bodyweightText(x.added, unit)} × {x.reps}</td><td>{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
+                  <tr key={x.exerciseId}><td>{x.name}</td><td className="report-set">{liftText(x, unit, addsLoad(x.exerciseId))} × {x.reps}</td><td>{x.added === undefined && addsLoad(x.exerciseId) ? '+' : ''}{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
                 ))}</tbody>
               </table>
             )}

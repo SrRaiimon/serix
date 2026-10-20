@@ -47,6 +47,19 @@ export function fillBodyweights() {
 }
 
 /** Lo apuntado en dominadas y fondos: «tu peso + 10 kg», «tu peso − 20 kg» (asistida) o «tu peso». */
+/**
+ * Si el peso apuntado es lastre (se suma al cuerpo): dominadas, fondos y, con su material del catálogo, los
+ * de peso corporal. Así se escribe con «+» aunque aún no conste el peso corporal.
+ */
+export const addsLoad = (exerciseId: string, equipment?: string): boolean =>
+  equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId)
+
+/** «20 kg», «+20 kg» si es lastre sin peso corporal conocido, o «tu peso + 20 kg» si se conoce (`added`). */
+export function liftText(r: { weight: number; added?: number }, unit: Unit, lastre: boolean): string {
+  if (r.added !== undefined) return bodyweightText(r.added, unit)
+  return lastre && r.weight > 0 ? `+${weight(r.weight, unit)}` : weight(r.weight, unit)
+}
+
 export function bodyweightText(added: number, unit: Unit): string {
   return added > 0 ? t(`tu peso + ${weight(added, unit)}`, `bodyweight + ${weight(added, unit)}`)
     : added < 0 ? t(`tu peso − ${weight(-added, unit)}`, `bodyweight − ${weight(-added, unit)}`) : t('tu peso', 'bodyweight')

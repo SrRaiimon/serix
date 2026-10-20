@@ -6,7 +6,7 @@ import { ChevronDown, Link2, Maximize2, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActionSheet, Progress, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots } from '../lib/groups'
-import { clock, fromKg, int, rest, toKg, weight } from '../lib/format'
+import { clock, fromKg, int, rest, toKg } from '../lib/format'
 import { t } from '../lib/i18n'
 import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad, stall, workingSets } from '../lib/stats'
 import { finishedSessions, rpeOn, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
@@ -15,7 +15,7 @@ import { trackingOf } from '../lib/tracking'
 import { addExercises, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { BARS } from '../lib/plates'
-import { bodyweightText } from '../lib/bodyweight'
+import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
 import { FocusMode, ReadinessCheck, RestBar } from './WorkoutFocus'
 import { ExerciseBlock, kitOf } from './WorkoutExercise'
 
@@ -49,7 +49,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     // En dominadas y fondos cuenta el peso corporal; en el aviso se dice lo apuntado («tu peso + 10 kg»).
     const load = setLoad(e, set)
     const value = e1rm(load, set.reps)
-    const shown = e.bodyweight === undefined ? weight(set.weight, unit) : bodyweightText(e.assisted ? -set.weight : set.weight, unit)
+    const shown = e.bodyweight === undefined ? liftText(set, unit, addsLoad(e.exerciseId)) : bodyweightText(e.assisted ? -set.weight : set.weight, unit)
     // Récord real de repeticiones (p. ej. el mayor peso a 5): frente al historial y a lo ya hecho hoy.
     const today = session.exercises.filter((x) => x.exerciseId === e.exerciseId).flatMap(workingSets).filter((x) => x.id !== set.id)
     const before = repRecords(e.exerciseId, [...history, { ...session, exercises: [{ ...e, sets: today }] }])

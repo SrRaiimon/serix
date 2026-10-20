@@ -1,6 +1,7 @@
 import { Medal } from 'lucide-react'
 import { Fragment, useMemo } from 'react'
 import { fromKg, shortDay, toKg, weightValue, type Unit } from '../lib/format'
+import { addsLoad } from '../lib/bodyweight'
 import { t } from '../lib/i18n'
 import { REP_TARGETS, repRecords } from '../lib/stats'
 import type { Session } from '../lib/store'
@@ -30,7 +31,7 @@ export function RepRecordsCard({ exerciseId, sessions, unit }: { exerciseId: str
             {/* Con lastre, lo añadido a tu peso («+12,5 kg», «tu peso»), como en el resto de la app. */}
             {r.added !== undefined
               ? <strong>{r.added === 0 ? t('tu peso', 'bodyweight') : <>{r.added > 0 ? '+' : '−'}{weightValue(Math.abs(r.added), unit)}<small> {unit}</small></>}</strong>
-              : <strong>{weightValue(toKg(Math.round(fromKg(r.weight, unit) * 2) / 2, unit), unit)}<small> {unit}</small></strong>}
+              : <strong>{addsLoad(exerciseId) ? '+' : ''}{weightValue(toKg(Math.round(fromKg(r.weight, unit) * 2) / 2, unit), unit)}<small> {unit}</small></strong>}
             <span className="small muted">{t(`${r.reps} reps · ${shortDay(r.date)}`, `${r.reps} reps · ${shortDay(r.date)}`)}</span>
           </Fragment>
         ))}

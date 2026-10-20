@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { bodyweightAt, BODYWEIGHT_LIFTS } from '../src/lib/bodyweight'
+import { addsLoad, bodyweightAt, BODYWEIGHT_LIFTS, liftText } from '../src/lib/bodyweight'
+import { setShortText, setText } from '../src/lib/tracking'
 import { e1rm, exerciseHistory, loadSets, records, sessionVolume, workingSets } from '../src/lib/stats'
 import { defaultSettings } from '../src/lib/store'
 import { DAY, exercise, session, set, T0 } from './helpers'
@@ -48,4 +49,18 @@ test('peso corporal de una fecha: medida de antes, si no la de después, si no e
 test('solo cuentan ejercicios de todo el cuerpo (no fondos en banco ni dominadas escapulares)', () => {
   assert.ok(BODYWEIGHT_LIFTS.has('Pullups') && BODYWEIGHT_LIFTS.has('Parallel_Bar_Dip'))
   assert.ok(!BODYWEIGHT_LIFTS.has('Bench_Dips') && !BODYWEIGHT_LIFTS.has('Scapular_Pull-Up'))
+})
+
+test('lastre con «+» aunque no conste el peso corporal', () => {
+  assert.equal(addsLoad('Pullups'), true)
+  assert.equal(addsLoad('Pushups', 'bodyweight'), true)
+  assert.equal(addsLoad('Barbell_Bench_Press_-_Medium_Grip', 'barbell'), false)
+  const s = set(20, 8)
+  assert.equal(setShortText(s, 'weight_reps', 'kg', true), '+20 × 8')
+  assert.equal(setText(s, 'weight_reps', 'kg', true), '+20 kg × 8')
+  assert.equal(setText(s, 'weight_reps', 'kg'), '20 kg × 8')
+  assert.equal(setShortText(set(0, 10), 'weight_reps', 'kg', true), '10 reps')
+  assert.equal(liftText({ weight: 20 }, 'kg', true), '+20 kg')
+  assert.equal(liftText({ weight: 20 }, 'kg', false), '20 kg')
+  assert.equal(liftText({ weight: 100, added: 20 }, 'kg', true), 'tu peso + 20 kg')
 })

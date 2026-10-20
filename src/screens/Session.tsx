@@ -2,7 +2,7 @@ import { ArrowUpDown, BadgeCheck, Flame, Wind, ChevronRight, Dumbbell, ImageIcon
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, NavBar, Segmented, Sheet, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import { day, duration, int, shortDay, time, tons, weight, type Unit } from '../lib/format'
-import { bodyweightAt, bodyweightText } from '../lib/bodyweight'
+import { addsLoad, bodyweightAt, liftText } from '../lib/bodyweight'
 import { sessionKcal } from '../lib/burn'
 import { focusFor } from '../lib/warmupRoutine'
 import { back, navigate } from '../lib/router'
@@ -32,7 +32,7 @@ export function shareText(s: Session, unit: Unit): string {
   ]
   const slots = groupSlots(s.exercises)
   s.exercises.forEach((e, i) => {
-    const sets = workingSets(e).map((x) => setShortText(x, trackingOf(e), unit))
+    const sets = workingSets(e).map((x) => setShortText(x, trackingOf(e), unit, !e.assisted && addsLoad(e.exerciseId)))
     const tag = slots[i].letter ? `${slots[i].letter}${slots[i].position} ` : ''
     if (sets.length) lines.push(`• ${tag}${e.name}: ${sets.join(', ')}`)
   })
@@ -91,7 +91,7 @@ function useShareImage(session: Session | undefined, unit: Unit, records: Person
 /** Imagen de un récord para compartir (se prepara al tocar). */
 async function shareRecord(r: PersonalRecord, history: Session[], unit: Unit, showToast: (text: string) => void) {
   const before = records(history.filter((s) => s.start < r.date - 1)).find((x) => x.exerciseId === r.exerciseId)?.e1rm
-  const set = `${r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × ${r.reps}`
+  const set = `${liftText(r, unit, addsLoad(r.exerciseId))} × ${r.reps}`
   try {
     const blob = await svgToPng(recordCardSVG({ record: r, unit, previous: before, setText: set }))
     const result = await shareImage(new File([blob], `serix-record-${r.exerciseId}.png`, { type: 'image/png' }), r.name)
@@ -119,6 +119,7 @@ export function SessionStats({ session, unit }: { session: Session; unit: Unit }
 }
 
 export function SessionExercises({ session, unit }: { session: Session; unit: Unit }) {
+  const catalog = useCatalog()
   const slots = groupSlots(session.exercises)
   return (
     <Card title={t('Ejercicios', 'Exercises')} icon={Dumbbell}>
@@ -142,7 +143,7 @@ export function SessionExercises({ session, unit }: { session: Session; unit: Un
                 <span className={s.warmup ? '' : 'muted'} style={s.warmup ? { color: 'var(--amber-text)' } : undefined}>
                   {s.warmup ? t('Calentamiento', 'Warm-up') : s.kind === 'drop' ? '↳ Drop set' : `${t('Serie', 'Set')} ${s.side === 'R' ? n : ++n}${s.side === 'L' ? t(' · izquierda', ' · left') : s.side === 'R' ? t(' · derecha', ' · right') : ''}${s.kind === 'amrap' ? ' · AMRAP' : s.kind === 'failure' ? ` · ${t('al fallo', 'to failure')}` : ''}`}
                 </span>
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{e.assisted && s.weight > 0 ? `${t('ayuda', 'assist')} ${setText(s, trackingOf(e), unit)}` : setText(s, trackingOf(e), unit)}{e.perHand && s.weight > 0 ? t(' c/u', ' each') : ''}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{e.assisted && s.weight > 0 ? `${t('ayuda', 'assist')} ${setText(s, trackingOf(e), unit)}` : setText(s, trackingOf(e), unit, addsLoad(e.exerciseId, catalog.get(e.exerciseId)?.equipment))}{e.perHand && s.weight > 0 ? t(' c/u', ' each') : ''}</span>
               </div>
               {s.note && <span className="tiny muted" style={{ paddingLeft: 48 }}>“{s.note}”</span>}
               </div>
@@ -268,7 +269,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
           {records.map((r) => (
             <div key={r.exerciseId} className="row between" style={{ gap: 8 }}>
               <span className="clamp-1 small grow">{r.name}</span>
-              <strong className="small">{r.added === undefined ? weight(r.weight, unit) : bodyweightText(r.added, unit)} × {r.reps}</strong>
+              <strong className="small">{liftText(r, unit, addsLoad(r.exerciseId))} × {r.reps}</strong>
               <button className="icon-btn" onClick={() => void shareRecord(r, history, unit, showToast)} aria-label={t(`Compartir el récord de ${r.name}`, `Share the ${r.name} record`)}><Share2 size={16} /></button>
             </div>
           ))}

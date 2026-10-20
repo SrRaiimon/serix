@@ -17,7 +17,7 @@ import { AlternativesSheet } from './Alternatives'
 import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARBELL_EQUIPMENT, fromFloor, warmupSets } from '../lib/warmup'
-import { BODYWEIGHT_LIFTS } from '../lib/bodyweight'
+import { addsLoad, BODYWEIGHT_LIFTS } from '../lib/bodyweight'
 import { SetRow, type SetContext } from './WorkoutSet'
 
 /** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
@@ -37,7 +37,7 @@ interface Kit {
 
 export const kitOf = (exerciseId: string, equipment = ''): Kit => ({
   barbell: BARBELL_EQUIPMENT.has(equipment),
-  bodyweight: equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId),
+  bodyweight: addsLoad(exerciseId, equipment),
   pairs: ['dumbbell', 'kettlebell'].includes(equipment),
   needsWeight: LOADED.has(equipment) && !BODYWEIGHT_LIFTS.has(exerciseId),
 })

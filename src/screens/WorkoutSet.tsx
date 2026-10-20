@@ -163,7 +163,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
       {/* Con lastre (dominadas, fondos), «+12,5×10»: es lo añadido a tu peso, como en el resto de la app. */}
-      {!fresh && <span className="set-prev">{previous ? `${bodyweight && tracking === 'weight_reps' && previous.weight > 0 ? '+' : ''}${setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit).replace(' × ', '×')}` : '—'}</span>}
+      {!fresh && <span className="set-prev">{previous ? `${setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit, bodyweight).replace(' × ', '×')}` : '—'}</span>}
       {tracking === 'weight_reps' && (
         <>
           <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}

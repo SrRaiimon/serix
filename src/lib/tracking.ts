@@ -82,24 +82,25 @@ export function isSetFilled(set: SetEntry, t: Tracking): boolean {
   return set.reps > 0
 }
 
-export function setText(set: SetEntry, t: Tracking, unit: Unit): string {
-  return baseText(set, t, unit) + (set.rpe ? ` · RPE ${num(set.rpe)}` : '')
+/** `lastre`: el peso se suma al corporal (dominadas, fondos…) y va con «+». */
+export function setText(set: SetEntry, t: Tracking, unit: Unit, lastre = false): string {
+  return baseText(set, t, unit, lastre) + (set.rpe ? ` · RPE ${num(set.rpe)}` : '')
 }
 
-function baseText(set: SetEntry, t: Tracking, unit: Unit): string {
+function baseText(set: SetEntry, t: Tracking, unit: Unit, lastre: boolean): string {
   if (t === 'time') return clock(set.duration ?? 0)
   if (t === 'distance_time') {
     return [set.distance ? `${num(set.distance)} km` : '', set.duration ? clock(set.duration) : ''].filter(Boolean).join(' · ') || '—'
   }
-  return set.weight > 0 ? `${weight(set.weight, unit)} × ${set.reps}` : `${set.reps} reps`
+  return set.weight > 0 ? `${lastre ? '+' : ''}${weight(set.weight, unit)} × ${set.reps}` : `${set.reps} reps`
 }
 
 /** Versión corta para la columna "Anterior". */
-export function setShortText(set: SetEntry, t: Tracking, unit: Unit): string {
+export function setShortText(set: SetEntry, t: Tracking, unit: Unit, lastre = false): string {
   const rpe = set.rpe ? ` @${num(set.rpe)}` : ''
   if (t === 'time') return clock(set.duration ?? 0) + rpe
   if (t === 'distance_time') return ([set.distance ? `${num(set.distance)} km` : '', set.duration ? clock(set.duration) : ''].filter(Boolean).join(' ') || '—') + rpe
-  return (set.weight > 0 ? `${weightValue(set.weight, unit)} × ${set.reps}` : `${set.reps} reps`) + rpe
+  return (set.weight > 0 ? `${lastre ? '+' : ''}${weightValue(set.weight, unit)} × ${set.reps}` : `${set.reps} reps`) + rpe
 }
 
 /** "3 × 8-12 reps", "3 × 0:45" o "1 serie". */

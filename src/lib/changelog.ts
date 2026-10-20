@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.2',
+    items: [
+      ['Dominadas y fondos con lastre llevan su «+» en todas partes (rutinas, historial, récords, informe), también si aún no has apuntado tu peso.', 'Weighted pull-ups and dips show their "+" everywhere (routines, history, records, report), even before you log your bodyweight.'],
+    ],
+  },
+  {
     version: '0.1.1',
     items: [
       ['En móviles pequeños, las pestañas de Progreso ya no parten las palabras por la mitad.', 'On small phones, the Progress tabs no longer split words in half.'],
