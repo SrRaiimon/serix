@@ -78,7 +78,7 @@ export function ReportScreen() {
               <table>
                 <thead><tr><th>{t('Mejores marcas del mes', 'Best lifts this month')}</th><th>{t('Serie', 'Set')}</th><th>{t('Máx. est.', 'Est. max')}</th></tr></thead>
                 <tbody>{r.beaten.map((x) => (
-                  <tr key={x.exerciseId}><td>{x.name}</td><td className="report-set">{liftText(x, unit, addsLoad(x.exerciseId))} × {x.reps}</td><td>{x.added === undefined && addsLoad(x.exerciseId) ? '+' : ''}{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
+                  <tr key={x.exerciseId}><td>{x.name}</td><td className="report-set">{liftText(x, unit, addsLoad(x))} × {x.reps}</td><td>{x.added === undefined && addsLoad(x) ? '+' : ''}{int(fromKg(x.e1rm, unit))} {unit}</td></tr>
                 ))}</tbody>
               </table>
             )}

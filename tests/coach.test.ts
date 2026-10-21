@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { applyTip, coachTips, forgottenGroups, hideTip, plannedGroupSets } from '../src/lib/coach'
+import { groupShares } from '../src/lib/volume'
 import { weightGoalStatus } from '../src/lib/goals'
 import { defaultSettings, type AppData, type Routine, type Settings } from '../src/lib/store'
 import { DAY, exercise, session, set, T0 } from './helpers'
@@ -30,6 +31,12 @@ test('entrenador: volumen previsto del programa por grupo', () => {
   assert.equal(planned[0], 8)
   assert.equal(planned[5], 8)
   assert.ok(planned[4] > 0, 'el press cuenta algo para tríceps')
+})
+
+test('volumen: un remo cuenta una serie de espalda, no una y media (dorsal de secundario)', () => {
+  const planned = plannedGroupSets([routine('a', [ex('Bent_Over_Barbell_Row', 'upper-back', 4)])], 1, catalog)
+  assert.equal(planned[1], 4)
+  assert.deepEqual(groupShares('upper-back', ['lats', 'biceps']).slice(0, 4), [0, 1, 0, 0.5])
 })
 
 test('entrenador: propone cambiar el ejercicio atascado y lo cambia en la rutina', () => {

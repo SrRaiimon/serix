@@ -135,6 +135,10 @@ test('días de entreno: +10 % al entrenar y lo justo menos al descansar para que
   // Entrenando casi a diario se suma menos para que el descanso no baje más de un 15 %.
   const six = trainingShift(2500, 6)
   assert.ok(six.down <= 2500 * 0.15 + 10 && six.up < 250, JSON.stringify(six))
+  // Con el suelo de calorías, el descanso baja menos y el entreno sube menos: la semana suma lo mismo (antes, +480).
+  const floor = trainingShift(1270, 4, 70)
+  assert.deepEqual(floor, { up: 50, down: 70 })
+  assert.ok(Math.abs(4 * (1270 + floor.up) + 3 * (1270 - floor.down) - 7 * 1270) <= 30)
   const g = { ...goals, kcal: 2500, carbs: 300 }
   const opts = { carryOver: true, training: { days: new Set(['2026-03-02']), perWeek: 4 } }
   const trained = goalsForDay(g, [], '2026-03-02', opts)

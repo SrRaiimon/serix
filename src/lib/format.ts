@@ -64,7 +64,8 @@ export function duration(ms: number): string {
   const h = Math.floor(total / 60)
   const m = total % 60
   if (h > 0) return m > 0 ? `${h} h ${m} min` : `${h} h`
-  return `${Math.max(m, 0)} min`
+  // Un entreno de segundos no es «0 min».
+  return ms > 0 && m < 1 ? '<1 min' : `${Math.max(m, 0)} min`
 }
 
 export function clock(seconds: number): string {

@@ -49,7 +49,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
     // En dominadas y fondos cuenta el peso corporal; en el aviso se dice lo apuntado («tu peso + 10 kg»).
     const load = setLoad(e, set)
     const value = e1rm(load, set.reps)
-    const shown = e.bodyweight === undefined ? liftText(set, unit, addsLoad(e.exerciseId)) : bodyweightText(e.assisted ? -set.weight : set.weight, unit)
+    const shown = e.bodyweight === undefined ? liftText(set, unit, addsLoad(e)) : bodyweightText(e.assisted ? -set.weight : set.weight, unit)
     // Récord real de repeticiones (p. ej. el mayor peso a 5): frente al historial y a lo ya hecho hoy.
     const today = session.exercises.filter((x) => x.exerciseId === e.exerciseId).flatMap(workingSets).filter((x) => x.id !== set.id)
     const before = repRecords(e.exerciseId, [...history, { ...session, exercises: [{ ...e, sets: today }] }])
@@ -60,7 +60,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
       return
     }
     if (value > best + 0.01) {
-      showToast(t(`Nuevo récord en ${e.name}: ${shown} × ${set.reps} (1RM est. ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${shown} × ${set.reps} (est. 1RM ~${int(fromKg(value, unit))} ${unit})`), 'record')
+      showToast(t(`Nuevo récord en ${e.name}: ${shown} × ${set.reps} (máx. estimado ~${int(fromKg(value, unit))} ${unit})`, `New record on ${e.name}: ${shown} × ${set.reps} (est. max ~${int(fromKg(value, unit))} ${unit})`), 'record')
       navigator.vibrate?.([60, 60, 120])
     }
   }
@@ -138,10 +138,12 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
 
   const allSets = session.exercises.flatMap((e) => e.sets)
-  const pending = allSets.filter((s) => !s.done).length
-  // La cuenta de arriba, sin el calentamiento: la misma que Inicio y Rutinas («19 series», no «0 de 22»).
+  // La cuenta de arriba, sin el calentamiento: la misma que Inicio y Rutinas («19 series», no «0 de 22»). El aviso
+  // de terminar cuenta igual: el calentamiento sin marcar no es «3 series que no se guardarán».
   const working = allSets.filter((s) => !s.warmup)
   const done = working.filter((s) => s.done).length
+  const pending = working.length - done
+  const started = allSets.some((s) => s.done)
 
   useScrollLock()
   // El audio se prepara cuando el móvil está libre, no al marcar la primera serie.
@@ -177,17 +179,17 @@ export function WorkoutScreen({ session }: { session: Session }) {
         </div>
 
         <div className="screen with-nav" style={{ paddingBottom: 140 }}>
-          <div className="card">
-            <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
-            {working.length > 0 && (
-              <>
-                <span className="small muted">{t(`${done} de ${working.length} series`, `${done} of ${working.length} sets`)}</span>
-                <Progress value={done} total={working.length} />
-              </>
-            )}
+          {/* Una franja y no una tarjeta: nombre y cuenta en una línea, la barra debajo. Antes de la primera serie había
+              tres bloques (tarjeta, «¿Cómo estás?», «Calentar») y la serie 1 quedaba a media pantalla. */}
+          <div className="workout-head">
+            <div className="workout-head-row">
+              <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
+              {working.length > 0 && <span className="workout-count">{t(`${done} de ${working.length} series`, `${done} of ${working.length} sets`)}</span>}
+            </div>
+            {working.length > 0 && <Progress value={done} total={working.length} />}
             <BlockStatus at={session.start} />
             {/* Antes de la primera serie, solo dos accesos pequeños: la lista de series queda a la vista. */}
-            {done === 0 && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {
+            {!started && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {
               minimizeWorkout()
               navigate('timer', 'warmup', focusFor(session.exercises.map((e) => e.muscle)))
             }} />}

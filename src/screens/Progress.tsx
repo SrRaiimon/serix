@@ -17,7 +17,8 @@ import { RecoveryCard } from '../components/Recovery'
 import { YearMap } from '../components/YearMap'
 import { RepRecordsCard } from '../components/RepRecords'
 import { balanceTip, muscleBalance } from '../lib/balance'
-import { volumeWeeks, weeklyGroupSets, weeklyRange } from '../lib/autoreg'
+import { volumeWeeks, weeklyGroupSets } from '../lib/autoreg'
+import { groupRange, weeklyRange } from '../lib/volume'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
@@ -80,23 +81,26 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
   const { settings } = useData()
   const groups = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
-  const weeks = volumeWeeks(sessions)
+  const weeks = Math.round(volumeWeeks(sessions))
   if (!groups.some((g) => g.sets > 0)) return null
   const [min, max] = weeklyRange(settings.goal, settings.level)
+  // Cada grupo con su rango (el abdomen pide menos: lo trabajan los básicos).
+  const range = (i: number) => groupRange(settings.goal, settings.level, i)
   const scale = Math.max(max * 1.25, ...groups.map((g) => g.sets))
   const pct = (v: number) => `${(v / scale) * 100}%`
-  const low = groups.filter((g) => g.sets < min).map((g) => t(...g.name).toLowerCase())
-  const high = groups.filter((g) => g.sets > max).map((g) => t(...g.name).toLowerCase())
+  const low = groups.filter((g, i) => g.sets < range(i)[0]).map((g) => t(...g.name).toLowerCase())
+  const high = groups.filter((g, i) => g.sets > range(i)[1]).map((g) => t(...g.name).toLowerCase())
   return (
     <Card title={t('Series por semana y grupo', 'Weekly sets per group')} icon={Dumbbell}>
       <div className="volume-rows">
-        {groups.map((g) => {
-          const state = g.sets < min ? 'low' : g.sets > max ? 'high' : 'ok'
+        {groups.map((g, i) => {
+          const [lo, hi] = range(i)
+          const state = g.sets < lo ? 'low' : g.sets > hi ? 'high' : 'ok'
           return (
             <div key={g.name[0]} className="volume-row">
               <span className="small clamp-1">{t(...g.name)}</span>
               <div className="volume-track" role="img" aria-label={`${t(...g.name)}: ${num(g.sets)} ${t('series', 'sets')}`}>
-                <span className="volume-range" style={{ left: pct(min), width: pct(max - min) }} />
+                <span className="volume-range" style={{ left: pct(lo), width: pct(hi - lo) }} />
                 <span className={`volume-fill ${state}`} style={{ width: pct(g.sets) }} />
               </div>
               <span className="small bold" style={{ textAlign: 'right' }}>{num(g.sets)}</span>
@@ -408,7 +412,7 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
       <div className="best-lifts">
         {top.map((r) => (
           <button key={r.exerciseId} onClick={() => navigate('progress', 'exercise', r.exerciseId)}>
-            <strong>{r.added === undefined && addsLoad(r.exerciseId) ? '+' : ''}{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
+            <strong>{r.added === undefined && addsLoad(r) ? '+' : ''}{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
             {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta.
                 Va con el nombre (no en una línea más) para no descuadrar las columnas. */}
             <span className="clamp-2">{r.name}{r.added !== undefined && <span className="muted"> · {t('con tu peso', 'incl. bodyweight')}</span>}</span>
@@ -691,16 +695,16 @@ function Records({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             <Thumb exerciseId={r.exerciseId} size={44} />
             <span className="grow">
               <span className="bold clamp-2" style={{ fontSize: 15 }}>{r.name}</span>
-              <span className="small muted">{liftText(r, unit, addsLoad(r.exerciseId))} × {r.reps} · {shortDay(r.date)}</span>
+              <span className="small muted">{liftText(r, unit, addsLoad(r))} × {r.reps} · {shortDay(r.date)}</span>
             </span>
             <span style={{ textAlign: 'right' }}>
-              <span className="bold" style={{ display: 'block' }}>{r.added === undefined && addsLoad(r.exerciseId) ? '+' : ''}{int(fromKg(r.e1rm, unit))} {unit}</span>
+              <span className="bold" style={{ display: 'block' }}>{r.added === undefined && addsLoad(r) ? '+' : ''}{int(fromKg(r.e1rm, unit))} {unit}</span>
               <span className="tiny muted">{t('máx. est.', 'est. max')}</span>
             </span>
           </button>
         ))}
       </div>
-      <p className="list-footer">{t('Mejor serie de cada ejercicio según el 1RM estimado (fórmula de Epley). Toca uno para ver su evolución.', 'Best set of each exercise by estimated 1RM (Epley formula). Tap one to see its progress.')}</p>
+      <p className="list-footer">{t('Mejor serie de cada ejercicio según su máximo estimado (fórmula de Epley). Toca uno para ver su evolución.', 'Best set of each exercise by its estimated max (Epley formula). Tap one to see its progress.')}</p>
     </>
   )
 }
@@ -726,7 +730,7 @@ export function ExerciseProgressScreen({ id }: { id: string }) {
   const sessions = useMemo(() => finishedSessions(data), [data])
   const points = useMemo(() => exerciseHistory(id, sessions), [id, sessions])
   // Dominadas, fondos… sin peso corporal conocido: lo apuntado es solo el lastre, con su «+».
-  const lastre = addsLoad(id)
+  const lastre = addsLoad({ exerciseId: id })
   const name = sessions.flatMap((s) => s.exercises).find((e) => e.exerciseId === id)?.name ?? t('Ejercicio', 'Exercise')
   const [metric, setMetric] = useState<Metric>('e1rm')
   const [detail, setDetail] = useState(false)

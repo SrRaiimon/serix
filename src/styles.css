@@ -312,7 +312,7 @@ img {
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--text-2);
@@ -1123,7 +1123,20 @@ a.list-row:active {
   gap: 8px;
 }
 
+/* Herramientas de Inicio: rejilla de 2 × 2 en una tarjeta con filetes, como las listas. */
+.home-tools { display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--separator); overflow: hidden; }
+.home-tool { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px; min-height: 76px; text-align: left; font-size: 15px; }
+.home-tool svg { margin-bottom: 6px; color: var(--text-2); }
+.home-tool:nth-child(odd) { box-shadow: inset -1px 0 0 var(--separator); }
+.home-tool:nth-child(-n + 2) { border-bottom: 1px solid var(--separator); }
+.home-tool:active { background: var(--fill); }
+.workout-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.workout-head-row { display: flex; align-items: center; gap: 12px; }
+.workout-count { flex-shrink: 0; font-size: 14px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
+
 .workout-name {
+  flex: 1;
+  min-width: 0;
   width: 100%;
   min-height: 44px;
   text-overflow: ellipsis;
@@ -1666,6 +1679,8 @@ a.list-row:active {
   background: var(--card);
   border: 1px solid var(--separator);
 }
+/* La X con su zona de 44 px, sin pisar «Instalar» (tapaba parte del botón). */
+.install-banner .hit { display: grid; place-items: center; min-width: 36px; min-height: 44px; margin-right: -8px; }
 
 /* Columnas según el tipo de registro */
 .set-grid.time {
@@ -2419,7 +2434,7 @@ html.scroll-locked body {
 .session-head { margin: 6px 0 -8px; padding: 0 17px; letter-spacing: 0.02em; font-size: 11px; }
 .session-delta { min-width: 0; }
 .rpe-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 50px; }
-.rpe-chip small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.rpe-chip small { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
 .rpe-chip.active small { color: var(--on-ink); }
 
 /* MARK: Ejercicios */
@@ -2536,7 +2551,7 @@ textarea { resize: none; }
 .food-left { margin-top: -6px; }
 .food-left.over { color: var(--red-text); font-weight: 700; }
 .after-bars.unsure .food-bar > div { opacity: 0.7; }
-.list-row.suspect { box-shadow: inset 3px 0 0 var(--amber-text); }
+.list-row.suspect { background: color-mix(in srgb, var(--amber-text) 8%, var(--card)); }
 .list-row.suspect input { color: var(--amber-text); font-weight: 700; }
 .list-row input:focus-visible { border-radius: 8px; outline-offset: 4px; }
 .food-health.doubt .btn { display: flex; }
@@ -2565,7 +2580,7 @@ textarea { resize: none; }
 .plan-start > svg, .plan-bar > svg { color: var(--accent-text); flex-shrink: 0; }
 .plan-bar { display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 16px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--separator); min-height: 48px; }
 .plan-bar .nav-btn { padding: 10px 10px; min-height: 44px; font-weight: 600; }
-.proposal { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--separator); background: color-mix(in srgb, var(--accent) 5%, var(--card)); box-shadow: inset 3px 0 0 var(--accent); }
+.proposal { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--separator); background: color-mix(in srgb, var(--accent) 5%, var(--card)); }
 .proposal-head { display: flex; align-items: flex-start; gap: 12px; }
 .proposal-kicker { display: block; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-text); margin-bottom: 2px; }
 .proposal-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
@@ -2742,15 +2757,18 @@ a.list-row { color: var(--text); text-decoration: none; }
 .league-points { font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* MARK: Aviso de almacenamiento (App.tsx) */
-.storage-banner { position: sticky; top: 0; z-index: 30; display: flex; gap: 10px; align-items: center; padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: var(--fill); box-shadow: inset 4px 0 0 var(--amber-text); color: var(--text); font-size: 14px; font-weight: 600; }
+.storage-banner { position: sticky; top: 0; z-index: 30; display: flex; gap: 10px; align-items: center; padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: color-mix(in srgb, var(--amber-text) 12%, var(--bg)); border-bottom: 1px solid color-mix(in srgb, var(--amber-text) 35%, transparent); color: var(--text); font-size: 14px; font-weight: 600; }
 .set-invalid-hint { margin: 2px 0 6px; font-size: 13px; font-weight: 600; color: var(--red-text); }
-.workout-pre { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Los dos accesos de antes de empezar, en una sola línea de chips (si no caben, se desliza): la serie 1, arriba. */
+.workout-pre { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+.workout-pre::-webkit-scrollbar { display: none; }
+.workout-pre .chip { min-height: 36px; font-size: 14px; }
 
 /* MARK: Zonas táctiles de al menos 44 × 44 px (WCAG 2.5.8 y guía de iOS) sin cambiar el dibujo:
    un área invisible centrada en el botón. :where() no suma especificidad, así que un botón ya
    posicionado (absolute, sticky…) conserva su posición. */
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button) { position: relative; }
-:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button)::after {
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button, .rpe-help, .set-label) { position: relative; }
+:where(.icon-btn, .nav-btn, .chip, .btn.small, .btn-sm, .link-btn, .hit, .set-check, .segmented button, .undo-toast button, .rpe-help, .set-label)::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -2788,7 +2806,7 @@ a.list-row { color: var(--text); text-decoration: none; }
 .onb-langs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .onb-hero { position: relative; display: grid; gap: 14px; padding: 22px 18px 20px; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); overflow: hidden; }
 .onb-hero .hero-ribbon { right: 22px; }
-.onb-logo { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 6px 18px rgba(255, 90, 31, 0.28); }
+.onb-logo { width: 72px; height: 72px; border-radius: 18px; }
 .onb-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-stretch: 108%; font-size: 40px; line-height: 0.98; letter-spacing: -0.02em; }
 .onb-lead { margin: 0; font-size: 17px; line-height: 1.4; color: var(--text-2); }
 .onb-features { list-style: none; margin: 0; padding: 0; border-radius: var(--radius); background: var(--card); box-shadow: inset 0 0 0 1px var(--separator); }

@@ -227,7 +227,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
     <span className="ex-last">
       {/* Dominadas, fondos…: el peso es el lastre, con su «+» como en el entreno. */}
       {/* El peso arriba y las repeticiones debajo: en una línea («57,5 kg × 10/9/8/7») le quitaba el sitio al nombre. */}
-      <strong>{top.weight > 0 ? `${addsLoad(planned.exerciseId) ? '+' : ''}${weight(top.weight, unit)}` : `${reps} reps`}</strong>
+      <strong>{top.weight > 0 ? `${addsLoad(planned) ? '+' : ''}${weight(top.weight, unit)}` : `${reps} reps`}</strong>
       {top.weight > 0 && <span className="tiny">× {reps}</span>}
       <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>
     </span>
@@ -253,7 +253,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   // dominadas con lastre no deben tapar al press de banca) y escrita como en el resto de la app.
   const bestSet = last?.exercises.flatMap((e) => workingSets(e).filter((s) => s.weight > 0 && s.reps > 0 && !(e.assisted && e.bodyweight !== undefined)).map((s) => ({
     name: e.name, reps: s.reps, e1rm: e1rm(s.weight, s.reps),
-    text: e.bodyweight === undefined ? liftText(s, unit, addsLoad(e.exerciseId)) : bodyweightText(s.weight, unit),
+    text: e.bodyweight === undefined ? liftText(s, unit, addsLoad(e)) : bodyweightText(s.weight, unit),
   })))
     .reduce<{ name: string; text: string; reps: number; e1rm: number } | undefined>((a, b) => (!a || b.e1rm > a.e1rm ? b : a), undefined)
   const muscles = routine.exercises.map((e) => ({ muscle: e.muscle, secondaryMuscles: catalog.get(e.exerciseId)?.secondaryMuscles ?? [] }))

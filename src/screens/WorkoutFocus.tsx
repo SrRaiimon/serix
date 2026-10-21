@@ -31,9 +31,9 @@ export function ReadinessCheck({ session, unit, warmup }: { session: Session; un
   if (hidden || !open) {
     return (
       <div className="workout-pre">
-        {!hidden && !session.readiness && <button className="btn small secondary" onClick={() => setOpen(true)}><HeartPulse size={15} /> {t('¿Cómo estás hoy?', 'How do you feel today?')}</button>}
-        {!hidden && level === 'low' && !lightened && <button className="btn small secondary" onClick={() => { editSession(session.id, (s) => lighten(s, unit)); setLightened(true) }}>{t('Bajar un 10 % el peso de hoy', "Lower today's weights by 10%")}</button>}
-        <button className="btn small secondary" onClick={warmup}><Flame size={15} /> {t('Calentar antes (5 min)', 'Warm up first (5 min)')}</button>
+        {!hidden && !session.readiness && <button className="chip" onClick={() => setOpen(true)}><HeartPulse size={15} aria-hidden="true" /> {t('¿Cómo estás hoy?', 'How do you feel today?')}</button>}
+        {!hidden && level === 'low' && !lightened && <button className="chip" onClick={() => { editSession(session.id, (s) => lighten(s, unit)); setLightened(true) }}>{t('Bajar un 10 % el peso de hoy', "Lower today's weights by 10%")}</button>}
+        <button className="chip" onClick={warmup} aria-label={t('Calentar antes (5 min)', 'Warm up first (5 min)')}><Flame size={15} aria-hidden="true" /> {t('Calentar 5 min', 'Warm up 5 min')}</button>
       </div>
     )
   }

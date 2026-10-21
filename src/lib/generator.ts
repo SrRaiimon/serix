@@ -1,8 +1,10 @@
 import type { Catalog, Exercise } from './catalog'
 import { t } from './i18n'
 import { isIsolation } from './isolation'
+import { MAIN_GROUPS } from './labels'
 import { defaultTracking, exerciseSeconds, PROGRAM_TARGET_SECONDS } from './tracking'
 import type { Progression } from './store'
+import { ABS_GROUP, countsForVolume, groupRange, groupShares } from './volume'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
 export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -97,6 +99,8 @@ const slots = {
   biceps: { kind: 'accessory', muscles: ['biceps'], match: /curl|chin/i, preferred: ['Barbell_Curl', 'Dumbbell_Bicep_Curl', 'EZ-Bar_Curl', 'Standing_Biceps_Cable_Curl', 'Close-Grip_EZ-Bar_Curl_with_Band', 'Kettlebell_Curl', 'Backpack_Curl', 'Chin-Up'] },
   hammer: { kind: 'accessory', muscles: ['biceps'], match: /hammer|curl/i, preferred: ['Hammer_Curls', 'Cable_Hammer_Curls_-_Rope_Attachment', 'Alternate_Hammer_Curl', 'Kettlebell_Curl', 'Backpack_Curl', 'Chin-Up'] },
   triceps: { kind: 'accessory', muscles: ['triceps'], match: /tricep|dip|skull|kickback|pushdown|close/i, preferred: ['Triceps_Pushdown', 'Lying_Triceps_Press', 'Standing_Dumbbell_Triceps_Extension', 'Band_Skull_Crusher', 'Dips_-_Triceps_Version', 'Push-Ups_-_Close_Triceps_Position', 'Bench_Dips'] },
+  // Glúteo directo: solo lo añade el equilibrado semanal (balanceWeek) cuando las piernas no llegan.
+  glute: { kind: 'accessory', muscles: ['glutes'], match: /hip thrust|bridge|kickback|hip extension|hip lift/i, preferred: ['Barbell_Hip_Thrust', 'Barbell_Glute_Bridge', 'One-Legged_Cable_Kickback', 'Hip_Extension_with_Bands', 'Single_Leg_Glute_Bridge', 'Butt_Lift_Bridge'] },
   core: { kind: 'core', muscles: ['abs'], preferred: ['Hanging_Leg_Raise', 'Dead_Bug', 'Crunches', 'Russian_Twist', 'Plank', 'Kettlebell_Windmill', 'Cable_Crunch'] },
   // Acondicionamiento: se elige por tipo (cardio o pliometría), no por músculo.
   conditioning: { kind: 'conditioning', muscles: [], preferred: ['Mountain_Climbers', 'Rope_Jumping', 'One-Arm_Kettlebell_Swings', 'Box_Jump_Multiple_Response', 'Freehand_Jump_Squat', 'Battling_Ropes'] },
@@ -390,11 +394,15 @@ type Chosen = { exercise: Exercise; slot: Slot }
  */
 type Picked = { ex: GeneratedExercise; kind: Kind }
 
-function buildDay(list: [SlotName, number][], time: TimeFit,
+function buildDay(...args: Parameters<typeof buildPicked>): GeneratedExercise[] {
+  return buildPicked(...args).map((p) => p.ex)
+}
+
+function buildPicked(list: [SlotName, number][], time: TimeFit,
   choose: (name: SlotName, variant: number, chosen: GeneratedExercise[], used: Set<string>) => Chosen | undefined,
   schemeFor: (found: Chosen, name: SlotName, picked: Picked[]) => { sets: number; repsMin: number; repsMax: number; rest: number },
   extra: (found: Chosen) => Partial<GeneratedExercise> = () => ({}),
-  reserve: [SlotName, number][] = []): GeneratedExercise[] {
+  reserve: [SlotName, number][] = []): Picked[] {
   const used = new Set<string>()
   const picked: Picked[] = []
   const perMuscle = new Map<string, number>()
@@ -447,9 +455,11 @@ interface TimeFit {
  * «Perder grasa», que es lo que promete ese objetivo. Si sobra tiempo (y `fill`), se añaden series hasta llenarlo:
  * con 90 minutos, un principiante hacía 20 series en ~62.
  */
-function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExercise[] {
+function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): Picked[] {
   // 3 minutos de margen al recortar (30 min dejaban 2 ejercicios: con 3 son ~32); al rellenar, sin pasarse.
-  const over = () => dayMinutes(picked.map((p) => p.ex)) > minutes + TIME_SLACK
+  // Con `fill` (el generador), también el tope de series del nivel: antes solo frenaba el relleno, y un
+  // principiante de fuerza a 90 min salía con 21 series en un día.
+  const over = () => dayMinutes(picked.map((p) => p.ex)) > minutes + TIME_SLACK || (!!fill && strengthSets(picked) > MAX_DAY_SETS[fill])
   // De atrás adelante y de una en una, para repartir el recorte entre los ejercicios.
   const trim = (applies: (kind: Kind) => boolean, floor: number) => {
     for (let changed = true; changed && over();) {
@@ -474,30 +484,171 @@ function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): GeneratedExerc
   }
   trim(() => true, 2)
   if (fill && Number.isFinite(minutes)) fillTime(picked, minutes, fill)
-  return picked.map((p) => p.ex)
+  return picked
 }
+
+/** Series de fuerza de un día (sin el acondicionamiento). */
+const strengthSets = (picked: Picked[]) => picked.reduce((n, p) => n + (p.kind === 'conditioning' ? 0 : p.ex.sets), 0)
+
+/** Series como mucho por ejercicio: 5 en los básicos y 4 en el resto; uno menos al empezar. */
+const setCap = (k: Kind, level: TrainingLevel) => (k === 'compound' ? 5 : k === 'conditioning' ? 0 : 4) - (level === 'beginner' ? 1 : 0)
 
 /**
  * Series de más hasta llenar el tiempo, de una en una y por orden (los básicos primero), sin pasar del tope por
  * ejercicio (5 en los básicos y 4 en el resto; uno menos al empezar) ni de MAX_SETS_PER_SESSION por músculo.
  */
 function fillTime(picked: Picked[], minutes: number, level: TrainingLevel) {
-  const cap = (k: Kind) => (k === 'compound' ? 5 : k === 'conditioning' ? 0 : 4) - (level === 'beginner' ? 1 : 0)
+  const cap = (k: Kind) => setCap(k, level)
   // Techo de series de fuerza por sesión: más no suma y cansa (un principiante a 90 min llegaba a 30). El tiempo que
   // sobra queda para calentar, el cardio o irse antes.
   const maxSets = MAX_DAY_SETS[level]
-  const strengthSets = () => picked.reduce((n, p) => n + (p.kind === 'conditioning' ? 0 : p.ex.sets), 0)
   const muscleSets = (m: string) => picked.reduce((n, p) => n + (p.ex.exercise.muscle === m ? p.ex.sets : 0), 0)
   for (const kinds of [['compound'], ['accessory', 'core']] as Kind[][]) {
     for (let changed = true; changed;) {
       changed = false
       for (const p of picked) {
-        if (!kinds.includes(p.kind) || p.ex.sets >= cap(p.kind) || muscleSets(p.ex.exercise.muscle) >= MAX_SETS_PER_SESSION || strengthSets() >= maxSets) continue
+        if (!kinds.includes(p.kind) || p.ex.sets >= cap(p.kind) || muscleSets(p.ex.exercise.muscle) >= MAX_SETS_PER_SESSION || strengthSets(picked) >= maxSets) continue
         if (dayMinutes(picked.map((x) => x.ex)) + (setSeconds(p.ex) + p.ex.rest) / 60 > minutes) continue
         p.ex.sets++
         changed = true
       }
     }
+  }
+}
+
+/** Huecos con los que se puede añadir un ejercicio para un grupo (orden de MAIN_GROUPS) que no llega. */
+const GROUP_SLOTS = ['chestFly inclinePress', 'horizontalPull verticalPull', 'lateralRaise rearDelt', 'biceps hammer', 'triceps',
+  'legExtension lunge', 'legCurl', 'glute', 'core'].map((x) => x.split(' ') as SlotName[])
+/** Grupos de pierna: lo que se añade para ellos va a un día que ya tenga pierna (y lo de torso, a uno de torso). */
+const LEG_MUSCLES = new Set(['quads', 'hamstrings', 'glutes'])
+const isLegGroup = (g: number) => MAIN_GROUPS[g][1].some((m) => LEG_MUSCLES.has(m))
+const ARM_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.includes('biceps') || muscles.includes('triceps') ? [g] : [])))
+
+/**
+ * Ajusta la semana al rango de series por grupo que luego usan el entrenador y Progreso › Músculos (groupRange):
+ * el programa recién creado no debe salir «por debajo» en su propio análisis ni pedir «quita series» a las dos
+ * semanas (con 6 días salían 41 series de hombro y con 4, 9 de bíceps). Paso a paso, el cambio que más acerca la
+ * semana al rango: una serie más o menos, cambiar una serie de un ejercicio a otro del mismo día (cuando el día
+ * ya está lleno), quitar un accesorio que sobra o añadir uno para un grupo que no tiene ninguno. Siempre dentro
+ * del tiempo (con el margen de TIME_SLACK), del tope de series por ejercicio, por músculo y por día.
+ */
+function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, slot: SlotName) => Picked | undefined) {
+  const ranges = MAIN_GROUPS.map((_, g) => groupRange(c.goal, c.level, g))
+  const shares = (p: Picked) => (p.kind === 'conditioning' || !countsForVolume(p.ex.exercise.id, p.ex.exercise.category)
+    ? MAIN_GROUPS.map(() => 0) : groupShares(p.ex.exercise.muscle, p.ex.exercise.secondaryMuscles))
+  /** El grupo del músculo principal (-1 si no es de ninguno: gemelo, trapecio, lumbar). */
+  const mainGroup = (p: Picked) => shares(p).indexOf(1)
+  const totals = () => {
+    const v = MAIN_GROUPS.map(() => 0)
+    for (const day of days) for (const p of day) shares(p).forEach((x, g) => { v[g] += x * p.ex.sets })
+    return v
+  }
+  const badness = (v: number[]) => v.reduce((n, x, g) => n + Math.max(0, ranges[g][0] - x) + Math.max(0, x - ranges[g][1]), 0)
+  const floor = (p: Picked) => (p.kind === 'compound' ? 3 : 2)
+  const strengthy = (p: Picked) => p.ex.exercise.category !== 'cardio' && p.ex.exercise.category !== 'plyometrics'
+  const fits = (day: Picked[], minutes = c.minutes + TIME_SLACK) => dayMinutes(day.map((p) => p.ex)) <= minutes && strengthSets(day) <= MAX_DAY_SETS[c.level]
+    // El tope por músculo cuenta como buildPicked: también lo de fuerza del acondicionamiento (escaladores).
+    && day.every((p) => !strengthy(p) || day.reduce((n, q) => n + (strengthy(q) && q.ex.exercise.muscle === p.ex.exercise.muscle ? q.ex.sets : 0), 0) <= MAX_SETS_PER_SESSION)
+  /** Si p es el único de brazos (bíceps o tríceps) del día: no se quita, aunque el tríceps vaya sobrado de rebote con los press (el torso se quedaba sin brazos). */
+  const onlyOne = (day: Picked[], p: Picked) => ARM_GROUPS.has(mainGroup(p)) && !day.some((q) => q !== p && q.kind !== 'conditioning' && mainGroup(q) === mainGroup(p))
+  /** Si a p le cabe una serie más en su día. */
+  const roomFor = (day: Picked[], p: Picked, minutes?: number) => {
+    if (p.kind === 'conditioning' || p.ex.sets >= setCap(p.kind, c.level)) return false
+    p.ex.sets++
+    const ok = fits(day, minutes)
+    p.ex.sets--
+    return ok
+  }
+  for (let step = 0; step < 200; step++) {
+    const now = totals()
+    const base = badness(now)
+    if (base === 0) break
+    const low = (g: number) => g >= 0 && now[g] < ranges[g][0]
+    const high = (g: number) => g >= 0 && now[g] > ranges[g][1]
+    let best: { gain: number; apply: () => void } | undefined
+    const consider = (gain: number, apply: () => void) => { if (gain > 1e-6 && (!best || gain > best.gain + 1e-9)) best = { gain, apply } }
+    const after = (changes: [Picked, number][]) => {
+      const v = [...now]
+      for (const [p, n] of changes) shares(p).forEach((x, g) => { v[g] += x * n })
+      return base - badness(v)
+    }
+    // Solo se toca lo que es directamente del grupo que no cuadra: bajar el press de banca porque el hombro (de
+    // rebote) se pasa le quitaba series al básico del día. El primero del día no baja nunca.
+    for (const day of days) {
+      day.forEach((p, i) => {
+        if (p.kind === 'conditioning') return
+        const g = mainGroup(p)
+        if (low(g) && roomFor(day, p)) consider(after([[p, 1]]) - p.ex.sets * 0.001, () => { p.ex.sets++ })
+        if (high(g) && i > 0 && p.ex.sets > floor(p)) consider(after([[p, -1]]) + p.ex.sets * 0.001, () => { p.ex.sets-- })
+        // Quitar uno entero que sobra (un segundo remo en el día de tirón): nunca el primero del día.
+        if (high(g) && i > 0 && !onlyOne(day, p)) consider(after([[p, -p.ex.sets]]) - (p.kind === 'compound' ? 0.05 : 0.01), () => { day.splice(day.indexOf(p), 1) })
+        // El día ya no da para más: una serie de otro ejercicio pasa a este.
+        if (low(g) && p.ex.sets < setCap(p.kind, c.level)) {
+          day.forEach((q, j) => {
+            if (q === p || j === 0 || q.kind === 'conditioning' || q.ex.sets <= floor(q)) return
+            p.ex.sets++; q.ex.sets--
+            const ok = fits(day)
+            p.ex.sets--; q.ex.sets++
+            if (ok) consider(after([[p, 1], [q, -1]]) - 0.002, () => { p.ex.sets++; q.ex.sets-- })
+          })
+        }
+      })
+    }
+    // Un grupo bajo: añadir un ejercicio suyo (al día de su zona con más tiempo libre) o, si el día no da para más,
+    // en lugar de un accesorio de otro grupo que va sobrado.
+    if (!best) {
+      now.forEach((v, g) => {
+        if (v >= ranges[g][0] || best) return
+        // La zona de un día, por los grupos de sus ejercicios: el gemelo o el abdomen no hacen de un día de pierna
+        // uno de torso (salían aperturas en la Pierna A).
+        const leg = isLegGroup(g)
+        const order = days.map((day, d) => ({ d, free: c.minutes + TIME_SLACK - dayMinutes(day.map((p) => p.ex)),
+          zone: g === ABS_GROUP || day.some((p) => { const m = mainGroup(p); return m >= 0 && m !== ABS_GROUP && isLegGroup(m) === leg }) }))
+          .filter((x) => x.zone).sort((a, b) => b.free - a.free)
+        for (const { d } of order) {
+          for (const slot of GROUP_SLOTS[g]) {
+            const p = add(d, slot)
+            if (!p || mainGroup(p) !== g) continue
+            p.ex.sets = 2
+            const at = days[d].findIndex((x) => x.kind === 'conditioning')
+            const where = at < 0 ? days[d].length : at
+            days[d].splice(where, 0, p)
+            const ok = fits(days[d])
+            days[d].splice(where, 1)
+            if (ok) { consider(after([[p, 2]]), () => { days[d].splice(where, 0, p) }); return }
+            for (const q of days[d].slice(1)) {
+              if (q.kind === 'compound' || q.kind === 'conditioning' || mainGroup(q) === g || onlyOne(days[d], q)) continue
+              const day = days[d]
+              const sets = Math.min(3, Math.max(2, q.ex.sets))
+              const i = day.indexOf(q)
+              day.splice(i, 1, p)
+              p.ex.sets = sets
+              const swapOk = fits(day)
+              day.splice(i, 1, q)
+              if (swapOk) consider(after([[p, sets], [q, -q.ex.sets]]) - 0.02, () => { p.ex.sets = sets; day.splice(day.indexOf(q), 1, p) })
+            }
+          }
+        }
+      })
+    }
+    if (!best) break
+    best.apply()
+  }
+  // Lo que se ha quitado deja tiempo libre: se vuelve a llenar, pero solo con grupos que aún tienen margen (el que
+  // va más holgado primero), sin sacar ninguno de su rango.
+  for (let step = 0; step < 200; step++) {
+    const now = totals()
+    let best: { room: number; p: Picked } | undefined
+    for (const day of days) {
+      for (const p of day) {
+        const sh = shares(p)
+        if (mainGroup(p) < 0 || !roomFor(day, p, c.minutes) || sh.some((x, g) => x > 0 && now[g] + x > ranges[g][1])) continue
+        const room = ranges[mainGroup(p)][1] - now[mainGroup(p)] - p.ex.sets * 0.01
+        if (!best || room > best.room) best = { room, p }
+      }
+    }
+    if (!best) return
+    best.p.ex.sets++
   }
 }
 
@@ -507,30 +658,39 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
   const n = exerciseCount(c.minutes)
   const allowed = new Set(equipmentInfo(c.equipment).allowed)
 
-  const days = templates.map((template, index) => {
+  const choose = (template: Template, name: SlotName, variant: number, chosen: GeneratedExercise[], used: Set<string>) =>
+    pickOrSubstitute(name, variant + variation, allowed, used, catalog,
+      // En la Pierna B de fuerza, la sentadilla frontal (secundaria, a 6-10) sí va tras el peso muerto pesado.
+      { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false, ...(template === strengthLowerB && name === 'squat' ? { axialUsed: false } : {}) })
+  const schemeFor = ({ exercise, slot }: Chosen, picked: Picked[]) => {
+    const s = scheme(slot.kind, c)
+    // Fuerza: pesado (3-5) solo el básico principal del día; los demás básicos, de volumen. Si no, un día de
+    // pierna eran 15 series a 3-5 (peso muerto, prensa y hack).
+    if (c.goal === 'strength' && slot.kind === 'compound' && picked.some((p) => p.kind === 'compound')) {
+      Object.assign(s, { sets: Math.max(3, s.sets - 1), repsMin: 6, repsMax: 10, rest: 120 })
+    }
+    return fitScheme(exercise, slot.kind, s, c.level)
+  }
+  const picked = templates.map((template, index) => {
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
-    const exercises = buildDay(list, { minutes: c.minutes, fill: c.level },
-      (name, variant, chosen, used) => pickOrSubstitute(name, variant + variation, allowed, used, catalog,
-        // En la Pierna B de fuerza, la sentadilla frontal (secundaria, a 6-10) sí va tras el peso muerto pesado.
-        { level: c.level, bar: c.equipment === 'gym' || !!c.pullupBar, equipment: c.equipment, strict: true, ...dayRules(chosen), bigLiftUsed: false, ...(template === strengthLowerB && name === 'squat' ? { axialUsed: false } : {}) }),
-      ({ exercise, slot }, _name, picked) => {
-        const s = scheme(slot.kind, c)
-        // Fuerza: pesado (3-5) solo el básico principal del día; los demás básicos, de volumen. Si no, un día de
-        // pierna eran 15 series a 3-5 (peso muerto, prensa y hack).
-        if (c.goal === 'strength' && slot.kind === 'compound' && picked.some((p) => p.kind === 'compound')) {
-          Object.assign(s, { sets: Math.max(3, s.sets - 1), repsMin: 6, repsMax: 10, rest: 120 })
-        }
-        return fitScheme(exercise, slot.kind, s, c.level)
-      },
+    return buildPicked(list, { minutes: c.minutes, fill: c.level },
+      (name, variant, chosen, used) => choose(template, name, variant, chosen, used),
+      (found, _name, done) => schemeFor(found, done),
       undefined,
       template.slots.slice(n).filter(([s]) => s !== 'conditioning'))
-    return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises }
   })
+  balanceWeek(picked, c, (d, slot) => {
+    const day = picked[d]
+    const found = choose(templates[d], slot, d, day.map((p) => p.ex), new Set(picked.flatMap((x) => x.map((p) => p.ex.exercise.id))))
+    return found && { ex: { exercise: found.exercise, ...schemeFor(found, day) }, kind: found.slot.kind }
+  })
+  const days = templates.map((template, index) => ({ name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${t(...template.name)}`, exercises: picked[index].map((p) => p.ex) }))
 
   return {
     name: `${splitName} · ${goalInfo(c.goal).short}`,
-    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${t(`unos ${c.minutes} min`, `about ${c.minutes} min`)} · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
+    // Sin «unos 60 min»: al lado sale la duración calculada (~63′) y eran dos cifras para lo mismo.
+    summary: `${t(`${c.days} días por semana`, `${c.days} days a week`)} · ${levelInfo(c.level).label} · ${equipmentInfo(c.equipment).label}`,
     days,
   }
 }

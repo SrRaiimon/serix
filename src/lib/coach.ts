@@ -1,5 +1,4 @@
 import { alternatives } from './alternatives'
-import { weeklyRange } from './autoreg'
 import { blockWeek } from './block'
 import type { Catalog, Exercise } from './catalog'
 import { startOfWeek } from './format'
@@ -10,6 +9,7 @@ import { stalls, streakWeeks } from './stats'
 import { defaultTracking } from './tracking'
 import type { AppData, Routine, Session, Settings } from './store'
 import { weekDone } from './schedule'
+import { countsForVolume, groupShares, weeklyRange } from './volume'
 
 // El entrenador de la semana: junta lo que ya calcula la app (estancamientos, volumen por grupo,
 // cómo llegas a entrenar) y lo convierte en pocos consejos con un botón que lo aplica a tus rutinas.
@@ -38,26 +38,23 @@ export function programRoutines(d: Pick<AppData, 'routines' | 'settings'>): Rout
 
 /**
  * Series semanales previstas por grupo (orden de MAIN_GROUPS) con tu programa: cada rutina se hace
- * `weeklyGoal / rutinas` veces por semana; el músculo principal cuenta 1 y cada secundario 0,5.
+ * `weeklyGoal / rutinas` veces por semana; cuenta como Progreso (groupShares).
  */
-/** Ejercicios de acondicionamiento que el catálogo apunta como fuerza (la sentadilla con salto, por ejemplo). */
-const CONDITIONING_ONLY = /jump|burpee|climber|skater|jack|sprawl|high_knees|battling/i
 
 export function plannedGroupSets(routines: Routine[], weeklyGoal: number, catalog: Catalog): number[] {
   if (!routines.length) return MAIN_GROUPS.map(() => 0)
   const times = weeklyGoal / routines.length
-  const load = new Map<string, number>()
+  const load = MAIN_GROUPS.map(() => 0)
   for (const r of routines) {
     for (const e of r.exercises) {
       // El cardio y los saltos (escaladores, burpees, sentadilla con salto) son para el gasto, no series de
       // fuerza: contados, «Perder grasa» recién generado salía con «quita una serie de escaladores».
       const c = catalog.get(e.exerciseId)
-      if (c?.category === 'cardio' || c?.category === 'plyometrics' || CONDITIONING_ONLY.test(e.exerciseId)) continue
-      load.set(e.muscle, (load.get(e.muscle) ?? 0) + e.sets * times)
-      for (const m of catalog.get(e.exerciseId)?.secondaryMuscles ?? []) if (m !== e.muscle) load.set(m, (load.get(m) ?? 0) + (e.sets * times) / 2)
+      if (!countsForVolume(e.exerciseId, c?.category)) continue
+      groupShares(e.muscle, c?.secondaryMuscles ?? []).forEach((share, g) => { load[g] += share * e.sets * times })
     }
   }
-  return MAIN_GROUPS.map(([, muscles]) => Math.round(muscles.reduce((t, m) => t + (load.get(m) ?? 0), 0) * 2) / 2)
+  return load.map((v) => Math.round(v * 2) / 2)
 }
 
 /** El ejercicio del programa que más series le da a un grupo (donde añadir o quitar una). */
@@ -99,7 +96,10 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
     tips.push({ id: 'easy', kind: 'easyWeek', stalled: stuck.length, tired })
   }
 
-  for (const s of stuck.slice(0, 2)) {
+  // Un consejo principal: si toca descargar, los cambios de ejercicio esperan (descargar y cambiar a la vez no se
+  // sabía cuál hacer). Si se oculta la descarga, vuelven.
+  const deloadFirst = tips.some((x) => x.kind === 'easyWeek' && !hidden.has(x.id))
+  for (const s of deloadFirst ? [] : stuck.slice(0, 2)) {
     const owners = routines.filter((r) => r.exercises.some((e) => e.exerciseId === s.exerciseId))
     const muscle = owners[0]?.exercises.find((e) => e.exerciseId === s.exerciseId)?.muscle ?? catalog.get(s.exerciseId)?.muscle ?? ''
     const exclude = new Set(owners.flatMap((r) => r.exercises.map((e) => e.exerciseId)))

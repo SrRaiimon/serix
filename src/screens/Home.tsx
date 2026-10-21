@@ -112,28 +112,29 @@ export function HomeScreen() {
           { value: thisMonth.length, label: t('Este mes', 'This month') },
           // Sin entrenos aún esta semana, lo de la pasada; salvo si ya sale en su resumen de arriba (la misma cifra
           // dos veces): entonces, lo movido este mes.
-          thisWeek.length > 0
+          // Con un solo entreno esta semana, su volumen ya sale en «Últimos entrenamientos» (la misma cifra dos veces).
+          thisWeek.length > 1
             ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido esta semana', 'Moved this week') }
+            : thisWeek.length === 1 && notice !== 'recap'
+              ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
             : notice === 'recap'
               ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
               : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
       )}
 
-      <div className="list">
+      {/* Las herramientas, en una rejilla de 2 × 2 (antes, cuatro filas con explicación: media pantalla). */}
+      <div className="home-tools">
         {([
-          [Zap, t('Entreno libre', 'Free workout'), t('Sin rutina: añades los ejercicios sobre la marcha', 'No routine: add exercises as you go'), startEmpty],
-          [Flame, t('WOD del día', 'Workout of the day'), t('Un entreno funcional corto que cambia cada día', 'A short functional workout that changes daily'), () => navigate('wod')],
-          [Timer, t('Temporizador', 'Timer'), t('Intervalos, Tabata, EMOM o cuenta atrás', 'Intervals, Tabata, EMOM or countdown'), () => navigate('timer')],
-          [Dumbbell, t('Ejercicios', 'Exercises'), t('Cómo se hace cada uno y qué músculos trabaja', 'How to do each one and the muscles it works'), () => navigate('exercises')],
+          [Zap, t('Entreno libre', 'Free workout'), t('Sin rutina', 'No routine'), startEmpty],
+          [Flame, t('WOD del día', 'Workout of the day'), t('Funcional corto', 'Short functional'), () => navigate('wod')],
+          [Timer, t('Temporizador', 'Timer'), t('Tabata, EMOM…', 'Tabata, EMOM…'), () => navigate('timer')],
+          [Dumbbell, t('Ejercicios', 'Exercises'), t('Cómo se hacen', 'How to do them'), () => navigate('exercises')],
         ] as const).map(([Icon, title, detail, go]) => (
-          <button key={title} className="list-row" onClick={go}>
+          <button key={title} className="home-tool" onClick={go}>
             <Icon size={20} aria-hidden="true" />
-            <span className="grow">
-              <span className="bold" style={{ display: 'block', fontSize: 15 }}>{title}</span>
-              <span className="small muted">{detail}</span>
-            </span>
-            <ChevronRight size={18} className="muted" aria-hidden="true" />
+            <span className="bold">{title}</span>
+            <span className="small muted">{detail}</span>
           </button>
         ))}
       </div>
@@ -142,7 +143,7 @@ export function HomeScreen() {
         <>
           <h2 className="section-title">{t('Últimos entrenamientos', 'Recent workouts')}</h2>
           <div className="list">
-            {sessions.slice(0, 3).map((s) => <SessionRow key={s.id} session={s} unit={unit} onClick={() => navigate('progress', 'session', s.id)} />)}
+            {sessions.slice(0, 2).map((s) => <SessionRow key={s.id} session={s} unit={unit} onClick={() => navigate('progress', 'session', s.id)} />)}
           </div>
           <button className="nav-btn" style={{ alignSelf: 'flex-start', fontWeight: 600 }} onClick={() => navigate('progress')}>{t('Ver todo el historial', 'See full history')}</button>
         </>
@@ -194,7 +195,8 @@ function FoodTodayCard() {
               : t(`Sin entreno de momento: −${int(-goals.shift)} kcal`, `No workout yet: −${int(-goals.shift)} kcal`)}</span>}
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
           <span className="small muted">
-            {goals ? [
+            {/* Sin nada apuntado, «Te quedan 2970 kcal» repetía la cifra de arriba: solo la proteína. */}
+            {goals && totals.kcal === 0 ? t(`Proteína: ${int(goals.protein)} g`, `Protein: ${int(goals.protein)} g`) : goals ? [
               totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal`, `${int(goals.kcal - totals.kcal)} kcal left`) : t(`${int(totals.kcal - goals.kcal)} kcal de más`, `${int(totals.kcal - goals.kcal)} kcal over`),
               totals.p < goals.protein ? t(`${int(goals.protein - totals.p)} g de proteína`, `${int(goals.protein - totals.p)} g of protein`) : t('proteína cumplida', 'protein reached'),
             ].join(totals.kcal <= goals.kcal && totals.p < goals.protein ? t(' y ', ' and ') : ' · ') : t(`Proteína ${int(totals.p)} g`, `Protein ${int(totals.p)} g`)}

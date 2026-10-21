@@ -1,9 +1,9 @@
 import { blockWeek, type TrainingBlock } from './block'
 import { fromKg, increment, toKg, type Unit } from './format'
-import type { TrainingGoal, TrainingLevel } from './generator'
 import { MAIN_GROUPS } from './labels'
 import { setCount, workingSets } from './stats'
 import type { Session, SessionExercise } from './store'
+import { groupShares } from './volume'
 
 // Ideas del panel de entrenadores (ver la conversación de la 0.0.22):
 // - Volumen semanal por grupo con un rango orientativo.
@@ -11,16 +11,6 @@ import type { Session, SessionExercise } from './store'
 // - Molestias: recordar si un ejercicio molestó la última vez.
 
 // MARK: Volumen semanal
-
-/**
- * Series semanales orientativas por grupo según el objetivo (series efectivas, cerca del fallo). Perder grasa
- * pide casi lo de ganar músculo: en déficit, el volumen es lo que lo conserva. En fuerza, hasta 15: con los
- * press, el hombro suma mucho de rebote sin que sea de más. Quien empieza progresa con menos: desde 6.
- */
-export function weeklyRange(goal: TrainingGoal, level?: TrainingLevel): [min: number, max: number] {
-  const [min, max]: [number, number] = goal === 'hypertrophy' ? [10, 20] : goal === 'fatLoss' ? [8, 20] : [6, 15]
-  return [level === 'beginner' ? Math.min(min, 6) : min, max]
-}
 
 export interface GroupVolume {
   name: [es: string, en: string]
@@ -32,28 +22,28 @@ export interface GroupVolume {
  * dejaba fuera el entreno del lunes anterior y quien cumplía su plan salía «por debajo».
  */
 export function volumeWeeks(sessions: Session[], now = Date.now()): number {
+  // Con los días reales (no redondeando hacia arriba): a los 8 días, 8/7 semanas y no 2, que dejaban a la mitad a
+  // quien cumplía su plan durante todo el primer mes.
   const first = sessions.reduce((min, s) => Math.min(min, s.start), now)
-  return Math.min(4, Math.max(1, Math.ceil((now - first) / (7 * 86400000))))
+  return Math.min(4, Math.max(1, (now - first) / (7 * 86400000)))
 }
 
 /**
  * Series por semana y grupo principal, de media en las últimas semanas (volumeWeeks): 1 por serie del músculo
- * principal y 0,5 por cada secundario (el criterio habitual de series fraccionadas).
+ * principal y 0,5 por los secundarios de cada grupo (series fraccionadas; ver groupShares).
  */
 export function weeklyGroupSets(sessions: Session[], secondaryOf: (exerciseId: string) => string[], now = Date.now()): GroupVolume[] {
   const weeks = volumeWeeks(sessions, now)
   const since = now - weeks * 7 * 86400000
-  const load = new Map<string, number>()
+  const load = MAIN_GROUPS.map(() => 0)
   for (const s of sessions) {
     if (s.start < since || s.start > now) continue
     for (const e of s.exercises) {
       const n = setCount(e)
-      if (!n) continue
-      load.set(e.muscle, (load.get(e.muscle) ?? 0) + n)
-      for (const m of secondaryOf(e.exerciseId)) if (m !== e.muscle) load.set(m, (load.get(m) ?? 0) + n / 2)
+      if (n) groupShares(e.muscle, secondaryOf(e.exerciseId)).forEach((share, g) => { load[g] += share * n })
     }
   }
-  return MAIN_GROUPS.map(([name, muscles]) => ({ name, sets: Math.round((muscles.reduce((t, m) => t + (load.get(m) ?? 0), 0) / weeks) * 2) / 2 }))
+  return MAIN_GROUPS.map(([name], g) => ({ name, sets: Math.round((load[g] / weeks) * 2) / 2 }))
 }
 
 // MARK: Autorregulación por RPE

@@ -436,7 +436,7 @@ export function FriendsScreen() {
                   <FriendCells key={r.me ? '__me' : friendKey(r.name)} r={r} unit={unit} />
                 ))}
               </div>
-              <span className="small muted">{t('Semanas seguidas entrenando y mejor 1RM estimado. Toca un amigo para ver la comparativa completa.', 'Weeks in a row training and best estimated 1RM. Tap a friend to see the full comparison.')}</span>
+              <span className="small muted">{t('Semanas seguidas entrenando y mejor máximo estimado. Toca un amigo para ver la comparativa completa.', 'Weeks in a row training and best estimated max. Tap a friend to see the full comparison.')}</span>
             </Card>
             <label className="list-row card-row">
               <span className="grow small">
@@ -569,7 +569,7 @@ export function FriendDetailScreen({ id }: { id: string }) {
           </Card>
         )}
 
-        <Card title={t('Básicos (1RM estimado)', 'Main lifts (estimated 1RM)')} icon={Trophy}>
+        <Card title={t('Básicos (máximo estimado)', 'Main lifts (estimated max)')} icon={Trophy}>
           <div className="compare-table">
             <span /><span className="tiny muted">{t('Tú', 'You')}</span><span className="tiny muted clamp-1">{friend.name}</span>
             {([['bench', t('Banca', 'Bench')], ['squat', t('Sentadilla', 'Squat')], ['deadlift', t('Peso muerto', 'Deadlift')]] as const).map(([k, label]) => (

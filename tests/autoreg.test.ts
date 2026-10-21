@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { lastPain, loadSuggestion, targetRpe, weeklyGroupSets, weeklyRange } from '../src/lib/autoreg'
+import { lastPain, loadSuggestion, targetRpe, weeklyGroupSets } from '../src/lib/autoreg'
+import { weeklyRange } from '../src/lib/volume'
 import { DAY, exercise, session, set, T0 } from './helpers'
 
 const kg = 'kg' as const
@@ -35,14 +36,14 @@ test('autorregulación: sin propuesta si va según lo previsto o no aplica', () 
 })
 
 test('series semanales por grupo: secundarios a media serie y media de las semanas que hay (hasta 4)', () => {
-  const now = T0 + 10 * DAY
+  const now = T0 + 15 * DAY
   const sessions = [
     session(9, [exercise('bench', [set(80, 8), set(80, 8), set(80, 8)], { muscle: 'pectorals' })]),
     session(1, [exercise('bench', [set(80, 8)], { muscle: 'pectorals' })]), // hace 9 días
   ]
   const groups = weeklyGroupSets(sessions, (id) => (id === 'bench' ? ['triceps', 'delts'] : []), now)
   const get = (es: string) => groups.find((g) => g.name[0] === es)!.sets
-  // 9 días de historial: 2 semanas. Pecho (3 + 1) / 2; tríceps y hombros, la mitad.
+  // 14 días de historial (los reales, no redondeados): 2 semanas. Pecho (3 + 1) / 2; tríceps y hombros, la mitad.
   assert.equal(get('Pecho'), 2)
   assert.equal(get('Tríceps'), 1)
   assert.equal(get('Hombros'), 1)

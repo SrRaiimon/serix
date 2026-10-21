@@ -52,6 +52,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const capped = !!computed && realPerKg < perKgValue - 0.05
   const maintenance = computed && maintenanceKcal(computed)
   const noDeficit = aim === 'lose' && !!computed && !!maintenance && computed.kcal >= maintenance - 50
+  // Por debajo de un 10 % de déficit se pierde muy despacio: se dice (con el suelo de calorías pasaba sin aviso).
+  const smallDeficit = aim === 'lose' && !noDeficit && !!computed && !!maintenance && computed.kcal > maintenance * 0.9
   const save = () => {
     if (!result) return
     updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry, nutritionTrainingSplit: split, nutritionBurned: (split && burned) || undefined, foodReminders: remind || undefined })
@@ -143,6 +145,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
             ? t(`Proteína: ${editable(realPerKg)} g por kilo; al perder grasa ayuda a no perder músculo.`, `Protein: ${editable(realPerKg)} g per kg; when losing fat it helps keep muscle.`)
             : t(`Proteína: ${editable(realPerKg)} g por kilo (con 1,6 g basta a la mayoría).`, `Protein: ${editable(realPerKg)} g per kg (1.6 g is enough for most people).`)}
           {capped && ` ${t('Con estas calorías no pasa del 35 % de ellas, para dejar sitio a los hidratos.', 'With these calories it stays at 35% of them, to leave room for carbs.')}`}
+          {smallDeficit && <><br />{t(`Gastas unas ${int(maintenance!)} kcal: con ${int(maintenance! - computed!.kcal)} menos al día perderás muy despacio. Sumar actividad (caminar, entrenar) lo acelera más que comer menos.`, `You burn about ${int(maintenance!)} kcal: ${int(maintenance! - computed!.kcal)} less a day means very slow loss. Adding activity (walking, training) speeds it up more than eating less.`)}</>}
           {noDeficit && <><br /><strong>{t(`Con tus datos gastas unas ${int(maintenance!)} kcal: comer menos no es recomendable sin supervisión médica. Para perder grasa, mejor sumar actividad (caminar, entrenar).`, `With your details you burn about ${int(maintenance!)} kcal: eating less is not advisable without medical supervision. To lose fat, add activity instead (walking, training).`)}</strong></>}
         </p>
       )}

@@ -182,10 +182,15 @@ export const CARRY_OVER_MAX = 0.15
  * de descanso se resta lo justo para que la semana sume lo mismo, según cuántos días entrenas. La resta
  * nunca pasa del 15 %: si entrenas casi a diario, se suma menos. La proteína no cambia.
  */
-export function trainingShift(kcal: number, perWeek: number): { up: number; down: number } {
+export function trainingShift(kcal: number, perWeek: number, maxDown = Infinity): { up: number; down: number } {
   const t = Math.min(6, Math.max(1, Math.round(perWeek)))
   const up = Math.round((kcal * Math.min(0.1, (CARRY_OVER_MAX * (7 - t)) / t)) / 10) * 10
-  return { up, down: Math.round((up * t) / (7 - t) / 10) * 10 }
+  const down = Math.round((up * t) / (7 - t) / 10) * 10
+  // Si el día de descanso no puede bajar tanto (el suelo de calorías), los de entreno suben menos: la semana sigue
+  // sumando el objetivo. Antes solo se recortaba la bajada y la semana sumaba ~480 kcal de más.
+  if (down <= maxDown) return { up, down }
+  const capped = Math.max(0, Math.floor(maxDown / 10) * 10)
+  return { up: Math.round((capped * (7 - t)) / t / 10) * 10, down: capped }
 }
 
 export interface DayGoalOptions {
@@ -228,10 +233,10 @@ function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): N
     return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training: burned > 0, shift }
   }
   if (!opts.training || goals.proteinOnly) return { ...goals, shift: 0 }
-  const { up, down } = trainingShift(goals.kcal, opts.training.perWeek)
-  const training = opts.training.days.has(day)
   // El día de descanso tampoco baja del suelo (1200 kcal con 6 días de entreno daban 1020 los de descanso).
-  const shift = training ? up : -Math.min(down, Math.max(0, goals.kcal - dayFloor(goals)))
+  const { up, down } = trainingShift(goals.kcal, opts.training.perWeek, Math.max(0, goals.kcal - dayFloor(goals)))
+  const training = opts.training.days.has(day)
+  const shift = training ? up : -down
   return { ...goals, kcal: goals.kcal + shift, carbs: Math.max(0, Math.round(goals.carbs + shift / 4)), training, shift }
 }
 

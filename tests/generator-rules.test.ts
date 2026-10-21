@@ -5,7 +5,10 @@ import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { buildLibraryProgram, dayMinutes, equipmentProfiles, exerciseCount, generate, HEAVY_AXIAL, levels, LIBRARY, MAX_SETS_PER_SESSION, type GeneratorConfig } from '../src/lib/generator'
 import { progressionStep } from '../src/lib/progression'
 import { routineMinutes, type Routine } from '../src/lib/store'
+import { plannedGroupSets } from '../src/lib/coach'
+import { MAIN_GROUPS } from '../src/lib/labels'
 import { defaultTracking } from '../src/lib/tracking'
+import { ABS_GROUP, groupRange } from '../src/lib/volume'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
 const BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
@@ -269,6 +272,43 @@ test('duración: el generador cuenta los minutos igual que la app', () => {
     for (const day of generate({ goal, level: 'intermediate', days: 4, minutes: 60, equipment: 'gym' }, catalog).days) {
       const routine = { exercises: day.exercises.map((g) => ({ ...g, exerciseId: g.exercise.id, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine
       assert.equal(Math.round(dayMinutes(day.exercises)), routineMinutes(routine), `${goal}: ${day.name}`)
+    }
+  }
+})
+
+// Lo que el programa da por semana a cada grupo, contado como el entrenador y Progreso › Músculos.
+const weekly = (c: GeneratorConfig) => {
+  const days = generate(c, catalog).days
+  const routines = days.map((d, i) => ({ id: `r${i}`, name: d.name, exercises: d.exercises.map((x) => ({ exerciseId: x.exercise.id, name: x.exercise.name, muscle: x.exercise.muscle, sets: x.sets, repsMin: x.repsMin, repsMax: x.repsMax, rest: x.rest })) })) as unknown as Routine[]
+  return plannedGroupSets(routines, days.length, catalog)
+}
+
+test('volumen semanal: el programa cumple el rango que luego marca la app', () => {
+  // El caso del panel: ganar músculo, intermedio, 4 días de 60 min salía «por debajo» en pecho y bíceps.
+  const v = weekly({ goal: 'hypertrophy', level: 'intermediate', days: 4, minutes: 60, equipment: 'gym' })
+  v.forEach((sets, g) => {
+    const [min, max] = groupRange('hypertrophy', 'intermediate', g)
+    assert.ok(sets >= min && sets <= max, `${MAIN_GROUPS[g][0][0]}: ${sets} fuera de ${min}-${max}`)
+  })
+  // En el gimnasio, con 3 días o más y 60 minutos o más: nada muy por debajo ni muy por encima (antes, 41 series
+  // de hombro a 6 días y 7,5 de glúteo a 3).
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const days of [3, 4, 5, 6]) for (const minutes of [60, 90]) {
+    weekly({ goal, level, days, minutes, equipment: 'gym' }).forEach((sets, g) => {
+      const [min, max] = groupRange(goal, level, g)
+      assert.ok(sets >= min - 2 && sets <= max + 5, `${goal}/${level}/${days}d/${minutes}: ${MAIN_GROUPS[g][0][0]} ${sets} (rango ${min}-${max})`)
+    })
+  }
+  // «Estar en forma»: algo de abdomen cada semana.
+  assert.ok(weekly({ goal: 'general', level: 'intermediate', days: 3, minutes: 60, equipment: 'gym' })[ABS_GROUP] >= 4)
+})
+
+test('tope de series por sesión según el nivel: también lo elegido, no solo el relleno', () => {
+  const max = { beginner: 18, intermediate: 24, advanced: 28 }
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const { id: equipment } of equipmentProfiles) for (const days of [2, 3, 4, 5, 6]) for (const minutes of [60, 90]) {
+    for (const day of generate({ goal, level, days, minutes, equipment }, catalog).days) {
+      // Sin el bloque de acondicionamiento (escaladores, comba, swing): el tope es de fuerza.
+      const sets = day.exercises.filter((x) => !['cardio', 'plyometrics'].includes(x.exercise.category) && !/climber|swing|jump|rope|battling/i.test(x.exercise.id)).reduce((t, x) => t + x.sets, 0)
+      assert.ok(sets <= max[level], `${goal}/${level}/${equipment}/${days}d/${minutes}: ${sets} series en ${day.name}`)
     }
   }
 })

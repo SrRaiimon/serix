@@ -47,12 +47,19 @@ export function fillBodyweights() {
 }
 
 /** Lo apuntado en dominadas y fondos: «tu peso + 10 kg», «tu peso − 20 kg» (asistida) o «tu peso». */
+/** Ejercicios del catálogo con material «peso corporal» (flexiones, zancadas…): los registra App al cargarlo. */
+const bodyweightIds = new Set<string>()
+export function registerBodyweightExercises(ids: Iterable<string>) {
+  for (const id of ids) bodyweightIds.add(id)
+}
+
 /**
- * Si el peso apuntado es lastre (se suma al cuerpo): dominadas, fondos y, con su material del catálogo, los
- * de peso corporal. Así se escribe con «+» aunque aún no conste el peso corporal.
+ * Si el peso apuntado es lastre (se suma al cuerpo): dominadas, fondos y los de peso corporal del catálogo, salvo
+ * con máquina asistida (ahí el peso es la ayuda). Así se escribe con «+» aunque aún no conste el peso corporal,
+ * y igual en todas las pantallas.
  */
-export const addsLoad = (exerciseId: string, equipment?: string): boolean =>
-  equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId)
+export const addsLoad = (e: { exerciseId: string; assisted?: boolean }): boolean =>
+  !e.assisted && (BODYWEIGHT_LIFTS.has(e.exerciseId) || bodyweightIds.has(e.exerciseId))
 
 /** «20 kg», «+20 kg» si es lastre sin peso corporal conocido, o «tu peso + 20 kg» si se conoce (`added`). */
 export function liftText(r: { weight: number; added?: number }, unit: Unit, lastre: boolean): string {

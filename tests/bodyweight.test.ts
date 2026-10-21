@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { addsLoad, bodyweightAt, BODYWEIGHT_LIFTS, liftText } from '../src/lib/bodyweight'
+import { addsLoad, bodyweightAt, BODYWEIGHT_LIFTS, liftText, registerBodyweightExercises } from '../src/lib/bodyweight'
 import { setShortText, setText } from '../src/lib/tracking'
 import { e1rm, exerciseHistory, loadSets, records, sessionVolume, workingSets } from '../src/lib/stats'
 import { defaultSettings } from '../src/lib/store'
@@ -52,9 +52,13 @@ test('solo cuentan ejercicios de todo el cuerpo (no fondos en banco ni dominadas
 })
 
 test('lastre con «+» aunque no conste el peso corporal', () => {
-  assert.equal(addsLoad('Pullups'), true)
-  assert.equal(addsLoad('Pushups', 'bodyweight'), true)
-  assert.equal(addsLoad('Barbell_Bench_Press_-_Medium_Grip', 'barbell'), false)
+  assert.equal(addsLoad({ exerciseId: 'Pullups' }), true)
+  // En máquina asistida el peso es la ayuda, no lastre.
+  assert.equal(addsLoad({ exerciseId: 'Pullups', assisted: true }), false)
+  assert.equal(addsLoad({ exerciseId: 'Pushups' }), false)
+  registerBodyweightExercises(['Pushups'])
+  assert.equal(addsLoad({ exerciseId: 'Pushups' }), true)
+  assert.equal(addsLoad({ exerciseId: 'Barbell_Bench_Press_-_Medium_Grip' }), false)
   const s = set(20, 8)
   assert.equal(setShortText(s, 'weight_reps', 'kg', true), '+20 × 8')
   assert.equal(setText(s, 'weight_reps', 'kg', true), '+20 kg × 8')

@@ -17,7 +17,7 @@ import { AlternativesSheet } from './Alternatives'
 import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARBELL_EQUIPMENT, fromFloor, warmupSets } from '../lib/warmup'
-import { addsLoad, BODYWEIGHT_LIFTS } from '../lib/bodyweight'
+import { BODYWEIGHT_LIFTS } from '../lib/bodyweight'
 import { SetRow, type SetContext } from './WorkoutSet'
 
 /** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
@@ -37,7 +37,7 @@ interface Kit {
 
 export const kitOf = (exerciseId: string, equipment = ''): Kit => ({
   barbell: BARBELL_EQUIPMENT.has(equipment),
-  bodyweight: addsLoad(exerciseId, equipment),
+  bodyweight: equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId),
   pairs: ['dumbbell', 'kettlebell'].includes(equipment),
   needsWeight: LOADED.has(equipment) && !BODYWEIGHT_LIFTS.has(exerciseId),
 })
@@ -283,12 +283,14 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
           <SetRow key={set.id} set={set} label={label} previous={prev} current={set.id === currentSet} context={setContext}
             onChange={(patch) => edit((e) => { Object.assign(e.sets.find((s) => s.id === set.id)!, patch) })}
             onDelete={() => {
+              // La de al lado: la siguiente o, si era la última, la anterior.
+              const neighbour = exercise.sets[exercise.sets.indexOf(set) + 1] ?? exercise.sets[exercise.sets.indexOf(set) - 1]
               withUndo(t('Serie eliminada', 'Set deleted'), () => edit((e) => { e.sets = e.sets.filter((s) => s.id !== set.id) }))
               // El botón que tenía el foco (el de la serie) ya no existe: a la serie de al lado o a «Añadir serie»,
               // no al principio de la página (con teclado o lector no se llegaba al «Deshacer»).
               requestAnimationFrame(() => {
                 const card = document.getElementById(`ex-${exercise.id}`)
-                const target = card?.querySelector<HTMLElement>('.set-label') ?? card?.querySelector<HTMLElement>('.add-set')
+                const target = (neighbour && document.getElementById(`set-${neighbour.id}`)?.querySelector<HTMLElement>('.set-label')) || card?.querySelector<HTMLElement>('.add-set')
                 target?.focus()
               })
             }}

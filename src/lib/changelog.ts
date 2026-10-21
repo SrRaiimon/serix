@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.3',
+    items: [
+      ['Programas equilibrados: cada músculo recibe las series de la zona que luego marca Progreso › Músculos (ni hombro de más ni bíceps o glúteo de menos), y la espalda ya no se cuenta de más.', 'Balanced programs: each muscle gets the sets in the range Progress › Muscles shows (no extra shoulders, no missing biceps or glutes), and back is no longer over-counted.'],
+      ['El entreno empieza por la serie: nombre y cuenta en una línea y los accesos de antes de empezar en una fila de chips.', 'The workout starts with the set: name and count on one line and the pre-workout shortcuts in a single row of chips.'],
+      ['Inicio más corto: herramientas en una rejilla, dos últimos entrenos y sin cifras repetidas.', 'Shorter Home: tools in a grid, the last two workouts and no repeated figures.'],
+      ['Los principiantes no pasan de 18 series por sesión con ningún objetivo; y al terminar, el calentamiento sin marcar ya no cuenta como series perdidas.', 'Beginners stay at 18 sets per session with any goal; and when finishing, an unticked warm-up no longer counts as lost sets.'],
+      ['Comidas: con el suelo de calorías la semana sigue sumando tu objetivo, y te avisa si el déficit es muy pequeño.', 'Food: with the calorie floor the week still adds up to your goal, and it warns you if the deficit is very small.'],
+      ['El entrenador da un consejo principal: si toca descarga, los cambios de ejercicio esperan; y el «+» del lastre ya no sale en las máquinas asistidas.', 'The coach gives one main tip: if a deload is due, exercise swaps wait; and the added-weight "+" no longer shows on assisted machines.'],
+    ],
+  },
+  {
     version: '0.1.2',
     items: [
       ['Dominadas y fondos con lastre llevan su «+» en todas partes (rutinas, historial, récords, informe), también si aún no has apuntado tu peso.', 'Weighted pull-ups and dips show their "+" everywhere (routines, history, records, report), even before you log your bodyweight.'],

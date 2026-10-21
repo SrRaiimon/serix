@@ -1,7 +1,7 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
-import { fillBodyweights } from './lib/bodyweight'
+import { fillBodyweights, registerBodyweightExercises } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
 import { dictReady, langKey, onDict, t } from './lib/i18n'
@@ -79,7 +79,13 @@ export default function App() {
   const customKey = JSON.stringify(customExercises)
   // Cambia con el idioma y cuando llega su diccionario (francés y portugués se descargan aparte).
   const language = useSyncExternalStore(onDict, langKey)
-  const catalog = useMemo(() => (raw ? new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey)) : undefined), [raw, language, customKey])
+  const catalog = useMemo(() => {
+    if (!raw) return undefined
+    const c = new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey))
+    // Para el «+» del lastre en todas las pantallas (bodyweight.ts), también en los ejercicios propios.
+    registerBodyweightExercises(c.exercises.filter((e) => e.equipment === 'bodyweight').map((e) => e.id))
+    return c
+  }, [raw, language, customKey])
 
   useEffect(() => {
     const data = loadData()
