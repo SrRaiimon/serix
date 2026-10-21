@@ -1,7 +1,7 @@
 // Un ejercicio del entreno: sus series, sus avisos (estancado, molestia, primera vez) y sus menús.
 import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching'
 import { navigate } from '../lib/router'
-import { ArrowUpRight, BatteryLow, Check, Ellipsis, Info, Plus, StickyNote, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, Check, Ellipsis, Info, Plus, StickyNote, TrendingDown, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { ActionSheet, Thumb } from '../components/ui'
 import { linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -17,7 +17,7 @@ import { AlternativesSheet } from './Alternatives'
 import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
 import { BARBELL_EQUIPMENT, fromFloor, warmupSets } from '../lib/warmup'
-import { BODYWEIGHT_LIFTS } from '../lib/bodyweight'
+import { addsLoad, BODYWEIGHT_LIFTS } from '../lib/bodyweight'
 import { SetRow, type SetContext } from './WorkoutSet'
 
 /** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
@@ -37,7 +37,7 @@ interface Kit {
 
 export const kitOf = (exerciseId: string, equipment = ''): Kit => ({
   barbell: BARBELL_EQUIPMENT.has(equipment),
-  bodyweight: equipment === 'bodyweight' || BODYWEIGHT_LIFTS.has(exerciseId),
+  bodyweight: equipment === 'bodyweight' || addsLoad({ exerciseId }),
   pairs: ['dumbbell', 'kettlebell'].includes(equipment),
   needsWeight: LOADED.has(equipment) && !BODYWEIGHT_LIFTS.has(exerciseId),
 })
@@ -164,7 +164,8 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   const prevDrops = previous.filter((p) => p.kind === 'drop')
   let drops = 0
   const setContext: SetContext = {
-    fresh: !previous.length, bodyweight, barbell, needsWeight: needsWeight && !exercise.assisted, tracking, unit, lastMax,
+    // En la máquina asistida el peso es la ayuda: ni «+» en la serie anterior ni lastre.
+    fresh: !previous.length, bodyweight: bodyweight && !exercise.assisted, barbell, needsWeight: needsWeight && !exercise.assisted, tracking, unit, lastMax,
     repsPlaceholder: hasTarget ? target : '0', defaultReps: exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin,
     timePlaceholder: clock(targetSeconds), targetSeconds, tempo: exercise.tempo,
   }
@@ -194,14 +195,10 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         </button>
       )}
 
-      {exercise.auto && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
+      {/* En descarga, ni «para subir de peso» ni el aviso repetido: va una sola vez arriba del entreno. */}
+      {exercise.auto && !(exercise.deload && exercise.auto.kind !== 'wave') && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
 
-      {exercise.deload && exercise.auto?.kind !== 'wave' ? (
-        <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
-          <BatteryLow size={16} style={{ flexShrink: 0 }} />
-          {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}
-        </span>
-      ) : !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
+      {!exercise.deload && !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
         <StallBox best={stalled.best} unit={unit} onDeload={() => edit((e) => applyDeload(e, unit))} onVariants={() => setReplacing(true)} />
       )}
 

@@ -3,7 +3,7 @@ import { rest, uid } from '../lib/format'
 import type { GeneratedProgram } from '../lib/generator'
 import { t } from '../lib/i18n'
 import { routineMinutes, update, type Routine } from '../lib/store'
-import { defaultTracking, targetText } from '../lib/tracking'
+import { defaultTracking, PROGRAM_TARGET_SECONDS, targetText } from '../lib/tracking'
 
 // Piezas del programa generado que comparten Rutinas y el cuestionario inicial. Aparte de Routines.tsx para
 // que la bienvenida no descargue la pantalla de Rutinas entera (con ejercicios, gráficas y compartir).
@@ -23,7 +23,7 @@ export function saveProgram(program: GeneratedProgram) {
           return {
             exerciseId: g.exercise.id, name: g.exercise.name, muscle: g.exercise.muscle,
             sets: g.sets, repsMin: g.repsMin, repsMax: g.repsMax, rest: g.rest, tracking,
-            ...(tracking === 'time' ? { targetSeconds: 60 } : {}),
+            ...(tracking === 'time' ? { targetSeconds: PROGRAM_TARGET_SECONDS } : {}),
             // Los programas generados suben el peso solos (doble progresión salvo que se indique otra).
             ...(tracking === 'weight_reps' ? { progression: g.progression ?? 'double' } : {}),
             ...(g.trainingMax ? { trainingMax: g.trainingMax, tmSince: Date.now() } : {}),
@@ -50,7 +50,7 @@ export function PullupBarRow({ value, onChange }: { value: boolean; onChange: (v
 
 /** Duración estimada de un día de programa, con routineMinutes: la misma cuenta que Inicio y Rutinas. */
 export const programDayMinutes = (d: GeneratedProgram['days'][number]) =>
-  routineMinutes({ exercises: d.exercises.map((g) => ({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })) } as unknown as Routine)
+  routineMinutes({ exercises: d.exercises.map((g) => ({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: PROGRAM_TARGET_SECONDS })) } as unknown as Routine)
 
 export function ProgramPreview({ program }: { program: GeneratedProgram }) {
   // Las cifras del programa, como en el resto de la app: días y la media por día de ejercicios, series y duración.
@@ -86,7 +86,7 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
                 <Thumb exerciseId={g.exercise.id} size={44} />
                 <span className="grow">
                   <span className="bold clamp-2" style={{ fontSize: 15 }}>{g.exercise.name}</span>
-                  <span className="small muted">{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })} · {rest(g.rest)}</span>
+                  <span className="small muted">{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: PROGRAM_TARGET_SECONDS })} · {rest(g.rest)}</span>
                 </span>
               </div>
             ))}

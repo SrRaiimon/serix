@@ -269,8 +269,9 @@ export function dayGoalOptions(data: {
   // Sin días marcados, hoy cuenta ya como de entreno si es tu costumbre: 3 de las 4 últimas semanas entrenaste este
   // mismo día. Si no, un lunes de entreno restaba 360 kcal hasta pulsar Empezar (y saltaba 630 al empezar).
   const today = dayKey(now)
+  // Con shiftDay (por fecha, no restando milisegundos): con el cambio de hora, restar 7 × 24 h caía en el día de antes.
   const usual = !data.settings.trainingDays?.length && [1, 2, 3, 4].filter((w) => {
-    const day = dayKey(now - w * 7 * 86400000)
+    const day = shiftDay(today, -7 * w)
     return data.sessions.some((s) => s.end !== undefined && dayKey(s.start) === day)
   }).length >= 3
   if (data.settings.nutritionBurned) {
@@ -281,11 +282,14 @@ export function dayGoalOptions(data: {
       if (kcal) burned.set(dayKey(s.start), (burned.get(dayKey(s.start)) ?? 0) + kcal)
     }
     // Gasto medio de un entreno (los de las últimas 8 semanas; sin ninguno, una hora de pesas: 2,5 MET netos).
-    const since = dayKey(now - 56 * 86400000)
+    const since = shiftDay(today, -56)
     const recent = [...burned].filter(([d]) => d >= since).map(([, k]) => k)
     const kg = weightOn(data, now) ?? 70
     const perSession = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 2.5 * kg
-    if (usual && !burned.has(today)) burned.set(today, perSession)
+    // Hoy cuenta como de entreno si es tu costumbre o si es uno de tus días marcados (Perfil → Entrenamiento): antes,
+    // con días marcados, hoy era de descanso hasta terminar el entreno.
+    const marked = data.settings.trainingDays?.includes((new Date(now).getDay() + 6) % 7)
+    if ((usual || marked) && !burned.has(today)) burned.set(today, perSession)
     return { carryOver, burned, burnedDaily: (perSession * data.settings.weeklyGoal) / 7 }
   }
   const days = new Set(data.nutrition.trainingDays ?? [])
@@ -294,8 +298,9 @@ export function dayGoalOptions(data: {
   // Los días de la semana que tienes marcados para entrenar (Perfil → Entrenamiento) cuentan ya como de
   // entreno de hoy en adelante: si no, hoy salía «día de descanso» hasta terminar el entreno.
   for (let i = 0; i < 7 && data.settings.trainingDays?.length; i++) {
-    const at = now + i * 86400000
-    if (data.settings.trainingDays.includes((new Date(at).getDay() + 6) % 7)) days.add(dayKey(at))
+    const day = shiftDay(today, i)
+    const [y, m, d] = day.split('-').map(Number)
+    if (data.settings.trainingDays.includes((new Date(y, m - 1, d).getDay() + 6) % 7)) days.add(day)
   }
   return { carryOver, training: { days, perWeek: data.settings.weeklyGoal } }
 }

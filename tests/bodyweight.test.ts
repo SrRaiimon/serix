@@ -67,4 +67,7 @@ test('lastre con «+» aunque no conste el peso corporal', () => {
   assert.equal(liftText({ weight: 20 }, 'kg', true), '+20 kg')
   assert.equal(liftText({ weight: 20 }, 'kg', false), '20 kg')
   assert.equal(liftText({ weight: 100, added: 20 }, 'kg', true), 'tu peso + 20 kg')
+  // Se sustituye la lista: lo registrado aquí no queda para los demás tests.
+  registerBodyweightExercises([])
+  assert.equal(addsLoad({ exerciseId: 'Pushups' }), false)
 })

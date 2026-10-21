@@ -986,7 +986,6 @@
 "Músculo": "Muscle",
 "Músculo principal": "Muscle principal",
 "Músculos": "Muscles",
-"Músculos esta semana": "Muscles cette semaine",
 "Músculos que trabaja": "Muscles travaillés",
 "Músculos secundarios (opcional)": "Muscles secondaires (facultatif)",
 "Músculos trabajados en los últimos 7 días": "Muscles travaillés ces 7 derniers jours",
@@ -2122,5 +2121,17 @@
 "Inicio más corto: herramientas en una rejilla, dos últimos entrenos y sin cifras repetidas.": "Accueil plus court : outils en grille, les deux dernières séances et plus de chiffres répétés.",
 "Los principiantes no pasan de 18 series por sesión con ningún objetivo; y al terminar, el calentamiento sin marcar ya no cuenta como series perdidas.": "Les débutants ne dépassent pas 18 séries par séance, quel que soit l'objectif ; et en terminant, l'échauffement non coché ne compte plus comme séries perdues.",
 "Comidas: con el suelo de calorías la semana sigue sumando tu objetivo, y te avisa si el déficit es muy pequeño.": "Repas : avec le plancher de calories, la semaine totalise toujours ton objectif, et l'app prévient si le déficit est très faible.",
-"El entrenador da un consejo principal: si toca descarga, los cambios de ejercicio esperan; y el «+» del lastre ya no sale en las máquinas asistidas.": "Le coach donne un conseil principal : si une décharge s'impose, les changements d'exercice attendent ; et le « + » du lest n'apparaît plus sur les machines assistées."
+"El entrenador da un consejo principal: si toca descarga, los cambios de ejercicio esperan; y el «+» del lastre ya no sale en las máquinas asistidas.": "Le coach donne un conseil principal : si une décharge s'impose, les changements d'exercice attendent ; et le « + » du lest n'apparaît plus sur les machines assistées.",
+"El abdomen no tiene mínimo: lo trabajan los básicos.": "Les abdos n'ont pas de minimum : les mouvements de base les travaillent.",
+"En abdomen, desde {0}.": "Pour les abdos, à partir de {0}.",
+"Músculos en los últimos 7 días": "Muscles des 7 derniers jours",
+"Por semana, con tus {0} días.": "Par semaine, sur tes {0} jours.",
+"Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.": "Semaine de décharge : moins de séries et 10 % de poids en moins pour récupérer. La suivante, tu reprends tes charges.",
+"Series · descarga": "Séries · décharge",
+"series · descarga": "séries · décharge",
+"Semana de descarga coherente: Inicio, Rutinas y el detalle cuentan las series que harás de verdad, y en el entreno sale un solo aviso, sin «para subir de peso».": "Semaine de décharge cohérente : Accueil, Routines et le détail comptent les séries que tu feras vraiment, et la séance n'affiche qu'un seul avis, sans « pour monter en poids ».",
+"«Perder grasa» cuenta el swing igual que Progreso: los programas de 5 y 6 días ya no salen pasados en femoral u hombro.": "« Perdre du gras » compte le swing comme Progrès : les programmes de 5 et 6 jours ne dépassent plus en ischios ou épaules.",
+"Botones más fáciles de tocar: el RPE en dos filas en el móvil, los accesos de antes de empezar con su zona completa, y sin «+» en las máquinas asistidas.": "Boutons plus faciles à toucher : le RPE sur deux rangées sur mobile, les accès d'avant séance avec toute leur zone, et plus de « + » sur les machines assistées.",
+"Comidas: sin «Te quedan…» repetido cuando aún no has comido; tus días marcados cuentan como entreno también con las calorías gastadas; y las fechas, bien con el cambio de hora.": "Repas : plus de « Il te reste… » répété avant de manger ; tes jours marqués comptent comme entraînement aussi avec les calories dépensées ; et les dates restent justes au changement d'heure.",
+"Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.": "Progrès › Muscles : « 7 derniers jours » dans le titre, la légende se distingue en sombre, la récupération est en gris et non en rouge, et les abdos sont expliqués."
 }

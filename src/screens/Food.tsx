@@ -373,8 +373,11 @@ function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Pe
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
       </div>
       <span className={`small food-left ${left < 0 ? 'over' : 'muted'}`}>
-        {left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}
-        {goals.protein > totals.p ? t(` y ${g(goals.protein - totals.p)} g de proteína`, ` and ${g(goals.protein - totals.p)} g of protein`) : t(' · proteína cumplida', ' · protein reached')}
+        {/* Sin nada apuntado, «Te quedan 2340 kcal» repetía la cifra de arriba: solo la proteína (como en Inicio). */}
+        {totals.kcal === 0 ? t(`Proteína: ${int(goals.protein)} g`, `Protein: ${int(goals.protein)} g`) : <>
+          {left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}
+          {goals.protein > totals.p ? t(` y ${g(goals.protein - totals.p)} g de proteína`, ` and ${g(goals.protein - totals.p)} g of protein`) : t(' · proteína cumplida', ' · protein reached')}
+        </>}
       </span>
       <div className="food-macros">
         {macros.map((m) => (

@@ -2,7 +2,7 @@ import { BlockStatus } from '../components/Block'
 import { lastPain } from '../lib/autoreg'
 import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
-import { ChevronDown, Link2, Maximize2, Plus, Trash2 } from 'lucide-react'
+import { BatteryLow, ChevronDown, Link2, Maximize2, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActionSheet, Progress, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots } from '../lib/groups'
@@ -188,6 +188,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
             </div>
             {working.length > 0 && <Progress value={done} total={working.length} />}
             <BlockStatus at={session.start} />
+            {session.exercises.some((e) => e.deload && e.auto?.kind !== 'wave') && (
+              <span className="small row workout-deload"><BatteryLow size={16} aria-hidden="true" />
+                {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}</span>
+            )}
             {/* Antes de la primera serie, solo dos accesos pequeños: la lista de series queda a la vista. */}
             {!started && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {
               minimizeWorkout()

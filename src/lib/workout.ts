@@ -5,7 +5,7 @@ import { lastSets, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
 import { defaultTracking, trackingOf, type Tracking } from './tracking'
-import { activeSession, finishedSessions, getData, lastPerformed, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
+import { activeSession, expectedMinutes, finishedSessions, getData, lastPerformed, routineMinutes, routineSets, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
 import { equipmentOf, plan } from './progression'
@@ -208,10 +208,29 @@ export function nextRoutine(d: AppData, now = Date.now()): Routine | undefined {
   return pool[(lastIndex + 1) % pool.length]
 }
 
+/** Si esta semana toca descarga: la del bloque o la que propuso el entrenador. */
+export const deloadWeek = (d: AppData, now = Date.now()) =>
+  !!(blockWeek(d.settings.block, now)?.deload || d.settings.easyWeek === startOfWeek(now).getTime())
+
+/**
+ * La rutina como se hará esta semana: en descarga, las series que dejará applyDeload (el 60 %). Inicio, Rutinas y
+ * el detalle cuentan con esto: decían «20 series · ~55 min» y el entreno, «0 de 12».
+ */
+export function weekRoutine(d: AppData, r: Routine): Routine {
+  if (!deloadWeek(d)) return r
+  return { ...r, exercises: r.exercises.map((e) => (trackingOf(e) === 'weight_reps' && e.progression !== 'wave531' ? { ...e, sets: Math.max(1, Math.round(e.sets * 0.6)) } : e)) }
+}
+
+/** Series y minutos de una rutina esta semana (con la descarga, la estimación: la media real era sin ella). */
+export function routineFacts(d: AppData, r: Routine): { sets: number; minutes: number; measured: boolean; deload: boolean } {
+  const week = weekRoutine(d, r)
+  const deload = week !== r
+  return { sets: routineSets(week), ...(deload ? { minutes: routineMinutes(week), measured: false } : expectedMinutes(d, r)), deload }
+}
+
 /** En la semana de descarga del bloque, los ejercicios de peso empiezan ya con la descarga. */
 function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
-  const easy = blockWeek(d.settings.block)?.deload || d.settings.easyWeek === startOfWeek(Date.now()).getTime()
-  if (easy && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
+  if (deloadWeek(d) && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
   return e
 }
 

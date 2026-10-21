@@ -12,8 +12,8 @@ import { dueMeals } from '../lib/foodReminders'
 import { isIOS, isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
-import { activeSession, expectedMinutes, finishedSessions, update, updateSettings, useData, type Routine, type Session } from '../lib/store'
-import { nextRoutine, openWorkout, startEmpty, startRoutine } from '../lib/workout'
+import { activeSession, finishedSessions, update, updateSettings, useData, type Routine, type Session } from '../lib/store'
+import { nextRoutine, openWorkout, routineFacts, startEmpty, startRoutine } from '../lib/workout'
 import { backupDue, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { RECOVERING, useRecovery } from '../components/Recovery'
@@ -110,14 +110,12 @@ export function HomeScreen() {
         <StatBand items={[
           { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
           { value: thisMonth.length, label: t('Este mes', 'This month') },
-          // Sin entrenos aún esta semana, lo de la pasada; salvo si ya sale en su resumen de arriba (la misma cifra
-          // dos veces): entonces, lo movido este mes.
-          // Con un solo entreno esta semana, su volumen ya sale en «Últimos entrenamientos» (la misma cifra dos veces).
+          // Lo de esta semana con dos entrenos o más. Con uno solo, su volumen ya sale en «Últimos entrenamientos», y sin
+          // ninguno, el de la pasada sale en su resumen de arriba: en esos casos, lo movido este mes (la misma cifra dos
+          // veces, si no). Sin resumen y sin entrenos, la semana pasada.
           thisWeek.length > 1
             ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido esta semana', 'Moved this week') }
-            : thisWeek.length === 1 && notice !== 'recap'
-              ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
-            : notice === 'recap'
+            : thisWeek.length === 1 || notice === 'recap'
               ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
               : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
         ]} />
@@ -210,7 +208,7 @@ function FoodTodayCard() {
 
 function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[] }) {
   const data = useData()
-  const duration = expectedMinutes(data, routine)
+  const duration = routineFacts(data, routine)
   // Grupos de la rutina (por su músculo principal) que todavía se están recuperando.
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
@@ -239,7 +237,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
         <span className="hero-fact"><strong>{routine.exercises.length}</strong>{routine.exercises.length === 1 ? t('ejercicio', 'exercise') : t('ejercicios', 'exercises')}</span>
         {/* Si ya la has hecho, es tu duración real (la mediana de las últimas veces), no una estimación. */}
         <span className="hero-fact"><strong>~{duration.minutes}</strong>{duration.measured ? t('min · tu media', 'min · your avg') : t('minutos', 'minutes')}</span>
-        <span className="hero-fact"><strong>{routine.exercises.reduce((n, e) => n + e.sets, 0)}</strong>{t('series', 'sets')}</span>
+        <span className="hero-fact"><strong>{duration.sets}</strong>{duration.deload ? t('series · descarga', 'sets · deload') : t('series', 'sets')}</span>
       </div>
       {(daysOff !== undefined && daysOff >= 3) || forgotten ? (
         <span className="small hero-note">

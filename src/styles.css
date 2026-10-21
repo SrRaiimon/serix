@@ -1132,6 +1132,8 @@ a.list-row:active {
 .home-tool:active { background: var(--fill); }
 .workout-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .workout-head-row { display: flex; align-items: center; gap: 12px; }
+.workout-deload { gap: 6px; align-items: flex-start; color: var(--text-2); }
+.workout-deload svg { flex-shrink: 0; }
 .workout-count { flex-shrink: 0; font-size: 14px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
 
 .workout-name {
@@ -1763,6 +1765,10 @@ html.scroll-locked body {
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 4px;
 }
+/* En un móvil, ocho en fila salían de 37 px de ancho: dos filas de cuatro, cada una de 44 px o más. */
+@media (max-width: 480px) {
+  .rpe-chips { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+}
 
 .rpe-chip {
   height: 44px;
@@ -1836,8 +1842,8 @@ html.scroll-locked body {
     --mm-p3: #a35d43;
     --mm-s1: rgba(201, 145, 121, 0.5);
     --mm-s2: rgba(168, 108, 84, 0.38);
-    --mm-l1: rgba(201, 150, 128, 0.55);
-    --mm-l2: rgba(168, 112, 90, 0.42);
+    --mm-l1: rgba(201, 150, 128, 0.3);
+    --mm-l2: rgba(168, 112, 90, 0.22);
     --mm-fs1: #cf9a83;
     --mm-fs2: #b07560;
   }
@@ -1857,8 +1863,8 @@ html.scroll-locked body {
   --mm-p3: #a35d43;
   --mm-s1: rgba(201, 145, 121, 0.5);
   --mm-s2: rgba(168, 108, 84, 0.38);
-  --mm-l1: rgba(201, 150, 128, 0.55);
-  --mm-l2: rgba(168, 112, 90, 0.42);
+  --mm-l1: rgba(201, 150, 128, 0.3);
+  --mm-l2: rgba(168, 112, 90, 0.22);
   --mm-fs1: #cf9a83;
   --mm-fs2: #b07560;
 }
@@ -2208,10 +2214,11 @@ html.scroll-locked body {
 .recovery-bar > span { display: block; height: 100%; border-radius: 999px; }
 .recovery-row.ready .recovery-bar > span { background: var(--green); }
 .recovery-row.almost .recovery-bar > span { background: #f5a300; }
-.recovery-row.recovering .recovery-bar > span { background: var(--red); }
+.recovery-row.recovering .recovery-bar > span { background: var(--text-2); }
 .recovery-row.ready .recovery-status { color: var(--green-text); }
 .recovery-row.almost .recovery-status { color: var(--amber-text); }
-.recovery-row.recovering .recovery-status { color: var(--red-text); }
+/* Recuperarse es lo normal tras entrenar: en gris, no en rojo (seis grupos en rojo un día de descanso alarmaban). */
+.recovery-row.recovering .recovery-status { color: var(--text-2); }
 .recovery-status { text-align: right; white-space: nowrap; font-weight: 600; }
 .hero-warning { gap: 6px; align-items: flex-start; font-weight: 600; padding: 8px 10px; border-radius: 10px; background: var(--fill); color: var(--text); }
 .hero-warning svg { color: var(--amber-text); }
@@ -2760,7 +2767,8 @@ a.list-row { color: var(--text); text-decoration: none; }
 .storage-banner { position: sticky; top: 0; z-index: 30; display: flex; gap: 10px; align-items: center; padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: color-mix(in srgb, var(--amber-text) 12%, var(--bg)); border-bottom: 1px solid color-mix(in srgb, var(--amber-text) 35%, transparent); color: var(--text); font-size: 14px; font-weight: 600; }
 .set-invalid-hint { margin: 2px 0 6px; font-size: 13px; font-weight: 600; color: var(--red-text); }
 /* Los dos accesos de antes de empezar, en una sola línea de chips (si no caben, se desliza): la serie 1, arriba. */
-.workout-pre { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+/* padding/margin en vertical: con overflow-x, el ::after de 44 px se recortaba a la altura del chip (36). */
+.workout-pre { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: -4px -16px; padding: 4px 16px; }
 .workout-pre::-webkit-scrollbar { display: none; }
 .workout-pre .chip { min-height: 36px; font-size: 14px; }
 

@@ -534,7 +534,9 @@ const ARM_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.incl
  */
 function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, slot: SlotName) => Picked | undefined) {
   const ranges = MAIN_GROUPS.map((_, g) => groupRange(c.goal, c.level, g))
-  const shares = (p: Picked) => (p.kind === 'conditioning' || !countsForVolume(p.ex.exercise.id, p.ex.exercise.category)
+  // Lo que cuenta, igual que el entrenador y Progreso (countsForVolume): también un swing del bloque de acondicionamiento,
+  // que antes se quedaba fuera y «Perder grasa» salía con el femoral pasado en su propio análisis.
+  const shares = (p: Picked) => (!countsForVolume(p.ex.exercise.id, p.ex.exercise.category)
     ? MAIN_GROUPS.map(() => 0) : groupShares(p.ex.exercise.muscle, p.ex.exercise.secondaryMuscles))
   /** El grupo del músculo principal (-1 si no es de ninguno: gemelo, trapecio, lumbar). */
   const mainGroup = (p: Picked) => shares(p).indexOf(1)

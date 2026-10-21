@@ -9,13 +9,13 @@ import { BARBELL_EQUIPMENT } from '../lib/warmup'
 import { GeneratorSheet, LibrarySheet, Program531Sheet } from './RoutinesPrograms'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
-import { expectedMinutes, finishedSessions, lastPerformed, routineSets, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
+import { finishedSessions, lastPerformed, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
 import { e1rm, records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
 import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
 import { defaultTargetSeconds, defaultTracking, targetText, trackingOf, trackingOptions, type Tracking } from '../lib/tracking'
-import { nextRoutine, previewRoutine, startEmpty, startRoutine } from '../lib/workout'
+import { nextRoutine, previewRoutine, routineFacts, startEmpty, startRoutine, weekRoutine } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { QrSheet } from '../components/Qr'
@@ -179,7 +179,7 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
         <span className="small muted clamp-2">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
         <span className="small routine-meta">
-          {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · {plural(routineSets(routine), ['serie', 'series'], ['set', 'sets'])} · ~{expectedMinutes(data, routine).minutes} min
+          {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · {plural(routineFacts(data, routine).sets, ['serie', 'series'], ['set', 'sets'])} · ~{routineFacts(data, routine).minutes} min
         </span>
         <span className="small muted">{last ? t(`Última vez: ${relative(last).toLowerCase()}`, `Last done: ${relative(last).toLowerCase()}`) : t('Sin estrenar', 'Not done yet')}</span>
       </button>
@@ -248,7 +248,8 @@ export function RoutineDetailScreen({ id }: { id: string }) {
   const unit = data.settings.unit
   const last = finishedSessions(data).find((s) => s.routineId === routine.id)
   const detailSlots = groupSlots(routine.exercises)
-  const duration = expectedMinutes(data, routine)
+  const duration = routineFacts(data, routine)
+  const week = weekRoutine(data, routine)
   // La serie con el mayor 1RM estimado de la última vez, con el peso que se mueve (sin el corporal: unas
   // dominadas con lastre no deben tapar al press de banca) y escrita como en el resto de la app.
   const bestSet = last?.exercises.flatMap((e) => workingSets(e).filter((s) => s.weight > 0 && s.reps > 0 && !(e.assisted && e.bodyweight !== undefined)).map((s) => ({
@@ -277,12 +278,14 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         </header>
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
-          { value: routineSets(routine), label: t('Series', 'Sets') },
+          { value: duration.sets, label: duration.deload ? t('Series · descarga', 'Sets · deload') : t('Series', 'Sets') },
           { value: `~${duration.minutes}′`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Para hoy', 'Today\'s target')}</span>}</div>
-        {routine.exercises.some((e) => e.progression) && (
+        {duration.deload ? (
+          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</p>
+        ) : routine.exercises.some((e) => e.progression) && (
           <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Cuando completas todas las repeticiones, la app te sube el peso la sesión siguiente.', 'When you complete every rep, the app raises the weight for you next session.')}</p>
         )}
         <div className="list">
@@ -301,7 +304,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                     {e.name}
                   </span>
                   <span className="small muted row" style={{ gap: 6, flexWrap: 'wrap', rowGap: 0 }}>
-                    <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : e.progression === 'percent' ? `${targetText(e)} · ${Math.round((e.percent ?? 0.75) * 100)} %` : targetText(e)}</span>
+                    <span>{e.progression === 'wave531' ? `5/3/1${e.trainingMax ? ` · TM ${weight(e.trainingMax, unit)}` : ''}` : e.progression === 'percent' ? `${targetText(week.exercises[i])} · ${Math.round((e.percent ?? 0.75) * 100)} %` : targetText(week.exercises[i])}</span>
                     <span className="row" style={{ gap: 3, whiteSpace: 'nowrap' }} aria-label={t('Descanso', 'Rest')}><Clock size={12} /> {slot.letter && !slot.last ? t('sin descanso', 'no rest') : rest(e.rest)}</span>
                   </span>
                 </span>
@@ -324,7 +327,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
                 <span className="grow">
                   <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
                   <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('movidos', 'moved')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
-                  {bestSet && <span className="small" style={{ display: 'block' }}>{t('Mejor serie', 'Best set')}: <strong>{bestSet.name} {bestSet.text} × {bestSet.reps}</strong></span>}
+                  {bestSet && <span className="small" style={{ display: 'block' }}>{t('Mejor serie', 'Best set')}: <strong>{bestSet.name} <span style={{ whiteSpace: 'nowrap' }}>{bestSet.text} × {bestSet.reps}</span></strong></span>}
                 </span>
                 <ChevronRight size={18} className="chevron" />
               </button>

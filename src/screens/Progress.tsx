@@ -18,7 +18,7 @@ import { YearMap } from '../components/YearMap'
 import { RepRecordsCard } from '../components/RepRecords'
 import { balanceTip, muscleBalance } from '../lib/balance'
 import { volumeWeeks, weeklyGroupSets } from '../lib/autoreg'
-import { groupRange, weeklyRange } from '../lib/volume'
+import { ABS_GROUP, groupRange, weeklyRange } from '../lib/volume'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
 import { searchSessions } from '../lib/history'
@@ -81,7 +81,9 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
   const { settings } = useData()
   const groups = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
-  const weeks = Math.round(volumeWeeks(sessions))
+  // Con 8-13 días de historial, la media es por semana pero de esos días (no «Esta semana» dividiendo entre 1,4).
+  const span = volumeWeeks(sessions)
+  const weeks = Math.round(span)
   if (!groups.some((g) => g.sets > 0)) return null
   const [min, max] = weeklyRange(settings.goal, settings.level)
   // Cada grupo con su rango (el abdomen pide menos: lo trabajan los básicos).
@@ -109,8 +111,9 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
         })}
       </div>
       <span className="small muted">
-        {weeks > 1 ? t(`Media de las últimas ${weeks} semanas.`, `Average of the last ${weeks} weeks.`) : t('Esta semana.', 'This week.')}
+        {span >= 1.5 ? t(`Media de las últimas ${weeks} semanas.`, `Average of the last ${weeks} weeks.`) : span > 1 ? t(`Por semana, con tus ${Math.round(span * 7)} días.`, `Per week, over your ${Math.round(span * 7)} days.`) : t('Esta semana.', 'This week.')}
         {' '}{t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
+        {' '}{range(ABS_GROUP)[0] === 0 ? t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.') : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
         {low.length > 0 && ` ${t(`Por debajo: ${low.join(', ')}.`, `Below: ${low.join(', ')}.`)}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
       </span>
@@ -166,7 +169,7 @@ function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
   const trained = Object.values(load).some((v) => v > 0)
   const missing = MAIN_GROUPS.filter(([, keys]) => keys.every((k) => (load[k] ?? 0) < 1)).map(([label]) => t(...label))
   return (
-    <Card title={t('Músculos esta semana', 'Muscles this week')} icon={PersonStanding}>
+    <Card title={t('Músculos en los últimos 7 días', 'Muscles in the last 7 days')} icon={PersonStanding}>
       <MuscleHeatMap load={load} />
       <span className="small muted">
         {!trained

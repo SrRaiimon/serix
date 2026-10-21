@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.4',
+    items: [
+      ['Semana de descarga coherente: Inicio, Rutinas y el detalle cuentan las series que harás de verdad, y en el entreno sale un solo aviso, sin «para subir de peso».', 'Consistent deload week: Home, Routines and the detail count the sets you will actually do, and the workout shows a single notice, without "to move up in weight".'],
+      ['«Perder grasa» cuenta el swing igual que Progreso: los programas de 5 y 6 días ya no salen pasados en femoral u hombro.', 'Fat loss counts the swing the same way as Progress: 5- and 6-day programs no longer come out over on hamstrings or shoulders.'],
+      ['Botones más fáciles de tocar: el RPE en dos filas en el móvil, los accesos de antes de empezar con su zona completa, y sin «+» en las máquinas asistidas.', 'Easier buttons to tap: RPE in two rows on phones, the pre-workout shortcuts with their full touch area, and no "+" on assisted machines.'],
+      ['Comidas: sin «Te quedan…» repetido cuando aún no has comido; tus días marcados cuentan como entreno también con las calorías gastadas; y las fechas, bien con el cambio de hora.', 'Food: no repeated "left" line before you eat; your marked days count as training days with burned calories too; and dates stay right across the clock change.'],
+      ['Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.', 'Progress › Muscles: "last 7 days" in the title, the legend is distinguishable in dark mode, recovery shows in grey instead of red, and abs are explained.'],
+    ],
+  },
+  {
     version: '0.1.3',
     items: [
       ['Programas equilibrados: cada músculo recibe las series de la zona que luego marca Progreso › Músculos (ni hombro de más ni bíceps o glúteo de menos), y la espalda ya no se cuenta de más.', 'Balanced programs: each muscle gets the sets in the range Progress › Muscles shows (no extra shoulders, no missing biceps or glutes), and back is no longer over-counted.'],

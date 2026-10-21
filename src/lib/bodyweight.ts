@@ -46,10 +46,11 @@ export function fillBodyweights() {
   })
 }
 
-/** Lo apuntado en dominadas y fondos: «tu peso + 10 kg», «tu peso − 20 kg» (asistida) o «tu peso». */
 /** Ejercicios del catálogo con material «peso corporal» (flexiones, zancadas…): los registra App al cargarlo. */
 const bodyweightIds = new Set<string>()
+/** Sustituye la lista (un ejercicio propio que deja de ser de peso corporal pierde el «+»). */
 export function registerBodyweightExercises(ids: Iterable<string>) {
+  bodyweightIds.clear()
   for (const id of ids) bodyweightIds.add(id)
 }
 
@@ -67,6 +68,7 @@ export function liftText(r: { weight: number; added?: number }, unit: Unit, last
   return lastre && r.weight > 0 ? `+${weight(r.weight, unit)}` : weight(r.weight, unit)
 }
 
+/** Lo apuntado en dominadas y fondos: «tu peso + 10 kg», «tu peso − 20 kg» (asistida) o «tu peso». */
 export function bodyweightText(added: number, unit: Unit): string {
   return added > 0 ? t(`tu peso + ${weight(added, unit)}`, `bodyweight + ${weight(added, unit)}`)
     : added < 0 ? t(`tu peso − ${weight(-added, unit)}`, `bodyweight − ${weight(-added, unit)}`) : t('tu peso', 'bodyweight')

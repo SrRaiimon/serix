@@ -1,7 +1,8 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, prefillSets, previewRoutine, withWarmup } from '../src/lib/workout'
+import { applyDeload, prefillSets, previewRoutine, routineFacts, withWarmup } from '../src/lib/workout'
+import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
 import { rememberEquipment } from '../src/lib/progression'
 import { exercise, session, set } from './helpers'
@@ -69,4 +70,20 @@ test('calentamiento automático: solo en el primer ejercicio pesado, igual en el
   // Las asistidas no llevan calentamiento (el peso es ayuda).
   const assisted = withWarmup([{ ...planned[1], sets: planned[1].sets.filter((s) => !s.warmup), assisted: true }], d)
   assert.equal(assisted[0].sets.filter((s) => s.warmup).length, 0)
+})
+
+test('semana de descarga: Inicio, Rutinas y el detalle cuentan las mismas series que el entreno', () => {
+  const base = migrateData({ version: 1, sessions: [], routines: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const ex = (exerciseId: string, sets: number) => ({ exerciseId, name: exerciseId, muscle: 'x', sets, repsMin: 8, repsMax: 10, rest: 90 })
+  const routine = { id: 'r', name: 'R', notes: '', order: 0, createdAt: 0, exercises: [ex('Hammer_Curls', 4), ex('Barbell_Full_Squat', 3)] }
+  const normal = routineFacts(base, routine)
+  assert.equal(normal.sets, 7)
+  assert.equal(normal.deload, false)
+  const easy = { ...base, settings: { ...base.settings, easyWeek: startOfWeek(Date.now()).getTime() } }
+  const facts = routineFacts(easy, routine)
+  const working = previewRoutine(routine, easy).reduce((n, e) => n + e.sets.filter((s) => !s.warmup).length, 0)
+  assert.equal(facts.deload, true)
+  assert.equal(facts.sets, working)
+  assert.ok(facts.minutes < normal.minutes)
 })

@@ -8,7 +8,7 @@ import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals,
 import { navigate } from '../lib/router'
 import { finishedSessions, updateSettings, useData } from '../lib/store'
 import { records } from '../lib/stats'
-import { defaultTracking, targetText } from '../lib/tracking'
+import { defaultTracking, PROGRAM_TARGET_SECONDS, targetText } from '../lib/tracking'
 import { programDayMinutes, ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
 import { t } from '../lib/i18n'
 
@@ -134,7 +134,7 @@ export function LibrarySheet({ onClose, on531 }: { onClose: () => void; on531?: 
               <div key={g.exercise.id} className="row" style={{ gap: 10 }}>
                 <Thumb exerciseId={g.exercise.id} size={40} />
                 <span className="grow clamp-2">{g.exercise.name}</span>
-                <span className="small muted" style={{ whiteSpace: 'nowrap' }}>{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: 60 })}</span>
+                <span className="small muted" style={{ whiteSpace: 'nowrap' }}>{targetText({ ...g, tracking: defaultTracking(g.exercise), targetSeconds: PROGRAM_TARGET_SECONDS })}</span>
               </div>
             ))}
           </Card>
