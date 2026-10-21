@@ -1,7 +1,7 @@
 // Un ejercicio del entreno: sus series, sus avisos (estancado, molestia, primera vez) y sus menús.
 import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching'
 import { navigate } from '../lib/router'
-import { ArrowUpRight, Check, Ellipsis, Info, Plus, StickyNote, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, BatteryLow, Check, Ellipsis, Info, Plus, StickyNote, TrendingDown, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { ActionSheet, Thumb } from '../components/ui'
 import { linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
@@ -12,7 +12,7 @@ import { progressionHint, STALL_SESSIONS, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { startRest, stopRest } from '../lib/timer'
 import { defaultTargetSeconds, trackingOf, trackingOptions } from '../lib/tracking'
-import { applyDeload, editSession, fromSides, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
+import { applyDeload, deloadWeek, editSession, fromSides, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
@@ -79,7 +79,9 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   lastPain?: { pain: number; date: number; note?: string }
   startedAt: number
 }) {
-  const { barbell, bodyweight, needsWeight } = kit
+  const { barbell, needsWeight } = kit
+  // En la máquina asistida el peso es la ayuda: ni «+», ni «deja el peso en 0», ni lastre.
+  const bodyweight = kit.bodyweight && !exercise.assisted
   const [menu, setMenu] = useState<false | 'main' | 'order' | 'settings'>(false)
   const [restMenu, setRestMenu] = useState(false)
   const [trackingMenu, setTrackingMenu] = useState(false)
@@ -164,8 +166,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   const prevDrops = previous.filter((p) => p.kind === 'drop')
   let drops = 0
   const setContext: SetContext = {
-    // En la máquina asistida el peso es la ayuda: ni «+» en la serie anterior ni lastre.
-    fresh: !previous.length, bodyweight: bodyweight && !exercise.assisted, barbell, needsWeight: needsWeight && !exercise.assisted, tracking, unit, lastMax,
+    fresh: !previous.length, bodyweight, barbell, needsWeight: needsWeight && !exercise.assisted, tracking, unit, lastMax,
     repsPlaceholder: hasTarget ? target : '0', defaultReps: exercise.auto?.kind === 'wave' ? 0 : exercise.repsMin,
     timePlaceholder: clock(targetSeconds), targetSeconds, tempo: exercise.tempo,
   }
@@ -198,7 +199,12 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
       {/* En descarga, ni «para subir de peso» ni el aviso repetido: va una sola vez arriba del entreno. */}
       {exercise.auto && !(exercise.deload && exercise.auto.kind !== 'wave') && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
 
-      {!exercise.deload && !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
+      {exercise.deload && exercise.auto?.kind !== 'wave' && !deloadWeek(data) ? (
+        <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
+          <BatteryLow size={16} style={{ flexShrink: 0 }} aria-hidden="true" />
+          {t('Descarga de este ejercicio: menos series y un 10 % menos de peso. La próxima vez vuelves a tu peso.', 'Deload for this exercise: fewer sets and 10% less weight. Next time you go back to your weight.')}
+        </span>
+      ) : !exercise.deload && !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
         <StallBox best={stalled.best} unit={unit} onDeload={() => edit((e) => applyDeload(e, unit))} onVariants={() => setReplacing(true)} />
       )}
 

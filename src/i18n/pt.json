@@ -1376,7 +1376,6 @@
 "Serix no da consejo médico: un dolor fuerte, que no se pasa o que va a más necesita que lo vea un profesional.": "O Serix não dá conselho médico: uma dor forte, que não passa ou que piora tem de ser vista por um profissional.",
 "Serrato anterior": "Serrátil anterior",
 "Sesiones": "Sessões",
-"Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.": "Sessão de descarga: menos séries e algo menos de peso para recuperar. Da próxima vez voltas aos teus pesos.",
 "Si a las {0} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.": "Se às {0} ainda não registaste essa refeição, a app lembra-te, e com uma notificação se a tiveres aberta em segundo plano. Com a app fechada não pode avisar.",
 "Si buscas, verás ejercicios de cualquier músculo.": "Se procurares, verás exercícios de qualquer músculo.",
 "Si lo añades así (datos dudosos)": "Se o adicionares assim (dados duvidosos)",
@@ -1921,7 +1920,6 @@
 "con tu peso": "com o teu peso",
 "Día de descanso: −{0} kcal de tus {1}": "Dia de descanso: −{0} kcal das tuas {1}",
 "Día de entreno: +{0} kcal sobre tus {1}": "Dia de treino: +{0} kcal além das tuas {1}",
-"Hoy, sin entreno de momento: −{0} kcal de tus {1}": "Hoje, ainda sem treino: −{0} kcal das tuas {1}",
 "Inicio aún más ligero: las novedades caben en una línea y el aviso para instalar solo sale si no hay otro.": "Início ainda mais leve: as novidades cabem numa linha e o aviso para instalar só aparece se não houver outro.",
 "Novedades de la versión {0}": "Novidades da versão {0}",
 "Peso: uno con el que llegues a {0} repeticiones con 2 de margen.": "Peso: um com que chegues a {0} repetições com 2 de margem.",
@@ -2133,5 +2131,12 @@
 "«Perder grasa» cuenta el swing igual que Progreso: los programas de 5 y 6 días ya no salen pasados en femoral u hombro.": "«Perder gordura» conta o swing como o Progresso: os programas de 5 e 6 dias já não saem a mais em posteriores ou ombro.",
 "Botones más fáciles de tocar: el RPE en dos filas en el móvil, los accesos de antes de empezar con su zona completa, y sin «+» en las máquinas asistidas.": "Botões mais fáceis de tocar: o RPE em duas filas no telemóvel, os acessos de antes de começar com a zona completa, e sem «+» nas máquinas assistidas.",
 "Comidas: sin «Te quedan…» repetido cuando aún no has comido; tus días marcados cuentan como entreno también con las calorías gastadas; y las fechas, bien con el cambio de hora.": "Refeições: sem «Faltam…» repetido quando ainda não comeste; os teus dias marcados contam como treino também com as calorias gastas; e as datas certas com a mudança de hora.",
-"Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.": "Progresso › Músculos: «últimos 7 dias» no título, a legenda distingue-se no escuro, a recuperação em cinzento e não a vermelho, e o abdómen explicado."
+"Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.": "Progresso › Músculos: «últimos 7 dias» no título, a legenda distingue-se no escuro, a recuperação em cinzento e não a vermelho, e o abdómen explicado.",
+"Descarga de este ejercicio: menos series y un 10 % menos de peso. La próxima vez vuelves a tu peso.": "Descarga deste exercício: menos séries e 10 % menos de peso. Da próxima vez voltas ao teu peso.",
+"Sin entreno aún hoy: −{0} kcal de tus {1}. Si vas a entrenar, márcalo.": "Ainda sem treino hoje: −{0} kcal das tuas {1}. Se vais treinar, marca-o.",
+"Al marcar una serie, la pantalla baja sola hasta el RPE: ya no queda tapado por la barra de descanso.": "Ao marcar uma série, o ecrã desce sozinho até ao RPE: já não fica tapado pela barra de descanso.",
+"Descarga más fina: los ejercicios por lados quedan con las mismas series en cada lado, la 5/3/1 cuenta igual en Inicio y en el entreno, y descargar un solo ejercicio se avisa en ese ejercicio.": "Descarga mais fina: os exercícios por lados ficam com as mesmas séries em cada lado, o 5/3/1 conta igual no Início e no treino, e descarregar um só exercício avisa-se nesse exercício.",
+"Vista previa del programa con cifras reales: «19–20 series / día» y «60–63′» en vez de una media que no cuadraba.": "Pré-visualização do programa com números reais: «19–20 séries / dia» e «60–63′» em vez de uma média que não batia certo.",
+"Comidas explica que hoy cuenta como descanso hasta que entrenes o lo marques, y ya no repite la proteína.": "Refeições explica que hoje conta como descanso até treinares ou o marcares, e já não repete a proteína.",
+"Máquinas asistidas: la ayuda del primer día ya no dice «deja el peso en 0».": "Máquinas assistidas: a ajuda do primeiro dia já não diz «deixa o peso a 0»."
 }

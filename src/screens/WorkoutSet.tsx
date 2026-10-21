@@ -297,13 +297,20 @@ function RpeRow({ value, open, onOpen, onPick }: {
   onPick: (rpe: number | undefined) => void
 }) {
   const [help, setHelp] = useState(false)
+  const row = useRef<HTMLDivElement>(null)
+  // Al abrirse, a la vista: con los botones en dos filas, quedaban debajo de la barra de descanso (scroll-margin en CSS).
+  useEffect(() => {
+    if (!open) return
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+    row.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' })
+  }, [open])
   if (!open) {
     return value === undefined ? null : (
       <button className="rpe-pill" onClick={onOpen}>RPE {num(value)} · {rpeMeaning(value)}</button>
     )
   }
   return (
-    <div className="rpe-row">
+    <div className="rpe-row" ref={row}>
       <div className="row between">
         <span className="small bold">{t('¿Cuánto te costó?', 'How hard was it?')} <span className="muted">(RPE)</span></span>
         <button className="rpe-help" onClick={() => setHelp(!help)} aria-label={t('Qué es el RPE', 'What is RPE')}>?</button>

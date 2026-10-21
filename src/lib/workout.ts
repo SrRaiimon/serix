@@ -165,7 +165,11 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   const step = increment(unit)
   const round = (kg: number) => toKg(Math.round(fromKg(kg, unit) / step) * step, unit)
   const pending = e.sets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop')
-  const keep = new Set(pending.slice(0, Math.max(1, Math.round(pending.length * 0.6))).map((s) => s.id))
+  // Por lados se cuentan parejas (izquierda y su derecha): con entradas sueltas, 4 series daban L, R, L, R, L.
+  const units = pending.filter((s) => s.side !== 'R').length
+  const keepUnits = Math.max(1, Math.round(units * 0.6))
+  let pair = -1
+  const keep = new Set(pending.filter((s) => (s.side !== 'R' ? ++pair : pair) < keepUnits).map((s) => s.id))
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
   for (const s of e.sets) {
     if (!keep.has(s.id)) continue
@@ -218,8 +222,12 @@ export const deloadWeek = (d: AppData, now = Date.now()) =>
  */
 export function weekRoutine(d: AppData, r: Routine): Routine {
   if (!deloadWeek(d)) return r
-  return { ...r, exercises: r.exercises.map((e) => (trackingOf(e) === 'weight_reps' && e.progression !== 'wave531' ? { ...e, sets: Math.max(1, Math.round(e.sets * 0.6)) } : e)) }
+  return { ...r, exercises: r.exercises.map((e) => (deloads(e) ? { ...e, sets: Math.max(1, Math.round(e.sets * 0.6)) } : e)) }
 }
+
+/** Si un ejercicio se descarga en la semana de descarga: los de peso, salvo la 5/3/1 (lleva su propia semana 4). Una
+ * sola regla para lo que enseñan Inicio y Rutinas (weekRoutine) y lo que hace el entreno (blockDeload). */
+const deloads = (e: { tracking?: Tracking; progression?: Progression }) => trackingOf(e) === 'weight_reps' && e.progression !== 'wave531'
 
 /** Series y minutos de una rutina esta semana (con la descarga, la estimación: la media real era sin ella). */
 export function routineFacts(d: AppData, r: Routine): { sets: number; minutes: number; measured: boolean; deload: boolean } {
@@ -229,15 +237,15 @@ export function routineFacts(d: AppData, r: Routine): { sets: number; minutes: n
 }
 
 /** En la semana de descarga del bloque, los ejercicios de peso empiezan ya con la descarga. */
-function blockDeload(d: AppData, e: SessionExercise): SessionExercise {
-  if (deloadWeek(d) && trackingOf(e) === 'weight_reps' && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
+function blockDeload(d: AppData, e: SessionExercise, source: { tracking?: Tracking; progression?: Progression }): SessionExercise {
+  if (deloadWeek(d) && deloads(source) && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
   return e
 }
 
 /** Lo que propondrá cada ejercicio al empezar la rutina (los mismos cálculos), para enseñarlo antes. */
 export function previewRoutine(routine: Routine, d: AppData): SessionExercise[] {
   const history = finishedSessions(d)
-  return withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit))), d, history)
+  return withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history, d.settings.unit), e)), d, history)
 }
 
 /**
@@ -266,7 +274,7 @@ export function startRoutine(routine: Routine) {
       routineId: routine.id,
       start: Date.now(),
       notes: '',
-      exercises: withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history))), d, history),
+      exercises: withWarmup(routine.exercises.map((e) => blockDeload(d, sessionExercise(e, history), e)), d, history),
     })
   })
   openWorkout()
@@ -291,7 +299,7 @@ export function repeatSession(past: Session) {
         exerciseId: e.exerciseId, name: e.name, muscle: e.muscle, rest: e.rest, repsMin: e.repsMin, repsMax: e.repsMax,
         sets: Math.max(1, e.sets.filter((x) => !x.warmup && x.kind !== 'drop' && x.side !== 'R').length),
         tracking: e.tracking, targetSeconds: e.targetSeconds, groupId: e.groupId,
-      }, history))), d, history),
+      }, history), e)), d, history),
     })
   })
   openWorkout()
@@ -316,7 +324,7 @@ export function addExercises(sessionId: string, exercises: Exercise[]) {
         exerciseId: e.id, name: e.name, muscle: e.muscle, rest: d.settings.defaultRest,
         // El cardio de distancia suele ser una única serie.
         repsMin: 0, repsMax: 0, sets: Math.max(last.filter((x) => x.kind !== 'drop').length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
-      }, history)))
+      }, history), { tracking: defaultTracking(e) }))
     }
   })
 }

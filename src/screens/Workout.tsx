@@ -12,7 +12,7 @@ import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad
 import { finishedSessions, rpeOn, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { adjustRestForEffort, prepareAudio } from '../lib/timer'
 import { trackingOf } from '../lib/tracking'
-import { addExercises, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
+import { addExercises, deloadWeek, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { BARS } from '../lib/plates'
 import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
@@ -188,9 +188,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
             </div>
             {working.length > 0 && <Progress value={done} total={working.length} />}
             <BlockStatus at={session.start} />
-            {session.exercises.some((e) => e.deload && e.auto?.kind !== 'wave') && (
+            {/* La semana de descarga, una vez arriba. Descargar un solo ejercicio (estancado) se dice en ese ejercicio. */}
+            {deloadWeek(data, session.start) && session.exercises.some((e) => e.deload && e.auto?.kind !== 'wave') && (
               <span className="small row workout-deload"><BatteryLow size={16} aria-hidden="true" />
-                {t('Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.', 'Deload session: fewer sets and a bit less weight to recover. Next time you go back to your usual weights.')}</span>
+                {t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</span>
             )}
             {/* Antes de la primera serie, solo dos accesos pequeños: la lista de series queda a la vista. */}
             {!started && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {

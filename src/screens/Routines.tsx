@@ -172,6 +172,7 @@ export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
 /** Fila de rutina: abre la ficha y, a la derecha, empieza directamente. La que toca, marcada. */
 function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; next: boolean }) {
   const last = lastPerformed(data, routine.id)
+  const facts = routineFacts(data, routine)
   return (
     <div className={`list-row routine-row ${next ? 'next' : ''}`}>
       <button className="routine-main" onClick={() => navigate('routines', routine.id)}>
@@ -179,7 +180,7 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
         <span className="small muted clamp-2">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
         <span className="small routine-meta">
-          {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · {plural(routineFacts(data, routine).sets, ['serie', 'series'], ['set', 'sets'])} · ~{routineFacts(data, routine).minutes} min
+          {plural(routine.exercises.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · {plural(facts.sets, ['serie', 'series'], ['set', 'sets'])} · ~{facts.minutes} min
         </span>
         <span className="small muted">{last ? t(`Última vez: ${relative(last).toLowerCase()}`, `Last done: ${relative(last).toLowerCase()}`) : t('Sin estrenar', 'Not done yet')}</span>
       </button>

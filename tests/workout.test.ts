@@ -87,3 +87,18 @@ test('semana de descarga: Inicio, Rutinas y el detalle cuentan las mismas series
   assert.equal(facts.sets, working)
   assert.ok(facts.minutes < normal.minutes)
 })
+
+test('descarga por lados: parejas enteras, y la 5/3/1 no se descarga ni en el entreno ni en lo que se enseña', () => {
+  const sides = exercise('Dumbbell_Lunges', [1, 2, 3, 4].flatMap(() => [set(20, 10, { done: false, side: 'L' }), set(20, 10, { done: false, side: 'R' })]))
+  applyDeload(sides, 'kg')
+  const left = sides.sets.filter((x) => x.side === 'L').length
+  assert.equal(left, sides.sets.filter((x) => x.side === 'R').length)
+  assert.equal(left, 2)
+  const base = migrateData({ version: 1, sessions: [], routines: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const easy = { ...base, settings: { ...base.settings, easyWeek: startOfWeek(Date.now()).getTime() } }
+  const wave = { exerciseId: 'Barbell_Full_Squat', name: 'S', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, rest: 180, progression: 'wave531' as const }
+  const routine = { id: 'w', name: 'W', notes: '', order: 0, createdAt: 0, exercises: [wave] }
+  const working = previewRoutine(routine, easy)[0].sets.filter((x) => !x.warmup).length
+  assert.equal(routineFacts(easy, routine).sets, working)
+})

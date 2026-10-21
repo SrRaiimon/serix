@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.5',
+    items: [
+      ['Al marcar una serie, la pantalla baja sola hasta el RPE: ya no queda tapado por la barra de descanso.', 'When you tick a set, the screen scrolls down to the RPE by itself: it is no longer hidden behind the rest bar.'],
+      ['Descarga más fina: los ejercicios por lados quedan con las mismas series en cada lado, la 5/3/1 cuenta igual en Inicio y en el entreno, y descargar un solo ejercicio se avisa en ese ejercicio.', 'Finer deloads: per-side exercises keep the same sets on each side, 5/3/1 counts the same on Home and in the workout, and deloading a single exercise is noted on that exercise.'],
+      ['Vista previa del programa con cifras reales: «19–20 series / día» y «60–63′» en vez de una media que no cuadraba.', 'Program preview with real figures: "19–20 sets / day" and "60–63′" instead of an average that did not add up.'],
+      ['Comidas explica que hoy cuenta como descanso hasta que entrenes o lo marques, y ya no repite la proteína.', 'Food explains that today counts as a rest day until you train or mark it, and no longer repeats the protein.'],
+      ['Máquinas asistidas: la ayuda del primer día ya no dice «deja el peso en 0».', 'Assisted machines: the first-day tip no longer says "leave the weight at 0".'],
+    ],
+  },
+  {
     version: '0.1.4',
     items: [
       ['Semana de descarga coherente: Inicio, Rutinas y el detalle cuentan las series que harás de verdad, y en el entreno sale un solo aviso, sin «para subir de peso».', 'Consistent deload week: Home, Routines and the detail count the sets you will actually do, and the workout shows a single notice, without "to move up in weight".'],

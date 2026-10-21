@@ -1760,6 +1760,9 @@ html.scroll-locked body {
   border-bottom: 1px solid var(--separator);
 }
 
+/* Al desplazarse hasta el RPE, que quede por encima de la barra de descanso (y de la barra de abajo del móvil). */
+.rpe-row { scroll-margin-bottom: calc(110px + env(safe-area-inset-bottom)); }
+
 .rpe-chips {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));

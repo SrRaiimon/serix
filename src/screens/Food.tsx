@@ -358,7 +358,8 @@ function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Pe
               : day === dayKey()
                 ? (weekDone(data)
                   ? t(`Hoy, día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)
-                  : t(`Hoy, sin entreno de momento: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, no workout yet: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`))
+                  // Rutinas puede decir «te toca hoy»: aquí se explica que cuenta como descanso hasta entrenar o marcarlo.
+                  : t(`Sin entreno aún hoy: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}. Si vas a entrenar, márcalo.`, `No workout yet today: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}. If you are training, mark it.`))
                 : t(`Día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)}</span>
             {canMark && <button className="btn secondary btn-sm" onClick={() => mark(!goals.training)}>{day === dayKey()
               ? (goals.training ? t('Hoy no entreno', 'Not training today') : t('Hoy entreno', 'Training today'))
@@ -373,8 +374,8 @@ function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Pe
         <div style={{ transform: `scaleX(${pct(totals.kcal, goals.kcal) / 100})` }} />
       </div>
       <span className={`small food-left ${left < 0 ? 'over' : 'muted'}`}>
-        {/* Sin nada apuntado, «Te quedan 2340 kcal» repetía la cifra de arriba: solo la proteína (como en Inicio). */}
-        {totals.kcal === 0 ? t(`Proteína: ${int(goals.protein)} g`, `Protein: ${int(goals.protein)} g`) : <>
+        {/* Sin nada apuntado, «Te quedan 2340 kcal» repetía la cifra de arriba (y la proteína ya sale en su columna). */}
+        {totals.kcal === 0 ? null : <>
           {left >= 0 ? t(`Te quedan ${int(left)} kcal`, `${int(left)} kcal left`) : t(`${int(-left)} kcal de más`, `${int(-left)} kcal over`)}
           {goals.protein > totals.p ? t(` y ${g(goals.protein - totals.p)} g de proteína`, ` and ${g(goals.protein - totals.p)} g of protein`) : t(' · proteína cumplida', ' · protein reached')}
         </>}

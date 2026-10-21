@@ -1376,7 +1376,6 @@
 "Serix no da consejo médico: un dolor fuerte, que no se pasa o que va a más necesita que lo vea un profesional.": "Serix ne donne pas d'avis médical : une douleur forte, qui persiste ou qui augmente doit être vue par un professionnel.",
 "Serrato anterior": "Dentelé antérieur",
 "Sesiones": "Séances",
-"Sesión de descarga: menos series y algo menos de peso para recuperar. La próxima vez vuelves a tus pesos.": "Séance de décharge : moins de séries et un peu moins de poids pour récupérer. La prochaine fois, tu reprends tes poids.",
 "Si a las {0} no has apuntado esa comida, te lo recuerda en la app, y con una notificación si la tienes abierta en segundo plano. Con la app cerrada no puede avisar.": "Si à {0} tu n'as pas noté ce repas, l'app te le rappelle, avec une notification si elle est ouverte en arrière-plan. App fermée, elle ne peut pas te prévenir.",
 "Si buscas, verás ejercicios de cualquier músculo.": "Si tu cherches, tu verras des exercices pour n'importe quel muscle.",
 "Si lo añades así (datos dudosos)": "Si tu l'ajoutes ainsi (données douteuses)",
@@ -1921,7 +1920,6 @@
 "con tu peso": "avec ton poids",
 "Día de descanso: −{0} kcal de tus {1}": "Jour de repos : −{0} kcal sur tes {1}",
 "Día de entreno: +{0} kcal sobre tus {1}": "Jour d'entraînement : +{0} kcal en plus de tes {1}",
-"Hoy, sin entreno de momento: −{0} kcal de tus {1}": "Aujourd'hui, pas encore d'entraînement : −{0} kcal sur tes {1}",
 "Inicio aún más ligero: las novedades caben en una línea y el aviso para instalar solo sale si no hay otro.": "Accueil encore plus léger : les nouveautés tiennent sur une ligne et l'invitation à installer n'apparaît que s'il n'y a pas d'autre alerte.",
 "Novedades de la versión {0}": "Nouveautés de la version {0}",
 "Peso: uno con el que llegues a {0} repeticiones con 2 de margen.": "Poids : un poids avec lequel tu arrives à {0} répétitions en gardant 2 de marge.",
@@ -2133,5 +2131,12 @@
 "«Perder grasa» cuenta el swing igual que Progreso: los programas de 5 y 6 días ya no salen pasados en femoral u hombro.": "« Perdre du gras » compte le swing comme Progrès : les programmes de 5 et 6 jours ne dépassent plus en ischios ou épaules.",
 "Botones más fáciles de tocar: el RPE en dos filas en el móvil, los accesos de antes de empezar con su zona completa, y sin «+» en las máquinas asistidas.": "Boutons plus faciles à toucher : le RPE sur deux rangées sur mobile, les accès d'avant séance avec toute leur zone, et plus de « + » sur les machines assistées.",
 "Comidas: sin «Te quedan…» repetido cuando aún no has comido; tus días marcados cuentan como entreno también con las calorías gastadas; y las fechas, bien con el cambio de hora.": "Repas : plus de « Il te reste… » répété avant de manger ; tes jours marqués comptent comme entraînement aussi avec les calories dépensées ; et les dates restent justes au changement d'heure.",
-"Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.": "Progrès › Muscles : « 7 derniers jours » dans le titre, la légende se distingue en sombre, la récupération est en gris et non en rouge, et les abdos sont expliqués."
+"Progreso › Músculos: «últimos 7 días» en el título, la leyenda se distingue en oscuro, la recuperación va en gris y no en rojo, y el abdomen se explica.": "Progrès › Muscles : « 7 derniers jours » dans le titre, la légende se distingue en sombre, la récupération est en gris et non en rouge, et les abdos sont expliqués.",
+"Descarga de este ejercicio: menos series y un 10 % menos de peso. La próxima vez vuelves a tu peso.": "Décharge pour cet exercice : moins de séries et 10 % de poids en moins. La prochaine fois, tu reprends ta charge.",
+"Sin entreno aún hoy: −{0} kcal de tus {1}. Si vas a entrenar, márcalo.": "Pas encore d'entraînement aujourd'hui : −{0} kcal sur tes {1}. Si tu t'entraînes, indique-le.",
+"Al marcar una serie, la pantalla baja sola hasta el RPE: ya no queda tapado por la barra de descanso.": "En cochant une série, l'écran descend tout seul jusqu'au RPE : il n'est plus caché par la barre de repos.",
+"Descarga más fina: los ejercicios por lados quedan con las mismas series en cada lado, la 5/3/1 cuenta igual en Inicio y en el entreno, y descargar un solo ejercicio se avisa en ese ejercicio.": "Décharge plus fine : les exercices par côté gardent les mêmes séries de chaque côté, le 5/3/1 compte pareil sur l'Accueil et en séance, et décharger un seul exercice est signalé sur cet exercice.",
+"Vista previa del programa con cifras reales: «19–20 series / día» y «60–63′» en vez de una media que no cuadraba.": "Aperçu du programme avec les vrais chiffres : « 19–20 séries / jour » et « 60–63′ » au lieu d'une moyenne qui ne collait pas.",
+"Comidas explica que hoy cuenta como descanso hasta que entrenes o lo marques, y ya no repite la proteína.": "Repas explique qu'aujourd'hui compte comme repos jusqu'à ce que tu t'entraînes ou l'indiques, et ne répète plus les protéines.",
+"Máquinas asistidas: la ayuda del primer día ya no dice «deja el peso en 0».": "Machines assistées : l'aide du premier jour ne dit plus « laisse le poids à 0 »."
 }

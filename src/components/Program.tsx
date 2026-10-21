@@ -59,7 +59,12 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
     sets: d.exercises.reduce((n, g) => n + g.sets, 0),
     minutes: programDayMinutes(d),
   }))
-  const avg = (f: (x: (typeof perDay)[number]) => number) => Math.round(perDay.reduce((n, x) => n + f(x), 0) / Math.max(1, perDay.length))
+  // El rango si los días no son iguales («19–20»): con la media, «20 series / día» no cuadraba con días de 19.
+  const span = (f: (x: (typeof perDay)[number]) => number) => {
+    const values = perDay.map(f)
+    const lo = Math.min(...values), hi = Math.max(...values)
+    return lo === hi ? `${lo}` : `${lo}–${hi}`
+  }
   return (
     <>
       <section className="program-hero">
@@ -69,9 +74,9 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
       </section>
       <StatBand items={[
         { value: program.days.length, label: t('días', 'days') },
-        { value: avg((x) => x.exercises), label: t('ejercicios / día', 'exercises / day') },
-        { value: avg((x) => x.sets), label: t('series / día', 'sets / day') },
-        { value: `~${avg((x) => x.minutes)}′`, label: t('por sesión', 'per session') },
+        { value: span((x) => x.exercises), label: t('ejercicios / día', 'exercises / day') },
+        { value: span((x) => x.sets), label: t('series / día', 'sets / day') },
+        { value: `${span((x) => x.minutes)}′`, label: t('por sesión', 'per session') },
       ]} />
       {program.days.map((d, i) => (
         <div key={d.name} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
