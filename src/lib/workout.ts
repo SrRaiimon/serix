@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
 import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
-import { countsAsSet, lastSets, workingSets } from './stats'
+import { lastSets, setUnits, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
 import { defaultTracking, trackingOf, type Tracking } from './tracking'
@@ -183,14 +183,10 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   e.deload = true
 }
 
-/**
- * Hechas y en total del entreno en curso, con countsAsSet: la misma regla que el resumen y el historial (sin
- * calentamiento ni drop sets, y por lados la serie izquierda cuenta por la pareja). Antes el entreno exigía los dos
- * lados y el resumen no: «2 de 3» en el entreno y 3 series en el resumen.
- */
+/** Hechas y en total del entreno en curso, con setUnits: la misma regla que el resumen y el historial. */
 export function setProgress(sets: readonly SetEntry[]): { done: number; total: number } {
-  const counted = sets.filter(countsAsSet)
-  return { done: counted.filter((s) => s.done).length, total: counted.length }
+  const units = setUnits(sets)
+  return { done: units.filter(Boolean).length, total: units.length }
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */

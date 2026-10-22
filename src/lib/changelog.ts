@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.9',
+    items: [
+      ['Programas comprobados en las 1500 combinaciones del cuestionario: cada día de cuerpo completo lleva un tirón, ningún día se queda en un solo ejercicio y los accesorios no se repiten en días seguidos.', 'Programs checked across all 1500 questionnaire combinations: every full-body day has a pull, no day is left with a single exercise, and accessories do not repeat on consecutive days.'],
+      ['Abdomen de verdad uno por día, también en «Perder grasa» con 2 días; y sin gimnasio, con 5 o 6 días, «Estar en forma» y fuerza reparten en torso, pierna y cuerpo completo en vez de días de empuje y tirón medio vacíos.', 'Abs really one per day, also in 2-day "Lose fat"; and without a gym, with 5 or 6 days, "Get fit" and strength split into upper, lower and full body instead of half-empty push and pull days.'],
+      ['Por lados, una serie cuenta si has hecho cualquiera de los dos lados, y al terminar te avisa del lado que falta por marcar.', 'Per side, a set counts if you did either side, and when you finish you are told about the side still to tick.'],
+      ['El resumen de la semana de descarga lo dice siempre, aunque la rutina lleve plancha o una 5/3/1, y la ficha de la rutina muestra la duración y las series igual que el resumen.', 'The deload-week summary always says so, even if the routine has a plank or a 5/3/1, and the routine page shows duration and sets the same way as the summary.'],
+      ['«Tu plan» enseña los minutos reales siempre que las sesiones salen más cortas, y el mapa de músculos vuelve a ir de suave a intenso, con contorno en el nivel 1-3.', '"Your plan" shows the real minutes whenever sessions come out shorter, and the muscle map goes from soft to intense again, with an outline on the 1-3 level.'],
+    ],
+  },
+  {
     version: '0.1.8',
     items: [
       ['Las series cuentan igual en el entreno y en el resumen, también por lados; y descargar un solo ejercicio estancado ya no cambia el resumen de toda la sesión.', 'Sets count the same in the workout and in the summary, per side too; and deloading a single stalled exercise no longer changes the summary of the whole session.'],

@@ -1826,9 +1826,9 @@ html.scroll-locked body {
   --mm-p3: #cf7150;
   --mm-s1: rgba(240, 190, 166, 0.85);
   --mm-s2: rgba(226, 150, 118, 0.6);
-  /* El nivel 1-3 algo más marcado: sobre el cuerpo gris casi no se veía. */
-  --mm-l1: rgba(232, 170, 142, 0.8);
-  --mm-l2: rgba(214, 136, 102, 0.65);
+  /* El nivel 1-3, el más suave de los tres (de menos a más trabajado); lo distingue su contorno (.mm-light). */
+  --mm-l1: rgba(240, 196, 176, 0.6);
+  --mm-l2: rgba(228, 162, 133, 0.45);
   --mm-fs1: #f3c1aa;
   --mm-fs2: #e39a7a;
 }
@@ -2241,6 +2241,7 @@ html.scroll-locked body {
 .badge-progress em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-weight: 700; color: var(--text-2); }
 
 .mm-pick { cursor: pointer; }
+.mm-light { stroke: var(--mm-p2); stroke-width: 1; }
 .mm-pick:hover, .mm-pick:focus-visible { filter: brightness(1.15); outline: none; }
 
 /* Temporizador de intervalos (usa la pantalla grande del descanso) */

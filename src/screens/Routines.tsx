@@ -4,13 +4,13 @@ import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, Clipboar
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
 import type { Exercise } from '../lib/catalog'
-import { clock, day, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
+import { clock, day, duration as durationText, editable, fromKg, increment, parseDecimal, relative, rest, restOptions, toKg, tons, uid, weight } from '../lib/format'
 import { BARBELL_EQUIPMENT } from '../lib/warmup'
 import { GeneratorSheet, LibrarySheet, Program531Sheet } from './RoutinesPrograms'
 import { muscleSummary } from '../lib/labels'
 import { back, navigate } from '../lib/router'
 import { finishedSessions, lastPerformed, update, updateSettings, useData, withUndo, type AppData, type Progression, type Routine, type SessionExercise, type SetEntry } from '../lib/store'
-import { e1rm, records, sessionDuration, sessionVolume, workingSets } from '../lib/stats'
+import { e1rm, records, sessionDuration, sessionSets, sessionVolume, workingSets } from '../lib/stats'
 import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
 import { groupKind, groupSlots, linkWithNext, normalizeGroups, unlink } from '../lib/groups'
 import { encodePlan, extractCode, planLink, shareLink } from '../lib/share'
@@ -327,7 +327,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
               <button className="list-row" onClick={() => navigate('progress', 'session', last.id)}>
                 <span className="grow">
                   <span className="bold" style={{ display: 'block' }}>{day(last.start)}</span>
-                  <span className="small muted">{Math.round(sessionDuration(last) / 60000)} min · {tons(sessionVolume(last), unit)} {t('movidos', 'moved')} · {plural(last.exercises.reduce((n, e) => n + workingSets(e).length, 0), ['serie', 'series'], ['set', 'sets'])}</span>
+                  <span className="small muted">{durationText(sessionDuration(last))} · {tons(sessionVolume(last), unit)} {t('movidos', 'moved')} · {plural(sessionSets(last), ['serie', 'series'], ['set', 'sets'])}</span>
                   {bestSet && <span className="small" style={{ display: 'block' }}>{t('Mejor serie', 'Best set')}: <strong>{bestSet.name} <span style={{ whiteSpace: 'nowrap' }}>{bestSet.text} × {bestSet.reps}</span></strong></span>}
                 </span>
                 <ChevronRight size={18} className="chevron" />

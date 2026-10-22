@@ -73,7 +73,9 @@ function Figure({ view, paint, id, glow, onPick }: { view: View; paint: (name: s
   const half = (
     <>
       <path d={SILHOUETTE} className="mm-body" />
-      {regions.filter(([, , p]) => p !== 'p').map(([name, d, p]) => <path key={name} d={d} fill={`url(#${id}${p})`} {...pick(name)} />)}
+      {/* El nivel 1-3, con contorno: con un relleno suave (más claro que 4-9) apenas se distinguía del músculo sin trabajar. */}
+      {regions.filter(([, , p]) => p !== 'p').map(([name, d, p]) => <path key={name} d={d} fill={`url(#${id}${p})`} {...pick(name)}
+        className={[p === 'l' ? 'mm-light' : '', onPick && !DECOR.has(name) ? 'mm-pick' : ''].filter(Boolean).join(' ') || undefined} />)}
       {/* Los principales se dibujan al final para que su brillo quede por encima de lo demás. */}
       {regions.filter(([, , p]) => p === 'p').map(([name, d]) => <path key={name} d={d} fill={`url(#${id}p)`} filter={glow ? `url(#${id}g)` : undefined} {...pick(name)} />)}
     </>

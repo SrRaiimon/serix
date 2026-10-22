@@ -147,8 +147,9 @@ export function WorkoutScreen({ session }: { session: Session }) {
     const c = setProgress(e.sets)
     return { done: n.done + c.done, total: n.total + c.total }
   }, { done: 0, total: 0 })
-  // Un drop sin marcar no avisa: es la cola de su serie, no una serie perdida.
-  const pending = total - done
+  // El aviso de terminar cuenta cada entrada sin marcar (también la derecha de una pareja ya contada: si no, se borraba
+  // sin avisar). Un drop sin marcar no avisa: es la cola de su serie, no una serie perdida.
+  const pending = allSets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop').length
   const started = allSets.some((s) => s.done)
 
   useScrollLock()

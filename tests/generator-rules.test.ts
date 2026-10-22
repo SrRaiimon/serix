@@ -193,11 +193,18 @@ test('sin material: cada día llega a los ejercicios prometidos; con barra, el p
   for (const level of levels.map((l) => l.id)) {
     for (const days of [3, 4]) {
       const c: GeneratorConfig = { goal: 'hypertrophy', level, days, minutes: 60, equipment: 'bodyweight' }
-      // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno). Uno
-      // menos vale: el abdomen de más pasa a un día que no tenía y, con las piernas en su máximo, no se repone.
-      for (const day of generate(c, catalog).days) {
+      // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno), o
+      // algún grupo que trabaja el día ya está en su máximo de la semana (con 4 días de peso corporal, el glúteo del
+      // principiante: cualquier ejercicio de pierna más lo pasaría).
+      const program = generate(c, catalog)
+      const week = weekly({ ...c } as GeneratorConfig)
+      const full = (day: (typeof program.days)[number]) => day.exercises.some((x) => [x.exercise.muscle, ...x.exercise.secondaryMuscles].some((m) => {
+        const g = MAIN_GROUPS.findIndex(([, muscles]) => muscles.includes(m))
+        return g >= 0 && g !== ABS_GROUP && week[g] >= groupRange(c.goal, c.level, g)[1] - 0.5
+      }))
+      for (const day of program.days) {
         const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
-        assert.ok(day.exercises.length >= exerciseCount(60) - 1 || dayMinutes(day.exercises) >= 50, `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
+        assert.ok(day.exercises.length >= exerciseCount(60) || dayMinutes(day.exercises) >= 50 || full(day), `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
       }
     }
   }

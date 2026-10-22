@@ -101,7 +101,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
           return (
             <div key={g.name[0]} className="volume-row">
               <span className="small clamp-1">{t(...g.name)}</span>
-              <div className="volume-track" role="img" aria-label={`${t(...g.name)}: ${num(g.sets)} ${t('series', 'sets')}, ${g.sets === 0 && lo === 0 ? t('sin series (no tiene mínimo)', 'no sets (no minimum)') : state === 'low' ? t(`por debajo de ${lo}–${hi}`, `below ${lo}–${hi}`) : state === 'high' ? t(`por encima de ${lo}–${hi}`, `above ${lo}–${hi}`) : t(`dentro de ${lo}–${hi}`, `within ${lo}–${hi}`)}`}>
+              <div className="volume-track" role="img" aria-label={`${t(...g.name)}: ${num(g.sets)} ${t('series', 'sets')}, ${g.sets === 0 && lo === 0 ? t('no tiene mínimo', 'no minimum') : state === 'low' ? t(`por debajo de ${lo}–${hi}`, `below ${lo}–${hi}`) : state === 'high' ? t(`por encima de ${lo}–${hi}`, `above ${lo}–${hi}`) : t(`dentro de ${lo}–${hi}`, `within ${lo}–${hi}`)}`}>
                 <span className="volume-range" style={{ left: pct(lo), width: pct(hi - lo) }} />
                 <span className={`volume-fill ${state}`} style={{ width: pct(g.sets) }} />
               </div>

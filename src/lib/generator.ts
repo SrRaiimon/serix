@@ -161,8 +161,10 @@ function split(c: GeneratorConfig): [string, Template[]] {
       : [t('Empuje / Tirón / Pierna', 'Push / Pull / Legs'), [pushA, pullA, legsA]]
   }
   if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), c.goal === 'strength' ? [upperA, lowerA, strengthUpperB, strengthLowerB] : [upperA, lowerA, upperB, lowerB]]
-  // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario.
-  if (c.level === 'beginner' && c.days >= 5) {
+  // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario. Igual sin
+  // gimnasio con «Estar en forma» o fuerza: con su máximo de 15 series por grupo, el PPL de 6 días dejaba días de
+  // tirón de 2 ejercicios y 21 minutos.
+  if (c.days >= 5 && (c.level === 'beginner' || (c.equipment !== 'gym' && (c.goal === 'general' || c.goal === 'strength')))) {
     // Con 6, los días con bisagra (Pierna A y B, Cuerpo completo B) nunca seguidos, tampoco del último al primero:
     // Pierna B y Cuerpo completo B iban juntos (peso muerto y rumano en días seguidos).
     // Con 6, los días con bisagra (Cuerpo completo B, Pierna A y B) en días alternos y sin tres de press seguidos
@@ -483,15 +485,22 @@ function fitToTime(picked: Picked[], { minutes, fill }: TimeFit): Picked[] {
   // series de femoral y de core a la semana).
   const zone = (e: Exercise) => (e.bodyPart === 'legs' ? e.muscle : e.bodyPart)
   const repeated = (i: number) => picked.some((p, j) => j !== i && p.kind !== 'conditioning' && zone(p.ex.exercise) === zone(picked[i].ex.exercise))
+  // El único tirón del día se queda mientras haya otro que quitar: con 30 minutos, el cuerpo completo se quedaba en
+  // sentadilla y press (el remo era el último en entrar y el primero en salir).
+  const pull = (p: Picked) => PULL_DAY.includes(p.ex.exercise.muscle)
+  const onlyPull = (i: number) => pull(picked[i]) && picked.filter(pull).length === 1 && picked.some((p, j) => j > 0 && j !== i && p.kind !== 'conditioning')
   for (const strict of [true, false]) {
     for (let i = picked.length - 1; i > 0 && over(); i--) {
-      if (picked[i].kind !== 'conditioning' && (!strict || repeated(i))) picked.splice(i, 1)
+      if (picked[i].kind !== 'conditioning' && (!strict || repeated(i)) && !onlyPull(i)) picked.splice(i, 1)
     }
   }
   trim(() => true, 2)
   if (fill && Number.isFinite(minutes)) fillTime(picked, minutes, fill)
   return picked
 }
+
+/** Músculos de tirón que cuentan como «el tirón del día» (remos, dominadas, jalones). */
+const PULL_DAY = ['lats', 'upper-back']
 
 /** Series de fuerza de un día (sin el acondicionamiento). */
 const strengthSets = (picked: Picked[]) => picked.reduce((n, p) => n + (p.kind === 'conditioning' ? 0 : p.ex.sets), 0)
@@ -524,15 +533,12 @@ function fillTime(picked: Picked[], minutes: number, level: TrainingLevel) {
 
 /**
  * Los pesos con que balanceWeek elige entre cambios. La unidad es una serie fuera de su rango (lo que mide badness);
- * todo lo demás es desempate y va muy por debajo, de mayor a menor: llenar un grupo a 0, no poner dos abdominales en
- * un día, no quitar un básico entero, recortar el acondicionamiento o cambiar un ejercicio por otro, el primero del
+ * todo lo demás es desempate y va muy por debajo, de mayor a menor: llenar un grupo a 0, no quitar un básico entero, recortar el acondicionamiento o cambiar un ejercicio por otro, el primero del
  * día y quitar del día más largo (por minuto), y por último preferir los ejercicios con menos series.
  */
 const TIE = {
   /** Un grupo que no tiene ninguna serie va antes que otro que solo va corto (el abdomen se quedaba sin nada). */
   emptyGroup: 0.5,
-  /** Un segundo abdomen en un día que ya tiene. */
-  secondCore: 0.3,
   /** El empuje que pasa de PUSH_PULL_MAX × tirón cuenta a medias: no compensa pasar la espalda de su máximo. */
   pushPull: 0.5,
   /** Quitar entero un básico o un accesorio. */
@@ -607,7 +613,7 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     // El tope por músculo cuenta como buildPicked: también lo de fuerza del acondicionamiento (escaladores).
     && day.every((p) => !strengthy(p) || day.reduce((n, q) => n + (strengthy(q) && q.ex.exercise.muscle === p.ex.exercise.muscle ? q.ex.sets : 0), 0) <= MAX_SETS_PER_SESSION)
   /** Si p es el único de brazos (bíceps o tríceps) del día: no se quita, aunque el tríceps vaya sobrado de rebote con los press (el torso se quedaba sin brazos). */
-  const onlyOne = (day: Picked[], p: Picked) => ARM_GROUPS.has(mainGroup(p)) && !day.some((q) => q !== p && q.kind !== 'conditioning' && mainGroup(q) === mainGroup(p))
+  const onlyOne = (day: Picked[], p: Picked) => (ARM_GROUPS.has(mainGroup(p)) || mainGroup(p) === BACK_GROUP) && !day.some((q) => q !== p && q.kind !== 'conditioning' && mainGroup(q) === mainGroup(p))
   const minutesOf = (day: Picked[]) => dayMinutes(day.map((p) => p.ex))
   /** A igualdad, se quita del día más largo: el desempate sube con los minutos del día. */
   const fullness = (day: Picked[]) => minutesOf(day) * TIE.perMinute
@@ -663,10 +669,13 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     // si no hay otra cosa, una serie menos de cualquiera que lo trabaje, también el primero, sin bajar de su mínimo.
     if (!best) {
       for (const day of days) {
-        for (const p of day) {
-          if (p.kind === 'conditioning' || p.ex.sets <= floor(p) || !shares(p).some((x, g) => x > 0 && high(g))) continue
-          consider(after([[p, -1]]) + p.ex.sets * TIE.perSet - (p === day[0] ? TIE.firstOfDay : 0) + fullness(day), () => { p.ex.sets-- })
-        }
+        day.forEach((p, i) => {
+          if (p.kind === 'conditioning' || !shares(p).some((x, g) => x > 0 && high(g))) return
+          if (p.ex.sets > floor(p)) consider(after([[p, -1]]) + p.ex.sets * TIE.perSet - (p === day[0] ? TIE.firstOfDay : 0) + fullness(day), () => { p.ex.sets-- })
+          // Y si todos están en su mínimo, quitar entero uno que lo trabaja de rebote (no el primero del día ni el único
+          // de su grupo): con 6 días sin material, zancadas y sentadillas en la pared dejaban el glúteo en 17,5 de 15.
+          else if (i > 0 && !onlyOne(day, p) && day.length > 3) consider(after([[p, -p.ex.sets]]) - TIE.dropAccessory + fullness(day), () => { day.splice(day.indexOf(p), 1) })
+        })
       }
     }
     // Un grupo bajo: añadir un ejercicio suyo (al día de su zona con más tiempo libre) o, si el día no da para más,
@@ -685,10 +694,9 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
           zone: g === ABS_GROUP || day.some((p) => { const m = mainGroup(p); return m >= 0 && m !== ABS_GROUP && isLegGroup(m) === leg }),
           // El abdomen, primero a los días que no tienen (salían dos en un día y ninguno en otro).
           busy: g === ABS_GROUP && day.some((p) => p.kind === 'core') ? 1 : 0 }))
-          .filter((x) => x.zone).sort((a, b) => a.busy - b.busy || b.free - a.free)
-        for (const { d, busy } of order) {
-          // Un segundo abdomen en el mismo día cuesta: mejor hacer sitio en un día sin abdomen.
-          const pen = busy * TIE.secondCore
+          // Nunca un segundo abdomen en un día: si no cabe en otro, el ajuste sube series al que ya hay.
+          .filter((x) => x.zone && !x.busy).sort((a, b) => b.free - a.free)
+        for (const { d } of order) {
           for (const slot of GROUP_SLOTS[g]) {
             const p = add(d, slot)
             if (!p || mainGroup(p) !== g) continue
@@ -698,7 +706,7 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
             days[d].splice(where, 0, p)
             const ok = fits(days[d])
             days[d].splice(where, 1)
-            if (ok) { consider(after([[p, 2]]) + empty - pen, () => { days[d].splice(where, 0, p) }); return }
+            if (ok) { consider(after([[p, 2]]) + empty, () => { days[d].splice(where, 0, p) }); return }
             // Sin sitio: una serie menos del bloque de acondicionamiento (no cuenta como volumen). «Perder grasa» de
             // 3 días y 45 min salía sin abdomen porque los saltos se comían el tiempo.
             const cond = days[d].find((x) => x.kind === 'conditioning' && x.ex.sets > 2)
@@ -708,7 +716,7 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
               const condOk = fits(days[d])
               days[d].splice(where, 1)
               cond.ex.sets++
-              if (condOk) { consider(after([[p, 2]]) + empty - pen - TIE.condTrim, () => { cond.ex.sets--; days[d].splice(where, 0, p) }); return }
+              if (condOk) { consider(after([[p, 2]]) + empty - TIE.condTrim, () => { cond.ex.sets--; days[d].splice(where, 0, p) }); return }
               // Y si aún no cabe, también una serie de otro (no el primero del día, sin bajar de su mínimo).
               for (const q of days[d].slice(1)) {
                 if (q.kind === 'conditioning' || q.ex.sets <= floor(q)) continue
@@ -717,22 +725,26 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
                 const bothOk = fits(days[d])
                 days[d].splice(where, 1)
                 cond.ex.sets++; q.ex.sets++
-                if (bothOk) { consider(after([[p, 2], [q, -1]]) + empty - pen - TIE.condAndSet, () => { cond.ex.sets--; q.ex.sets--; days[d].splice(where, 0, p) }); return }
+                if (bothOk) { consider(after([[p, 2], [q, -1]]) + empty - TIE.condAndSet, () => { cond.ex.sets--; q.ex.sets--; days[d].splice(where, 0, p) }); return }
               }
             }
             for (const q of days[d].slice(1)) {
               // Un básico no se cambia, salvo un press por un remo cuando sobra empuje: con 30 minutos salían semanas
               // de sentadilla y press sin un solo tirón.
               const pushForPull = pushy && g === BACK_GROUP && PUSH_GROUPS.has(mainGroup(q))
-              if ((q.kind === 'compound' && !pushForPull) || q.kind === 'conditioning' || mainGroup(q) === g || onlyOne(days[d], q)) continue
+              // Ni el abdomen del día: otro grupo bajo lo cambiaba por lo suyo y «Perder grasa» de 2 días se quedaba sin él.
+              // Y para el abdomen que no tiene nada, con 2 días, el bloque de saltos de uno (el otro conserva el suyo):
+              // «Perder grasa» de 2 días con peso corporal no tenía hueco para nada más. Con más días no hace falta.
+              const condForCore = c.days <= 2 && g === ABS_GROUP && now[g] === 0 && q.kind === 'conditioning' && days.filter((x) => x.some((y) => y.kind === 'conditioning')).length > 1
+              if ((q.kind === 'compound' && !pushForPull) || (q.kind === 'conditioning' && !condForCore) || q.kind === 'core' || mainGroup(q) === g || onlyOne(days[d], q)) continue
               const day = days[d]
-              const sets = Math.min(3, Math.max(2, q.ex.sets))
+              const sets = condForCore ? 2 : Math.min(3, Math.max(2, q.ex.sets))
               const i = day.indexOf(q)
               day.splice(i, 1, p)
               p.ex.sets = sets
               const swapOk = fits(day)
               day.splice(i, 1, q)
-              if (swapOk) consider(after([[p, sets], [q, -q.ex.sets]]) + empty - pen - TIE.swap, () => { p.ex.sets = sets; day.splice(day.indexOf(q), 1, p) })
+              if (swapOk) consider(after([[p, sets], [q, -q.ex.sets]]) + empty - TIE.swap, () => { p.ex.sets = sets; day.splice(day.indexOf(q), 1, p) })
             }
           }
         }
@@ -761,6 +773,23 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     }
     if (!best) break
     best.p.ex.sets++
+  }
+  // Un día que se queda en menos de la mitad del más largo, o en 2 ejercicios con 45 minutos o más (sus grupos ya en el
+  // máximo de la semana): un ejercicio de abdomen o de gemelo, que no se pasan de nada. Sin esto, salían Piernas A de 3 ejercicios y 30 minutos en
+  // semanas de 90.
+  for (let d = 0; d < days.length; d++) {
+    for (const slot of ['core', 'calves'] as SlotName[]) {
+      const longest = Math.max(...days.map(minutesOf))
+      if (minutesOf(days[d]) >= longest * 0.5 && (c.minutes < 45 || days[d].length >= 3)) break
+      if (slot === 'core' && days[d].some((p) => p.kind === 'core')) continue
+      const p = add(d, slot)
+      if (!p) continue
+      p.ex.sets = 3
+      const at = days[d].findIndex((x) => x.kind === 'conditioning')
+      days[d].splice(at < 0 ? days[d].length : at, 0, p)
+      const v = totals()
+      if (!fits(days[d], c.minutes) || v.slice(0, N).some((x, g) => x > ranges[g][1])) days[d].splice(days[d].indexOf(p), 1)
+    }
   }
   // El abdomen, al final del día, y el acondicionamiento detrás de todo: lo que añadía el ajuste quedaba entre la
   // sentadilla y la extensión de cuádriceps, y los escaladores, antes de los gemelos.
@@ -838,14 +867,18 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     }
     return fitScheme(exercise, slot.kind, s, c.level)
   }
-  const picked = templates.map((template, index) => {
+  const picked: Picked[][] = []
+  templates.forEach((template, index) => {
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
-    return buildPicked(list, { minutes: c.minutes, fill: c.level },
-      (name, variant, chosen, used) => choose(template, name, variant, chosen, used),
+    // Un accesorio no repite el del día anterior si hay otro (salía la extensión en polea dos días seguidos).
+    const yesterday = (picked[index - 1] ?? []).map((p) => p.ex.exercise.id)
+    picked.push(buildPicked(list, { minutes: c.minutes, fill: c.level },
+      (name, variant, chosen, used) => ((slots[name].kind === 'accessory' || slots[name].kind === 'core') && choose(template, name, variant, chosen, new Set([...used, ...yesterday])))
+        || choose(template, name, variant, chosen, used),
       (found, _name, done) => schemeFor(found, done),
       undefined,
-      template.slots.slice(n).filter(([s]) => s !== 'conditioning'))
+      template.slots.slice(n).filter(([s]) => s !== 'conditioning')))
   })
   balanceWeek(picked, c, (d, slot) => {
     const day = picked[d]

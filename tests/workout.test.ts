@@ -123,9 +123,10 @@ test('calentamiento en descarga: como mucho dos series', () => {
   assert.equal(deload, 2)
 })
 
-test('recuento de series: sin calentamiento ni drops, por lados una por pareja', () => {
+test('recuento de series: sin calentamiento ni drops, por lados una por pareja (hecha con cualquiera de los dos lados)', () => {
+  // Pareja 1 con los dos lados, pareja 2 solo con la derecha, 3 y 4 sin hacer.
   const sides = [1, 2, 3, 4].flatMap((i) => [set(20, 10, { done: i === 1, side: 'L' }), set(20, 10, { done: i === 1 || i === 2, side: 'R' })])
-  assert.deepEqual(setProgress(sides), { done: 1, total: 4 })
+  assert.deepEqual(setProgress(sides), { done: 2, total: 4 })
   const drops = [set(40, 10, { warmup: true }), set(80, 8), set(80, 8, { done: false }), set(60, 8, { kind: 'drop', done: false })]
   assert.deepEqual(setProgress(drops), { done: 1, total: 2 })
 })
@@ -157,4 +158,10 @@ test('semana de descarga: la del bloque cuenta igual que la del entrenador, y lo
   const routine = { id: 'r', name: 'R', notes: '', order: 0, createdAt: 0, exercises: [{ exerciseId: 'Barbell_Bench_Press_-_Medium_Grip', name: 'B', muscle: 'pectorals', sets: 5, repsMin: 6, repsMax: 10, rest: 120 }] }
   assert.equal(weekRoutine(block, routine).exercises[0].sets, 3)
   assert.equal(weekRoutine(base, routine), routine)
+})
+
+test('recuento por lados: con solo la derecha marcada también cuenta en el resumen', () => {
+  const right = exercise('Dumbbell_Lunges', [set(20, 10, { side: 'L', done: false }), set(20, 10, { side: 'R' })])
+  assert.equal(sessionSets(session(0, [right])), 1)
+  assert.equal(setProgress(right.sets).done, 1)
 })

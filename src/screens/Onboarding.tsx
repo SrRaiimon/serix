@@ -285,7 +285,7 @@ export function OnboardingScreen() {
             {/* Las cifras del plan, como en el resto de la app (Archivo grande en una banda). */}
             <StatBand items={[
               { value: settings.days, label: t('días / semana', 'days / week') },
-              { value: settings.level === 'beginner' && longest < settings.minutes - 10 ? `~${longest}` : settings.minutes, label: t('min / sesión', 'min / session') },
+              { value: longest < settings.minutes - 5 ? `~${longest}` : settings.minutes, label: t('min / sesión', 'min / session') },
               { value: perDay, label: t('ejercicios / día', 'exercises / day') },
             ]} />
             {/* Un adelanto del primer entreno: lo que te vas a encontrar al pulsar «Empezar». */}
