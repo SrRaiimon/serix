@@ -285,7 +285,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Para hoy', 'Today\'s target')}</span>}</div>
         {duration.deload ? (
-          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</p>
+          <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La semana que viene vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</p>
         ) : routine.exercises.some((e) => e.progression) && (
           <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Cuando completas todas las repeticiones, la app te sube el peso la sesión siguiente.', 'When you complete every rep, the app raises the weight for you next session.')}</p>
         )}

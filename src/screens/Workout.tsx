@@ -66,9 +66,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
   const onEffort = (setId: string, rpe: number | undefined, base: number) => {
-    // En descarga, que sobre fuerza es lo buscado: no se recorta el descanso ni se avisa de ello.
-    if (rpe !== undefined && rpe < 8 && session.exercises.find((e) => e.sets.some((x) => x.id === setId))?.deload) return
-    const total = adjustRestForEffort(setId, rpe, base)
+    // En descarga, que sobre fuerza es lo buscado: un RPE bajo cuenta como normal (no recorta el descanso), pero si se
+    // corrige uno alto, el descanso añadido se quita.
+    const deload = !!session.exercises.find((e) => e.sets.some((x) => x.id === setId))?.deload
+    const total = adjustRestForEffort(setId, deload && rpe !== undefined ? Math.max(rpe, 8) : rpe, base)
     if (total === undefined) return
     showToast(total > 0 ? t(`Descanso +${total} s: ha costado`, `Rest +${total} s: that was hard`)
       : total < 0 ? t(`Descanso −${-total} s: te sobraba fuerza`, `Rest −${-total} s: you had reps to spare`)

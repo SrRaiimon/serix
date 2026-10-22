@@ -621,7 +621,6 @@
 "Estirar 4 minutos (vuelta a la calma)": "Alongar 4 minutos (regresso à calma)",
 "Estos resúmenes tienen más de una semana: no cuentan para «Esta semana».": "Estes resumos têm mais de uma semana: não contam para «Esta semana».",
 "Estos valores no cuadran: pone {0} kcal por 100 g, pero su proteína, hidratos y grasa dan unas {1} kcal. Mira la etiqueta del envase.": "Estes valores não batem certo: diz {0} kcal por 100 g, mas a proteína, hidratos e gordura dão cerca de {1} kcal. Vê o rótulo da embalagem.",
-"Estrella: {0}": "Estrela: {0}",
 "Exportar a hoja de cálculo (CSV)": "Exportar para folha de cálculo (CSV)",
 "Exportar fotos (.zip)": "Exportar fotos (.zip)",
 "Exprés A": "Expresso A",
@@ -2120,7 +2119,6 @@
 "En abdomen, desde {0}.": "No abdómen, a partir de {0}.",
 "Músculos en los últimos 7 días": "Músculos nos últimos 7 dias",
 "Por semana, con tus {0} días.": "Por semana, com os teus {0} dias.",
-"Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.": "Semana de descarga: menos séries e 10 % menos de peso para recuperar. Na seguinte voltas aos teus pesos.",
 "Series · descarga": "Séries · descarga",
 "series · descarga": "séries · descarga",
 "Semana de descarga coherente: Inicio, Rutinas y el detalle cuentan las series que harás de verdad, y en el entreno sale un solo aviso, sin «para subir de peso».": "Semana de descarga coerente: Início, Rotinas e o detalhe contam as séries que vais fazer de verdade, e no treino aparece um só aviso, sem «para subir de peso».",
@@ -2155,5 +2153,12 @@
 "Movilidad 5 min: activación antes de empezar": "Mobilidade 5 min: ativação antes de começar",
 "Para empezar, sesiones de unos {0} min: más series aún no suman.": "Para começar, sessões de cerca de {0} min: mais séries ainda não somam.",
 "Semana de descarga: menos series y un 10 % menos de peso para recuperar. La semana que viene vuelves a tus pesos.": "Semana de descarga: menos séries e 10 % menos de peso para recuperar. Na próxima semana voltas aos teus pesos.",
-"Tus datos solo están en este móvil{0}. Guarda una copia en Drive, iCloud o tu correo por si cambias de móvil.": "Os teus dados só estão neste telemóvel{0}. Guarda uma cópia no Drive, iCloud ou no teu e-mail, caso mudes de telemóvel."
+"Tus datos solo están en este móvil{0}. Guarda una copia en Drive, iCloud o tu correo por si cambias de móvil.": "Os teus dados só estão neste telemóvel{0}. Guarda uma cópia no Drive, iCloud ou no teu e-mail, caso mudes de telemóvel.",
+"Las series cuentan igual en el entreno y en el resumen, también por lados; y descargar un solo ejercicio estancado ya no cambia el resumen de toda la sesión.": "As séries contam igual no treino e no resumo, também por lados; e descarregar um só exercício estagnado já não muda o resumo da sessão inteira.",
+"En descarga, si corriges un RPE alto, el descanso añadido se quita.": "Na descarga, se corriges um RPE alto, o descanso acrescentado é retirado.",
+"Programas más completos: siempre hay remo o dominada (también con 30 minutos), un solo ejercicio de abdomen por día, sin press tres días seguidos para quien empieza con 6 días y los días de cuerpo completo nombrados desde la A.": "Programas mais completos: há sempre remada ou elevação (também com 30 minutos), um só exercício de abdominais por dia, sem supino três dias seguidos para quem começa com 6 dias, e os dias de corpo inteiro nomeados a partir do A.",
+"«Tu plan» enseña los minutos reales por sesión cuando eres principiante, y la tarjeta del mes dice «Más series» en vez de «Estrella».": "«O teu plano» mostra os minutos reais por sessão quando és principiante, e o cartão do mês diz «Mais séries» em vez de «Estrela».",
+"Detalles: «Más tarde» de la copia como texto, el nivel 1-3 del mapa de músculos se distingue mejor y la duración de las tarjetas para compartir dice «<1 min» en vez de «0 min».": "Detalhes: «Mais tarde» da cópia como texto, o nível 1-3 do mapa de músculos distingue-se melhor e a duração dos cartões para partilhar diz «<1 min» em vez de «0 min».",
+"Más series: {0}": "Mais séries: {0}",
+"sin series (no tiene mínimo)": "sem séries (não tem mínimo)"
 }

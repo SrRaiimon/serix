@@ -163,7 +163,8 @@ export function periodCardSVG(s: PeriodSummary, unit: Unit): string {
   const facts: string[] = []
   if (s.bestStreak > 1) facts.push(t(`Racha de ${s.bestStreak} semanas seguidas`, `${s.bestStreak}-week streak`))
   if (s.topGroup !== undefined) facts.push(t(`Lo que más: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`, `Most trained: ${t(...MAIN_GROUPS[s.topGroup][0]).toLowerCase()}`))
-  if (!yearly && s.top[0]) facts.push(t(`Estrella: ${cut(s.top[0].name, 24)}`, `Top exercise: ${cut(s.top[0].name, 22)}`))
+  // «Más series» y no «Estrella»: es el que más se ha hecho, que puede estar atascado (salía también en «Sin mejorar»).
+  if (!yearly && s.top[0]) facts.push(t(`Más series: ${cut(s.top[0].name, 22)}`, `Most sets: ${cut(s.top[0].name, 22)}`))
   const listY = 1000
   const top = s.top.map((e, i) => `<text x="80" y="${listY + 50 + i * 46}" font-size="30" fill="${C.text}">${i + 1}. ${esc(cut(e.name, 38))}</text>
     <text x="1000" y="${listY + 50 + i * 46}" font-size="28" fill="${C.text2}" text-anchor="end">${esc(t(`${e.sets} series`, `${e.sets} sets`))}</text>`).join('')

@@ -1,5 +1,5 @@
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from '../components/muscleShapes'
-import { day, fromKg, int, tons, weight, type Unit } from './format'
+import { day, duration, fromKg, int, tons, weight, type Unit } from './format'
 import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from './stats'
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
@@ -67,7 +67,7 @@ export function shareCardSVG({ session, unit, records, secondaryOf, story = fals
   const paint = (name: string): Paint => (primary.has(name) ? 'p' : secondary.has(name) ? 's' : 'm')
 
   const stats: [string, string][] = [
-    [`${Math.round(sessionDuration(session) / 60000)} min`, t('Duración', 'Duration')],
+    [duration(sessionDuration(session)), t('Duración', 'Duration')],
     [tons(sessionVolume(session), unit), t('Volumen', 'Volume')],
     [String(sessionSets(session)), t('Series', 'Sets')],
     records.length ? [String(records.length), records.length === 1 ? t('Récord', 'Record') : t('Récords', 'Records')] : [String(sessionReps(session)), t('Repeticiones', 'Reps')],

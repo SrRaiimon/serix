@@ -1,7 +1,8 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, deloadSets, prefillSets, previewRoutine, routineFacts, setProgress, withWarmup } from '../src/lib/workout'
+import { applyDeload, deloadSets, deloadWeek, prefillSets, previewRoutine, routineFacts, setProgress, weekRoutine, withWarmup } from '../src/lib/workout'
+import { sessionSets } from '../src/lib/stats'
 import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
 import { rememberEquipment } from '../src/lib/progression'
@@ -134,4 +135,26 @@ test('descarga: nunca deja un ejercicio en una sola serie si tenía dos o más',
   applyDeload(e, 'kg')
   assert.equal(e.sets.length, 2)
   assert.deepEqual([1, 2, 3, 4, 5].map(deloadSets), [1, 2, 2, 2, 3])
+})
+
+test('recuento: el entreno y el resumen cuentan lo mismo (lados, drops y calentamiento)', () => {
+  // Zancada de 3 por lados con la última derecha sin marcar, press con un drop y calentamiento, una serie sin hacer.
+  const lunge = exercise('Dumbbell_Lunges', [1, 2, 3].flatMap((i) => [set(20, 10, { side: 'L' }), set(20, 10, { side: 'R', done: i < 3 })]))
+  const bench = exercise('Barbell_Bench_Press_-_Medium_Grip', [set(40, 10, { warmup: true }), set(80, 8), set(80, 8), set(60, 8, { kind: 'drop' }), set(80, 8, { done: false })])
+  const done = [lunge, bench].reduce((n, e) => n + setProgress(e.sets).done, 0)
+  assert.equal(done, sessionSets(session(0, [lunge, bench])))
+  assert.equal(done, 5)
+})
+
+test('semana de descarga: la del bloque cuenta igual que la del entrenador, y los drops no suman series', () => {
+  const base = migrateData({ version: 1, sessions: [], routines: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const now = Date.now()
+  // Bloque de 4 semanas que empezó hace 3: esta es la 4.ª, la de descarga.
+  const block = { ...base, settings: { ...base.settings, block: { start: now - 21 * 86400000, weeks: 4 } } } as typeof base
+  assert.equal(deloadWeek(block, now), true)
+  assert.equal(deloadWeek(base, now), false)
+  const routine = { id: 'r', name: 'R', notes: '', order: 0, createdAt: 0, exercises: [{ exerciseId: 'Barbell_Bench_Press_-_Medium_Grip', name: 'B', muscle: 'pectorals', sets: 5, repsMin: 6, repsMax: 10, rest: 120 }] }
+  assert.equal(weekRoutine(block, routine).exercises[0].sets, 3)
+  assert.equal(weekRoutine(base, routine), routine)
 })

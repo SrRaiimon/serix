@@ -495,7 +495,8 @@ function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {
       {/* Secundario: el botón naranja de Inicio es «Empezar» (dos naranjas se disputaban la acción principal). */}
       <div className="row" style={{ gap: 8 }}>
         <button className="btn secondary grow" onClick={() => void exportBackup()}>{t('Guardar copia', 'Save backup')}</button>
-        <button className="btn plain" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
+        {/* Aplazar, como texto: con relleno pesaba más que «Guardar copia». */}
+        <button className="link-btn backup-later" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
       </div>
     </Card>
   )

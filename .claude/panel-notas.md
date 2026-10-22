@@ -21,43 +21,46 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.4 | 9,6 | 9,5 | 9,6 | — (se paró: salió la 0.1.5) | — |
 | 0.1.5 | 9,7 | 9,6 | 9,6 | 9,9 | 9,7 |
 | 0.1.6 | 9,7 | 9,6 | 9,7 | 9,8 | 9,7 |
+| 0.1.7 | 9,8 | 9,5 | 9,7 | 9,9 | 9,7 (9,725) |
 
-## Pendientes tras 0.1.6 (resueltos desde 0.1.5: calentamiento de 2 en descarga, «Movilidad 5 min», Comidas en Inicio,
-## sin aviso de recuperación en descarga, un mensaje por ejercicio, asistidas en descarga, recuento del entreno,
-## deloadWeek con la fecha de la sesión, span vacío, excesos de volumen, kettlebell descompensado, rumano a 6-8, RPE)
-## Crítica de diseño: 30/40; detector limpio. Para subir: Inicio más corto (copia sin segundo botón naranja,
-## entrenador y comidas plegables), aviso de estancado en tinta, explicar RPE y descarga la primera vez.
+## Pendientes tras 0.1.7 (resueltos desde 0.1.6: resumen de descarga neutro, consejos en pausa en descarga, descarga
+## nunca a 1 serie, Músculos a 3:1 con estado en aria-label, chip con nombre visible, «Secundarios», bisagras seguidas
+## en principiante 6 días, empuje ≤ 1,5 × tirón con ≥ 45 min, Torso B 3/3, copia secundaria, estancado en gris)
+## Crítica de diseño: 31/40; detector: 2 avisos «side-tab» por los límites de zona de Músculos (border 2 px).
+## Para subir: Inicio más corto, explicar RPE y descarga la primera vez, límites de zona sin bordes laterales.
 
-### serix-ux (9,7)
-- Resumen tras un entreno de descarga: «−5 kg» en rojo y «6,1 t menos movidos»; comparar con lo previsto, en neutro.
-  Y sin «Descanso −15 s: te sobraba fuerza» con RPE bajo en descarga.
-- Descarga activa y el entrenador sigue con «Cambia Jalón…»/«Cambia Curl martillo…» en «Ver más consejos».
-- Torso B: curl martillo 4× y press francés 2× (en descarga, 1 serie); la descarga nunca debería dejar 1 serie.
-- Generador: principiante 5 días 90 min (51-64 min sin explicar el tope; «Unos 6 ejercicios» con días de 7; abdomen
-  en medio del día y dos de abdomen; extensión de cuádriceps 3 de 5 días). Principiante 3 días 45 min: piernas ~6.
-- Músculos: «por debajo» más apagado (debería llamar la atención), banda de zona casi invisible, «Listo» es lo que más pesa.
-- Menores: «La siguiente vuelves a tus pesos» (falta «semana»); Rutina › «Músculos que trabaja» sin «Secundarios».
+### serix-ux (9,8)
+- Generador: abdomen mal repartido (dos ejercicios en un día, ninguno en otro); escaladores antes de los gemelos.
+- Nombres de días: «Cuerpo completo C» sin A ni B (principiante 5 y 6 días): nombrar en orden desde A.
+- «Tu plan» dice «90 min / sesión» y la vista previa «51–64′»: los minutos reales cuando hay tope.
+- Routines.tsx:288 «La siguiente vuelves a tus pesos» (y fr/pt): «La semana que viene».
+- Tarjeta del mes: «Estrella» es el de más series (y sale en «Sin mejorar»): «Más series: …»; «0 min» frente a «<1 min».
+- Extensión de cuádriceps en 3 de 5 días.
 
-### serix-code (9,6)
-- Dos setCount con reglas distintas: stats.ts:38 cuenta drops y workout.ts:187 no (entreno «3 de 3», resumen «5 series»).
-  Una sola regla con nombre claro y test que cruce entreno y resumen.
-- Abdomen 0 en 64 configuraciones de ≥45 min (contradice el changelog); test solo en 1 configuración.
-- Tests de equilibrio entre días y de máx+2 en pocas configuraciones (fuerza principiante 6d 90m peso corporal: glúteo 17,5/15).
-- Pesos de desempate de balanceWeek sin escala con nombre (fullness hasta 0,09 > 0,05 del básico); partir generator.ts (856).
-- Drop pendiente no entra en «series que no se guardarán»; suelo del modo gasto sin aviso; patrón de swing propio en
-  tests; test de descarga sin bloque ni drops.
+### serix-code (9,5)
+- setProgress (workout.ts:190) no usa countsAsSet: por lados exige las dos y setCount no (entreno «2 de 3», resumen 3).
+  Construirlo sobre countsAsSet y test que cruce setProgress con sessionSets (lados, drops, calentamiento).
+- Session.tsx:204/217: con un solo ejercicio descargado (estancado) el resumen tapa el volumen de toda la sesión.
+- Workout.tsx:70: el return temprano en descarga no revierte un +30 s previo; usar adjustRestForEffort con max(rpe, 8).
+- Empuje/tirón blando: 37 programas de 30 min con tirón 0 (gym fuerza principiante 2d 30m); test solo a 60 min y 1,5.
+- Brazos: 12 días con diferencia de 2 (gym fuerza intermedio 5d 60m Torso B); [lo, hi] coge los dos menores.
+- generator.ts 936 líneas y pesos sueltos (0,5, 0,01, 0,02, pushExcess × 0,5): escala con nombre y partir el archivo.
+- Tests de abdomen, máx+2 y brazos a todo el barrido; glúteo 17,5/15 en fuerza principiante 6d 90m peso corporal.
+- deloadSets(2) = 2 (sin «menos series»); «Quitar la descarga de hoy» no restaura; suelo del modo gasto; swing en
+  tests con countsForVolume; test de deloadWeek/weekRoutine con bloque y drops.
 
 ### serix-coach (9,7)
-- Principiante 6 días: bisagra en días seguidos (Pierna B y Cuerpo completo B; 48 programas). Reordenar y test.
-- Perder grasa 3 días 45 min por debajo en su análisis (saltos comen el tiempo): abdomen 0, bíceps/tríceps bajos.
-- Empuje > 1,5 × tirón en 307 programas: tirón ≥ 0,8-1 × empuje en balanceWeek.
-- Bíceps < 8 sin gimnasio (97); sin curl con bandas en el catálogo (comprobar licencia).
-- 47 programas con un día < 60 % del más largo (kettlebell 6 días: Empuje B 21 min).
-- Hipertrofia 3 días 45 min: superseries antagonistas; Progreso «suficiente para tu tiempo» también con 30 min.
+- 37 programas sin ninguna serie de tirón (cuerpo completo con 30 min): un tirón por sesión siempre; test sin filtrar.
+- Nuevo orden de principiante 6 días: press 3 días seguidos y el mismo inclinado en días seguidos (92 programas);
+  Torso A sin elevaciones laterales.
+- Abdomen bajo el mínimo en fatLoss/general con ≥ 45 min (49), p. ej. gym fatLoss intermedio 2d 45/60m y mancuernas 3d 45m.
+- Bíceps bajo en 75 y tríceps en 33 sin gimnasio con mancuernas/kettlebell (sí hay curls): subirlos en el ajuste.
+- 53 días cortos (mancuernas fuerza principiante 6d 30m: un día de 16 min con un ejercicio).
+- Hipertrofia avanzado 3 días: PPL una vez por semana; mejor cuerpo completo o superseries.
 
-### serix-perf-a11y (9,8)
-- Músculos: barras de estado < 3:1 en claro (recuperándose y por debajo 1,98 con --text-3; zona 1,21; naranja 2,79):
-  tinta al 50 %, límites de zona con rayas, naranja de gráfico más oscuro en claro.
-- aria-label de .volume-track con el estado («por debajo de 10–20»).
-- Chip «Movilidad 5 min»: el aria-label no contiene el texto visible (2.5.3).
-- Test del ::after de 44 px; Lighthouse y axe cuando estén instalados; leyenda «1-3» del mapa poco visible en claro.
+### serix-perf-a11y (9,9)
+- Lighthouse y axe-core (instalar en el scratchpad con permiso del usuario).
+- Mapa de calor: nivel 1-3 (--mm-l1/--mm-l2, .mm-key-light) a 3:1 o con contorno.
+- Tarjeta de copia: «Más tarde» con relleno pesa más que «Guardar copia» (contorno 1,5:1): botón de texto.
+- touch-area.test.ts solo lee el CSS: contenedores con overflow y position relative.
+- aria-label del abdomen a 0 series («sin series, no tiene mínimo»).

@@ -193,10 +193,11 @@ test('sin material: cada día llega a los ejercicios prometidos; con barra, el p
   for (const level of levels.map((l) => l.id)) {
     for (const days of [3, 4]) {
       const c: GeneratorConfig = { goal: 'hypertrophy', level, days, minutes: 60, equipment: 'bodyweight' }
-      // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno).
+      // O llega a los ejercicios, o el tiempo ya está lleno de series (los avanzados hacen más series de cada uno). Uno
+      // menos vale: el abdomen de más pasa a un día que no tenía y, con las piernas en su máximo, no se repone.
       for (const day of generate(c, catalog).days) {
         const sets = day.exercises.reduce((t, x) => t + x.sets, 0)
-        assert.ok(day.exercises.length >= exerciseCount(60) || dayMinutes(day.exercises) >= 50, `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
+        assert.ok(day.exercises.length >= exerciseCount(60) - 1 || dayMinutes(day.exercises) >= 50, `${level}/${days}d: ${day.name} con ${day.exercises.length} y ${sets} series`)
       }
     }
   }
@@ -323,6 +324,23 @@ test('empuje y tirón: con 45 minutos o más, el empuje no pasa de 1,5 veces el 
       push += a * x.sets; pull += b * x.sets
     }
     assert.ok(push <= 1.5 * pull, `${goal}/${level}/${equipment}/${days}d: empuje ${push}, tirón ${pull}`)
+  }
+})
+
+test('tirón: ningún programa sin remo ni dominada, con cualquier tiempo y material', () => {
+  // Con 30 minutos salían semanas de sentadilla y press sin un solo tirón (gimnasio, fuerza, principiante, 2 días).
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const { id: equipment } of equipmentProfiles) for (const days of [2, 3, 4, 5, 6]) for (const minutes of [30, 45, 60, 90]) {
+    const all = generate({ goal, level, days, minutes, equipment }, catalog).days.flatMap((d) => d.exercises)
+    assert.ok(all.some((x) => ['lats', 'upper-back'].includes(x.exercise.muscle)), `${goal}/${level}/${equipment}/${days}d/${minutes}: sin tirón`)
+  }
+})
+
+test('principiante de 6 días: sin press de pecho tres días seguidos y días de cuerpo completo nombrados desde la A', () => {
+  for (const goal of ['hypertrophy', 'strength', 'general'] as const) for (const { id: equipment } of equipmentProfiles) {
+    const days = generate({ goal, level: 'beginner', days: 6, minutes: 60, equipment }, catalog).days
+    const press = days.map((d) => d.exercises.some((x) => x.exercise.muscle === 'pectorals' && x.sets >= 3))
+    press.forEach((p, i) => assert.ok(!(p && press[i + 1] && press[i + 2]), `${goal}/${equipment}: press en los días ${i + 1} a ${i + 3}`))
+    assert.ok(days.some((d) => /(Cuerpo completo|Full body) A$/.test(d.name)), days.map((d) => d.name).join(', '))
   }
 })
 

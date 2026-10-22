@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
 import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
-import { lastSets, workingSets } from './stats'
+import { countsAsSet, lastSets, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
 import { defaultTracking, trackingOf, type Tracking } from './tracking'
@@ -184,17 +184,13 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
 }
 
 /**
- * Hechas y en total del entreno en curso, con la regla de countsAsSet (la del resumen y el historial): sin
- * calentamiento ni drop sets, y por lados una por pareja (hecha cuando lo están las dos).
+ * Hechas y en total del entreno en curso, con countsAsSet: la misma regla que el resumen y el historial (sin
+ * calentamiento ni drop sets, y por lados la serie izquierda cuenta por la pareja). Antes el entreno exigía los dos
+ * lados y el resumen no: «2 de 3» en el entreno y 3 series en el resumen.
  */
 export function setProgress(sets: readonly SetEntry[]): { done: number; total: number } {
-  const units: boolean[] = []
-  for (const s of sets) {
-    if (s.warmup || s.kind === 'drop') continue
-    if (s.side === 'R' && units.length) units[units.length - 1] &&= s.done
-    else units.push(s.done)
-  }
-  return { done: units.filter(Boolean).length, total: units.length }
+  const counted = sets.filter(countsAsSet)
+  return { done: counted.filter((s) => s.done).length, total: counted.length }
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */

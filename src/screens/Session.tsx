@@ -202,6 +202,9 @@ function ComparisonCard({ session, history, unit }: { session: Session; history:
   const minutes = Math.round(c.duration / 60000)
   // En descarga, el −10 % es lo previsto: ni rojo ni «menos movidos», se dice que es la descarga.
   const deloaded = new Set(session.exercises.filter((e) => e.deload).map((e) => e.exerciseId))
+  // El volumen se calla solo si toda la sesión era de descarga (la semana de descarga): con un solo ejercicio
+  // estancado descargado, los demás aún comparan su peso movido.
+  const allDeload = c.exercises.length > 0 && c.exercises.every((x) => deloaded.has(x.exerciseId))
   const text = (x: ExerciseChange) => {
     const sign = x.delta > 0 ? '+' : '−'
     if (x.kind === 'weight') return `${sign}${weight(Math.abs(x.delta), unit)}`
@@ -214,7 +217,7 @@ function ComparisonCard({ session, history, unit }: { session: Session; history:
       <span className="small muted">
         {[
           minutes ? (minutes > 0 ? t(`${minutes} min más`, `${minutes} min longer`) : t(`${-minutes} min menos`, `${-minutes} min shorter`)) : t('Misma duración', 'Same duration'),
-          deloaded.size ? t('Descarga: menos series y peso, como estaba previsto', 'Deload: fewer sets and less weight, as planned')
+          allDeload ? t('Descarga: menos series y peso, como estaba previsto', 'Deload: fewer sets and less weight, as planned')
             : Math.abs(c.volume) >= 1 ? (c.volume > 0 ? t(`${tons(c.volume, unit)} más movidos`, `${tons(c.volume, unit)} more moved`) : t(`${tons(-c.volume, unit)} menos movidos`, `${tons(-c.volume, unit)} less moved`)) : undefined,
         ].filter(Boolean).join(' · ')}
       </span>

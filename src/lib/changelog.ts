@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.8',
+    items: [
+      ['Las series cuentan igual en el entreno y en el resumen, también por lados; y descargar un solo ejercicio estancado ya no cambia el resumen de toda la sesión.', 'Sets count the same in the workout and in the summary, per side too; and deloading a single stalled exercise no longer changes the summary of the whole session.'],
+      ['En descarga, si corriges un RPE alto, el descanso añadido se quita.', 'In a deload, if you correct a high RPE, the added rest is removed.'],
+      ['Programas más completos: siempre hay remo o dominada (también con 30 minutos), un solo ejercicio de abdomen por día, sin press tres días seguidos para quien empieza con 6 días y los días de cuerpo completo nombrados desde la A.', 'More complete programs: there is always a row or pull-up (even with 30 minutes), a single ab exercise per day, no pressing three days in a row for 6-day beginners, and full-body days named from A.'],
+      ['«Tu plan» enseña los minutos reales por sesión cuando eres principiante, y la tarjeta del mes dice «Más series» en vez de «Estrella».', '"Your plan" shows the real minutes per session when you are a beginner, and the month card says "Most sets" instead of "Top exercise".'],
+      ['Detalles: «Más tarde» de la copia como texto, el nivel 1-3 del mapa de músculos se distingue mejor y la duración de las tarjetas para compartir dice «<1 min» en vez de «0 min».', 'Details: the backup "Later" is now plain text, the 1-3 level on the muscle map stands out better, and share cards say "<1 min" instead of "0 min".'],
+    ],
+  },
+  {
     version: '0.1.7',
     items: [
       ['Semana de descarga sin malas noticias: el resumen ya no la marca en rojo como un retroceso, el descanso no se recorta con RPE bajo y los consejos de cambiar ejercicio esperan a la semana siguiente.', 'Deload week without bad news: the summary no longer shows it in red as a step back, rest is not cut with a low RPE, and exercise-swap tips wait until the following week.'],
