@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.6',
+    items: [
+      ['Programas más equilibrados: los principiantes ya no pasan de 16 series por grupo, hay algo de abdomen con 45 minutos o más y, si sobra volumen, se quita del día más largo (ya no queda un día de 35 minutos junto a otro de 75).', 'More balanced programs: beginners no longer go over 16 sets per muscle group, there is some ab work with 45 minutes or more and, if there is too much volume, it comes off the longest day (no more 35-minute day next to a 75-minute one).'],
+      ['Descarga más lógica: en las máquinas asistidas sube la ayuda en vez de bajarla, y el calentamiento se queda en dos series.', 'More sensible deloads: on assisted machines the assistance goes up instead of down, and the warm-up stays at two sets.'],
+      ['El entreno cuenta las series igual que Inicio: por lados, una por pareja, y sin contar los drop sets.', 'The workout counts sets the same way as Home: per side, one per pair, and without counting drop sets.'],
+      ['Menos avisos repetidos: un solo mensaje en un ejercicio estancado, sin «algo menos de peso» en semana de descarga, y «Movilidad 5 min» para no confundirlo con las series de calentamiento.', 'Fewer repeated notices: a single message on a stalled exercise, no "go a little lighter" in a deload week, and "Mobility 5 min" so it is not confused with warm-up sets.'],
+      ['Progreso › Músculos con los colores de la app: recuperación, series y equilibrio en gris, y naranja solo en lo que pide atención.', 'Progress › Muscles in the app colours: recovery, sets and balance in grey, with orange only for what needs attention.'],
+    ],
+  },
+  {
     version: '0.1.5',
     items: [
       ['Al marcar una serie, la pantalla baja sola hasta el RPE: ya no queda tapado por la barra de descanso.', 'When you tick a set, the screen scrolls down to the RPE by itself: it is no longer hidden behind the rest bar.'],

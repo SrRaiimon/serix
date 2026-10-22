@@ -2215,13 +2215,12 @@ html.scroll-locked body {
 .recovery-name { font-size: 15px; font-weight: 600; }
 .recovery-bar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
 .recovery-bar > span { display: block; height: 100%; border-radius: 999px; }
-.recovery-row.ready .recovery-bar > span { background: var(--green); }
-.recovery-row.almost .recovery-bar > span { background: #f5a300; }
-.recovery-row.recovering .recovery-bar > span { background: var(--text-2); }
-.recovery-row.ready .recovery-status { color: var(--green-text); }
-.recovery-row.almost .recovery-status { color: var(--amber-text); }
-/* Recuperarse es lo normal tras entrenar: en gris, no en rojo (seis grupos en rojo un día de descanso alarmaban). */
-.recovery-row.recovering .recovery-status { color: var(--text-2); }
+/* Recuperarse es lo normal tras entrenar: en tinta, más oscura cuanto más recuperado (sin rojo, verde ni ámbar). */
+.recovery-row.ready .recovery-bar > span { background: var(--text); }
+.recovery-row.almost .recovery-bar > span { background: color-mix(in srgb, var(--text) 55%, transparent); }
+.recovery-row.recovering .recovery-bar > span { background: var(--text-3); }
+.recovery-row.ready .recovery-status { color: var(--text); }
+.recovery-row.almost .recovery-status, .recovery-row.recovering .recovery-status { color: var(--text-2); }
 .recovery-status { text-align: right; white-space: nowrap; font-weight: 600; }
 .hero-warning { gap: 6px; align-items: flex-start; font-weight: 600; padding: 8px 10px; border-radius: 10px; background: var(--fill); color: var(--text); }
 .hero-warning svg { color: var(--amber-text); }
@@ -2348,9 +2347,10 @@ html.scroll-locked body {
 
 .balance { display: flex; flex-direction: column; gap: 6px; }
 .balance-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--fill); }
-.balance-bar span { display: block; min-width: 3px; background: var(--accent); }
-.balance-bar span + span { background: var(--blue); }
-.balance-bar span.short { opacity: 0.45; }
+/* Los dos lados en tinta (uno más claro) y el que se queda corto en naranja: lo único que pide atención. */
+.balance-bar span { display: block; min-width: 3px; background: var(--text-2); }
+.balance-bar span + span { background: color-mix(in srgb, var(--text) 30%, transparent); }
+.balance-bar span.short { background: var(--accent); }
 .warn-text { color: var(--amber-text); }
 .interval-phase { text-align: center; overflow-wrap: anywhere; padding: 0 16px; }
 .interval-cue { margin: 0; padding: 0 24px; text-align: center; font-size: 17px; color: rgba(235, 235, 245, 0.8); max-width: 420px; }
@@ -2367,10 +2367,12 @@ html.scroll-locked body {
 .volume-rows { display: flex; flex-direction: column; gap: 8px; }
 .volume-row { display: grid; grid-template-columns: 96px 1fr 36px; gap: 8px; align-items: center; }
 .volume-track { position: relative; height: 14px; border-radius: 7px; background: var(--fill); overflow: hidden; }
-.volume-range { position: absolute; top: 0; bottom: 0; background: var(--green-soft); }
+/* Con la paleta del sistema: tinta dentro del rango, tinta apagada por debajo y naranja solo por encima (lo que pide
+   atención). Antes, verde, ámbar y naranja: tres colores para una barra. */
+.volume-range { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 9%, transparent); }
 .volume-fill { position: absolute; left: 0; top: 3px; bottom: 3px; border-radius: 4px; min-width: 2px; }
-.volume-fill.ok { background: var(--green); }
-.volume-fill.low { background: var(--amber-text); }
+.volume-fill.ok { background: var(--text-2); }
+.volume-fill.low { background: var(--text-3); }
 .volume-fill.high { background: var(--accent); }
 
 /* MARK: Récords por repeticiones */

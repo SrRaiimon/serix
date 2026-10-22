@@ -301,8 +301,14 @@ function RpeRow({ value, open, onOpen, onPick }: {
   // Al abrirse, a la vista: con los botones en dos filas, quedaban debajo de la barra de descanso (scroll-margin en CSS).
   useEffect(() => {
     if (!open) return
+    const el = row.current
+    if (!el) return
+    // Solo si no se ve entero sobre la barra de descanso (los 110 px de su scroll-margin): si ya se ve, mover la
+    // lista bajo el dedo solo estorba.
+    const box = el.getBoundingClientRect()
+    if (box.top >= 0 && box.bottom <= window.innerHeight - 110) return
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-    row.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' })
+    el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' })
   }, [open])
   if (!open) {
     return value === undefined ? null : (

@@ -115,6 +115,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
         {' '}{t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
         {' '}{range(ABS_GROUP)[0] === 0 ? t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.') : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
         {low.length > 0 && ` ${t(`Por debajo: ${low.join(', ')}.`, `Below: ${low.join(', ')}.`)}`}
+        {/* Con uno o dos días a la semana no llega a todo: no es un fallo del plan. */}
+        {low.length > 0 && (settings.trainingDays?.length ?? 3) <= 2 && ` ${t('Con tus días de entreno es normal: suma lo que puedas.', 'With your training days that is normal: add what you can.')}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
       </span>
     </Card>

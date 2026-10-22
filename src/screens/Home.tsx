@@ -190,7 +190,7 @@ function FoodTodayCard() {
           {!!goals?.shift && <span className="tiny muted">{goals.shift > 0
             ? t(`Día de entreno: +${int(goals.shift)} kcal`, `Training day: +${int(goals.shift)} kcal`)
             : weekDone(data) ? t(`Día de descanso: −${int(-goals.shift)} kcal`, `Rest day: −${int(-goals.shift)} kcal`)
-              : t(`Sin entreno de momento: −${int(-goals.shift)} kcal`, `No workout yet: −${int(-goals.shift)} kcal`)}</span>}
+              : t(`Sin entreno aún hoy: −${int(-goals.shift)} kcal (sube al entrenar)`, `No workout yet today: −${int(-goals.shift)} kcal (goes up when you train)`)}</span>}
           {goals && <Progress value={totals.kcal} total={goals.kcal} />}
           <span className="small muted">
             {/* Sin nada apuntado, «Te quedan 2970 kcal» repetía la cifra de arriba: solo la proteína. */}
@@ -247,7 +247,8 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
           ].filter(Boolean).join(' · ')}
         </span>
       ) : null}
-      {tired.length > 0 && (
+      {/* En descarga ya se baja el peso: «algo menos de peso» sobraba. */}
+      {tired.length > 0 && !duration.deload && (
         <span className="small row hero-warning">
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
           <span>

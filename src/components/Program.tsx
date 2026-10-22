@@ -62,6 +62,7 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
   // El rango si los días no son iguales («19–20»): con la media, «20 series / día» no cuadraba con días de 19.
   const span = (f: (x: (typeof perDay)[number]) => number) => {
     const values = perDay.map(f)
+    if (!values.length) return '0'
     const lo = Math.min(...values), hi = Math.max(...values)
     return lo === hi ? `${lo}` : `${lo}–${hi}`
   }

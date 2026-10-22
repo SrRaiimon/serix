@@ -23,11 +23,12 @@ export function groupShares(muscle: string, secondary: readonly string[]): numbe
 /**
  * Series semanales orientativas por grupo según el objetivo (series efectivas, cerca del fallo). Perder grasa
  * pide casi lo de ganar músculo: en déficit, el volumen es lo que lo conserva. En fuerza, hasta 15: con los
- * press, el hombro suma mucho de rebote sin que sea de más. Quien empieza progresa con menos: desde 6.
+ * press, el hombro suma mucho de rebote sin que sea de más. Quien empieza progresa con menos: de 6 a 16 (con 20,
+ * un principiante de 6 días salía con 23 series de glúteo).
  */
 export function weeklyRange(goal: TrainingGoal, level?: TrainingLevel): [min: number, max: number] {
   const [min, max]: [number, number] = goal === 'hypertrophy' ? [10, 20] : goal === 'fatLoss' ? [8, 20] : [6, 15]
-  return [level === 'beginner' ? Math.min(min, 6) : min, max]
+  return level === 'beginner' ? [Math.min(min, 6), Math.min(max, 16)] : [min, max]
 }
 
 /** Índice del abdomen en MAIN_GROUPS. */

@@ -298,8 +298,25 @@ test('volumen semanal: el programa cumple el rango que luego marca la app', () =
       assert.ok(sets >= min - 2 && sets <= max + 5, `${goal}/${level}/${days}d/${minutes}: ${MAIN_GROUPS[g][0][0]} ${sets} (rango ${min}-${max})`)
     })
   }
-  // «Estar en forma»: algo de abdomen cada semana.
+  // «Estar en forma»: algo de abdomen cada semana. Y con 45 minutos o más, también en hipertrofia (salía 0).
   assert.ok(weekly({ goal: 'general', level: 'intermediate', days: 3, minutes: 60, equipment: 'gym' })[ABS_GROUP] >= 4)
+  assert.ok(weekly({ goal: 'hypertrophy', level: 'intermediate', days: 4, minutes: 60, equipment: 'gym' })[ABS_GROUP] >= 4)
+})
+
+test('volumen semanal: con 45 minutos o más, ningún grupo pasa de su máximo + 2, con cualquier material', () => {
+  // Antes, un principiante de 6 días con peso corporal llegaba a 23 series de glúteo (máximo 16).
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const { id: equipment } of equipmentProfiles) for (const days of [3, 6]) for (const minutes of [45, 75]) {
+    weekly({ goal, level, days, minutes, equipment }).forEach((sets, g) => {
+      const [, max] = groupRange(goal, level, g)
+      assert.ok(sets <= max + 2, `${goal}/${level}/${equipment}/${days}d/${minutes}: ${MAIN_GROUPS[g][0][0]} ${sets} (máx ${max})`)
+    })
+  }
+})
+
+test('días equilibrados: al quitar lo que sobra, se quita del día más largo', () => {
+  // Con kettlebell, fuerza avanzado, 4 días de 75 min: la Pierna A se quedaba en 35 min y el Torso B en 76.
+  const minutes = generate({ goal: 'strength', level: 'advanced', days: 4, minutes: 75, equipment: 'kettlebell' }, catalog).days.map((d) => dayMinutes(d.exercises))
+  assert.ok(Math.min(...minutes) >= 0.7 * Math.max(...minutes), minutes.map(Math.round).join(' '))
 })
 
 test('tope de series por sesión según el nivel: también lo elegido, no solo el relleno', () => {

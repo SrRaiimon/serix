@@ -1,7 +1,7 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, prefillSets, previewRoutine, routineFacts, withWarmup } from '../src/lib/workout'
+import { applyDeload, prefillSets, previewRoutine, routineFacts, setCount, withWarmup } from '../src/lib/workout'
 import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
 import { rememberEquipment } from '../src/lib/progression'
@@ -101,4 +101,30 @@ test('descarga por lados: parejas enteras, y la 5/3/1 no se descarga ni en el en
   const routine = { id: 'w', name: 'W', notes: '', order: 0, createdAt: 0, exercises: [wave] }
   const working = previewRoutine(routine, easy)[0].sets.filter((x) => !x.warmup).length
   assert.equal(routineFacts(easy, routine).sets, working)
+})
+
+test('descarga en una asistida: más ayuda, no menos', () => {
+  const e = { ...exercise('Assisted_Pull-Up', [set(30, 8, { done: false }), set(30, 8, { done: false }), set(30, 8, { done: false })]), assisted: true }
+  applyDeload(e, 'kg')
+  assert.ok(e.sets.every((s) => s.weight > 30), shape(e.sets).join(' '))
+})
+
+test('calentamiento en descarga: como mucho dos series', () => {
+  rememberEquipment([{ id: 'Barbell_Full_Squat', equipment: 'barbell' }])
+  const base = migrateData({ version: 1, sessions: [], routines: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const d = { ...base, sessions: [session(0, [exercise('Barbell_Full_Squat', [set(120, 5), set(120, 5), set(120, 5)])])] }
+  const routine = { id: 'r', name: 'R', notes: '', order: 0, createdAt: 0, exercises: [{ exerciseId: 'Barbell_Full_Squat', name: 'S', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 8, rest: 180 }] }
+  const normal = previewRoutine(routine, d)[0].sets.filter((s) => s.warmup).length
+  const easy = { ...d, settings: { ...d.settings, easyWeek: startOfWeek(Date.now()).getTime() } }
+  const deload = previewRoutine(routine, easy)[0].sets.filter((s) => s.warmup).length
+  assert.ok(normal > 2, `normal ${normal}`)
+  assert.equal(deload, 2)
+})
+
+test('recuento de series: sin calentamiento ni drops, por lados una por pareja', () => {
+  const sides = [1, 2, 3, 4].flatMap((i) => [set(20, 10, { done: i === 1, side: 'L' }), set(20, 10, { done: i === 1 || i === 2, side: 'R' })])
+  assert.deepEqual(setCount(sides), { done: 1, total: 4 })
+  const drops = [set(40, 10, { warmup: true }), set(80, 8), set(80, 8, { done: false }), set(60, 8, { kind: 'drop', done: false })]
+  assert.deepEqual(setCount(drops), { done: 1, total: 2 })
 })

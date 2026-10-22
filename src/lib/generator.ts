@@ -364,6 +364,8 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   // El hip thrust y el puente con carga: aunque vayan con barra, no son un básico a 3-5 repeticiones (el puente
   // sin peso va con la pierna sin carga, más abajo).
   else if (/hip_thrust|glute_bridge/i.test(e.id) && !unloadedLegs && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
+  // El rumano y el de piernas rígidas son de femoral, no de récord: a 6-8, también en fuerza (a 3-5 cede la espalda baja).
+  else if (/romanian|stiff/i.test(e.id) && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 8, rest: Math.min(out.rest, 150) })
   else if (isIsolation(e.id)) Object.assign(out, { repsMin: Math.max(out.repsMin, 8), repsMax: Math.max(out.repsMax, 12), rest: Math.min(out.rest, 90) })
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
   else if (unloadedLegs) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
@@ -533,7 +535,12 @@ const ARM_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.incl
  * del tiempo (con el margen de TIME_SLACK), del tope de series por ejercicio, por músculo y por día.
  */
 function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, slot: SlotName) => Picked | undefined) {
-  const ranges = MAIN_GROUPS.map((_, g) => groupRange(c.goal, c.level, g))
+  // Con 45 minutos o más, algo de abdomen directo también en fuerza e hipertrofia (su rango empieza en 0: el de
+  // rebote ya cuenta), para que no salga una semana entera sin ningún ejercicio de abdomen.
+  const ranges = MAIN_GROUPS.map((_, g) => {
+    const [min, max] = groupRange(c.goal, c.level, g)
+    return [g === ABS_GROUP && c.minutes >= 45 ? Math.max(min, 4) : min, max] as const
+  })
   // Lo que cuenta, igual que el entrenador y Progreso (countsForVolume): también un swing del bloque de acondicionamiento,
   // que antes se quedaba fuera y «Perder grasa» salía con el femoral pasado en su propio análisis.
   const shares = (p: Picked) => (!countsForVolume(p.ex.exercise.id, p.ex.exercise.category)
@@ -553,6 +560,9 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     && day.every((p) => !strengthy(p) || day.reduce((n, q) => n + (strengthy(q) && q.ex.exercise.muscle === p.ex.exercise.muscle ? q.ex.sets : 0), 0) <= MAX_SETS_PER_SESSION)
   /** Si p es el único de brazos (bíceps o tríceps) del día: no se quita, aunque el tríceps vaya sobrado de rebote con los press (el torso se quedaba sin brazos). */
   const onlyOne = (day: Picked[], p: Picked) => ARM_GROUPS.has(mainGroup(p)) && !day.some((q) => q !== p && q.kind !== 'conditioning' && mainGroup(q) === mainGroup(p))
+  const minutesOf = (day: Picked[]) => dayMinutes(day.map((p) => p.ex))
+  /** A igualdad, se quita del día más largo: el desempate sube con los minutos del día. */
+  const fullness = (day: Picked[]) => minutesOf(day) * 1e-3
   /** Si a p le cabe una serie más en su día. */
   const roomFor = (day: Picked[], p: Picked, minutes?: number) => {
     if (p.kind === 'conditioning' || p.ex.sets >= setCap(p.kind, c.level)) return false
@@ -581,9 +591,12 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
         if (p.kind === 'conditioning') return
         const g = mainGroup(p)
         if (low(g) && roomFor(day, p)) consider(after([[p, 1]]) - p.ex.sets * 0.001, () => { p.ex.sets++ })
-        if (high(g) && i > 0 && p.ex.sets > floor(p)) consider(after([[p, -1]]) + p.ex.sets * 0.001, () => { p.ex.sets-- })
-        // Quitar uno entero que sobra (un segundo remo en el día de tirón): nunca el primero del día.
-        if (high(g) && i > 0 && !onlyOne(day, p)) consider(after([[p, -p.ex.sets]]) - (p.kind === 'compound' ? 0.05 : 0.01), () => { day.splice(day.indexOf(p), 1) })
+        if (high(g) && i > 0 && p.ex.sets > floor(p)) consider(after([[p, -1]]) + p.ex.sets * 0.001 + fullness(day), () => { p.ex.sets-- })
+        // Quitar uno entero que sobra (un segundo remo en el día de tirón): nunca el primero del día, ni si el día se
+        // queda corto (con kettlebell, la Pierna A acababa en 3 ejercicios y 32 min y la B, en 75).
+        if (high(g) && i > 0 && !onlyOne(day, p)) {
+          consider(after([[p, -p.ex.sets]]) - (p.kind === 'compound' ? 0.05 : 0.01) + fullness(day), () => { day.splice(day.indexOf(p), 1) })
+        }
         // El día ya no da para más: una serie de otro ejercicio pasa a este.
         if (low(g) && p.ex.sets < setCap(p.kind, c.level)) {
           day.forEach((q, j) => {
@@ -595,6 +608,16 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
           })
         }
       })
+    }
+    // Un grupo que se pasa solo de rebote (el glúteo con sentadillas, zancadas y puentes) o por el primero del día:
+    // si no hay otra cosa, una serie menos de cualquiera que lo trabaje, también el primero, sin bajar de su mínimo.
+    if (!best) {
+      for (const day of days) {
+        for (const p of day) {
+          if (p.kind === 'conditioning' || p.ex.sets <= floor(p) || !shares(p).some((x, g) => x > 0 && high(g))) continue
+          consider(after([[p, -1]]) + p.ex.sets * 0.001 - (p === day[0] ? 0.01 : 0) + fullness(day), () => { p.ex.sets-- })
+        }
+      }
     }
     // Un grupo bajo: añadir un ejercicio suyo (al día de su zona con más tiempo libre) o, si el día no da para más,
     // en lugar de un accesorio de otro grupo que va sobrado.

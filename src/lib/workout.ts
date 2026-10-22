@@ -159,7 +159,8 @@ export function prefillSets(count: number, last: SetEntry[]): SetEntry[] {
 
 /**
  * Sesión de descarga del ejercicio: de las series pendientes quedan ~60 % (al menos una) con un
- * 10 % menos de peso, sin drop sets ni series al fallo. Las ya hechas no se tocan.
+ * 10 % menos de peso, sin drop sets ni series al fallo. Las ya hechas no se tocan. En las máquinas
+ * asistidas el peso es la ayuda: se sube un 10 % (bajarla hacía la descarga más dura).
  */
 export function applyDeload(e: SessionExercise, unit: Unit): void {
   const step = increment(unit)
@@ -173,10 +174,24 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
   for (const s of e.sets) {
     if (!keep.has(s.id)) continue
-    if (s.weight > 0) s.weight = round(s.weight * 0.9)
+    if (s.weight > 0) s.weight = round(s.weight * (e.assisted ? 1.1 : 0.9))
     delete s.kind
   }
   e.deload = true
+}
+
+/**
+ * Las series que cuentan, igual que en Inicio y Rutinas: sin calentamiento ni drop sets, y por lados una por pareja
+ * (hecha cuando lo están las dos). Antes el entreno decía «0 de 8» en una zancada de 4 series.
+ */
+export function setCount(sets: readonly SetEntry[]): { done: number; total: number } {
+  const units: boolean[] = []
+  for (const s of sets) {
+    if (s.warmup || s.kind === 'drop') continue
+    if (s.side === 'R' && units.length) units[units.length - 1] &&= s.done
+    else units.push(s.done)
+  }
+  return { done: units.filter(Boolean).length, total: units.length }
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */
@@ -256,8 +271,10 @@ export function withWarmup(list: SessionExercise[], d: AppData, history = finish
   const unit = d.settings.unit
   const bar = (e: SessionExercise) => (BARBELL_EQUIPMENT.has(equipmentOf(e.exerciseId) ?? '') ? d.settings.barKg ?? toKg(BARS[unit][0], unit) : undefined)
   for (const e of list) {
-    const ramp = plannedWarmup(e, unit, bar(e), lastSets(e.exerciseId, history).map((x) => x.weight))
-    if (!ramp.length) continue
+    const full = plannedWarmup(e, unit, bar(e), lastSets(e.exerciseId, history).map((x) => x.weight))
+    if (!full.length) continue
+    // En descarga, las dos más pesadas: con 2 series efectivas al 90 %, una rampa de 4 pesaba más que el trabajo.
+    const ramp = e.deload ? full.slice(-2) : full
     e.sets = [...ramp.map((w) => ({ id: uid(), weight: w.weight, reps: w.reps, done: false, warmup: true })), ...e.sets]
     break
   }

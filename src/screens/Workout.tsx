@@ -12,7 +12,7 @@ import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad
 import { finishedSessions, rpeOn, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { adjustRestForEffort, prepareAudio } from '../lib/timer'
 import { trackingOf } from '../lib/tracking'
-import { addExercises, deloadWeek, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
+import { addExercises, deloadWeek, setCount, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { BARS } from '../lib/plates'
 import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
@@ -138,11 +138,13 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
 
   const allSets = session.exercises.flatMap((e) => e.sets)
-  // La cuenta de arriba, sin el calentamiento: la misma que Inicio y Rutinas («19 series», no «0 de 22»). El aviso
-  // de terminar cuenta igual: el calentamiento sin marcar no es «3 series que no se guardarán».
-  const working = allSets.filter((s) => !s.warmup)
-  const done = working.filter((s) => s.done).length
-  const pending = working.length - done
+  // La cuenta de arriba, la misma que Inicio y Rutinas (setCount: sin calentamiento ni drops, por lados una por
+  // pareja). El aviso de terminar cuenta igual: el calentamiento sin marcar no es «3 series que no se guardarán».
+  const { done, total } = session.exercises.reduce((n, e) => {
+    const c = setCount(e.sets)
+    return { done: n.done + c.done, total: n.total + c.total }
+  }, { done: 0, total: 0 })
+  const pending = total - done
   const started = allSets.some((s) => s.done)
 
   useScrollLock()
@@ -184,9 +186,9 @@ export function WorkoutScreen({ session }: { session: Session }) {
           <div className="workout-head">
             <div className="workout-head-row">
               <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
-              {working.length > 0 && <span className="workout-count">{t(`${done} de ${working.length} series`, `${done} of ${working.length} sets`)}</span>}
+              {total > 0 && <span className="workout-count">{t(`${done} de ${total} series`, `${done} of ${total} sets`)}</span>}
             </div>
-            {working.length > 0 && <Progress value={done} total={working.length} />}
+            {total > 0 && <Progress value={done} total={total} />}
             <BlockStatus at={session.start} />
             {/* La semana de descarga, una vez arriba. Descargar un solo ejercicio (estancado) se dice en ese ejercicio. */}
             {deloadWeek(data, session.start) && session.exercises.some((e) => e.deload && e.auto?.kind !== 'wave') && (

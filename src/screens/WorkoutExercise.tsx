@@ -140,6 +140,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   const targetSeconds = exercise.targetSeconds ?? defaultTargetSeconds
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
   const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
+  const stallShown = !exercise.deload && !hint && !!stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done)
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
   const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? `${target.replace('-', '\u2011')}\u00a0reps` : '')
     : tracking === 'time' ? `${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
@@ -196,15 +197,16 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         </button>
       )}
 
-      {/* En descarga, ni «para subir de peso» ni el aviso repetido: va una sola vez arriba del entreno. */}
-      {exercise.auto && !(exercise.deload && exercise.auto.kind !== 'wave') && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
+      {/* En descarga, ni «para subir de peso» ni el aviso repetido: va una sola vez arriba del entreno. Estancado, un
+          solo mensaje: «para subir de peso» y «3 sesiones sin superar tu marca» decían lo mismo apilados. */}
+      {exercise.auto && !(exercise.deload && exercise.auto.kind !== 'wave') && !(stallShown && exercise.auto.kind === 'hold') && <AutoNote auto={exercise.auto} unit={unit} repsMax={exercise.repsMax} />}
 
-      {exercise.deload && exercise.auto?.kind !== 'wave' && !deloadWeek(data) ? (
+      {exercise.deload && exercise.auto?.kind !== 'wave' && !deloadWeek(data, startedAt) ? (
         <span className="small row" style={{ color: 'var(--text-2)', gap: 6, alignItems: 'flex-start' }}>
           <BatteryLow size={16} style={{ flexShrink: 0 }} aria-hidden="true" />
           {t('Descarga de este ejercicio: menos series y un 10 % menos de peso. La próxima vez vuelves a tu peso.', 'Deload for this exercise: fewer sets and 10% less weight. Next time you go back to your weight.')}
         </span>
-      ) : !exercise.deload && !hint && stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done) && (
+      ) : stallShown && stalled && (
         <StallBox best={stalled.best} unit={unit} onDeload={() => edit((e) => applyDeload(e, unit))} onVariants={() => setReplacing(true)} />
       )}
 

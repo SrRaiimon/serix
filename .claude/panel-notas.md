@@ -18,43 +18,40 @@ pasan a cada evaluador la vez siguiente.
 | 0.0.99 | 9,3 | 9,4 | 9,3 | 9,7 | 9,4 (9,43) |
 | 0.1.2 | 9,4 | 9,3 | 9,4 | 9,8 | 9,5 (9,48) |
 | 0.1.3 | 9,5 | 9,4 | 9,5 | 9,8 | 9,6 (9,55) |
+| 0.1.4 | 9,6 | 9,5 | 9,6 | — (se paró: salió la 0.1.5) | — |
+| 0.1.5 | 9,7 | 9,6 | 9,6 | 9,9 | 9,7 |
 
-## Pendientes tras 0.1.3 (resueltos desde 0.1.2: programa aprueba en Músculos, espalda sin doble cuenta, equilibrador
-## semanal, tope por nivel también al elegir, un consejo principal, Inicio corto, entreno empieza por la serie, 1RM con
-## un nombre, calorías con suelo cuadran, terminar sin calentamiento, foco al borrar serie, rpe-help/set-label/instalar 44 px)
-## Crítica de diseño (skill impeccable, Nielsen): 29/40 en 0.1.2 → 30/40 en 0.1.3; detector limpio (0 avisos).
+## Pendientes tras 0.1.5 (resueltos desde 0.1.4: RPE a la vista al marcar, descarga por lados y 5/3/1 con una sola
+## regla, aviso de descarga de semana o de ejercicio, vista previa con rangos, Comidas › Hoy sin repetir, asistida en el
+## entreno, routineFacts una vez por fila, chips de antes de empezar y RPE a 44 px reales)
+## Crítica de diseño: 30/40 (0.1.3 a 0.1.5); detector limpio. Para subir: Inicio con historial más corto, Músculos con la
+## paleta del sistema (sin verde ni azul), explicar RPE y descarga la primera vez.
 
-### serix-ux (9,5)
-- Descarga incoherente: Inicio/Rutinas «20 series ~55 min», detalle «4 ×» con «× 9/8», entreno «0 de 12»; recalcular
-  series, «N ×» y minutos con la descarga activa.
-- En descarga, cada ejercicio dice «Para subir de peso…» y «Sesión de descarga…» (12 bloques); el detalle promete subir peso.
-- Comidas › Hoy repite «Te quedan 2340 kcal» sin nada comido; «Hoy, sin entreno de momento: −360» poco claro.
-- Músculos: «esta semana» frente a «últimos 7 días»; puntos 1-3 / 4-9 iguales en oscuro; pie sin el rango del abdomen;
-  seis grupos en rojo «Recuperándose» alarma.
-- Vista previa del programa: ~62′ / ~63 min / ~60 min; «20 series / día» con días de 19; Torso B con curl 4× y francés 2×;
-  4 series de calentamiento para 2 efectivas en descarga; «Calentar 5 min» y las «C» compiten.
+### serix-ux (9,7)
+- Descarga: sentadilla con 4 series de calentamiento para 2 efectivas; «Calentar 5 min» compite con las filas «C».
+- Inicio › Comidas de hoy con el texto antiguo «Sin entreno de momento»; al empezar salta de 2340 a 2970 sin aviso.
+- Torso B: curl martillo 4× y press francés 2×.
+- Inicio en descarga: «Aún recuperándose… algo menos de peso» sobra (la descarga ya baja el peso).
+- Press de banca: «Para subir de peso…» y «3 sesiones sin superar tu marca» apilados (con el entrenador diciendo
+  descarga): un mensaje por ejercicio.
 
-### serix-code (9,4)
-- Swing contado distinto: balanceWeek pone a 0 el acondicionamiento y countsForVolume cuenta One-Arm_Kettlebell_Swings
-  (CONDITIONING_ONLY sin «swing»); los tests usan su propio patrón. Una sola función en volume.ts.
-- kitOf (WorkoutExercise.tsx:40) repite addsLoad sin assisted: «+20×8» en la columna anterior de una asistida.
-- nutrition.ts:273/297 `dayKey(now - i*86400000)` y el cambio de hora: usar shiftDay.
-- Modo gasto: el suelo se come el déficit sin aviso; con trainingDays + nutritionBurned hoy sale descanso.
-- Menores: 60 a mano en Program.tsx/RoutinesPrograms.tsx; rama redundante en Home.tsx:116-122; JSDoc huérfano
-  bodyweight.ts:48; registerBodyweightExercises no quita ids; Progress.tsx:84 redondea semanas; generator.ts 831 líneas
-  (balanceWeek a su módulo); test de balanceWeek fuera del gimnasio con margen más estricto.
+### serix-code (9,6)
+- workout.ts:176 applyDeload baja un 10 % la ayuda de las asistidas (descarga más dura); test.
+- Workout.tsx:143 cuenta lados y drops: zancada por lados «4 series» en Inicio y «0 de 8»; banca con drop 3 frente a 4.
+  Una función de recuento común con routineSets; prefillSets copia drops.
+- WorkoutExercise.tsx:202 deloadWeek(data) frente a Workout.tsx:192 deloadWeek(data, session.start): pasar session.start.
+- Program.tsx:63 `span` con lista vacía da Infinity.
+- Suelo del modo gasto sin aviso; tests con su propio patrón de swing; generator.ts 833 líneas; test de descarga sin bloque ni drops.
 
-### serix-coach (9,5)
-- Swing (mismo fallo): Perder grasa 5-6 días con hombro/femoral 21-26 en el análisis.
-- Excesos de rebote sin corregir: kettlebell fuerza avanzado 4 días hombro 20 (máx 15); peso corporal principiante 6 días
-  glúteo 18-23. Bajar el accesorio directo cuando lo pasan los secundarios.
-- Días descompensados: mancuernas hipertrofia 5 días 60 min, Empuje 43 min sin hombro y Torso B 63; abdomen 0
-  (proponer 2-4 series en hipertrofia ≥4 días ≥60 min).
-- Bíceps corto sin gimnasio (7-9): falta segunda opción de curl en kettlebell/gomas/peso corporal.
-- Planes cortos (3 días 45 min, 2 días) suspenden en Progreso: escalar groupRange al tiempo o no marcarlos.
-- Menores: fuerza principiante con rumano a 3-5 y escaladores en Cuerpo completo C; zancada y búlgara el mismo día.
+### serix-coach (9,6)
+- Pasada final del generador: excesos en principiante 6 días (peso corporal glúteo 23, hombro 20, espalda 20; mancuernas
+  femoral 20,5), gimnasio intermedio 6 días 45 min hombro 20,5; tope por grupo 16-18 en principiante.
+- Días descompensados: kettlebell fuerza avanzado 4 días 75 min (Pierna A 35 min sin cadera, Torso B 76 min).
+- Abdomen 0 en hipertrofia en gimnasio con 45 min o más; bíceps < 8 sin gimnasio: segunda opción de curl.
+- Planes cortos en rojo en Progreso (escalar groupRange o «suficiente para tu tiempo»).
+- Rumano de principiante a 3-5 (debería 6-8); test del barrido: ningún grupo > máx + 2 con 45 min o más.
 
-### serix-perf-a11y (9,8)
-- Regresión: `.workout-pre` con overflow-x recorta el ::after de 44 px de sus chips (36 px): padding-block 4px y
-  margin-block -4px.
-- `.rpe-chip` 37×50 (8 en 324 px): dos filas de 4 o fila deslizable.
+### serix-perf-a11y (9,9)
+- Lighthouse y axe de verdad cuando estén instalados.
+- El desplazamiento al RPE (~300 ms) mueve la lista bajo el dedo: desplazar solo si el RPE no se ve entero.
+- Un test que vigile el área de 44 px del ::after (un overflow en un contenedor la recorta).
