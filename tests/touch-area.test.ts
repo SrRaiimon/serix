@@ -24,3 +24,15 @@ test('zonas táctiles: la fila de chips de antes de empezar deja sitio vertical 
   assert.match(rule, /padding:\s*4px 16px/)
   assert.match(css, /\.workout-pre \.chip \{[^}]*min-height:\s*36px/)
 })
+
+test('figura del ejercicio: el tamaño del dibujo no se aplica a los iconos de sus botones', () => {
+  // `.move-figure svg { width: 100% }` también cogía el caracol de la velocidad: con la letra grande (zoom), Safari lo
+  // estiraba hasta ocupar toda la figura. Toda regla de tamaño de `.move-figure svg` debe excluir los iconos (.lucide).
+  const rules = [...css.matchAll(/([^{}]*\.move-figure[^{}]*\bsvg\b[^{}]*)\{([^}]*)\}/g)].filter(([, , body]) => /width|height/.test(body))
+  assert.ok(rules.length > 0)
+  for (const [, selector] of rules) {
+    for (const part of selector.split(',').filter((x) => /\.move-figure[^,]*\bsvg\b/.test(x) && !/move-figure-(speed|paused)/.test(x))) {
+      assert.match(part, /svg:not\(\.lucide\)/, `«${part.trim()}» también cambia el tamaño de los iconos`)
+    }
+  }
+})

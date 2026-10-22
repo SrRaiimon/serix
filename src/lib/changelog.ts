@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.13',
+    items: [
+      ['Arreglado: con la letra grande o muy grande, el icono del caracol (cámara lenta) ya no ocupa toda la figura del ejercicio en iPhone.', 'Fixed: with large or extra-large text, the snail icon (slow motion) no longer fills the whole exercise figure on iPhone.'],
+    ],
+  },
+  {
     version: '0.1.12',
     items: [
       ['Instrucciones más seguras en los ejercicios con banda: cómo anclarla (puerta cerrada que abra hacia el otro lado, o un poste) y revisar que no tenga cortes; y el curl martillo con kettlebell, cogido por el centro del asa.', 'Safer instructions for band exercises: how to anchor it (a closed door that opens away from you, or a post) and checking it for cuts; and the kettlebell hammer curl, held by the middle of the handle.'],

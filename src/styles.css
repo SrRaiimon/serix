@@ -1986,7 +1986,9 @@ html.scroll-locked body {
   margin: 0 auto;
 }
 
-.move-figure svg {
+/* Solo el dibujo, no los iconos de sus botones (.lucide: el caracol y el «play»): con la letra grande (zoom), Safari
+   resolvía su width: 100% contra la figura entera y el caracol ocupaba todo el ejercicio. */
+.move-figure svg:not(.lucide) {
   display: block;
   width: 100%;
   max-width: 360px;
@@ -2217,6 +2219,7 @@ html.scroll-locked body {
   background: var(--fill, rgba(120, 120, 128, 0.16)); color: var(--text-2);
 }
 .move-figure-speed.active { background: var(--ink); color: var(--on-ink); }
+.move-figure-speed svg, .move-figure-paused svg { flex: none; }
 
 /* Recuperación muscular */
 .recovery-list { display: flex; flex-direction: column; gap: 10px; }
@@ -2490,7 +2493,7 @@ html.scroll-locked body {
 .rep-table strong { font-family: var(--font-display); font-size: 20px; font-weight: 800; white-space: nowrap; }
 .rep-table strong small { font-size: 12px; color: var(--text-2); }
 /* Ficha: la figura, más baja para que el historial se vea sin bajar. */
-.ex-head ~ .move-figure svg, .ex-head ~ .move-figure .move-figure-placeholder { max-width: 230px; }
+.ex-head ~ .move-figure svg:not(.lucide), .ex-head ~ .move-figure .move-figure-placeholder { max-width: 230px; }
 textarea { resize: none; }
 
 /* MARK: Rutinas */
