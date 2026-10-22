@@ -95,6 +95,8 @@ export interface SessionExercise {
   groupId?: string
   /** Sesión de descarga de este ejercicio: no cuenta para sugerir pesos ni para detectar estancamientos. */
   deload?: boolean
+  /** Las series pendientes como estaban antes de la descarga, para poder quitarla (undoDeload). */
+  beforeDeload?: SetEntry[]
   /** Lo que hizo la progresión automática al preparar el ejercicio (para explicarlo en pantalla). */
   auto?: AutoProgress
   /** Máquina asistida: el peso apuntado es la ayuda (resta), así que no cuenta como peso levantado. */

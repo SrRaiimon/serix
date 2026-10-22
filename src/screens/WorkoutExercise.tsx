@@ -12,7 +12,7 @@ import { progressionHint, STALL_SESSIONS, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { startRest, stopRest } from '../lib/timer'
 import { defaultTargetSeconds, trackingOf, trackingOptions } from '../lib/tracking'
-import { applyDeload, deloadWeek, editSession, fromSides, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
+import { applyDeload, deloadWeek, editSession, undoDeload, fromSides, minimizeWorkout, replaceSessionExercise, toSides } from '../lib/workout'
 import { AlternativesSheet } from './Alternatives'
 import { PlatesSheet } from './Plates'
 import { ExerciseNoteSheet } from '../components/ExerciseNote'
@@ -467,7 +467,7 @@ function SettingsMenu({ exercise, kit: { barbell, pairs }, simple, unit, edit, s
         onSelect: () => setMode({ perHand: !exercise.perHand }),
       }] : []),
       ...(tracking === 'weight_reps' && !simple ? [exercise.deload
-        ? { label: t('Quitar la descarga de hoy', 'Undo today\'s deload'), onSelect: () => edit((e) => { delete e.deload }) }
+        ? { label: t('Quitar la descarga de hoy', 'Undo today\'s deload'), onSelect: () => edit((e) => undoDeload(e)) }
         : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
     ]} />
   )

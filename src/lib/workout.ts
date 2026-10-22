@@ -174,6 +174,7 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   const keepUnits = deloadSets(units)
   let pair = -1
   const keep = new Set(pending.filter((s) => (s.side !== 'R' ? ++pair : pair) < keepUnits).map((s) => s.id))
+  e.beforeDeload = e.sets.filter((s) => !s.done && !s.warmup).map((s) => ({ ...s }))
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
   for (const s of e.sets) {
     if (!keep.has(s.id)) continue
@@ -187,6 +188,21 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
 export function setProgress(sets: readonly SetEntry[]): { done: number; total: number } {
   const units = setUnits(sets)
   return { done: units.filter(Boolean).length, total: units.length }
+}
+
+/**
+ * Quita la descarga de un ejercicio: vuelven las series y los pesos de antes (antes solo se quitaba la marca y las
+ * series seguían recortadas). Lo ya hecho se queda como se hizo.
+ */
+export function undoDeload(e: SessionExercise): void {
+  const before = e.beforeDeload
+  delete e.deload
+  delete e.beforeDeload
+  if (!before) return
+  const now = new Map(e.sets.map((s) => [s.id, s]))
+  const originals = new Set(before.map((s) => s.id))
+  const kept = e.sets.filter((s) => s.warmup || (s.done && !originals.has(s.id)))
+  e.sets = [...kept, ...before.map((s) => (now.get(s.id)?.done ? now.get(s.id)! : s))]
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */

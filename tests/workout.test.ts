@@ -1,7 +1,7 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, deloadSets, deloadWeek, prefillSets, previewRoutine, routineFacts, setProgress, weekRoutine, withWarmup } from '../src/lib/workout'
+import { applyDeload, deloadSets, undoDeload, deloadWeek, prefillSets, previewRoutine, routineFacts, setProgress, weekRoutine, withWarmup } from '../src/lib/workout'
 import { sessionSets } from '../src/lib/stats'
 import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
@@ -164,4 +164,14 @@ test('recuento por lados: con solo la derecha marcada también cuenta en el resu
   const right = exercise('Dumbbell_Lunges', [set(20, 10, { side: 'L', done: false }), set(20, 10, { side: 'R' })])
   assert.equal(sessionSets(session(0, [right])), 1)
   assert.equal(setProgress(right.sets).done, 1)
+})
+
+test('quitar la descarga: vuelven las series y los pesos de antes, y lo hecho se queda', () => {
+  const e = exercise('bench', [set(40, 10, { warmup: true, done: false }), set(100, 5), ...[1, 2, 3, 4].map(() => set(100, 5, { done: false })), set(80, 8, { done: false, kind: 'drop' })])
+  applyDeload(e, 'kg')
+  assert.deepEqual(shape(e.sets), ['40x10', '100x5✓', '90x5', '90x5'])
+  e.sets[2].done = true // una serie de descarga ya hecha
+  undoDeload(e)
+  assert.equal(e.deload, undefined)
+  assert.deepEqual(shape(e.sets), ['40x10', '100x5✓', '90x5✓', '100x5', '100x5', '100x5', '80x8:drop'])
 })

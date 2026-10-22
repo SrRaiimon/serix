@@ -1,6 +1,6 @@
 import { CalendarCheck, Camera, Check, Flame, Scale, ChevronRight, Compass, Users, Download, Dumbbell, HeartPulse, Play, Share, Smartphone, Star, Timer, Utensils, WandSparkles, X, Zap } from 'lucide-react'
 import { lazy, Suspense, useMemo, useState } from 'react'
-import { Card, Progress, StatBand, useTick, useToast } from '../components/ui'
+import { Card, Progress, useTick, useToast } from '../components/ui'
 import { dayPlan, weekDone, weekdayIndex } from '../lib/schedule'
 import { weekRecap } from '../lib/recap'
 import { newsDue } from '../lib/newsDue'
@@ -99,27 +99,24 @@ export function HomeScreen() {
       {/* La guía va debajo del siguiente entreno: «Empezar» queda siempre a la vista. */}
       {!active && guideVisible(data, sessions.length) && <GuideCard next={next} />}
 
-      <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} />
+      {/* Las cifras (racha, mes, peso movido), en una línea al pie de la semana: antes eran otra banda de tarjetas. */}
+      <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} facts={sessions.length > 0 ? [
+        t(`${streakWeeks(sessions)} sem. de racha`, `${streakWeeks(sessions)}-week streak`),
+        t(`${thisMonth.length} este mes`, `${thisMonth.length} this month`),
+        // Lo de esta semana con dos entrenos o más. Con uno solo, su volumen ya sale en «Últimos entrenamientos», y sin
+        // ninguno, el de la pasada sale en su resumen de arriba: en esos casos, lo movido este mes (la misma cifra dos
+        // veces, si no). Sin resumen y sin entrenos, la semana pasada.
+        thisWeek.length > 1
+          ? t(`${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} esta semana`, `${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} this week`)
+          : thisWeek.length === 1 || notice === 'recap'
+            ? t(`${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit)} este mes`, `${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit)} this month`)
+            : t(`${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} la sem. pasada`, `${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} last week`),
+      ] : undefined} />
 
       {/* El entrenador tira del generador y de las alternativas: se carga después de pintar Inicio. */}
       {!active && <Suspense fallback={null}><CoachCard /></Suspense>}
 
       <FoodTodayCard />
-
-      {sessions.length > 0 && (
-        <StatBand items={[
-          { value: streakWeeks(sessions), label: t('Racha (sem.)', 'Streak (wks)') },
-          { value: thisMonth.length, label: t('Este mes', 'This month') },
-          // Lo de esta semana con dos entrenos o más. Con uno solo, su volumen ya sale en «Últimos entrenamientos», y sin
-          // ninguno, el de la pasada sale en su resumen de arriba: en esos casos, lo movido este mes (la misma cifra dos
-          // veces, si no). Sin resumen y sin entrenos, la semana pasada.
-          thisWeek.length > 1
-            ? { value: tons(thisWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido esta semana', 'Moved this week') }
-            : thisWeek.length === 1 || notice === 'recap'
-              ? { value: tons(thisMonth.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Movido este mes', 'Moved this month') }
-              : { value: tons(lastWeek.reduce((t, s) => t + sessionVolume(s), 0), unit), label: t('Sem. pasada', 'Last week') },
-        ]} />
-      )}
 
       {/* Las herramientas, en una rejilla de 2 × 2 (antes, cuatro filas con explicación: media pantalla). */}
       <div className="home-tools">
@@ -164,43 +161,32 @@ function FoodTodayCard() {
   if (!goals && !entries.length) return null
   const totals = dayTotals(entries)
   const due = data.settings.foodReminders ? dueMeals(data.nutrition.entries) : []
+  // Compacta: la cifra en la línea del título y una sola línea debajo (antes, cifra grande, aviso del día, barra y
+  // proteína: la tarjeta más alta de Inicio después del entreno).
+  const shift = !goals?.proteinOnly && goals?.shift ? (goals.shift > 0
+    ? t(`Día de entreno: +${int(goals.shift)} kcal`, `Training day: +${int(goals.shift)} kcal`)
+    : weekDone(data) ? t(`Día de descanso: −${int(-goals.shift)} kcal`, `Rest day: −${int(-goals.shift)} kcal`)
+      : t(`Sin entreno aún hoy: −${int(-goals.shift)} kcal (sube al entrenar)`, `No workout yet today: −${int(-goals.shift)} kcal (goes up when you train)`)) : ''
+  const detail = goals?.proteinOnly
+    ? (totals.p < goals.protein ? t(`Te quedan ${int(goals.protein - totals.p)} g`, `${int(goals.protein - totals.p)} g left`) : t('Objetivo cumplido', 'Goal reached'))
+    // Sin nada apuntado, «Te quedan 2970 kcal» repetía la cifra de arriba: solo la proteína.
+    : goals && totals.kcal === 0 ? t(`Proteína: ${int(goals.protein)} g`, `Protein: ${int(goals.protein)} g`) : goals ? [
+      totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal`, `${int(goals.kcal - totals.kcal)} kcal left`) : t(`${int(totals.kcal - goals.kcal)} kcal de más`, `${int(totals.kcal - goals.kcal)} kcal over`),
+      totals.p < goals.protein ? t(`${int(goals.protein - totals.p)} g de proteína`, `${int(goals.protein - totals.p)} g of protein`) : t('proteína cumplida', 'protein reached'),
+    ].join(totals.kcal <= goals.kcal && totals.p < goals.protein ? t(' y ', ' and ') : ' · ') : t(`Proteína ${int(totals.p)} g`, `Protein ${int(totals.p)} g`)
   return (
     <button className="card food-today" onClick={() => navigate('food')}>
       <span className="row" style={{ gap: 8 }}>
         <Utensils size={17} />
         <strong className="grow">{t('Comidas de hoy', 'Food today')}</strong>
+        {goals?.proteinOnly
+          ? <span><strong className="food-today-kcal">{int(totals.p)}</strong><span className="muted small"> / {int(goals.protein)} g</span></span>
+          : <span><strong className="food-today-kcal">{int(totals.kcal)}</strong><span className="muted small">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span></span>}
         <ChevronRight size={18} className="chevron" />
       </span>
-      {goals?.proteinOnly ? (
-        <>
-          <span>
-            <strong className="food-today-kcal">{int(totals.p)}</strong>
-            <span className="muted"> / {int(goals.protein)} g {t('de proteína', 'of protein')}</span>
-          </span>
-          <Progress value={totals.p} total={goals.protein} />
-          <span className="small muted">{totals.p < goals.protein ? t(`Te quedan ${int(goals.protein - totals.p)} g`, `${int(goals.protein - totals.p)} g left`) : t('Objetivo cumplido', 'Goal reached')}</span>
-        </>
-      ) : (
-        <>
-          <span>
-            <strong className="food-today-kcal">{int(totals.kcal)}</strong>
-            <span className="muted">{goals ? ` / ${int(goals.kcal)} kcal` : ' kcal'}</span>
-          </span>
-          {/* Si hoy cuenta como día de entreno (o se acaba de empezar uno), se dice: si no, el objetivo cambia sin explicación. */}
-          {!!goals?.shift && <span className="tiny muted">{goals.shift > 0
-            ? t(`Día de entreno: +${int(goals.shift)} kcal`, `Training day: +${int(goals.shift)} kcal`)
-            : weekDone(data) ? t(`Día de descanso: −${int(-goals.shift)} kcal`, `Rest day: −${int(-goals.shift)} kcal`)
-              : t(`Sin entreno aún hoy: −${int(-goals.shift)} kcal (sube al entrenar)`, `No workout yet today: −${int(-goals.shift)} kcal (goes up when you train)`)}</span>}
-          {goals && <Progress value={totals.kcal} total={goals.kcal} />}
-          <span className="small muted">
-            {/* Sin nada apuntado, «Te quedan 2970 kcal» repetía la cifra de arriba: solo la proteína. */}
-            {goals && totals.kcal === 0 ? t(`Proteína: ${int(goals.protein)} g`, `Protein: ${int(goals.protein)} g`) : goals ? [
-              totals.kcal <= goals.kcal ? t(`Te quedan ${int(goals.kcal - totals.kcal)} kcal`, `${int(goals.kcal - totals.kcal)} kcal left`) : t(`${int(totals.kcal - goals.kcal)} kcal de más`, `${int(totals.kcal - goals.kcal)} kcal over`),
-              totals.p < goals.protein ? t(`${int(goals.protein - totals.p)} g de proteína`, `${int(goals.protein - totals.p)} g of protein`) : t('proteína cumplida', 'protein reached'),
-            ].join(totals.kcal <= goals.kcal && totals.p < goals.protein ? t(' y ', ' and ') : ' · ') : t(`Proteína ${int(totals.p)} g`, `Protein ${int(totals.p)} g`)}
-          </span>
-        </>
-      )}
+      {goals && <Progress value={goals.proteinOnly ? totals.p : totals.kcal} total={goals.proteinOnly ? goals.protein : goals.kcal} />}
+      {/* Si hoy cuenta como día de entreno (o se acaba de empezar uno), se dice: si no, el objetivo cambia sin explicación. */}
+      <span className="small muted">{[shift, detail].filter(Boolean).join(' · ')}</span>
       {due.length > 0 && <span className="small due">{t(`Falta apuntar: ${due.map((m) => mealLabel(m).toLowerCase()).join(', ')}`, `Not logged yet: ${due.map((m) => mealLabel(m).toLowerCase()).join(', ')}`)}</span>}
     </button>
   )
@@ -339,7 +325,7 @@ function ContinueCard({ session }: { session: Session }) {
   )
 }
 
-function WeekCard({ sessions, goal, weekStart, planned }: { sessions: Session[]; goal: number; weekStart: number; planned?: number[] }) {
+function WeekCard({ sessions, goal, weekStart, planned, facts }: { sessions: Session[]; goal: number; weekStart: number; planned?: number[]; facts?: string[] }) {
   const trained = new Set(sessions.map((s) => startOfDay(s.start).getTime()))
   const today = startOfDay(Date.now()).getTime()
   const days = Array.from({ length: 7 }, (_, i) => addDays(new Date(weekStart), i))
@@ -364,6 +350,7 @@ function WeekCard({ sessions, goal, weekStart, planned }: { sessions: Session[];
       </div>
 
       {reached && <span className="small bold row" style={{ color: 'var(--green-text)', gap: 6 }}><Star size={15} fill="currentColor" /> {t('¡Objetivo semanal cumplido!', 'Weekly goal reached!')}</span>}
+      {facts && <span className="small muted">{facts.join(' · ')}</span>}
     </Card>
   )
 }

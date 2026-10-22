@@ -6,7 +6,7 @@ import json, re, sys
 
 ids = {e['id'] for e in json.load(open('public/exercises_es.json'))['exercises']}
 bad = []
-for path in ['src/lib/generator.ts', 'src/lib/tracking.ts', 'src/lib/figures.ts']:
+for path in ['src/lib/generator.ts', 'src/lib/generatorSlots.ts', 'src/lib/tracking.ts', 'src/lib/figures.ts']:
     src = open(path).read()
     # Identificadores: palabras con guiones bajos o guiones y mayúscula inicial dentro de comillas.
     # Identificadores entre comillas (listas) y claves del mapa de figuras (Nombre: patrón).

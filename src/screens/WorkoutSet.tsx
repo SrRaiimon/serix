@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ActionSheet, useTick } from '../components/ui'
 import { clock, editable, fromKg, increment, num, parseDecimal, toKg, weight, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
-import { useData, withUndo, type SetEntry, type SetKind } from '../lib/store'
+import { getData, useData, withUndo, type SetEntry, type SetKind } from '../lib/store'
 import { playTone, unlockAudio } from '../lib/timer'
 import { digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, type Tracking } from '../lib/tracking'
 import { suspicious } from '../lib/tracking'
@@ -159,7 +159,8 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
     <>
     <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''} ${current ? 'current' : ''} ${fresh ? 'fresh' : ''}`}>
       <button className={`set-label ${set.warmup ? 'warmup' : set.kind ?? ''}`} onClick={() => setMenu(true)}
-        aria-label={`${t('Opciones de la serie', 'Set options')} (${setKindLabel(set).toLowerCase()})`}>
+        // El nombre accesible empieza por lo que se ve («1», «C»): con control por voz se dice «1» (WCAG 2.5.3).
+        aria-label={`${label}: ${t('opciones de la serie', 'set options')} (${setKindLabel(set).toLowerCase()})`}>
         {label}{!set.warmup && (set.kind === 'amrap' || set.kind === 'failure') && <sup>{set.kind === 'amrap' ? 'A' : 'F'}</sup>}
       </button>
       {/* Con lastre (dominadas, fondos), «+12,5×10»: es lo añadido a tu peso, como en el resto de la app. */}
@@ -296,7 +297,8 @@ function RpeRow({ value, open, onOpen, onPick }: {
   onOpen: () => void
   onPick: (rpe: number | undefined) => void
 }) {
-  const [help, setHelp] = useState(false)
+  // La primera vez (sin ningún RPE apuntado nunca), la explicación ya abierta: el «?» no lo tocaba casi nadie.
+  const [help, setHelp] = useState(() => !getData().sessions.some((x) => x.exercises.some((e) => e.sets.some((y) => y.rpe !== undefined))))
   const row = useRef<HTMLDivElement>(null)
   // Al abrirse, a la vista: con los botones en dos filas, quedaban debajo de la barra de descanso (scroll-margin en CSS).
   useEffect(() => {

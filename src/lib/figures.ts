@@ -3438,6 +3438,15 @@ const SAME_AS: Record<string, string | Figure | [string, Prop[]]> = {
   Shadow_Boxing: shadowBox,
   Sprawl: 'Freehand_Jump_Squat',
   'Negative_Pull-Up': 'Pullups',
+  Band_Curl: 'Dumbbell_Bicep_Curl',
+  Band_Hammer_Curl: 'Hammer_Curls',
+  Kettlebell_Hammer_Curl: 'Hammer_Curls',
+  Band_Row: 'Seated_Cable_Rows',
+  Band_Lat_Pulldown: 'Wide-Grip_Lat_Pulldown',
+  Band_Face_Pull: 'Face_Pull',
+  Kettlebell_Reverse_Lunge: 'Dumbbell_Rear_Lunge',
+  Kettlebell_Split_Squat: 'Split_Squat_with_Dumbbells',
+  Bodyweight_Reverse_Lunge: 'Dumbbell_Rear_Lunge',
   Single_Leg_Calf_Raise: ['Standing_Dumbbell_Calf_Raise', []],
 }
 for (const [id, like] of Object.entries(SAME_AS)) {

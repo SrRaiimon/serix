@@ -1465,6 +1465,267 @@
     "Lower slowly until your heel is below the step, then rise again.",
     "Tip: do all your reps on one leg before switching; if it gets too easy, hold a loaded backpack."
    ]
+  },
+  {
+   "id": "Band_Curl",
+   "name": "Curl de bíceps con banda",
+   "nameEn": "Band Biceps Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Pisa el centro de la banda con los pies a la anchura de la cadera y coge un extremo con cada mano, palmas hacia delante.",
+    "Con los codos pegados al cuerpo, sube las manos hacia los hombros doblando solo los codos.",
+    "Aprieta arriba un segundo y baja despacio, sin dejar que la banda te estire de golpe.",
+    "Consejo: si te sobra fuerza, pisa la banda con los pies más separados o usa una más dura."
+   ],
+   "instructionsEn": [
+    "Stand on the middle of the band, feet hip-width apart, holding one end in each hand, palms facing forward.",
+    "Keeping your elbows by your sides, bring your hands up towards your shoulders by bending only at the elbows.",
+    "Squeeze at the top for a second and lower slowly, without letting the band snap you down.",
+    "Tip: if it feels too easy, stand with your feet wider on the band or use a stronger one."
+   ]
+  },
+  {
+   "id": "Band_Hammer_Curl",
+   "name": "Curl martillo con banda",
+   "nameEn": "Band Hammer Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Pisa el centro de la banda y coge un extremo con cada mano, con las palmas mirándose entre sí.",
+    "Con los codos pegados al cuerpo, sube las manos hacia los hombros sin girar las muñecas.",
+    "Baja despacio hasta estirar los brazos del todo.",
+    "Consejo: mantén los hombros quietos; si se balancea el cuerpo, la banda es demasiado dura."
+   ],
+   "instructionsEn": [
+    "Stand on the middle of the band and hold one end in each hand, palms facing each other.",
+    "Keeping your elbows by your sides, bring your hands up towards your shoulders without turning your wrists.",
+    "Lower slowly until your arms are fully straight.",
+    "Tip: keep your shoulders still; if your body swings, the band is too strong."
+   ]
+  },
+  {
+   "id": "Kettlebell_Hammer_Curl",
+   "name": "Curl martillo con kettlebell",
+   "nameEn": "Kettlebell Hammer Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De pie, coge la kettlebell por los lados del asa con una mano, el puño mirando hacia dentro y la bola colgando.",
+    "Con el codo pegado al cuerpo, sube la kettlebell hacia el hombro sin girar la muñeca.",
+    "Baja despacio hasta estirar el brazo y cambia de brazo al terminar las repeticiones.",
+    "Consejo: con una sola kettlebell, empieza por el brazo más débil y haz las mismas repeticiones con el otro."
+   ],
+   "instructionsEn": [
+    "Stand holding the kettlebell by the sides of the handle in one hand, fist facing in and the bell hanging down.",
+    "Keeping your elbow by your side, bring the kettlebell up towards your shoulder without turning your wrist.",
+    "Lower slowly until your arm is straight and switch arms when you finish the reps.",
+    "Tip: with a single kettlebell, start with your weaker arm and match the reps with the other."
+   ]
+  },
+  {
+   "id": "Band_Row",
+   "name": "Remo con banda",
+   "nameEn": "Band Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "lats",
+    "biceps"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Ata la banda a algo firme a la altura del pecho (o pásala por tus pies sentado en el suelo con las piernas estiradas).",
+    "Coge un extremo con cada mano, da un paso atrás hasta que la banda tense y deja los brazos estirados.",
+    "Tira de los codos hacia atrás, pegados al cuerpo, juntando los omóplatos.",
+    "Vuelve despacio hasta estirar los brazos sin encorvar la espalda.",
+    "Consejo: el movimiento empieza en la espalda; imagina que quieres meter los omóplatos en los bolsillos de atrás."
+   ],
+   "instructionsEn": [
+    "Anchor the band to something solid at chest height (or loop it around your feet, sitting on the floor with legs straight).",
+    "Hold one end in each hand, step back until the band is taut and keep your arms straight.",
+    "Pull your elbows back, close to your body, squeezing your shoulder blades together.",
+    "Return slowly until your arms are straight without rounding your back.",
+    "Tip: the movement starts in your back; imagine tucking your shoulder blades into your back pockets."
+   ]
+  },
+  {
+   "id": "Band_Lat_Pulldown",
+   "name": "Jalón con banda",
+   "nameEn": "Band Lat Pulldown",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Ata la banda en lo alto de una puerta o una barra y arrodíllate de cara al anclaje.",
+    "Coge un extremo con cada mano con los brazos estirados por encima de la cabeza y la banda ya tensa.",
+    "Tira de los codos hacia abajo y atrás hasta que las manos lleguen a la altura de los hombros.",
+    "Sube despacio hasta estirar los brazos.",
+    "Consejo: saca pecho y baja los hombros antes de tirar; no tires con las manos sino con los codos."
+   ],
+   "instructionsEn": [
+    "Anchor the band high on a door or a bar and kneel facing the anchor.",
+    "Hold one end in each hand with your arms straight overhead and the band already taut.",
+    "Pull your elbows down and back until your hands reach shoulder height.",
+    "Return slowly until your arms are straight.",
+    "Tip: lift your chest and drop your shoulders before pulling; pull with your elbows, not your hands."
+   ]
+  },
+  {
+   "id": "Band_Face_Pull",
+   "name": "Face pull con banda",
+   "nameEn": "Band Face Pull",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Ata la banda a la altura de la cara y cógela con las dos manos, palmas hacia abajo.",
+    "Da un paso atrás hasta que tense, con los brazos estirados al frente.",
+    "Tira hacia la cara separando las manos, con los codos altos, hasta que queden a los lados de la cabeza.",
+    "Vuelve despacio a estirar los brazos.",
+    "Consejo: piensa en enseñar los bíceps como en una pose de fuerza; trabaja la parte de atrás del hombro."
+   ],
+   "instructionsEn": [
+    "Anchor the band at face height and hold it with both hands, palms down.",
+    "Step back until it is taut, with your arms straight in front of you.",
+    "Pull towards your face while spreading your hands, elbows high, until they end up beside your head.",
+    "Return slowly until your arms are straight.",
+    "Tip: think of a double-biceps pose at the end; it works the back of your shoulders."
+   ]
+  },
+  {
+   "id": "Kettlebell_Reverse_Lunge",
+   "name": "Zancada atrás con kettlebell",
+   "nameEn": "Kettlebell Reverse Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De pie, sujeta la kettlebell por el asa delante del pecho con las dos manos (agarre goblet).",
+    "Da un paso largo hacia atrás y baja hasta que la rodilla de atrás casi toque el suelo.",
+    "Empuja con el talón de la pierna de delante para volver a la posición inicial.",
+    "Alterna las piernas o termina todas las repeticiones de un lado antes de cambiar.",
+    "Consejo: el tronco recto y la rodilla de delante encima del pie, sin irse hacia dentro."
+   ],
+   "instructionsEn": [
+    "Stand holding the kettlebell by the horns in front of your chest with both hands (goblet grip).",
+    "Take a long step back and lower until your back knee almost touches the floor.",
+    "Push through the heel of your front leg to return to the start.",
+    "Alternate legs or finish all reps on one side before switching.",
+    "Tip: keep your torso upright and your front knee over your foot, not caving in."
+   ]
+  },
+  {
+   "id": "Kettlebell_Split_Squat",
+   "name": "Sentadilla búlgara con kettlebell",
+   "nameEn": "Kettlebell Split Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "kettlebell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "Coloca el empeine de un pie sobre un banco o una silla detrás de ti y da un paso largo al frente con el otro.",
+    "Sujeta la kettlebell delante del pecho con las dos manos.",
+    "Baja recto, doblando la rodilla de delante, hasta que el muslo quede casi paralelo al suelo.",
+    "Sube empujando con el talón de delante y haz todas las repeticiones antes de cambiar de pierna.",
+    "Consejo: si la rodilla de delante pasa mucho de la punta del pie, aleja ese pie un poco más del banco."
+   ],
+   "instructionsEn": [
+    "Rest the top of one foot on a bench or chair behind you and take a long step forward with the other.",
+    "Hold the kettlebell in front of your chest with both hands.",
+    "Lower straight down, bending your front knee, until your thigh is almost parallel to the floor.",
+    "Push up through your front heel and finish all reps before switching legs.",
+    "Tip: if your front knee goes far past your toes, move that foot a little further from the bench."
+   ]
+  },
+  {
+   "id": "Bodyweight_Reverse_Lunge",
+   "name": "Zancada atrás sin peso",
+   "nameEn": "Bodyweight Reverse Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "bodyweight",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "instructions": [
+    "De pie, con las manos en la cintura o juntas delante del pecho.",
+    "Da un paso largo hacia atrás y baja hasta que la rodilla de atrás casi toque el suelo.",
+    "Empuja con el talón de la pierna de delante para volver a ponerte de pie.",
+    "Alterna las piernas.",
+    "Consejo: baja despacio (3 segundos) para que cueste sin peso; cuando hagas 20 fáciles, pasa a la búlgara."
+   ],
+   "instructionsEn": [
+    "Stand with your hands on your hips or together in front of your chest.",
+    "Take a long step back and lower until your back knee almost touches the floor.",
+    "Push through the heel of your front leg to stand back up.",
+    "Alternate legs.",
+    "Tip: lower slowly (3 seconds) so it is hard without weight; once 20 feel easy, move on to the split squat."
+   ]
   }
  ],
  "tags": {

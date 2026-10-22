@@ -107,6 +107,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     tracking: oneOf(v.tracking, TRACKING), targetSeconds: optNum(v.targetSeconds, 1, 7200),
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
     deload: v.deload === true ? true : undefined,
+    beforeDeload: Array.isArray(v.beforeDeload) ? list(v.beforeDeload, setEntry, 100) : undefined,
     auto: autoProgress(v.auto),
     assisted: v.assisted === true ? true : undefined,
     unilateral: v.unilateral === true ? true : undefined,

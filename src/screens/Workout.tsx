@@ -169,9 +169,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }, [])
 
   return (
-    <div className="fullscreen">
+    // Un diálogo a pantalla completa con su título: así su contenido está dentro de una región (axe «region»).
+    <div className="fullscreen" role="dialog" aria-modal="true" aria-labelledby="workout-title">
       {/* Su título para el lector (el nombre se edita en un campo), y el foco al abrir: el entreno es lo que hay. */}
-      <h1 className="sr-only" tabIndex={-1} ref={heading}>{t(`Entrenamiento: ${session.name}`, `Workout: ${session.name}`)}</h1>
+      <h1 id="workout-title" className="sr-only" tabIndex={-1} ref={heading}>{t(`Entrenamiento: ${session.name}`, `Workout: ${session.name}`)}</h1>
       {focus && <FocusMode session={session} unit={unit} onClose={() => setFocus(false)} />}
       <div className="fullscreen-inner">
         <div className="nav-bar">

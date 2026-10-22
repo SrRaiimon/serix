@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.10',
+    items: [
+      ['Nuevos ejercicios para casa: curl y curl martillo con banda, remo, jalón y face pull con banda, curl martillo con kettlebell y zancadas y búlgaras sin gimnasio. Con bandas o kettlebell ya hay brazos y espalda de verdad.', 'New home exercises: band curl and hammer curl, band row, pulldown and face pull, kettlebell hammer curl, and lunges and split squats without a gym. With bands or kettlebells there are now real arm and back exercises.'],
+      ['Programas más equilibrados día a día: menos días de torso con mucho más press que remo, nunca hip thrust y puente el mismo día, y el avanzado de 3 días en cuerpo completo (cada músculo dos o tres veces por semana).', 'Programs balanced day by day: fewer upper days with far more pressing than rowing, never hip thrust and bridge on the same day, and the 3-day advanced plan as full body (each muscle two or three times a week).'],
+      ['«Quitar la descarga de hoy» devuelve las series y los pesos de antes; lo que ya has hecho se queda.', '"Undo today’s deload" brings back the sets and weights from before; what you already did stays.'],
+      ['Inicio más corto: la comida del día en dos líneas y la racha, el mes y el peso movido al pie de la semana.', 'Shorter Home: today’s food in two lines, and the streak, month and weight moved at the bottom of the week card.'],
+      ['La primera vez que marcas una serie, el RPE viene explicado.', 'The first time you tick a set, RPE comes explained.'],
+      ['La biblioteca nombra sus días como el generador: «Empuje A … Empuje B».', 'The library names its days like the generator: "Push A … Push B".'],
+    ],
+  },
+  {
     version: '0.1.9',
     items: [
       ['Programas comprobados en las 1500 combinaciones del cuestionario: cada día de cuerpo completo lleva un tirón, ningún día se queda en un solo ejercicio y los accesorios no se repiten en días seguidos.', 'Programs checked across all 1500 questionnaire combinations: every full-body day has a pull, no day is left with a single exercise, and accessories do not repeat on consecutive days.'],
