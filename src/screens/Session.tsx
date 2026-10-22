@@ -197,15 +197,18 @@ function BurnLine({ session }: { session: Session }) {
 
 /** Frente a la última vez que se hizo la misma rutina: duración, peso movido y la mejor serie de cada ejercicio. */
 function ComparisonCard({ session, history, unit }: { session: Session; history: Session[]; unit: Unit }) {
+  // Los hooks, antes de salir: al guardar como rutina, la comparación desaparece y React se rompía («Rendered fewer
+  // hooks than expected») si useData iba después del return.
   const c = useMemo(() => compareWithLast(session, history), [session, history])
+  const data = useData()
   if (!c) return null
   const minutes = Math.round(c.duration / 60000)
   // En descarga, el −10 % es lo previsto: ni rojo ni «menos movidos», se dice que es la descarga.
-  const data = useData()
   const deloaded = new Set(session.exercises.filter((e) => e.deload).map((e) => e.exerciseId))
-  // En la semana de descarga (también con plancha o una 5/3/1, que no se descargan), la frase de descarga. Con solo
-  // algún ejercicio descargado, sin el peso movido total: su bajada contaba como «menos movidos».
-  const deloadSession = deloadWeek(data, session.start) || (c.exercises.length > 0 && c.exercises.every((x) => deloaded.has(x.exerciseId)))
+  // En la semana de descarga (también con plancha o una 5/3/1, que no se descargan), la frase de descarga, si algún
+  // ejercicio se descargó de verdad. Con solo alguno descargado, sin el peso movido total: su bajada contaba como
+  // «menos movidos».
+  const deloadSession = deloaded.size > 0 && (deloadWeek(data, session.start) || c.exercises.every((x) => deloaded.has(x.exerciseId)))
   const text = (x: ExerciseChange) => {
     const sign = x.delta > 0 ? '+' : '−'
     if (x.kind === 'weight') return `${sign}${weight(Math.abs(x.delta), unit)}`

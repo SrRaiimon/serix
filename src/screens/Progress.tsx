@@ -284,7 +284,6 @@ function WeightFoodCard() {
   const weeks = useMemo(() => weeklyIntake(data.nutrition.entries, data.measurements, 12), [data.nutrition.entries, data.measurements])
   const fed = weeks.filter((w) => w.days > 0)
   const weighed = weeks.filter((w) => w.weight !== undefined)
-  if (!fed.length && weighed.length < 2) return null
   const avg = fed.length ? Math.round(fed.reduce((a, w) => a + w.kcal * w.days, 0) / fed.reduce((a, w) => a + w.days, 0)) : 0
   const change = weighed.length >= 2 ? weighed[weighed.length - 1].weight! - weighed[0].weight! : undefined
   const kg = (v: number) => weight(Math.abs(v), unit)
@@ -302,6 +301,9 @@ function WeightFoodCard() {
     const avg = (l: typeof per) => l.reduce((n, w) => n + w.records, 0) / l.length
     return { yes: avg(yes), no: avg(no), weeks: per.length }
   }, [goal, data, weeks])
+  // La salida, después de todos los hooks: antes iba antes del useMemo y, al apuntar la primera comida con la tarjeta
+  // montada, React se rompía (distinto número de hooks entre dos renders).
+  if (!fed.length && weighed.length < 2) return null
   return (
     <Card title={t('Calorías y peso', 'Calories and weight')} icon={Utensils}>
       {fed.length > 0 && (

@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.11',
+    items: [
+      ['Arreglado: el resumen del entreno ya no se rompe al guardarlo como rutina, ni Progreso › Calorías y peso al apuntar la primera comida.', 'Fixed: the workout summary no longer breaks when you save it as a routine, nor does Progress › Calories and weight when you log your first meal.'],
+      ['En la semana de descarga, el resumen solo habla de descarga si algún ejercicio se descargó de verdad.', 'In a deload week, the summary only mentions the deload if some exercise was actually deloaded.'],
+    ],
+  },
+  {
     version: '0.1.10',
     items: [
       ['Nuevos ejercicios para casa: curl y curl martillo con banda, remo, jalón y face pull con banda, curl martillo con kettlebell y zancadas y búlgaras sin gimnasio. Con bandas o kettlebell ya hay brazos y espalda de verdad.', 'New home exercises: band curl and hammer curl, band row, pulldown and face pull, kettlebell hammer curl, and lunges and split squats without a gym. With bands or kettlebells there are now real arm and back exercises.'],

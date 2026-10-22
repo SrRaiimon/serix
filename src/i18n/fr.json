@@ -2169,5 +2169,7 @@
 "La biblioteca nombra sus días como el generador: «Empuje A … Empuje B».": "La bibliothèque nomme ses jours comme le générateur : « Poussée A … Poussée B ».",
 "{0} esta semana": "{0} cette semaine",
 "{0} la sem. pasada": "{0} la sem. dernière",
-"{0} sem. de racha": "{0} sem. de série"
+"{0} sem. de racha": "{0} sem. de série",
+"Arreglado: el resumen del entreno ya no se rompe al guardarlo como rutina, ni Progreso › Calorías y peso al apuntar la primera comida.": "Corrigé : le résumé de l’entraînement ne plante plus quand tu l’enregistres comme routine, ni Progrès › Calories et poids quand tu notes ton premier repas.",
+"En la semana de descarga, el resumen solo habla de descarga si algún ejercicio se descargó de verdad.": "En semaine de décharge, le résumé ne parle de décharge que si un exercice a vraiment été déchargé."
 }

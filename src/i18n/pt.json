@@ -2169,5 +2169,7 @@
 "La biblioteca nombra sus días como el generador: «Empuje A … Empuje B».": "A biblioteca dá nome aos dias como o gerador: «Empurrar A … Empurrar B».",
 "{0} esta semana": "{0} esta semana",
 "{0} la sem. pasada": "{0} na semana passada",
-"{0} sem. de racha": "{0} sem. seguidas"
+"{0} sem. de racha": "{0} sem. seguidas",
+"Arreglado: el resumen del entreno ya no se rompe al guardarlo como rutina, ni Progreso › Calorías y peso al apuntar la primera comida.": "Corrigido: o resumo do treino já não falha ao guardá-lo como rotina, nem Progresso › Calorias e peso ao registar a primeira refeição.",
+"En la semana de descarga, el resumen solo habla de descarga si algún ejercicio se descargó de verdad.": "Na semana de descarga, o resumo só fala de descarga se algum exercício foi mesmo descarregado."
 }
