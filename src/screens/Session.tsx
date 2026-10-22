@@ -12,7 +12,7 @@ import { compareWithLast, newRecords, records, sessionDuration, type ExerciseCha
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
-import { deloadWeek, repeatSession, saveAsRoutine } from '../lib/workout'
+import { deloadSummary, repeatSession, saveAsRoutine } from '../lib/workout'
 import { SessionEditSheet } from './SessionEdit'
 import { plural, t } from '../lib/i18n'
 import { NewAchievements } from '../components/Achievements'
@@ -205,10 +205,9 @@ function ComparisonCard({ session, history, unit }: { session: Session; history:
   const minutes = Math.round(c.duration / 60000)
   // En descarga, el −10 % es lo previsto: ni rojo ni «menos movidos», se dice que es la descarga.
   const deloaded = new Set(session.exercises.filter((e) => e.deload).map((e) => e.exerciseId))
-  // En la semana de descarga (también con plancha o una 5/3/1, que no se descargan), la frase de descarga, si algún
-  // ejercicio se descargó de verdad. Con solo alguno descargado, sin el peso movido total: su bajada contaba como
-  // «menos movidos».
-  const deloadSession = deloaded.size > 0 && (deloadWeek(data, session.start) || c.exercises.every((x) => deloaded.has(x.exerciseId)))
+  // La frase de descarga (deloadSummary); con solo alguno descargado, sin el peso movido total: su bajada contaba
+  // como «menos movidos».
+  const deloadSession = deloadSummary(data, session, c.exercises.map((x) => x.exerciseId))
   const text = (x: ExerciseChange) => {
     const sign = x.delta > 0 ? '+' : '−'
     if (x.kind === 'weight') return `${sign}${weight(Math.abs(x.delta), unit)}`

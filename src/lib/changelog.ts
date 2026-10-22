@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.12',
+    items: [
+      ['Instrucciones más seguras en los ejercicios con banda: cómo anclarla (puerta cerrada que abra hacia el otro lado, o un poste) y revisar que no tenga cortes; y el curl martillo con kettlebell, cogido por el centro del asa.', 'Safer instructions for band exercises: how to anchor it (a closed door that opens away from you, or a post) and checking it for cuts; and the kettlebell hammer curl, held by the middle of the handle.'],
+      ['Con bandas, todos los ejercicios a 12-20 repeticiones, y el remo invertido solo si tienes barra.', 'With bands, every exercise at 12-20 reps, and the inverted row only if you have a bar.'],
+      ['Ganar músculo con 3 días o más lleva bíceps y tríceps directos, también con 45 minutos y sin gimnasio.', 'Building muscle with 3 days or more includes direct biceps and triceps work, also with 45 minutes and without a gym.'],
+      ['«Quitar la descarga de hoy» ya no borra las series que añadiste después, y al terminar el entreno no se guarda la copia de antes de la descarga.', '"Undo today’s deload" no longer removes sets you added afterwards, and the pre-deload copy is not saved when you finish the workout.'],
+      ['Con el teclado, lo que tiene el foco ya no queda detrás de la barra de pestañas.', 'With a keyboard, the focused element no longer hides behind the tab bar.'],
+    ],
+  },
+  {
     version: '0.1.11',
     items: [
       ['Arreglado: el resumen del entreno ya no se rompe al guardarlo como rutina, ni Progreso › Calorías y peso al apuntar la primera comida.', 'Fixed: the workout summary no longer breaks when you save it as a routine, nor does Progress › Calories and weight when you log your first meal.'],

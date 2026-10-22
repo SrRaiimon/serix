@@ -23,40 +23,41 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.6 | 9,7 | 9,6 | 9,7 | 9,8 | 9,7 |
 | 0.1.7 | 9,8 | 9,5 | 9,7 | 9,9 | 9,7 (9,725) |
 | 0.1.8 | 9,8 | 9,5 | 9,8 | 9,8 | 9,7 (9,725) |
+| 0.1.10 | 9,8 | 9,4 | 9,8 | 9,7 | 9,7 (9,675) |
 
-## Pendientes tras 0.1.8 (resueltos desde 0.1.7: programas sin tirón, press tres días seguidos en principiante 6 días,
-## nombres desde la A, RPE en descarga reversible, «Más series», «<1 min» al compartir, «La semana que viene», «Más
-## tarde» como texto, límites de zona sin bordes laterales, pesos del generador con nombre)
-## Crítica de diseño: 31/40; detector limpio. Para subir: Inicio más corto, explicar RPE y descarga la primera vez.
+## Pendientes tras 0.1.10 (la 0.1.9 sin panel; la 0.1.11 arregla el fallo del resumen al guardar como rutina y el
+## mismo patrón en Progreso › Calorías y peso, con tests/hooks-order.test.ts). Resueltos desde 0.1.8: tirón en cada
+## cuerpo completo, días de un ejercicio, abdomen uno por día, por lados con cualquier lado, «Última vez», «Tu plan»,
+## mapa 1-3, avanzado 3 días, nombres de la biblioteca, quitar la descarga, Inicio más corto, RPE explicado, axe.
+## Crítica de diseño: 32/40; detector limpio; Lighthouse publicado 98-99/100/100/100; axe 0 en 16 pantallas × 2 temas.
 
 ### serix-ux (9,8)
-- Días de cuerpo completo sin tirón (principiante 6 días): el tirón solo se garantiza por semana.
-- Torso B con 9 series de empuje y 3 de tirón; hip thrust y puente con barra el mismo día.
-- Routines.tsx:330 «Última vez» con «0 min» (usar duration()) y series con workingSets en vez de sessionSets.
-- «Tu plan» con 60 min dice 60 frente a 39–53′: minutos reales (o el rango) siempre que el día más largo baje.
-- Mismo aislamiento en días seguidos (extensión de tríceps días 1 y 2, cuádriceps 5 y 6; en 3 de 5 días).
+- Bandas intermedio 3d/45 hipertrofia: 0 series de bíceps y tríceps (el changelog promete brazos con bandas); remo
+  invertido o con toalla cuando solo se han declarado bandas.
+- Empuje/tirón por día contando accesorios (Torso A principiante 6d/60: 9 de empuje frente a 3).
+- Variantes del mismo aislamiento en días seguidos (extensión de cuádriceps y a una pierna; curl martillo y en polea).
+- Kettlebell principiante 4d/45: Torso B de 3 ejercicios y ~36 min; Torso A con dos remos y sin hombro.
+- RPE la primera vez dice lo mismo dos veces; abdomen con 4 series sin naranja sin explicar; 4-9 del mapa en oscuro.
 
-### serix-code (9,5)
-- Session.tsx:207 allDeload falla con plancha/abdomen/5-3-1 en la semana de descarga: usar deloadWeek(d, session.start)
-  y el volumen sin los descargados; tests con plancha y con un solo ejercicio descargado.
-- Por lados: con countsAsSet la derecha sin marcar se pierde sin aviso («3 de 3», «¡Buen trabajo!»); contar la pareja
-  si cualquiera de los lados está hecho y que pending cuente todas las entradas sin marcar; test.
-- «Un solo abdomen por día» no es verdad en 7 programas (gym hipertrofia principiante 3d 45m): subir series al que hay.
-- Tests a todo el barrido (máx+2, empuje/tirón ≥45, brazos, abdomen): hoy dejan pasar 6 + 4 casos; isquios 18,5/16
-  en kettlebell fatLoss principiante 6d 90m; empuje 16,5/9 en bandas fuerza principiante 2d 45m.
-- generator-rules.test.ts:200 aflojado a exerciseCount(60) - 1: arreglarlo en el generador.
-- Partir generator.ts (998 líneas); dayName en buildLibraryProgram (sin romper Casa A, B, A).
-- Glúteo 17,5/15; deloadSets(2); «Quitar la descarga de hoy» no restaura; test de drops en weekRoutine.
+### serix-code (9,4)
+- (Arreglado en 0.1.11) hook después del return en ComparisonCard.
+- undoDeload pierde series añadidas después de la descarga y mezcla ids si se pasa a por lados; tests de ambos.
+- beforeDeload se queda guardado al terminar (IndexedDB y copias): borrarlo en finishSession y no copiarlo al repetir.
+- La decisión de descarga del resumen, a una función pura en lib con tests (plancha, 5/3/1, uno solo, sesión libre).
+- Empuje/tirón con 30 min y 4 días o más (4 casos a 1,6); weekly() duplicado en dos tests; generator.ts:595 quita
+  compuestos con TIE.dropAccessory; deloadSets(2); seguir partiendo generator.ts (976).
 
 ### serix-coach (9,8)
-- Reglas por día: cada cuerpo completo con tirón, empuje y pierna; ningún día < 3 ejercicios o < 60 % del tiempo
-  (mancuernas fuerza principiante 6d 30m: un día de 1 ejercicio, 16 min).
-- Mismo ejercicio en días seguidos: 245 configuraciones (sobre todo principiante 6 días e híbrido de 5).
-- Abdomen bajo el mínimo en fatLoss/general ≥45 min (48), p. ej. gym fatLoss intermedio 2d 45/60m con 0.
-- Brazos bajos sin gimnasio (66 con ≥3 días y ≥45 min; peso corporal fatLoss intermedio 3d 45m: bíceps 2,5).
-- Avanzado 3 días en PPL; elevaciones laterales en Torso A del principiante; fatLoss en el test de bisagras.
+- Cuerpo completo sin empuje (192 días; gym hipertrofia principiante 3d 45m: día B sin press, pecho 6/sem).
+- Mismo músculo principal en días seguidos: 329 (también en casa y en básicos; negativas, zancadas). Objetivo < 100.
+- Días por debajo del 60 % del tiempo elegido: 83 (PPL general intermedio 6d 60m: Empuje A 33 min sin hombro).
+- Abdomen bajo el mínimo en fatLoss/general ≥ 45 min: 46; regla en el barrido. «Perder grasa» en el test de bisagras.
+- Brazos sin gimnasio: 61 (tríceps bajo en 121).
+- Catálogo nuevo: agarre del curl martillo con kettlebell (por el centro del asa), seguridad del anclaje en face pull
+  y jalón con banda (puerta cerrada, anclaje, revisar la banda), remo con banda a 12-20.
 
-### serix-perf-a11y (9,8)
-- Mapa de calor en claro al revés: 1-3 más intenso que 4-9 (--mm-l* frente a --mm-s*). Volver a l > s > p en
-  luminancia con contorno en las regiones l (también en oscuro, 1,1-1,2:1); test de orden de luminancia.
-- Lighthouse y axe (con permiso); touch-area con medida real en el navegador; etiqueta «0 series, no tiene mínimo».
+### serix-perf-a11y (9,7)
+- WCAG 2.4.11: la barra de pestañas tapa el foco en Comidas, Progreso y Perfil: html { scroll-padding-bottom } con
+  el alto de la barra; prueba por CDP.
+- Test de orden de luminancia del mapa; campos de peso/reps/marcar sin número de serie para el lector; semana de
+  Inicio legible con lector; 51 KiB de JS y 15 KiB de CSS sin usar; anillo del h1 sobre la fecha; ✓ a 320 px.

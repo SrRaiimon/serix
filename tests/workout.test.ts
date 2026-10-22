@@ -1,7 +1,7 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, deloadSets, undoDeload, deloadWeek, prefillSets, previewRoutine, routineFacts, setProgress, weekRoutine, withWarmup } from '../src/lib/workout'
+import { applyDeload, deloadSets, deloadSummary, undoDeload, deloadWeek, prefillSets, previewRoutine, routineFacts, setProgress, weekRoutine, withWarmup } from '../src/lib/workout'
 import { sessionSets } from '../src/lib/stats'
 import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
@@ -174,4 +174,28 @@ test('quitar la descarga: vuelven las series y los pesos de antes, y lo hecho se
   undoDeload(e)
   assert.equal(e.deload, undefined)
   assert.deepEqual(shape(e.sets), ['40x10', '100x5✓', '90x5✓', '100x5', '100x5', '100x5', '80x8:drop'])
+})
+
+test('quitar la descarga: conserva las series añadidas después', () => {
+  const e = exercise('bench', [1, 2, 3].map(() => set(100, 5, { done: false })))
+  applyDeload(e, 'kg')
+  e.sets.push(set(90, 5, { done: false, id: 'nueva' }))
+  undoDeload(e)
+  assert.deepEqual(shape(e.sets), ['100x5', '100x5', '100x5', '90x5'])
+  assert.equal(e.sets[3].id, 'nueva')
+})
+
+test('resumen de la semana de descarga: con plancha sí, sin nada descargado no', () => {
+  const base = migrateData({ version: 1, sessions: [], routines: [], settings: {} })
+  assert.ok(base && base !== 'newer')
+  const easy = { ...base, settings: { ...base.settings, easyWeek: startOfWeek(Date.now()).getTime() } }
+  const bench = { ...exercise('bench', [set(90, 5)]), deload: true }
+  const plank = exercise('Plank', [set(0, 60)])
+  const s = session(0, [bench, plank], { start: Date.now() })
+  assert.equal(deloadSummary(easy, s, ['bench', 'Plank']), true)
+  // Un entreno libre de la semana de descarga, sin nada descargado: compara como siempre.
+  assert.equal(deloadSummary(easy, session(0, [exercise('bench', [set(100, 5)])], { start: Date.now() }), ['bench']), false)
+  // Fuera de la semana de descarga, con un solo ejercicio descargado entre otros: compara.
+  assert.equal(deloadSummary(base, s, ['bench', 'Plank']), false)
+  assert.equal(deloadSummary(base, s, ['bench']), true)
 })

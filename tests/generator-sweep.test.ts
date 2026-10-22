@@ -45,7 +45,7 @@ test('barrido: siempre algún tirón, y con 3 días o más y 45 minutos o más e
 test('barrido: «Perder grasa» y «Estar en forma» con 45 minutos o más tienen abdomen', () => {
   // Excepción conocida: con bandas, 3 días de 45 minutos son solo básicos en su mínimo de series y el acondicionamiento
   // que promete «Perder grasa»; hacer sitio al abdomen deja la espalda y el bíceps más bajos de lo que gana.
-  const known = new Set(['fatLoss/intermediate/bands/3d/45'])
+  const known = new Set(['fatLoss/intermediate/bands/3d/45', 'fatLoss/advanced/bands/3d/45'])
   fails(all.filter(({ c, tag }) => c.minutes >= 45 && (c.goal === 'fatLoss' || c.goal === 'general') && !known.has(tag)).flatMap(({ p, tag }) => (weekly(p)[ABS_GROUP] > 0 ? [] : [tag])))
 })
 
@@ -72,4 +72,15 @@ test('barrido: en el gimnasio, el mismo ejercicio de aislamiento no se repite en
     const prev = new Set(p.days[i].exercises.map((x) => x.exercise.id))
     return d.exercises.filter((x) => prev.has(x.exercise.id) && x.exercise.category !== 'cardio' && x.exercise.category !== 'plyometrics' && countsForVolume(x.exercise.id, x.exercise.category) && !/squat|deadlift|press|row|pull/i.test(x.exercise.id)).map((x) => `${tag} ${d.name}: ${x.exercise.id}`)
   })))
+})
+
+test('barrido: hipertrofia con 3 días o más y 45 minutos o más lleva bíceps y tríceps directos, con cualquier material', () => {
+  // Con bandas, intermedio, 3 días de 45 minutos salía sin un solo curl ni extensión, aunque ya hay curl con banda.
+  // Excepción conocida: con bandas, 3 días de 45 minutos en intermedio y avanzado llevan curl, pero el tríceps solo de
+  // rebote (unas 7,5 series): con las bandas a 12-20 y 90 s no cabe otro ejercicio sin descompensar empuje y tirón.
+  const known = new Set(['hypertrophy/intermediate/bands/3d/45: sin tríceps', 'hypertrophy/advanced/bands/3d/45: sin tríceps'])
+  fails(all.filter(({ c }) => c.goal === 'hypertrophy' && c.days >= 3 && c.minutes >= 45).flatMap(({ p, tag }) => {
+    const has = (m: string) => p.days.some((d) => d.exercises.some((x) => x.exercise.muscle === m))
+    return [...(has('biceps') ? [] : [`${tag}: sin bíceps`]), ...(has('triceps') ? [] : [`${tag}: sin tríceps`])].filter((x) => !known.has(x))
+  }))
 })

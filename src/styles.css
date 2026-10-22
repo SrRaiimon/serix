@@ -127,6 +127,11 @@ body {
   scrollbar-color: var(--text-3) transparent;
 }
 
+/* Lo que recibe el foco con el teclado no queda detrás de la barra de pestañas (WCAG 2.4.11): al tabular, el
+   navegador deja este margen abajo. Con un entreno en curso, también la barra de «Continuar». */
+html { scroll-padding-bottom: calc(84px + var(--safe-bottom)); }
+html:has(.active-bar) { scroll-padding-bottom: calc(160px + var(--safe-bottom)); }
+
 ::selection {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
   color: var(--text);

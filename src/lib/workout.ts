@@ -199,10 +199,25 @@ export function undoDeload(e: SessionExercise): void {
   delete e.deload
   delete e.beforeDeload
   if (!before) return
+  // Si después se pasó a «por lados» (o al revés), las series ya no son las mismas: se quita solo la marca.
+  if (before.some((s) => s.side) !== e.sets.some((s) => s.side)) return
   const now = new Map(e.sets.map((s) => [s.id, s]))
   const originals = new Set(before.map((s) => s.id))
-  const kept = e.sets.filter((s) => s.warmup || (s.done && !originals.has(s.id)))
-  e.sets = [...kept, ...before.map((s) => (now.get(s.id)?.done ? now.get(s.id)! : s))]
+  // Lo que no era de antes se queda: el calentamiento y lo hecho delante, y las series añadidas después de la descarga
+  // detrás (antes se perdían sin avisar).
+  const ahead = e.sets.filter((s) => !originals.has(s.id) && (s.warmup || s.done))
+  const added = e.sets.filter((s) => !originals.has(s.id) && !s.warmup && !s.done)
+  e.sets = [...ahead, ...before.map((s) => (now.get(s.id)?.done ? now.get(s.id)! : s)), ...added]
+}
+
+/**
+ * Si el resumen de una sesión habla de descarga en vez de comparar el peso movido: si algún ejercicio se descargó de
+ * verdad y era la semana de descarga (aunque la plancha o una 5/3/1 no se descarguen), o si todos los comparados se
+ * descargaron. Un entreno libre de esa semana sin nada descargado compara como siempre.
+ */
+export function deloadSummary(d: AppData, session: Session, compared: readonly string[]): boolean {
+  const deloaded = new Set(session.exercises.filter((e) => e.deload).map((e) => e.exerciseId))
+  return deloaded.size > 0 && (deloadWeek(d, session.start) || (compared.length > 0 && compared.every((id) => deloaded.has(id))))
 }
 
 /** Siguiente rutina del programa activo: la que va después de la última realizada. */
@@ -390,8 +405,9 @@ export function finishSession(id: string) {
   update((d) => {
     const session = d.sessions.find((s) => s.id === id)
     if (!session) return
+    // Sin la copia de antes de la descarga: solo sirve durante el entreno (para quitarla) y se guardaba para siempre.
     session.exercises = session.exercises
-      .map((e) => ({ ...e, sets: e.sets.filter((s) => s.done) }))
+      .map(({ beforeDeload: _before, ...e }) => ({ ...e, sets: e.sets.filter((s) => s.done) }))
       .filter((e) => e.sets.length > 0)
     normalizeGroups(session.exercises)
     if (!session.exercises.length) {

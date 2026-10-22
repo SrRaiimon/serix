@@ -137,8 +137,8 @@ function scheme(kind: Kind, c: GeneratorConfig) {
   return { sets, repsMin, repsMax, rest }
 }
 
-/** Necesitan una barra de dominadas (o algo de donde colgarse): solo se proponen con gimnasio. */
-const NEEDS_BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
+/** Necesitan una barra de dominadas (o algo de donde colgarse, también el remo invertido): solo con gimnasio o barra. */
+const NEEDS_BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar|inverted_row/i
 /** Demasiado para empezar aunque el catálogo los ponga de nivel básico: dominadas, nórdico, pistol, pino. */
 const HARD_START = /^(Pullups|Chin-Up|Kipping_Pull_Up|Chest_To_Bar_Pull_Up|Floor_Glute-Ham_Raise|Natural_Glute_Ham_Raise|Pistol_Squat|Handstand_Push-Ups|Wall_Walk)$/
 /** Con carga a mano, la sentadilla o el puente sin peso no son un básico (se quedan para quien entrena solo con su cuerpo). */
@@ -294,6 +294,8 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
   else if (unloadedLegs) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (level && level !== 'beginner' && EASY_BODYWEIGHT.test(e.id)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
+  // Con banda, a 12-20: la tensión sube al estirar, y a 6-10 no hay goma que dé estímulo ni forma de progresar.
+  else if (e.equipment === 'band' && out.repsMin < 12) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   return out
 }
@@ -473,6 +475,8 @@ const TIE = {
   transfer: 0.002,
   /** Por minuto del día: a igualdad, se quita del más largo. */
   perMinute: 1e-3,
+  /** Lo que se acepta empeorar la semana (en series fuera de rango) por tener bíceps y tríceps directos en hipertrofia. */
+  directArm: 2,
   /** Por serie del ejercicio: a igualdad, se sube al que menos tiene y se baja al que más. */
   perSet: 1e-3,
 } as const
@@ -714,6 +718,40 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
       days[d].splice(at < 0 ? days[d].length : at, 0, p)
       const v = totals()
       if (!fits(days[d], c.minutes) || v.slice(0, N).some((x, g) => x > ranges[g][1])) days[d].splice(days[d].indexOf(p), 1)
+    }
+  }
+  // Hipertrofia con 3 días o más y 45 minutos o más: al menos un ejercicio directo de bíceps y otro de tríceps a la
+  // semana. Con 45 minutos, el cuerpo completo no llegaba al hueco de brazos y el tríceps solo iba de rebote con los
+  // press (con bandas, intermedio, ni un curl). Va al día con más tiempo libre; si no cabe, otro ejercicio (no el
+  // primero del día) cede una o dos series, hasta 2.
+  if (c.goal === 'hypertrophy' && c.days >= 3 && c.minutes >= 45) {
+    for (const [muscle, slot] of [['biceps', 'biceps'], ['triceps', 'triceps']] as const) {
+      if (days.some((day) => day.some((p) => p.ex.exercise.muscle === muscle))) continue
+      // El cambio vale si la semana no queda peor en conjunto (badness) más allá de TIE.directArm: con 45 minutos y todo
+      // en su mínimo, dos series de tríceps directo valen más que dos de press (que ya lo trabajan de rebote).
+      const before = badness(totals())
+      const order = days.map((day, d) => ({ d, free: c.minutes + TIME_SLACK - minutesOf(day) })).sort((a, b) => b.free - a.free)
+      for (const { d } of order) {
+        const day = days[d]
+        const p = add(d, slot)
+        if (!p || p.ex.exercise.muscle !== muscle) continue
+        p.ex.sets = 2
+        const at = day.findIndex((x) => x.kind === 'conditioning')
+        day.splice(at < 0 ? day.length : at, 0, p)
+        if (fits(day)) break
+        // Una serie menos cada vez al que más tenga (no el primero del día; un básico puede bajar a 2, que con cuerpo
+        // completo se repite tres días a la semana) hasta que quepa; si la semana queda peor de la cuenta, se deshace.
+        const taken: Picked[] = []
+        while (!fits(day)) {
+          const q = day.slice(1).filter((x) => x !== p && x.kind !== 'conditioning' && x.ex.sets > 2).sort((a, b) => b.ex.sets - a.ex.sets)[0]
+          if (!q) break
+          q.ex.sets--
+          taken.push(q)
+        }
+        if (fits(day) && badness(totals()) <= before + TIE.directArm) break
+        for (const q of taken) q.ex.sets++
+        day.splice(day.indexOf(p), 1)
+      }
     }
   }
   // El abdomen, al final del día, y el acondicionamiento detrás de todo: lo que añadía el ajuste quedaba entre la
