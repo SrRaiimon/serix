@@ -31,11 +31,15 @@ export const loadSets = (e: SessionExercise): SetEntry[] =>
 export const setLoad = (e: SessionExercise, s: SetEntry): number =>
   e.bodyweight === undefined ? (e.assisted ? 0 : s.weight) : e.assisted ? Math.max(0, e.bodyweight - s.weight) : s.weight + e.bodyweight
 
+/** Si una serie cuenta como serie: sin calentamiento, sin drop sets (son la cola de su serie) y, por lados, una por pareja. */
+export const countsAsSet = (s: SetEntry) => !s.warmup && s.kind !== 'drop' && s.side !== 'R'
+
 /**
- * Cuántas series cuentan para el volumen de un músculo: en los ejercicios por lados, cada pareja
- * izquierda-derecha es una serie (cada pierna hizo una), no dos.
+ * Cuántas series hechas cuentan: la misma regla (countsAsSet) que el entreno, Inicio y Rutinas. En los ejercicios por
+ * lados, cada pareja izquierda-derecha es una serie (cada pierna hizo una), no dos; los drop sets no suman series
+ * (sí peso movido): antes el entreno decía «3 de 3» y el resumen, «5 series hechas».
  */
-export const setCount = (e: SessionExercise) => workingSets(e).filter((s) => s.side !== 'R').length
+export const setCount = (e: SessionExercise) => workingSets(e).filter(countsAsSet).length
 
 /** Peso movido de un ejercicio (peso × repeticiones); con mancuernas «por mancuerna», las dos. */
 export const exerciseVolume = (e: SessionExercise) => loadSets(e).reduce((v, x) => v + x.weight * x.reps, 0) * (e.perHand ? 2 : 1)

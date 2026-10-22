@@ -97,8 +97,9 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
   }
 
   // Un consejo principal: si toca descargar, los cambios de ejercicio esperan (descargar y cambiar a la vez no se
-  // sabía cuál hacer). Si se oculta la descarga, vuelven.
-  const deloadFirst = tips.some((x) => x.kind === 'easyWeek' && !hidden.has(x.id))
+  // sabía cuál hacer). Si se oculta la descarga, vuelven. Con la descarga ya en marcha, también esperan a la semana
+  // siguiente: lo que la descarga desatasca no se cambia antes de probarlo.
+  const deloadFirst = !!easing || tips.some((x) => x.kind === 'easyWeek' && !hidden.has(x.id))
   for (const s of deloadFirst ? [] : stuck.slice(0, 2)) {
     const owners = routines.filter((r) => r.exercises.some((e) => e.exerciseId === s.exerciseId))
     const muscle = owners[0]?.exercises.find((e) => e.exerciseId === s.exerciseId)?.muscle ?? catalog.get(s.exerciseId)?.muscle ?? ''

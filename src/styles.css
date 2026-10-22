@@ -1258,12 +1258,13 @@ a.list-row:active {
   gap: 8px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: color-mix(in srgb, #f08c00 12%, transparent);
+  /* En tinta, como los demás avisos del ejercicio: el ámbar era un tercer color de aviso fuera del sistema. */
+  background: var(--fill);
   color: var(--text);
 }
 
 .stall-box svg {
-  color: var(--amber-text);
+  color: var(--text-2);
 }
 
 .set-prev {
@@ -2214,13 +2215,11 @@ html.scroll-locked body {
 .recovery-row { display: grid; grid-template-columns: 7.5em 1fr auto; align-items: center; gap: 10px; }
 .recovery-name { font-size: 15px; font-weight: 600; }
 .recovery-bar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
-.recovery-bar > span { display: block; height: 100%; border-radius: 999px; }
-/* Recuperarse es lo normal tras entrenar: en tinta, más oscura cuanto más recuperado (sin rojo, verde ni ámbar). */
-.recovery-row.ready .recovery-bar > span { background: var(--text); }
-.recovery-row.almost .recovery-bar > span { background: color-mix(in srgb, var(--text) 55%, transparent); }
-.recovery-row.recovering .recovery-bar > span { background: var(--text-3); }
-.recovery-row.ready .recovery-status { color: var(--text); }
-.recovery-row.almost .recovery-status, .recovery-row.recovering .recovery-status { color: var(--text-2); }
+.recovery-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--text-2); }
+/* Recuperarse es lo normal tras entrenar: la barra (en tinta, a 3:1 o más) dice cuánto falta y el texto destaca lo que
+   aún se recupera; «Listo» va discreto (sin rojo, verde ni ámbar). */
+.recovery-row.ready .recovery-status { color: var(--text-2); font-weight: 500; }
+.recovery-row.almost .recovery-status, .recovery-row.recovering .recovery-status { color: var(--text); }
 .recovery-status { text-align: right; white-space: nowrap; font-weight: 600; }
 .hero-warning { gap: 6px; align-items: flex-start; font-weight: 600; padding: 8px 10px; border-radius: 10px; background: var(--fill); color: var(--text); }
 .hero-warning svg { color: var(--amber-text); }
@@ -2349,8 +2348,8 @@ html.scroll-locked body {
 .balance-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--fill); }
 /* Los dos lados en tinta (uno más claro) y el que se queda corto en naranja: lo único que pide atención. */
 .balance-bar span { display: block; min-width: 3px; background: var(--text-2); }
-.balance-bar span + span { background: color-mix(in srgb, var(--text) 30%, transparent); }
-.balance-bar span.short { background: var(--accent); }
+.balance-bar span + span { background: color-mix(in srgb, var(--text) 50%, transparent); }
+.balance-bar span.short { background: var(--accent-text); }
 .warn-text { color: var(--amber-text); }
 .interval-phase { text-align: center; overflow-wrap: anywhere; padding: 0 16px; }
 .interval-cue { margin: 0; padding: 0 24px; text-align: center; font-size: 17px; color: rgba(235, 235, 245, 0.8); max-width: 420px; }
@@ -2367,13 +2366,13 @@ html.scroll-locked body {
 .volume-rows { display: flex; flex-direction: column; gap: 8px; }
 .volume-row { display: grid; grid-template-columns: 96px 1fr 36px; gap: 8px; align-items: center; }
 .volume-track { position: relative; height: 14px; border-radius: 7px; background: var(--fill); overflow: hidden; }
-/* Con la paleta del sistema: tinta dentro del rango, tinta apagada por debajo y naranja solo por encima (lo que pide
-   atención). Antes, verde, ámbar y naranja: tres colores para una barra. */
-.volume-range { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 9%, transparent); }
+/* Con la paleta del sistema y a 3:1 o más contra la pista: tinta dentro del rango, contorno naranja por debajo (lo que
+   pide series) y naranja lleno por encima. La zona, con sus dos límites marcados (el relleno solo no se veía). */
+.volume-range { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 9%, transparent); border-left: 2px solid var(--text-2); border-right: 2px solid var(--text-2); }
 .volume-fill { position: absolute; left: 0; top: 3px; bottom: 3px; border-radius: 4px; min-width: 2px; }
 .volume-fill.ok { background: var(--text-2); }
-.volume-fill.low { background: var(--text-3); }
-.volume-fill.high { background: var(--accent); }
+.volume-fill.low { background: color-mix(in srgb, var(--accent-text) 18%, transparent); box-shadow: inset 0 0 0 2px var(--accent-text); }
+.volume-fill.high { background: var(--accent-text); }
 
 /* MARK: Récords por repeticiones */
 
@@ -2647,9 +2646,9 @@ textarea { resize: none; }
 .food-today .due { color: var(--accent-text); font-weight: 600; }
 .session-food { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; text-align: left; color: inherit; }
 .stall-box:not(.open) { padding: 0; background: transparent; }
-.stall-line { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 36px; padding: 6px 10px; border-radius: 10px; text-align: left; color: var(--text-2); background: color-mix(in srgb, #f08c00 10%, transparent); }
+.stall-line { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 36px; padding: 6px 10px; border-radius: 10px; text-align: left; color: var(--text-2); background: var(--fill); }
 .stall-box.open .stall-line { padding: 0; background: transparent; min-height: 28px; }
-.stall-more { font-weight: 600; color: var(--amber-text); }
+.stall-more { font-weight: 600; color: var(--text); }
 
 /* Ayuda del primer entrenamiento, junto a la primera serie. */
 .howto { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--fill); color: var(--text); line-height: 1.35; }

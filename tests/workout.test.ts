@@ -1,7 +1,7 @@
 import './browser-stubs'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyDeload, prefillSets, previewRoutine, routineFacts, setCount, withWarmup } from '../src/lib/workout'
+import { applyDeload, deloadSets, prefillSets, previewRoutine, routineFacts, setProgress, withWarmup } from '../src/lib/workout'
 import { startOfWeek } from '../src/lib/format'
 import { migrateData, type SetEntry } from '../src/lib/store'
 import { rememberEquipment } from '../src/lib/progression'
@@ -124,7 +124,14 @@ test('calentamiento en descarga: como mucho dos series', () => {
 
 test('recuento de series: sin calentamiento ni drops, por lados una por pareja', () => {
   const sides = [1, 2, 3, 4].flatMap((i) => [set(20, 10, { done: i === 1, side: 'L' }), set(20, 10, { done: i === 1 || i === 2, side: 'R' })])
-  assert.deepEqual(setCount(sides), { done: 1, total: 4 })
+  assert.deepEqual(setProgress(sides), { done: 1, total: 4 })
   const drops = [set(40, 10, { warmup: true }), set(80, 8), set(80, 8, { done: false }), set(60, 8, { kind: 'drop', done: false })]
-  assert.deepEqual(setCount(drops), { done: 1, total: 2 })
+  assert.deepEqual(setProgress(drops), { done: 1, total: 2 })
+})
+
+test('descarga: nunca deja un ejercicio en una sola serie si tenía dos o más', () => {
+  const e = exercise('Lying_Triceps_Press', [set(30, 12, { done: false }), set(30, 12, { done: false })])
+  applyDeload(e, 'kg')
+  assert.equal(e.sets.length, 2)
+  assert.deepEqual([1, 2, 3, 4, 5].map(deloadSets), [1, 2, 2, 2, 3])
 })

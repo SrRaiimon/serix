@@ -4,7 +4,7 @@ import { isIsolation } from './isolation'
 import { MAIN_GROUPS } from './labels'
 import { defaultTracking, exerciseSeconds, PROGRAM_TARGET_SECONDS } from './tracking'
 import type { Progression } from './store'
-import { ABS_GROUP, countsForVolume, groupRange, groupShares } from './volume'
+import { ABS_GROUP, countsForVolume, groupRange, groupShares, pushPullShares } from './volume'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
 export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -163,7 +163,9 @@ function split(c: GeneratorConfig): [string, Template[]] {
   if (c.days === 4) return [t('Torso / Pierna', 'Upper / Lower'), c.goal === 'strength' ? [upperA, lowerA, strengthUpperB, strengthLowerB] : [upperA, lowerA, upperB, lowerB]]
   // Principiante con 5-6 días: torso y pierna más días de cuerpo completo suave, en vez de PPL a diario.
   if (c.level === 'beginner' && c.days >= 5) {
-    return [t('Torso / Pierna + Cuerpo completo', 'Upper / Lower + Full body'), [upperA, lowerA, fullBodyC, upperB, lowerB, ...(c.days >= 6 ? [fullBodyB] : [])]]
+    // Con 6, los días con bisagra (Pierna A y B, Cuerpo completo B) nunca seguidos, tampoco del último al primero:
+    // Pierna B y Cuerpo completo B iban juntos (peso muerto y rumano en días seguidos).
+    return [t('Torso / Pierna + Cuerpo completo', 'Upper / Lower + Full body'), c.days >= 6 ? [upperA, lowerA, upperB, fullBodyB, fullBodyC, lowerB] : [upperA, lowerA, fullBodyC, upperB, lowerB]]
   }
   if (c.days === 5) return [t('Híbrido PPL + Torso / Pierna', 'PPL + Upper / Lower hybrid'), [pushA, pullA, legsA, upperB, lowerB]]
   return [t('Empuje / Tirón / Pierna ×2', 'Push / Pull / Legs ×2'), [pushA, pullA, legsA, pushB, pullB, legsB]]
@@ -518,6 +520,12 @@ function fillTime(picked: Picked[], minutes: number, level: TrainingLevel) {
   }
 }
 
+/** Empuje como mucho 1,2 veces el tirón en un programa nuevo (Progreso avisa a partir de 1,5). */
+const PUSH_PULL_MAX = 1.2
+const BACK_GROUP = MAIN_GROUPS.findIndex(([, muscles]) => muscles.includes('lats'))
+/** Pecho y hombro: lo que se baja si el empuje se pasa (el tríceps no: el torso se quedaba sin brazos). */
+const PUSH_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.includes('pectorals') || muscles.includes('delts') ? [g] : [])))
+
 /** Huecos con los que se puede añadir un ejercicio para un grupo (orden de MAIN_GROUPS) que no llega. */
 const GROUP_SLOTS = ['chestFly inclinePress', 'horizontalPull verticalPull', 'lateralRaise rearDelt', 'biceps hammer', 'triceps',
   'legExtension lunge', 'legCurl', 'glute', 'core'].map((x) => x.split(' ') as SlotName[])
@@ -543,16 +551,23 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
   })
   // Lo que cuenta, igual que el entrenador y Progreso (countsForVolume): también un swing del bloque de acondicionamiento,
   // que antes se quedaba fuera y «Perder grasa» salía con el femoral pasado en su propio análisis.
+  // Detrás de los grupos, dos cifras más: empuje y tirón, contados como Progreso › Equilibrio (pushPullShares). Con
+  // el rango por grupo solo, salían semanas con 15 series de press y 9 de remo.
+  const N = MAIN_GROUPS.length
   const shares = (p: Picked) => (!countsForVolume(p.ex.exercise.id, p.ex.exercise.category)
-    ? MAIN_GROUPS.map(() => 0) : groupShares(p.ex.exercise.muscle, p.ex.exercise.secondaryMuscles))
+    ? new Array<number>(N + 2).fill(0)
+    : [...groupShares(p.ex.exercise.muscle, p.ex.exercise.secondaryMuscles), ...pushPullShares(p.ex.exercise.muscle, p.ex.exercise.secondaryMuscles)])
   /** El grupo del músculo principal (-1 si no es de ninguno: gemelo, trapecio, lumbar). */
-  const mainGroup = (p: Picked) => shares(p).indexOf(1)
+  const mainGroup = (p: Picked) => shares(p).slice(0, N).indexOf(1)
   const totals = () => {
-    const v = MAIN_GROUPS.map(() => 0)
+    const v = new Array<number>(N + 2).fill(0)
     for (const day of days) for (const p of day) shares(p).forEach((x, g) => { v[g] += x * p.ex.sets })
     return v
   }
-  const badness = (v: number[]) => v.reduce((n, x, g) => n + Math.max(0, ranges[g][0] - x) + Math.max(0, x - ranges[g][1]), 0)
+  /** Lo que el empuje pasa de PUSH_PULL_MAX veces el tirón. */
+  const pushExcess = (v: number[]) => Math.max(0, v[N] - PUSH_PULL_MAX * v[N + 1])
+  // A medio peso: quitar empuje o sumar tirón dentro de su rango compensa, pero no pasar la espalda de su máximo.
+  const badness = (v: number[]) => v.slice(0, N).reduce((n, x, g) => n + Math.max(0, ranges[g][0] - x) + Math.max(0, x - ranges[g][1]), 0) + pushExcess(v) * 0.5
   const floor = (p: Picked) => (p.kind === 'compound' ? 3 : 2)
   const strengthy = (p: Picked) => p.ex.exercise.category !== 'cardio' && p.ex.exercise.category !== 'plyometrics'
   const fits = (day: Picked[], minutes = c.minutes + TIME_SLACK) => dayMinutes(day.map((p) => p.ex)) <= minutes && strengthSets(day) <= MAX_DAY_SETS[c.level]
@@ -575,8 +590,10 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     const now = totals()
     const base = badness(now)
     if (base === 0) break
-    const low = (g: number) => g >= 0 && now[g] < ranges[g][0]
-    const high = (g: number) => g >= 0 && now[g] > ranges[g][1]
+    // Con mucho empuje, el tirón cuenta como bajo y el pecho y el hombro, como altos (aunque estén en su rango).
+    const pushy = pushExcess(now) > 0
+    const low = (g: number) => g >= 0 && g < N && (now[g] < ranges[g][0] || (pushy && g === BACK_GROUP && now[g] < ranges[g][1]))
+    const high = (g: number) => g >= 0 && g < N && (now[g] > ranges[g][1] || (pushy && PUSH_GROUPS.has(g) && now[g] > ranges[g][0]))
     let best: { gain: number; apply: () => void } | undefined
     const consider = (gain: number, apply: () => void) => { if (gain > 1e-6 && (!best || gain > best.gain + 1e-9)) best = { gain, apply } }
     const after = (changes: [Picked, number][]) => {
@@ -622,8 +639,12 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     // Un grupo bajo: añadir un ejercicio suyo (al día de su zona con más tiempo libre) o, si el día no da para más,
     // en lugar de un accesorio de otro grupo que va sobrado.
     if (!best) {
-      now.forEach((v, g) => {
-        if (v >= ranges[g][0] || best) return
+      // Todos los grupos bajos compiten (antes, el primero que encontraba sitio): un grupo a 0 va primero, que el
+      // bíceps y el tríceps se llevaban el hueco y el abdomen se quedaba sin nada.
+      const lows = now.slice(0, N).map((_, g) => g).filter(low)
+      const empties = lows.filter((g) => now[g] === 0)
+      ;(empties.length ? empties : lows).forEach((g) => {
+        const empty = now[g] === 0 ? 0.5 : 0
         // La zona de un día, por los grupos de sus ejercicios: el gemelo o el abdomen no hacen de un día de pierna
         // uno de torso (salían aperturas en la Pierna A).
         const leg = isLegGroup(g)
@@ -640,7 +661,28 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
             days[d].splice(where, 0, p)
             const ok = fits(days[d])
             days[d].splice(where, 1)
-            if (ok) { consider(after([[p, 2]]), () => { days[d].splice(where, 0, p) }); return }
+            if (ok) { consider(after([[p, 2]]) + empty, () => { days[d].splice(where, 0, p) }); return }
+            // Sin sitio: una serie menos del bloque de acondicionamiento (no cuenta como volumen). «Perder grasa» de
+            // 3 días y 45 min salía sin abdomen porque los saltos se comían el tiempo.
+            const cond = days[d].find((x) => x.kind === 'conditioning' && x.ex.sets > 2)
+            if (cond) {
+              cond.ex.sets--
+              days[d].splice(where, 0, p)
+              const condOk = fits(days[d])
+              days[d].splice(where, 1)
+              cond.ex.sets++
+              if (condOk) { consider(after([[p, 2]]) + empty - 0.01, () => { cond.ex.sets--; days[d].splice(where, 0, p) }); return }
+              // Y si aún no cabe, también una serie de otro (no el primero del día, sin bajar de su mínimo).
+              for (const q of days[d].slice(1)) {
+                if (q.kind === 'conditioning' || q.ex.sets <= floor(q)) continue
+                cond.ex.sets--; q.ex.sets--
+                days[d].splice(where, 0, p)
+                const bothOk = fits(days[d])
+                days[d].splice(where, 1)
+                cond.ex.sets++; q.ex.sets++
+                if (bothOk) { consider(after([[p, 2], [q, -1]]) + empty - 0.02, () => { cond.ex.sets--; q.ex.sets--; days[d].splice(where, 0, p) }); return }
+              }
+            }
             for (const q of days[d].slice(1)) {
               if (q.kind === 'compound' || q.kind === 'conditioning' || mainGroup(q) === g || onlyOne(days[d], q)) continue
               const day = days[d]
@@ -667,13 +709,51 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
     for (const day of days) {
       for (const p of day) {
         const sh = shares(p)
-        if (mainGroup(p) < 0 || !roomFor(day, p, c.minutes) || sh.some((x, g) => x > 0 && now[g] + x > ranges[g][1])) continue
+        if (mainGroup(p) < 0 || !roomFor(day, p, c.minutes) || sh.some((x, g) => g < N && x > 0 && now[g] + x > ranges[g][1])) continue
+        // Sin descompensar empuje y tirón al rellenar.
+        if (sh[N] > 0 && now[N] + sh[N] > PUSH_PULL_MAX * (now[N + 1] + sh[N + 1])) continue
         const room = ranges[mainGroup(p)][1] - now[mainGroup(p)] - p.ex.sets * 0.01
         if (!best || room > best.room) best = { room, p }
       }
     }
-    if (!best) return
+    if (!best) break
     best.p.ex.sets++
+  }
+  // El abdomen, al final del día (antes del acondicionamiento): lo que añadía el ajuste quedaba entre la sentadilla
+  // y la extensión de cuádriceps.
+  for (const day of days) {
+    const core = day.filter((p) => p.kind === 'core')
+    if (!core.length) continue
+    const rest = day.filter((p) => p.kind !== 'core' && p.kind !== 'conditioning')
+    day.splice(0, day.length, ...rest, ...core, ...day.filter((p) => p.kind === 'conditioning'))
+  }
+  // Bíceps y tríceps del mismo día, como mucho a una serie de diferencia (Torso B salía con curl 4× y francés 2×):
+  // una serie pasa del que más tiene al otro si cabe.
+  for (const day of days) {
+    const arms = day.filter((p) => p.kind !== 'conditioning' && ARM_GROUPS.has(mainGroup(p)))
+    for (let k = 0; k < 4; k++) {
+      const [lo, hi] = [...arms].sort((a, b) => a.ex.sets - b.ex.sets)
+      if (!lo || !hi || mainGroup(lo) === mainGroup(hi) || hi.ex.sets - lo.ex.sets < 2 || lo.ex.sets >= setCap(lo.kind, c.level)) break
+      // Sin dejar ningún grupo fuera de su rango (el bíceps se quedaba en 9 de 10): pasar una serie, o si no, una más
+      // al que tiene menos.
+      const inRange = () => { const v = totals(); return fits(day) && [hi, lo].every((p) => v[mainGroup(p)] >= ranges[mainGroup(p)][0] && v[mainGroup(p)] <= ranges[mainGroup(p)][1]) }
+      hi.ex.sets--; lo.ex.sets++
+      if (inRange()) continue
+      hi.ex.sets++
+      if (inRange()) continue
+      // O una serie menos de otro del día para hacerle sitio (también del primero, que no baja de 3; sin dejar su grupo
+      // bajo su mínimo): en Torso B, el press inclinado de 4 a 3 deja curl y francés a 3 y 3.
+      const v = totals()
+      const other = [...day.slice(1), day[0]].find((q) => {
+        if (arms.includes(q) || q.kind === 'conditioning' || q.ex.sets <= floor(q) || (mainGroup(q) >= 0 && v[mainGroup(q)] - 1 < ranges[mainGroup(q)][0])) return false
+        q.ex.sets--
+        const ok = inRange()
+        q.ex.sets++
+        return ok
+      })
+      if (!other) { lo.ex.sets--; break }
+      other.ex.sets--
+    }
   }
 }
 

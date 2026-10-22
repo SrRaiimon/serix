@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.7',
+    items: [
+      ['Semana de descarga sin malas noticias: el resumen ya no la marca en rojo como un retroceso, el descanso no se recorta con RPE bajo y los consejos de cambiar ejercicio esperan a la semana siguiente.', 'Deload week without bad news: the summary no longer shows it in red as a step back, rest is not cut with a low RPE, and exercise-swap tips wait until the following week.'],
+      ['Las series se cuentan igual en todas partes: los drop sets no suman series ni en el entreno ni en el resumen, y la descarga nunca deja un ejercicio en una sola serie.', 'Sets are counted the same everywhere: drop sets do not add sets in the workout or in the summary, and a deload never leaves an exercise at a single set.'],
+      ['Programas más sanos: tanto tirón como empuje, sin peso muerto en días seguidos para quien empieza, abdomen también con poco tiempo, bíceps y tríceps a la par y el abdomen al final del día.', 'Healthier programs: as much pulling as pushing, no deadlifts on consecutive days for beginners, abs even with little time, biceps and triceps on par, and abs at the end of the day.'],
+      ['Progreso › Músculos más legible: lo que queda por debajo se marca en naranja, la zona tiene sus límites y las barras se distinguen bien en claro.', 'Clearer Progress › Muscles: what falls below is marked in orange, the zone shows its limits and the bars stand out in light mode.'],
+      ['Inicio con una sola acción principal: la copia de seguridad ya no compite con «Empezar», y el aviso de ejercicio estancado va en gris.', 'Home with a single main action: the backup no longer competes with "Start", and the stalled-exercise notice is grey.'],
+    ],
+  },
+  {
     version: '0.1.6',
     items: [
       ['Programas más equilibrados: los principiantes ya no pasan de 16 series por grupo, hay algo de abdomen con 45 minutos o más y, si sobra volumen, se quita del día más largo (ya no queda un día de 35 minutos junto a otro de 75).', 'More balanced programs: beginners no longer go over 16 sets per muscle group, there is some ab work with 45 minutes or more and, if there is too much volume, it comes off the longest day (no more 35-minute day next to a 75-minute one).'],

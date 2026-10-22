@@ -20,38 +20,44 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.3 | 9,5 | 9,4 | 9,5 | 9,8 | 9,6 (9,55) |
 | 0.1.4 | 9,6 | 9,5 | 9,6 | — (se paró: salió la 0.1.5) | — |
 | 0.1.5 | 9,7 | 9,6 | 9,6 | 9,9 | 9,7 |
+| 0.1.6 | 9,7 | 9,6 | 9,7 | 9,8 | 9,7 |
 
-## Pendientes tras 0.1.5 (resueltos desde 0.1.4: RPE a la vista al marcar, descarga por lados y 5/3/1 con una sola
-## regla, aviso de descarga de semana o de ejercicio, vista previa con rangos, Comidas › Hoy sin repetir, asistida en el
-## entreno, routineFacts una vez por fila, chips de antes de empezar y RPE a 44 px reales)
-## Crítica de diseño: 30/40 (0.1.3 a 0.1.5); detector limpio. Para subir: Inicio con historial más corto, Músculos con la
-## paleta del sistema (sin verde ni azul), explicar RPE y descarga la primera vez.
+## Pendientes tras 0.1.6 (resueltos desde 0.1.5: calentamiento de 2 en descarga, «Movilidad 5 min», Comidas en Inicio,
+## sin aviso de recuperación en descarga, un mensaje por ejercicio, asistidas en descarga, recuento del entreno,
+## deloadWeek con la fecha de la sesión, span vacío, excesos de volumen, kettlebell descompensado, rumano a 6-8, RPE)
+## Crítica de diseño: 30/40; detector limpio. Para subir: Inicio más corto (copia sin segundo botón naranja,
+## entrenador y comidas plegables), aviso de estancado en tinta, explicar RPE y descarga la primera vez.
 
 ### serix-ux (9,7)
-- Descarga: sentadilla con 4 series de calentamiento para 2 efectivas; «Calentar 5 min» compite con las filas «C».
-- Inicio › Comidas de hoy con el texto antiguo «Sin entreno de momento»; al empezar salta de 2340 a 2970 sin aviso.
-- Torso B: curl martillo 4× y press francés 2×.
-- Inicio en descarga: «Aún recuperándose… algo menos de peso» sobra (la descarga ya baja el peso).
-- Press de banca: «Para subir de peso…» y «3 sesiones sin superar tu marca» apilados (con el entrenador diciendo
-  descarga): un mensaje por ejercicio.
+- Resumen tras un entreno de descarga: «−5 kg» en rojo y «6,1 t menos movidos»; comparar con lo previsto, en neutro.
+  Y sin «Descanso −15 s: te sobraba fuerza» con RPE bajo en descarga.
+- Descarga activa y el entrenador sigue con «Cambia Jalón…»/«Cambia Curl martillo…» en «Ver más consejos».
+- Torso B: curl martillo 4× y press francés 2× (en descarga, 1 serie); la descarga nunca debería dejar 1 serie.
+- Generador: principiante 5 días 90 min (51-64 min sin explicar el tope; «Unos 6 ejercicios» con días de 7; abdomen
+  en medio del día y dos de abdomen; extensión de cuádriceps 3 de 5 días). Principiante 3 días 45 min: piernas ~6.
+- Músculos: «por debajo» más apagado (debería llamar la atención), banda de zona casi invisible, «Listo» es lo que más pesa.
+- Menores: «La siguiente vuelves a tus pesos» (falta «semana»); Rutina › «Músculos que trabaja» sin «Secundarios».
 
 ### serix-code (9,6)
-- workout.ts:176 applyDeload baja un 10 % la ayuda de las asistidas (descarga más dura); test.
-- Workout.tsx:143 cuenta lados y drops: zancada por lados «4 series» en Inicio y «0 de 8»; banca con drop 3 frente a 4.
-  Una función de recuento común con routineSets; prefillSets copia drops.
-- WorkoutExercise.tsx:202 deloadWeek(data) frente a Workout.tsx:192 deloadWeek(data, session.start): pasar session.start.
-- Program.tsx:63 `span` con lista vacía da Infinity.
-- Suelo del modo gasto sin aviso; tests con su propio patrón de swing; generator.ts 833 líneas; test de descarga sin bloque ni drops.
+- Dos setCount con reglas distintas: stats.ts:38 cuenta drops y workout.ts:187 no (entreno «3 de 3», resumen «5 series»).
+  Una sola regla con nombre claro y test que cruce entreno y resumen.
+- Abdomen 0 en 64 configuraciones de ≥45 min (contradice el changelog); test solo en 1 configuración.
+- Tests de equilibrio entre días y de máx+2 en pocas configuraciones (fuerza principiante 6d 90m peso corporal: glúteo 17,5/15).
+- Pesos de desempate de balanceWeek sin escala con nombre (fullness hasta 0,09 > 0,05 del básico); partir generator.ts (856).
+- Drop pendiente no entra en «series que no se guardarán»; suelo del modo gasto sin aviso; patrón de swing propio en
+  tests; test de descarga sin bloque ni drops.
 
-### serix-coach (9,6)
-- Pasada final del generador: excesos en principiante 6 días (peso corporal glúteo 23, hombro 20, espalda 20; mancuernas
-  femoral 20,5), gimnasio intermedio 6 días 45 min hombro 20,5; tope por grupo 16-18 en principiante.
-- Días descompensados: kettlebell fuerza avanzado 4 días 75 min (Pierna A 35 min sin cadera, Torso B 76 min).
-- Abdomen 0 en hipertrofia en gimnasio con 45 min o más; bíceps < 8 sin gimnasio: segunda opción de curl.
-- Planes cortos en rojo en Progreso (escalar groupRange o «suficiente para tu tiempo»).
-- Rumano de principiante a 3-5 (debería 6-8); test del barrido: ningún grupo > máx + 2 con 45 min o más.
+### serix-coach (9,7)
+- Principiante 6 días: bisagra en días seguidos (Pierna B y Cuerpo completo B; 48 programas). Reordenar y test.
+- Perder grasa 3 días 45 min por debajo en su análisis (saltos comen el tiempo): abdomen 0, bíceps/tríceps bajos.
+- Empuje > 1,5 × tirón en 307 programas: tirón ≥ 0,8-1 × empuje en balanceWeek.
+- Bíceps < 8 sin gimnasio (97); sin curl con bandas en el catálogo (comprobar licencia).
+- 47 programas con un día < 60 % del más largo (kettlebell 6 días: Empuje B 21 min).
+- Hipertrofia 3 días 45 min: superseries antagonistas; Progreso «suficiente para tu tiempo» también con 30 min.
 
-### serix-perf-a11y (9,9)
-- Lighthouse y axe de verdad cuando estén instalados.
-- El desplazamiento al RPE (~300 ms) mueve la lista bajo el dedo: desplazar solo si el RPE no se ve entero.
-- Un test que vigile el área de 44 px del ::after (un overflow en un contenedor la recorta).
+### serix-perf-a11y (9,8)
+- Músculos: barras de estado < 3:1 en claro (recuperándose y por debajo 1,98 con --text-3; zona 1,21; naranja 2,79):
+  tinta al 50 %, límites de zona con rayas, naranja de gráfico más oscuro en claro.
+- aria-label de .volume-track con el estado («por debajo de 10–20»).
+- Chip «Movilidad 5 min»: el aria-label no contiene el texto visible (2.5.3).
+- Test del ::after de 44 px; Lighthouse y axe cuando estén instalados; leyenda «1-3» del mapa poco visible en claro.

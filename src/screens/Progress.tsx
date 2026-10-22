@@ -101,7 +101,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
           return (
             <div key={g.name[0]} className="volume-row">
               <span className="small clamp-1">{t(...g.name)}</span>
-              <div className="volume-track" role="img" aria-label={`${t(...g.name)}: ${num(g.sets)} ${t('series', 'sets')}`}>
+              <div className="volume-track" role="img" aria-label={`${t(...g.name)}: ${num(g.sets)} ${t('series', 'sets')}, ${state === 'low' ? t(`por debajo de ${lo}–${hi}`, `below ${lo}–${hi}`) : state === 'high' ? t(`por encima de ${lo}–${hi}`, `above ${lo}–${hi}`) : t(`dentro de ${lo}–${hi}`, `within ${lo}–${hi}`)}`}>
                 <span className="volume-range" style={{ left: pct(lo), width: pct(hi - lo) }} />
                 <span className={`volume-fill ${state}`} style={{ width: pct(g.sets) }} />
               </div>
@@ -116,7 +116,7 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
         {' '}{range(ABS_GROUP)[0] === 0 ? t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.') : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
         {low.length > 0 && ` ${t(`Por debajo: ${low.join(', ')}.`, `Below: ${low.join(', ')}.`)}`}
         {/* Con uno o dos días a la semana no llega a todo: no es un fallo del plan. */}
-        {low.length > 0 && (settings.trainingDays?.length ?? 3) <= 2 && ` ${t('Con tus días de entreno es normal: suma lo que puedas.', 'With your training days that is normal: add what you can.')}`}
+        {low.length > 0 && ((settings.trainingDays?.length ?? settings.days) <= 2 || settings.minutes <= 30) && ` ${t('Con tus días y minutos de entreno es normal: suma lo que puedas.', 'With your training days and minutes that is normal: add what you can.')}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
       </span>
     </Card>

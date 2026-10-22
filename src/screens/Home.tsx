@@ -476,7 +476,7 @@ function FriendReminderCard({ friends }: { friends: number }) {
       <span className="muted small">{t(`Manda tu resumen a tus amigos para que vean cómo vas en los retos (tienes ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`,
         `Send your summary to your friends so they can see how you're doing in the challenges (you have ${plural(friends, ['amigo', 'amigos'], ['friend', 'friends'])}).`)}</span>
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={() => void import('../lib/friends').then(({ shareMine, copiedToast }) => shareMine().then((r) => r === 'copied' && showToast(copiedToast())))}>{t('Compartir', 'Share')}</button>
+        <button className="btn secondary grow" onClick={() => void import('../lib/friends').then(({ shareMine, copiedToast }) => shareMine().then((r) => r === 'copied' && showToast(copiedToast())))}>{t('Compartir', 'Share')}</button>
         <button className="btn secondary" onClick={snooze}>{t('Ahora no', 'Not now')}</button>
       </div>
       {toast}
@@ -489,12 +489,13 @@ function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {
   return (
     <Card title={t('Guarda una copia de tus datos', 'Back up your data')} icon={Download}>
       <span className="muted small">
-        {t(`Tus entrenos y comidas solo están en este móvil${lastBackupAt ? ` y tu última copia es del ${day(lastBackupAt)}` : ''}. Guarda una copia en Drive, iCloud o tu correo por si cambias de móvil o se borra la app. Se hace en un momento.`,
-          `Your workouts and food are only on this phone${lastBackupAt ? ` and your last backup is from ${day(lastBackupAt)}` : ''}. Save a copy to Drive, iCloud or your email in case you switch phones or the app gets deleted. It only takes a moment.`)}
+        {t(`Tus datos solo están en este móvil${lastBackupAt ? ` (última copia: ${day(lastBackupAt)})` : ''}. Guarda una copia en Drive, iCloud o tu correo por si cambias de móvil.`,
+          `Your data is only on this phone${lastBackupAt ? ` (last backup: ${day(lastBackupAt)})` : ''}. Save a copy to Drive, iCloud or your email in case you switch phones.`)}
       </span>
+      {/* Secundario: el botón naranja de Inicio es «Empezar» (dos naranjas se disputaban la acción principal). */}
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={() => void exportBackup()}>{t('Guardar copia', 'Save backup')}</button>
-        <button className="btn secondary" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
+        <button className="btn secondary grow" onClick={() => void exportBackup()}>{t('Guardar copia', 'Save backup')}</button>
+        <button className="btn plain" onClick={snoozeBackup}>{t('Más tarde', 'Later')}</button>
       </div>
     </Card>
   )

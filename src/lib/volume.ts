@@ -42,3 +42,13 @@ export function groupRange(goal: TrainingGoal, level: TrainingLevel | undefined,
   const [min, max] = weeklyRange(goal, level)
   return group === ABS_GROUP ? [goal === 'general' || goal === 'fatLoss' ? 4 : 0, max] : [min, max]
 }
+
+/** Músculos de empuje y de tirón, para Progreso › Equilibrio y el generador. */
+export const PUSH_MUSCLES = ['pectorals', 'delts', 'triceps']
+export const PULL_MUSCLES = ['lats', 'upper-back', 'biceps', 'traps']
+
+/** Lo que vale una serie para [empuje, tirón]: 1 el músculo principal y 0,5 cada secundario (como Equilibrio). */
+export function pushPullShares(muscle: string, secondary: readonly string[]): [push: number, pull: number] {
+  const share = (list: string[]) => (list.includes(muscle) ? 1 : 0) + secondary.filter((m) => m !== muscle && list.includes(m)).length * 0.5
+  return [share(PUSH_MUSCLES), share(PULL_MUSCLES)]
+}

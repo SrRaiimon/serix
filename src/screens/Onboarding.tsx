@@ -2,7 +2,7 @@ import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, Char
 import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { CatalogContext, Chip, Segmented, StatBand } from '../components/ui'
 import { rest, type Unit } from '../lib/format'
-import { equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
+import { dayMinutes, equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
 import { ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
@@ -71,7 +71,11 @@ export function OnboardingScreen() {
   const draft = useMemo(() => (step >= 3 && catalog ? generate({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment, pullupBar: settings.pullupBar }, catalog, 0) : undefined),
     [step, settings.goal, settings.level, settings.days, settings.minutes, settings.equipment, settings.pullupBar, catalog])
   const firstDay = draft?.days[0]
-  const perDay = draft ? Math.round(draft.days.reduce((n, d) => n + d.exercises.length, 0) / Math.max(1, draft.days.length)) : exerciseCount(settings.minutes)
+  // Con días distintos, el rango («5–7»): la media decía 6 con días de 7.
+  const counts = draft?.days.map((d) => d.exercises.length) ?? [exerciseCount(settings.minutes)]
+  const perDay = Math.min(...counts) === Math.max(...counts) ? `${counts[0]}` : `${Math.min(...counts)}–${Math.max(...counts)}`
+  // Lo que dura de verdad la sesión más larga: con un principiante, el tope de series la deja por debajo de lo elegido.
+  const longest = draft ? Math.round(Math.max(...draft.days.map((d) => dayMinutes(d.exercises)))) : settings.minutes
   const split = splitPreview({ goal: settings.goal, level: settings.level, days: settings.days, minutes: settings.minutes, equipment: settings.equipment })
   const [program, setProgram] = useState<GeneratedProgram>()
   const [variation, setVariation] = useState(0)
@@ -259,7 +263,8 @@ export function OnboardingScreen() {
             <section className="onb-block">
               <h2 className="onb-label">{t('Minutos por sesión', 'Minutes per session')}</h2>
               <NumberPicker label={t('Minutos por sesión', 'Minutes per session')} values={[30, 45, 60, 75, 90]} value={settings.minutes} onChange={(minutes) => updateSettings({ minutes })} />
-              <p className="small onb-note">{t(`Unos ${perDay} ejercicios por sesión, con calentamiento incluido.`, `About ${perDay} exercises per session, warm-up included.`)}</p>
+              <p className="small onb-note">{t(`Unos ${perDay} ejercicios por sesión, con calentamiento incluido.`, `About ${perDay} exercises per session, warm-up included.`)}
+                {settings.level === 'beginner' && longest < settings.minutes - 10 && ` ${t(`Para empezar, sesiones de unos ${longest} min: más series aún no suman.`, `To start with, sessions of about ${longest} min: more sets do not add anything yet.`)}`}</p>
             </section>
           </>
         )}

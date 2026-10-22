@@ -157,6 +157,9 @@ export function prefillSets(count: number, last: SetEntry[]): SetEntry[] {
   return sets
 }
 
+/** Series que quedan en descarga: ~60 %, y nunca una sola si había dos o más (el press francés se quedaba en 1). */
+export const deloadSets = (n: number) => (n <= 1 ? n : Math.max(2, Math.round(n * 0.6)))
+
 /**
  * Sesión de descarga del ejercicio: de las series pendientes quedan ~60 % (al menos una) con un
  * 10 % menos de peso, sin drop sets ni series al fallo. Las ya hechas no se tocan. En las máquinas
@@ -168,7 +171,7 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   const pending = e.sets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop')
   // Por lados se cuentan parejas (izquierda y su derecha): con entradas sueltas, 4 series daban L, R, L, R, L.
   const units = pending.filter((s) => s.side !== 'R').length
-  const keepUnits = Math.max(1, Math.round(units * 0.6))
+  const keepUnits = deloadSets(units)
   let pair = -1
   const keep = new Set(pending.filter((s) => (s.side !== 'R' ? ++pair : pair) < keepUnits).map((s) => s.id))
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
@@ -181,10 +184,10 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
 }
 
 /**
- * Las series que cuentan, igual que en Inicio y Rutinas: sin calentamiento ni drop sets, y por lados una por pareja
- * (hecha cuando lo están las dos). Antes el entreno decía «0 de 8» en una zancada de 4 series.
+ * Hechas y en total del entreno en curso, con la regla de countsAsSet (la del resumen y el historial): sin
+ * calentamiento ni drop sets, y por lados una por pareja (hecha cuando lo están las dos).
  */
-export function setCount(sets: readonly SetEntry[]): { done: number; total: number } {
+export function setProgress(sets: readonly SetEntry[]): { done: number; total: number } {
   const units: boolean[] = []
   for (const s of sets) {
     if (s.warmup || s.kind === 'drop') continue
@@ -237,7 +240,7 @@ export const deloadWeek = (d: AppData, now = Date.now()) =>
  */
 export function weekRoutine(d: AppData, r: Routine): Routine {
   if (!deloadWeek(d)) return r
-  return { ...r, exercises: r.exercises.map((e) => (deloads(e) ? { ...e, sets: Math.max(1, Math.round(e.sets * 0.6)) } : e)) }
+  return { ...r, exercises: r.exercises.map((e) => (deloads(e) ? { ...e, sets: deloadSets(e.sets) } : e)) }
 }
 
 /** Si un ejercicio se descarga en la semana de descarga: los de peso, salvo la 5/3/1 (lleva su propia semana 4). Una

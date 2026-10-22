@@ -1,6 +1,7 @@
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { setCount } from './stats'
+import { PULL_MUSCLES, PUSH_MUSCLES } from './volume'
 import type { Session } from './store'
 
 // Equilibrio muscular: compara las series de las últimas 4 semanas entre músculos que trabajan en
@@ -14,8 +15,8 @@ export const BALANCE_DAYS = 28
 /** Por debajo de esto no hay datos suficientes para opinar. */
 const MIN_SETS = 12
 
-const PUSH = ['pectorals', 'delts', 'triceps']
-const PULL = ['lats', 'upper-back', 'biceps', 'traps']
+const PUSH = PUSH_MUSCLES
+const PULL = PULL_MUSCLES
 
 export interface BalancePair {
   id: 'pushPull' | 'quadsHams'

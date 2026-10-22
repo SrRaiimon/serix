@@ -33,7 +33,7 @@ export function ReadinessCheck({ session, unit, warmup }: { session: Session; un
       <div className="workout-pre">
         {!hidden && !session.readiness && <button className="chip" onClick={() => setOpen(true)}><HeartPulse size={15} aria-hidden="true" /> {t('¿Cómo estás hoy?', 'How do you feel today?')}</button>}
         {!hidden && level === 'low' && !lightened && <button className="chip" onClick={() => { editSession(session.id, (s) => lighten(s, unit)); setLightened(true) }}>{t('Bajar un 10 % el peso de hoy', "Lower today's weights by 10%")}</button>}
-        <button className="chip" onClick={warmup} aria-label={t('Movilidad y activación antes de empezar (5 min)', 'Mobility and activation before you start (5 min)')}><Flame size={15} aria-hidden="true" /> {t('Movilidad 5 min', 'Mobility 5 min')}</button>
+        <button className="chip" onClick={warmup} aria-label={t('Movilidad 5 min: activación antes de empezar', 'Mobility 5 min: activation before you start')}><Flame size={15} aria-hidden="true" /> {t('Movilidad 5 min', 'Mobility 5 min')}</button>
       </div>
     )
   }

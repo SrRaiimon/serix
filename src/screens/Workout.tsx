@@ -12,7 +12,7 @@ import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad
 import { finishedSessions, rpeOn, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { adjustRestForEffort, prepareAudio } from '../lib/timer'
 import { trackingOf } from '../lib/tracking'
-import { addExercises, deloadWeek, setCount, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
+import { addExercises, deloadWeek, setProgress, discardSession, editSession, finishSession, keepScreenOn, minimizeWorkout } from '../lib/workout'
 import { ExercisePicker, ExerciseSheet } from './Exercises'
 import { BARS } from '../lib/plates'
 import { addsLoad, bodyweightText, liftText } from '../lib/bodyweight'
@@ -66,6 +66,8 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
   const barKg = data.settings.barKg ?? toKg(BARS[unit][0], unit)
   const onEffort = (setId: string, rpe: number | undefined, base: number) => {
+    // En descarga, que sobre fuerza es lo buscado: no se recorta el descanso ni se avisa de ello.
+    if (rpe !== undefined && rpe < 8 && session.exercises.find((e) => e.sets.some((x) => x.id === setId))?.deload) return
     const total = adjustRestForEffort(setId, rpe, base)
     if (total === undefined) return
     showToast(total > 0 ? t(`Descanso +${total} s: ha costado`, `Rest +${total} s: that was hard`)
@@ -138,12 +140,13 @@ export function WorkoutScreen({ session }: { session: Session }) {
   }
 
   const allSets = session.exercises.flatMap((e) => e.sets)
-  // La cuenta de arriba, la misma que Inicio y Rutinas (setCount: sin calentamiento ni drops, por lados una por
+  // La cuenta de arriba, la misma que Inicio y Rutinas (setProgress: sin calentamiento ni drops, por lados una por
   // pareja). El aviso de terminar cuenta igual: el calentamiento sin marcar no es «3 series que no se guardarán».
   const { done, total } = session.exercises.reduce((n, e) => {
-    const c = setCount(e.sets)
+    const c = setProgress(e.sets)
     return { done: n.done + c.done, total: n.total + c.total }
   }, { done: 0, total: 0 })
+  // Un drop sin marcar no avisa: es la cola de su serie, no una serie perdida.
   const pending = total - done
   const started = allSets.some((s) => s.done)
 
@@ -193,7 +196,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
             {/* La semana de descarga, una vez arriba. Descargar un solo ejercicio (estancado) se dice en ese ejercicio. */}
             {deloadWeek(data, session.start) && session.exercises.some((e) => e.deload && e.auto?.kind !== 'wave') && (
               <span className="small row workout-deload"><BatteryLow size={16} aria-hidden="true" />
-                {t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La siguiente vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</span>
+                {t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La semana que viene vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</span>
             )}
             {/* Antes de la primera serie, solo dos accesos pequeños: la lista de series queda a la vista. */}
             {!started && session.exercises.length > 0 && <ReadinessCheck session={session} unit={unit} warmup={() => {

@@ -8,7 +8,7 @@ import { routineMinutes, type Routine } from '../src/lib/store'
 import { plannedGroupSets } from '../src/lib/coach'
 import { MAIN_GROUPS } from '../src/lib/labels'
 import { defaultTracking } from '../src/lib/tracking'
-import { ABS_GROUP, groupRange } from '../src/lib/volume'
+import { ABS_GROUP, countsForVolume, groupRange, pushPullShares } from '../src/lib/volume'
 
 const catalog = new Catalog((JSON.parse(readFileSync('public/exercises_es.json', 'utf8')) as { exercises: RawExercise[] }).exercises)
 const BAR = /pull[-_]?up|chin[-_]?up|chest_to_bar|hanging|muscle.?up|toes.?to.?bar/i
@@ -310,6 +310,46 @@ test('volumen semanal: con 45 minutos o más, ningún grupo pasa de su máximo +
       const [, max] = groupRange(goal, level, g)
       assert.ok(sets <= max + 2, `${goal}/${level}/${equipment}/${days}d/${minutes}: ${MAIN_GROUPS[g][0][0]} ${sets} (máx ${max})`)
     })
+  }
+})
+
+test('empuje y tirón: con 45 minutos o más, el empuje no pasa de 1,5 veces el tirón', () => {
+  // Antes, 307 de 1500 programas (gimnasio fuerza principiante 3 días: 15 series de press y 9 de remo).
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const { id: equipment } of equipmentProfiles) for (const days of [3, 4, 6]) {
+    let push = 0, pull = 0
+    for (const d of generate({ goal, level, days, minutes: 60, equipment }, catalog).days) for (const x of d.exercises) {
+      if (!countsForVolume(x.exercise.id, x.exercise.category)) continue
+      const [a, b] = pushPullShares(x.exercise.muscle, x.exercise.secondaryMuscles)
+      push += a * x.sets; pull += b * x.sets
+    }
+    assert.ok(push <= 1.5 * pull, `${goal}/${level}/${equipment}/${days}d: empuje ${push}, tirón ${pull}`)
+  }
+})
+
+test('principiante de 6 días: ninguna bisagra (peso muerto, rumano, buenos días) en días seguidos', () => {
+  const hinge = /deadlift|good_morning|stiff/i
+  for (const goal of ['hypertrophy', 'strength', 'general'] as const) for (const { id: equipment } of equipmentProfiles) {
+    const days = generate({ goal, level: 'beginner', days: 6, minutes: 60, equipment }, catalog).days.map((d) => d.exercises.some((x) => hinge.test(x.exercise.id)))
+    days.forEach((h, i) => assert.ok(!(h && days[(i + 1) % days.length]), `${goal}/${equipment}: bisagra en los días ${i + 1} y ${((i + 1) % days.length) + 1}`))
+  }
+})
+
+test('abdomen: en el gimnasio con 3 días o más, algo desde 45 minutos («Perder grasa», «Estar en forma») o 60 (el resto)', () => {
+  // «Perder grasa» de 3 días y 45 min salía sin abdomen: los saltos se comían el tiempo. En fuerza e hipertrofia a 45
+  // min los básicos llenan el día (su rango de abdomen empieza en 0).
+  for (const goal of ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) for (const { id: level } of levels) for (const days of [3, 4, 5, 6]) for (const minutes of goal === 'fatLoss' || goal === 'general' ? [45, 60, 90] : [60, 90]) {
+    assert.ok(weekly({ goal, level, days, minutes, equipment: 'gym' })[ABS_GROUP] > 0, `${goal}/${level}/${days}d/${minutes}`)
+  }
+})
+
+test('brazos del mismo día: bíceps y tríceps a una serie de diferencia como mucho', () => {
+  // Torso B salía con curl martillo 4× y press francés 2×.
+  for (const goal of ['hypertrophy', 'general'] as const) for (const { id: level } of levels) for (const days of [4, 5, 6]) {
+    for (const d of generate({ goal, level, days, minutes: 60, equipment: 'gym' }, catalog).days) {
+      const sets = (m: string) => d.exercises.filter((x) => x.exercise.muscle === m).reduce((n, x) => n + x.sets, 0)
+      const [b, tr] = [sets('biceps'), sets('triceps')]
+      if (b && tr && d.exercises.filter((x) => ['biceps', 'triceps'].includes(x.exercise.muscle)).length === 2) assert.ok(Math.abs(b - tr) <= 1, `${goal}/${level}/${days}d ${d.name}: bíceps ${b}, tríceps ${tr}`)
+    }
   }
 })
 
