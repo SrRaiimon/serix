@@ -2197,5 +2197,20 @@
 "Tiempo, {0}": "Tempo, {0}",
 "Marcar {0}": "Marcar {0}",
 "Desmarcar {0}": "Desmarcar {0}",
-"serie {0}": "série {0}"
+"serie {0}": "série {0}",
+"{0} de {1} entrenos esta semana": "{0} de {1} treinos esta semana",
+"entrenado": "treinado",
+"Guardar rutina": "Guardar rotina",
+"sin entrenar": "sem treino",
+"toca entrenar": "treino previsto",
+"Tu entreno anterior con este nombre pasa a la rutina, para comparar con él.": "O teu treino anterior com este nome passa para a rotina, para comparares com ele.",
+"Tus {0} entrenos anteriores con este nombre pasan a la rutina, para comparar con ellos.": "Os teus {0} treinos anteriores com este nome passam para a rotina, para comparares com eles.",
+"Ya lo tienes en Mis alimentos.": "Já o tens em Os meus alimentos.",
+"Ya tienes una rutina con este nombre: se guardará otra aparte.": "Já tens uma rotina com este nome: será guardada outra à parte.",
+"Los programas de cuerpo completo llevan siempre algún press: antes había días (y algunas semanas cortas) sin ningún ejercicio de empuje.": "Os programas de corpo inteiro levam sempre algum press: antes havia dias (e algumas semanas curtas) sem nenhum exercício de empurrar.",
+"Guardar como rutina pide el nombre, y los entrenos anteriores con el mismo nombre pasan a la rutina: «Frente a la última vez» sigue comparando con ellos y no salen rutinas repetidas.": "Guardar como rotina pede o nome, e os treinos anteriores com o mesmo nome passam para a rotina: «Em comparação com a última vez» continua a comparar com eles e não aparecem rotinas repetidas.",
+"Repetir o guardar como rutina un entreno de la semana de descarga ya no copia las series recortadas.": "Repetir ou guardar como rotina um treino da semana de descarga já não copia as séries reduzidas.",
+"Comidas: la grasa se lee bien de las etiquetas con «de las cuales» en la misma línea, los platos con el mismo alimento dos veces lo juntan, y abrir dos veces un enlace de alimento ya no lo guarda dos veces.": "Refeições: a gordura lê-se bem nos rótulos com «das quais» na mesma linha, os pratos com o mesmo alimento duas vezes juntam-no, e abrir duas vezes um link de alimento já não o guarda duas vezes.",
+"Al escanear varios productos seguidos se avisa si las kcal de alguno no cuadran, y la cámara ya no se vuelve a encender al salir.": "Ao ler vários produtos seguidos avisa-se se as kcal de algum não batem certo, e a câmara já não volta a ligar-se ao sair.",
+"Con lector de pantalla, la semana de Inicio dice cada día y si entrenaste; y la ✓ del entreno cabe en pantallas de 320 px.": "Com leitor de ecrã, a semana do Início diz cada dia e se treinaste; e o ✓ do treino cabe em ecrãs de 320 px."
 }

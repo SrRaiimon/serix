@@ -2197,5 +2197,20 @@
 "Tiempo, {0}": "Temps, {0}",
 "Marcar {0}": "Cocher : {0}",
 "Desmarcar {0}": "Décocher : {0}",
-"serie {0}": "série {0}"
+"serie {0}": "série {0}",
+"{0} de {1} entrenos esta semana": "{0} entraînements sur {1} cette semaine",
+"entrenado": "entraîné",
+"Guardar rutina": "Enregistrer la routine",
+"sin entrenar": "sans entraînement",
+"toca entrenar": "entraînement prévu",
+"Tu entreno anterior con este nombre pasa a la rutina, para comparar con él.": "Votre entraînement précédent portant ce nom passe dans la routine, pour pouvoir le comparer.",
+"Tus {0} entrenos anteriores con este nombre pasan a la rutina, para comparar con ellos.": "Vos {0} entraînements précédents portant ce nom passent dans la routine, pour pouvoir les comparer.",
+"Ya lo tienes en Mis alimentos.": "Vous l’avez déjà dans Mes aliments.",
+"Ya tienes una rutina con este nombre: se guardará otra aparte.": "Vous avez déjà une routine de ce nom : une autre sera enregistrée à part.",
+"Los programas de cuerpo completo llevan siempre algún press: antes había días (y algunas semanas cortas) sin ningún ejercicio de empuje.": "Les programmes full body comportent toujours un développé : certains jours (et quelques semaines courtes) n’avaient aucun exercice de poussée.",
+"Guardar como rutina pide el nombre, y los entrenos anteriores con el mismo nombre pasan a la rutina: «Frente a la última vez» sigue comparando con ellos y no salen rutinas repetidas.": "Enregistrer comme routine demande un nom, et les entraînements précédents du même nom passent dans la routine : « Par rapport à la dernière fois » continue de les comparer et aucune routine n’est dupliquée.",
+"Repetir o guardar como rutina un entreno de la semana de descarga ya no copia las series recortadas.": "Répéter ou enregistrer comme routine un entraînement de la semaine de décharge ne copie plus les séries réduites.",
+"Comidas: la grasa se lee bien de las etiquetas con «de las cuales» en la misma línea, los platos con el mismo alimento dos veces lo juntan, y abrir dos veces un enlace de alimento ya no lo guarda dos veces.": "Repas : les lipides sont bien lus sur les étiquettes avec « dont » sur la même ligne, les plats avec deux fois le même aliment le regroupent, et ouvrir deux fois un lien d’aliment ne l’enregistre plus deux fois.",
+"Al escanear varios productos seguidos se avisa si las kcal de alguno no cuadran, y la cámara ya no se vuelve a encender al salir.": "En scannant plusieurs produits d’affilée, vous êtes averti si les kcal de l’un d’eux ne collent pas, et la caméra ne se rallume plus après être sorti.",
+"Con lector de pantalla, la semana de Inicio dice cada día y si entrenaste; y la ✓ del entreno cabe en pantallas de 320 px.": "Avec un lecteur d’écran, la semaine de l’Accueil annonce chaque jour et si vous vous êtes entraîné ; et le ✓ de l’entraînement tient sur les écrans de 320 px."
 }

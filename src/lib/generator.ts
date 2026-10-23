@@ -490,6 +490,8 @@ const BACK_GROUP = MAIN_GROUPS.findIndex(([, muscles]) => muscles.includes('lats
 const PUSH_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.includes('pectorals') || muscles.includes('delts') ? [g] : [])))
 
 /** Huecos con los que se puede añadir un ejercicio para un grupo (orden de MAIN_GROUPS) que no llega. */
+/** Huecos de empuje, del más general al más concreto: los que pone un día de cuerpo completo que se ha quedado sin press. */
+const PUSH_SLOTS: SlotName[] = ['chestPress', 'inclinePress', 'shoulderPress']
 const GROUP_SLOTS = ['chestFly inclinePress', 'horizontalPull verticalPull', 'lateralRaise rearDelt', 'biceps hammer', 'triceps',
   'legExtension lunge', 'legCurl', 'glute', 'core'].map((x) => x.split(' ') as SlotName[])
 /** Grupos de pierna: lo que se añade para ellos va a un día que ya tenga pierna (y lo de torso, a uno de torso). */
@@ -505,7 +507,7 @@ const ARM_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.incl
  * ya está lleno), quitar un accesorio que sobra o añadir uno para un grupo que no tiene ninguno. Siempre dentro
  * del tiempo (con el margen de TIME_SLACK), del tope de series por ejercicio, por músculo y por día.
  */
-function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, slot: SlotName) => Picked | undefined) {
+function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, slot: SlotName, repeat?: boolean) => Picked | undefined, fullBody: boolean[] = []) {
   // Con 45 minutos o más, algo de abdomen directo también en fuerza e hipertrofia (su rango empieza en 0: el de
   // rebote ya cuenta), para que no salga una semana entera sin ningún ejercicio de abdomen.
   const ranges = MAIN_GROUPS.map((_, g) => {
@@ -756,6 +758,55 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
       }
     }
   }
+  // Cada día de cuerpo completo, con algún empuje: el ajuste quitaba el press cuando el pecho o el hombro iban sobrados
+  // y salían días de bisagra, dominada, zancada y curl (y con 2 días de 30 minutos, semanas sin un solo press). Un press
+  // del propio día a 2 series, tras el primero; si no cabe, otros ceden series (hasta 2) y, si aun así no, ocupa el
+  // sitio de un accesorio que no sea de tirón.
+  const pushes = (p: Picked) => countsForVolume(p.ex.exercise.id, p.ex.exercise.category) && shares(p)[N] > 0
+  days.forEach((day, d) => {
+    if (!fullBody[d] || day.some(pushes)) return
+    for (const slot of PUSH_SLOTS) {
+      // Puede repetir un press de otro día (sin material no hay tantos y ya estaban todos usados).
+      const p = add(d, slot, true)
+      if (!p || !pushes(p)) continue
+      // Sin alargar el día más de lo que ya estaba (algunos ya pasaban un poco del tiempo).
+      const room = Math.max(c.minutes + TIME_SLACK, minutesOf(day))
+      const ok = () => fits(day, room)
+      p.ex.sets = 2
+      day.splice(1, 0, p)
+      const taken: Picked[] = []
+      while (!ok()) {
+        // Aquí también los básicos bajan a 2: mejor 2 de peso muerto y 2 de press que ningún press en el día.
+        // El tirón, lo último: si no, el press nuevo descompensa empuje y tirón.
+        const q = day.filter((x) => x !== p && x.ex.sets > 2).sort((a, b) => Number(mainGroup(a) === BACK_GROUP) - Number(mainGroup(b) === BACK_GROUP) || b.ex.sets - a.ex.sets)[0]
+        if (!q) break
+        q.ex.sets--
+        taken.push(q)
+      }
+      if (ok()) return
+      for (const q of taken) q.ex.sets++
+      // El press ya trabaja el tríceps: puede ocupar el sitio del único curl o extensión del día.
+      // Ni el único de su músculo en la semana (el curl de la semana en hipertrofia).
+      const alone = (q: Picked) => !days.some((other) => other.some((x) => x !== q && x.ex.exercise.muscle === q.ex.exercise.muscle))
+      const victim = [...day].reverse().find((q) => q !== p && day.indexOf(q) > 1 && q.kind === 'accessory' && mainGroup(q) !== BACK_GROUP && !alone(q))
+      if (victim) {
+        // Un press descansa más que un curl: hasta 2 minutos más que el día que había.
+        const at = day.indexOf(victim)
+        day.splice(at, 1)
+        if (fits(day, room + 2)) return
+        day.splice(at, 0, victim)
+      }
+      day.splice(day.indexOf(p), 1)
+    }
+  })
+  // Y el press añadido no descompensa la semana: si el empuje pasa de PUSH_PULL_MAX veces el tirón, ceden series
+  // otros press de la semana (no el primero de su día ni por debajo de su mínimo).
+  for (let k = 0; k < 20 && pushExcess(totals()) > 0; k++) {
+    const q = days.flatMap((day) => day.filter((x, i) => i > 0 && x.kind !== 'conditioning' && PUSH_GROUPS.has(mainGroup(x)) && x.ex.sets > floor(x)))
+      .sort((a, b) => b.ex.sets - a.ex.sets)[0]
+    if (!q) break
+    q.ex.sets--
+  }
   // El abdomen, al final del día, y el acondicionamiento detrás de todo: lo que añadía el ajuste quedaba entre la
   // sentadilla y la extensión de cuádriceps, y los escaladores, antes de los gemelos.
   for (const day of days) {
@@ -865,11 +916,11 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
       undefined,
       template.slots.slice(n).filter(([s]) => s !== 'conditioning')))
   })
-  balanceWeek(picked, c, (d, slot) => {
+  balanceWeek(picked, c, (d, slot, repeat) => {
     const day = picked[d]
-    const found = choose(templates[d], slot, d, day.map((p) => p.ex), new Set(picked.flatMap((x) => x.map((p) => p.ex.exercise.id))))
+    const found = choose(templates[d], slot, d, day.map((p) => p.ex), new Set((repeat ? [day] : picked).flatMap((x) => x.map((p) => p.ex.exercise.id))))
     return found && { ex: { exercise: found.exercise, ...schemeFor(found, day) }, kind: found.slot.kind }
-  })
+  }, templates.map((x) => [fullBodyA, fullBodyB, fullBodyC].includes(x)))
   const days = templates.map((_, index) => ({ name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${dayName(templates, index)}`, exercises: picked[index].map((p) => p.ex) }))
 
   return {

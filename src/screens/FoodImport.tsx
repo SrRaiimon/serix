@@ -6,10 +6,11 @@ import { decodeFood } from '../lib/foodShare'
 import { t } from '../lib/i18n'
 import { recipeValues, type MyFood } from '../lib/nutrition'
 import { navigate } from '../lib/router'
-import { update } from '../lib/store'
+import { update, useData } from '../lib/store'
 
 /** Abrir un alimento o una receta que te han pasado por enlace y guardarlo en «Mis alimentos». */
 export function FoodImportScreen({ code }: { code: string }) {
+  const data = useData()
   const [food, setFood] = useState<MyFood | null>()
   useEffect(() => { decodeFood(code).then(setFood, () => setFood(null)) }, [code])
   if (food === undefined) return <><NavBar title={t('Alimento', 'Food')} /><div className="screen with-nav" /></>
@@ -26,8 +27,11 @@ export function FoodImportScreen({ code }: { code: string }) {
   }
   const v = food.per100
   const recipe = food.recipe && recipeValues(food.recipe)
+  // Abrir dos veces el mismo enlace lo guardaba dos veces: si ya tienes uno igual (nombre y valores), no se repite.
+  const same = (f: MyFood) => f.name === food.name && (['kcal', 'p', 'c', 'f'] as const).every((k) => f.per100[k] === v[k])
+  const saved = data.nutrition.foods.some(same)
   const save = () => {
-    update((d) => { d.nutrition.foods.push({ ...food, id: uid(), source: 'mine' }) })
+    update((d) => { if (!d.nutrition.foods.some(same)) d.nutrition.foods.push({ ...food, id: uid(), source: 'mine' }) })
     navigate('food')
   }
   return (
@@ -46,8 +50,15 @@ export function FoodImportScreen({ code }: { code: string }) {
             <span className="small muted">{t(`Total: ${Math.round(recipe.total.kcal)} kcal · ración de ${Math.round(recipe.portionG)} g`, `Total: ${Math.round(recipe.total.kcal)} kcal · ${Math.round(recipe.portionG)} g serving`)}</span>
           </Card>
         )}
-        <button className="btn primary" onClick={save}>{t('Guardar en Mis alimentos', 'Save to My foods')}</button>
-        <button className="btn plain" onClick={() => navigate('food')}>{t('Ahora no', 'Not now')}</button>
+        {saved
+          ? <>
+            <span className="small muted">{t('Ya lo tienes en Mis alimentos.', 'It is already in My foods.')}</span>
+            <button className="btn primary" onClick={() => navigate('food')}>{t('Ir a Comidas', 'Go to Food')}</button>
+          </>
+          : <>
+            <button className="btn primary" onClick={save}>{t('Guardar en Mis alimentos', 'Save to My foods')}</button>
+            <button className="btn plain" onClick={() => navigate('food')}>{t('Ahora no', 'Not now')}</button>
+          </>}
         <p className="small muted" style={{ margin: 0 }}>{t('Los valores los ha puesto quien te lo pasa: revísalos si algo no cuadra.', 'The values were entered by whoever sent it: check them if something looks off.')}</p>
       </div>
     </>

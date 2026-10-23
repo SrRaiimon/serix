@@ -247,6 +247,7 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
   const history = useMemo(() => finishedSessions(data), [data])
   const records = useMemo(() => newRecords(session, history), [session, history])
   const [saved, setSaved] = useState(Boolean(session.routineId))
+  const [naming, setNaming] = useState(false)
   const [toast, showToast] = useToast()
   const images = useShareImage(session, unit, records)
   const [format, setFormat] = useState<'post' | 'story'>('post')
@@ -295,10 +296,11 @@ export function SummarySheet({ session, onClose }: { session: Session; onClose: 
         <textarea rows={3} placeholder={t('¿Cómo te has sentido?', 'How did it feel?')} value={session.notes} onChange={(e) => setNotes(session.id, e.target.value)} />
       </Card>
       {!saved && (
-        <button className="btn secondary" onClick={() => { saveAsRoutine(session); setSaved(true); showToast(t('Guardada como rutina', 'Saved as routine')) }}>
+        <button className="btn secondary" onClick={() => setNaming(true)}>
           {t('Guardar como rutina', 'Save as routine')}
         </button>
       )}
+      {naming && <SaveRoutineSheet session={session} onClose={() => setNaming(false)} onSaved={() => { setSaved(true); showToast(t('Guardada como rutina', 'Saved as routine')) }} />}
       {toast}
     </Sheet>
   )
@@ -310,6 +312,7 @@ export function SessionDetailScreen({ id }: { id: string }) {
   const [menu, setMenu] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [naming, setNaming] = useState(false)
   const [toast, showToast] = useToast()
   const records = useMemo(() => (session ? newRecords(session, finishedSessions(data)) : []), [session, data])
   const images = useShareImage(session, data.settings.unit, records)
@@ -336,12 +339,13 @@ export function SessionDetailScreen({ id }: { id: string }) {
         <button className="btn danger" onClick={() => setConfirmDelete(true)}><Trash2 size={18} /> {t('Eliminar entrenamiento', 'Delete workout')}</button>
       </div>
       {editing && <SessionEditSheet session={session} onClose={() => setEditing(false)} />}
+      {naming && <SaveRoutineSheet session={session} onClose={() => setNaming(false)} onSaved={() => showToast(t('Guardada como rutina', 'Saved as routine'))} />}
       {menu && (
         <ActionSheet onClose={() => setMenu(false)} options={[
           { label: t('Compartir imagen', 'Share image'), onSelect: () => void shareSessionImage(images.post?.file, session.name, showToast) },
           { label: t('Compartir como historia (9:16)', 'Share as story (9:16)'), onSelect: () => void shareSessionImage(images.story?.file, session.name, showToast) },
           { label: t('Compartir como texto', 'Share as text'), onSelect: () => void share(session, unit, () => showToast(t('Copiado al portapapeles', 'Copied to clipboard'))) },
-          ...(!session.routineId ? [{ label: t('Guardar como rutina', 'Save as routine'), onSelect: () => { saveAsRoutine(session); showToast(t('Guardada como rutina', 'Saved as routine')) } }] : []),
+          ...(!session.routineId ? [{ label: t('Guardar como rutina', 'Save as routine'), onSelect: () => setNaming(true) }] : []),
         ]} />
       )}
       {confirmDelete && (
@@ -353,3 +357,31 @@ export function SessionDetailScreen({ id }: { id: string }) {
   )
 }
 
+/** El nombre de la rutina antes de guardarla: el del entreno («Entrenamiento libre») rara vez es el que quieres. */
+function SaveRoutineSheet({ session, onClose, onSaved }: { session: Session; onClose: () => void; onSaved: () => void }) {
+  const { routines, sessions } = useData()
+  const [name, setName] = useState(session.name)
+  const taken = routines.some((r) => r.name.trim().toLowerCase() === name.trim().toLowerCase())
+  // Los entrenos anteriores con el mismo nombre pasan a la rutina (saveAsRoutine): se dice cuántos.
+  const earlier = sessions.filter((s) => s.id !== session.id && !s.routineId && s.end !== undefined && s.name === session.name).length
+  const save = () => {
+    if (!name.trim()) return
+    saveAsRoutine(session, name)
+    onSaved()
+    onClose()
+  }
+  return (
+    <Sheet title={t('Guardar como rutina', 'Save as routine')} onClose={onClose} left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
+      footer={<button className="btn primary block" disabled={!name.trim()} onClick={save}>{t('Guardar rutina', 'Save routine')}</button>}>
+      <div className="list">
+        <label className="list-row">
+          <input className="grow" style={{ fontSize: 17 }} maxLength={80} value={name} placeholder={t('Nombre de la rutina', 'Routine name')} onChange={(e) => setName(e.target.value)} aria-label={t('Nombre de la rutina', 'Routine name')} />
+        </label>
+      </div>
+      {taken && <span className="small muted">{t('Ya tienes una rutina con este nombre: se guardará otra aparte.', 'You already have a routine with this name: a separate one will be saved.')}</span>}
+      {earlier > 0 && <span className="small muted">{earlier === 1
+        ? t('Tu entreno anterior con este nombre pasa a la rutina, para comparar con él.', 'Your earlier workout with this name moves to the routine, so you can compare with it.')
+        : t(`Tus ${earlier} entrenos anteriores con este nombre pasan a la rutina, para comparar con ellos.`, `Your ${earlier} earlier workouts with this name move to the routine, so you can compare with them.`)}</span>}
+    </Sheet>
+  )
+}

@@ -1,9 +1,9 @@
-import { Barcode, X } from 'lucide-react'
+import { Barcode, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Sheet } from '../components/ui'
 import { uid } from '../lib/format'
 import { t } from '../lib/i18n'
-import { fetchOffProduct, mealLabel, barcodeVariants, findAesan, validBarcode, type MealKey, type MyFood, type ScannedProduct } from '../lib/nutrition'
+import { doubtfulValues, fetchOffProduct, mealLabel, barcodeVariants, findAesan, validBarcode, type MealKey, type MyFood, type ScannedProduct } from '../lib/nutrition'
 import { useData } from '../lib/store'
 import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 
@@ -48,19 +48,22 @@ export function ScanSheet({ meal, onBack, onClose, onFound, onMissing, onBatch }
     if (!multiRef.current) return onFound(f)
     setBatch((b) => (b.some((x) => x.barcode === f.barcode) ? b : [...b, f]))
     // Un momento para apartar el producto y se vuelve a escanear.
-    setTimeout(() => void start(), 900)
+    again()
   }
   const notFound = (code: string) => {
     if (!multiRef.current) return onMissing(code)
     setMissing((m) => (m.includes(code) ? m : [...m, code]))
-    setTimeout(() => void start(), 900)
+    again()
   }
+  // Se cancela al cerrar: si no, la cámara volvía a encenderse (con su luz) después de salir.
+  const restart = useRef<number | undefined>(undefined)
+  const again = () => { restart.current = window.setTimeout(() => void start(), 900) }
 
   const stop = () => {
     stream.current?.getTracks().forEach((x) => x.stop())
     stream.current = null
   }
-  useEffect(() => () => { stop(); abort.current?.abort() }, [])
+  useEffect(() => () => { clearTimeout(restart.current); stop(); abort.current?.abort() }, [])
 
   const lookup = async (code: string) => {
     stop()
@@ -143,7 +146,11 @@ export function ScanSheet({ meal, onBack, onClose, onFound, onMissing, onBatch }
         <div className="card" style={{ gap: 6 }}>
           {batch.map((f) => (
             <div key={f.barcode ?? f.id} className="row between small" style={{ gap: 8 }}>
-              <span className="clamp-1 grow">{f.name}{f.brand ? ` · ${f.brand}` : ''}</span>
+              <span className="grow" style={{ minWidth: 0 }}>
+                <span className="clamp-1" style={{ display: 'block' }}>{f.name}{f.brand ? ` · ${f.brand}` : ''}</span>
+                {/* El mismo aviso que al apuntarlo de uno en uno: en tanda se apuntaba sin que se viera. */}
+                {doubtfulValues(f.per100) && <span className="small doubt-line"><TriangleAlert size={14} aria-hidden="true" /> {t('Las kcal no cuadran: revisa la etiqueta', 'Calories do not add up: check the label')}</span>}
+              </span>
               <span className="muted">{f.portion ? `${f.portion.g} g` : '100 g'}</span>
               <button className="icon-btn" onClick={() => setBatch(batch.filter((x) => x !== f))} aria-label={t(`Quitar ${f.name}`, `Remove ${f.name}`)}><X size={15} /></button>
             </div>

@@ -336,16 +336,21 @@ function WeekCard({ sessions, goal, weekStart, planned, facts }: { sessions: Ses
     <Card>
       <div className="row between" style={{ alignItems: 'flex-end' }}>
         <h2 className="card-title">{t('Esta semana', 'This week')}</h2>
-        <span className="week-count"><strong>{sessions.length}</strong> / {goal} {t('entrenos', 'workouts')}</span>
+        {/* Para el lector de pantalla, en una frase: «3 / 3 entrenos» suelto no decía de qué. */}
+        <span className="week-count"><span aria-hidden="true"><strong>{sessions.length}</strong> / {goal} {t('entrenos', 'workouts')}</span>
+          <span className="sr-only">{t(`${sessions.length} de ${goal} entrenos esta semana`, `${sessions.length} of ${goal} workouts this week`)}</span></span>
       </div>
-      <div className="week">
+      {/* Cada día dice qué es: antes se oían «L», «19», «✓» sueltos. */}
+      <div className="week" role="list">
         {days.map((d, i) => {
           const time = d.getTime()
           const state = trained.has(time) ? 'done' : time < today ? 'past' : time > today ? 'future' : ''
+          const plan = planned?.includes(i) && !trained.has(time)
+          const status = trained.has(time) ? t('entrenado', 'trained') : plan ? t('toca entrenar', 'training planned') : time < today ? t('sin entrenar', 'no workout') : ''
           return (
-            <div key={time} className={planned?.includes(i) && !trained.has(time) ? 'planned' : undefined}>
-              <span className={`tiny bold ${time === today ? '' : 'muted'}`}>{time === today ? t('HOY', 'TODAY') : t('LMXJVSD', 'MTWTFSS')[i]}</span>
-              <div className={`dot ${state} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
+            <div key={time} role="listitem" aria-label={[time === today ? t('Hoy', 'Today') : '', day(d), status].filter(Boolean).join(', ')} className={plan ? 'planned' : undefined}>
+              <span aria-hidden="true" className={`tiny bold ${time === today ? '' : 'muted'}`}>{time === today ? t('HOY', 'TODAY') : t('LMXJVSD', 'MTWTFSS')[i]}</span>
+              <div aria-hidden="true" className={`dot ${state} ${time === today ? 'today' : ''}`}>{trained.has(time) ? '✓' : d.getDate()}</div>
             </div>
           )
         })}

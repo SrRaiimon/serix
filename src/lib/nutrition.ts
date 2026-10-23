@@ -947,8 +947,12 @@ export function parseNutritionLabel(text: string): Partial<Per100> & { portion?:
     p: /proteinas?|proteins?|proteines?|eiwei(?:ss|ß)|proteine/,
   }
   const found: Partial<Record<'f' | 'c' | 'p', number[]>> = {}
-  for (const line of lines) {
-    if (sub.test(line)) continue
+  for (const whole of lines) {
+    // «Grasas 12 g de las cuales saturadas 3 g» en una sola línea: vale lo de antes de la subfila (antes se saltaba
+    // la línea entera y se perdía la grasa).
+    const cut = whole.search(sub)
+    const line = cut < 0 ? whole : whole.slice(0, cut)
+    if (!line.trim()) continue
     for (const k of ['f', 'c', 'p'] as const) {
       if (found[k]) continue
       const rest = after(line, names[k])

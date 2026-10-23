@@ -327,6 +327,18 @@ export function startRoutine(routine: Routine) {
  * Empieza un entrenamiento igual que uno del historial: mismos ejercicios, número de series y
  * superseries, con los pesos de la última vez (como al empezar una rutina).
  */
+/**
+ * Series de trabajo que tenía previstas un ejercicio de un entreno ya hecho. Si se hizo en descarga, las que quedan
+ * son ~60 % (deloadSets): repetirlo o guardarlo como rutina las copiaba recortadas para siempre. Se toman las de la
+ * rutina si existe y tiene ese ejercicio; si no, la cuenta de deloadSets al revés (2 → 3, 3 → 5).
+ */
+export function plannedSets(e: SessionExercise, routine?: Routine): number {
+  const done = setUnits(e.sets.filter((x) => !x.warmup && x.kind !== 'drop')).length
+  if (!e.deload) return Math.max(1, done)
+  const own = routine?.exercises.find((x) => x.exerciseId === e.exerciseId)
+  return Math.max(1, own?.sets ?? (done <= 1 ? done : Math.round(done / 0.6)))
+}
+
 export function repeatSession(past: Session) {
   if (activeSession(getData())) return openWorkout()
   update((d) => {
@@ -340,7 +352,7 @@ export function repeatSession(past: Session) {
       // Con el calentamiento, como al empezar una rutina.
       exercises: withWarmup(past.exercises.map((e) => blockDeload(d, sessionExercise({
         exerciseId: e.exerciseId, name: e.name, muscle: e.muscle, rest: e.rest, repsMin: e.repsMin, repsMax: e.repsMax,
-        sets: Math.max(1, e.sets.filter((x) => !x.warmup && x.kind !== 'drop' && x.side !== 'R').length),
+        sets: plannedSets(e, d.routines.find((r) => r.id === past.routineId)),
         tracking: e.tracking, targetSeconds: e.targetSeconds, groupId: e.groupId,
       }, history), e)), d, history),
     })
@@ -433,12 +445,17 @@ export function discardSession(id: string) {
 }
 
 /** Crea una rutina a partir de lo que se hizo en un entrenamiento. */
-export function saveAsRoutine(session: Session) {
+/**
+ * Guarda un entreno como rutina con el nombre elegido. Los entrenos anteriores sin rutina y con el mismo nombre pasan
+ * a ser de la rutina nueva: así «Frente a la última vez» sigue comparando con ellos (antes, al guardarla, la
+ * comparación desaparecía) y ninguno vuelve a ofrecer «Guardar como rutina» (salían rutinas repetidas).
+ */
+export function saveAsRoutine(session: Session, name = session.name) {
   const routineId = uid()
   update((d) => {
     d.routines.push({
       id: routineId,
-      name: session.name,
+      name: name.trim().slice(0, 80) || session.name,
       notes: '',
       order: d.routines.length,
       createdAt: Date.now(),
@@ -448,7 +465,7 @@ export function saveAsRoutine(session: Session) {
         const reps = main.map((s) => s.reps)
         return {
           exerciseId: e.exerciseId, name: e.name, muscle: e.muscle,
-          sets: Math.max(setUnits(main).length, 1),
+          sets: plannedSets(e),
           repsMin: reps.length ? Math.max(1, Math.min(...reps)) : 8,
           repsMax: reps.length ? Math.max(1, ...reps) : 12,
           rest: e.rest,
@@ -458,8 +475,7 @@ export function saveAsRoutine(session: Session) {
         }
       }),
     })
-    const s = d.sessions.find((x) => x.id === session.id)
-    if (s) s.routineId = routineId
+    for (const s of d.sessions) if (s.id === session.id || (!s.routineId && s.end !== undefined && s.name === session.name)) s.routineId = routineId
   })
 }
 

@@ -127,7 +127,13 @@ export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: str
     if (c.times < 2) continue
     // En tus platos todo se ajusta (menos verduras y bebidas sin apenas calorías), pero poco: entre un
     // 60 % y un 150 % de lo que sueles poner, para que siga siendo tu plato.
-    const items = c.last.map((e): DishItem => {
+    // El mismo alimento dos veces en la comida (dos tostadas apuntadas por separado), en uno con la suma: si no, el plato
+    // salía con dos filas iguales que React confundía y «Quitar» se llevaba las dos.
+    const merged = [...c.last.reduce((m, e) => {
+      const prev = m.get(itemKey(e))
+      return m.set(itemKey(e), prev ? { ...prev, grams: prev.grams + e.grams } : e)
+    }, new Map<string, FoodEntry>()).values()]
+    const items = merged.map((e): DishItem => {
       const v = e.per100
       const role = v.kcal < 40 ? 'x' : roleOf(v) !== 'x' ? roleOf(v) : (9 * v.f) / Math.max(1, 4 * v.p + 4 * v.c + 9 * v.f) >= 0.6 ? 'f' : 'c'
       return {
@@ -135,7 +141,7 @@ export function buildDishes(basic: BasicFood[], entries: FoodEntry[], today: str
         min: role === 'x' ? e.grams : e.grams * 0.6, max: role === 'x' ? e.grams : e.grams * 1.5, step: e.grams >= 50 ? 10 : 5,
       }
     })
-    mine.push({ id, meal: c.meal, name: c.last.map((e) => e.name).join(', '), items, mine: true, times: c.times })
+    mine.push({ id, meal: c.meal, name: merged.map((e) => e.name).join(', '), items, mine: true, times: c.times })
   }
   return [...mine, ...base]
 }
@@ -172,6 +178,8 @@ export function fitDish(dish: Dish, target: { kcal: number; p: number }, removed
   // un huevo de más que quedarse corto) y luego se reajustan las calorías con lo redondeado.
   const snap = (n: number, up = 0.5) => {
     const i = items[n]
+    // Lo fijo (un yogur de 125 g, tus 7 g de aceite) se queda como está: redondeado salían 130 g o 10 g.
+    if (i.min === i.max) return
     const lo = Math.ceil(i.min / i.step) * i.step, hi = Math.max(lo, Math.floor(i.max / i.step) * i.step)
     grams[n] = Math.min(hi, Math.max(lo, Math.floor(grams[n] / i.step + 1 - up) * i.step))
   }

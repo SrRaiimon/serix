@@ -34,7 +34,8 @@ export function FoodScreen() {
   const entries = useMemo(() => data.nutrition.entries.filter((e) => e.day === day).sort((a, b) => a.at - b.at), [data.nutrition.entries, day])
   const totals = dayTotals(entries)
   const baseGoals = data.settings.nutrition
-  const goalOpts = useMemo(() => dayGoalOptions(data), [data.sessions, data.nutrition.trainingDays, data.settings])
+  // También con las medidas (el gasto del entreno va con tu peso) y el día de hoy (pasada la medianoche cambia).
+  const goalOpts = useMemo(() => dayGoalOptions(data), [data.sessions, data.nutrition.trainingDays, data.settings, data.measurements, today])
   const target = baseGoals && goalsForDay(baseGoals, data.nutrition.entries, day, goalOpts)
   const advice = useMemo(() => {
     if (!baseGoals || day !== today || (data.settings.nutritionAdviceAt ?? 0) > Date.now() - 14 * 86400000) return undefined
@@ -695,7 +696,7 @@ function MealsSheet({ onClose }: { onClose: () => void }) {
 }
 
 function ShoppingSheet({ items, title, note, onClose, onCopied }: { items: { key: string; name: string; grams: number }[]; title: string; note?: string; onClose: () => void; onCopied: () => void }) {
-  const list = [...items.reduce((m, i) => m.set(i.key, { name: i.name, grams: (m.get(i.key)?.grams ?? 0) + i.grams }), new Map<string, { name: string; grams: number }>()).values()]
+  const list = [...items.reduce((m, i) => m.set(i.key, { key: i.key, name: i.name, grams: (m.get(i.key)?.grams ?? 0) + i.grams }), new Map<string, { key: string; name: string; grams: number }>()).values()]
     .sort((a, b) => a.name.localeCompare(b.name))
   const text = list.map((x) => `- ${x.name}: ${g(x.grams)} g`).join('\n')
   const copy = async () => {
@@ -709,7 +710,8 @@ function ShoppingSheet({ items, title, note, onClose, onCopied }: { items: { key
       footer={<button className="btn primary block" onClick={copy}>{t('Compartir la lista', 'Share the list')}</button>}>
       <div className="list">
         {list.map((x) => (
-          <div key={x.name} className="list-row">
+          // Por clave, no por nombre: un alimento propio y uno de la lista pueden llamarse igual.
+          <div key={x.key} className="list-row">
             <span className="grow">{x.name}</span>
             <span className="muted">{nb(`${g(x.grams)} g`)}</span>
           </div>

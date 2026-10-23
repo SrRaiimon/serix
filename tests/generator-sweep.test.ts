@@ -66,6 +66,19 @@ test('barrido: los días de cuerpo completo llevan tirón', () => {
   fails(all.flatMap(({ p, tag }) => p.days.filter((d) => /Cuerpo completo|Full body/.test(d.name) && !d.exercises.some((x) => ['lats', 'upper-back'].includes(x.exercise.muscle))).map((d) => `${tag} ${d.name}`)))
 })
 
+test('barrido: los días de cuerpo completo llevan empuje (y ninguna semana sale sin press)', () => {
+  // Antes, 125 días de cuerpo completo sin empuje y 2 semanas sin ningún press (Perder grasa, 2 días de 30 minutos).
+  // Excepción conocida: con peso corporal, principiante, 5 días de 30 minutos, el día C no tiene sitio para un press sin
+  // quitar el único curl o el abdomen de la semana.
+  const known = new Set(['fatLoss/beginner/bodyweight/5d/30 Día 3 · Cuerpo completo'])
+  const pushes = (x: { exercise: { id: string; category: string; muscle: string; secondaryMuscles: string[] } }) =>
+    countsForVolume(x.exercise.id, x.exercise.category) && pushPullShares(x.exercise.muscle, x.exercise.secondaryMuscles)[0] > 0
+  fails(all.flatMap(({ p, tag }) => [
+    ...p.days.filter((d) => /Cuerpo completo|Full body/.test(d.name) && !d.exercises.some(pushes)).map((d) => `${tag} ${d.name}`).filter((x) => !known.has(x)),
+    ...(p.days.some((d) => d.exercises.some(pushes)) ? [] : [`${tag}: ningún empuje`]),
+  ]))
+})
+
 test('barrido: en el gimnasio, el mismo ejercicio de aislamiento no se repite en días seguidos', () => {
   // En casa no siempre hay otro (zancada con mancuernas, swing con kettlebell): ahí se prefiere otro si existe.
   fails(all.filter(({ c }) => c.equipment === 'gym').flatMap(({ p, tag }) => p.days.slice(1).flatMap((d, i) => {

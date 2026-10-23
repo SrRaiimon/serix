@@ -142,6 +142,13 @@ html:has(.active-bar) { scroll-padding-bottom: calc(160px + var(--safe-bottom));
   outline-offset: 2px;
 }
 
+/* El título que recibe el foco al cambiar de pantalla (App.tsx): el anillo, por dentro, para no pisar la fecha de
+   encima (con 2 px por fuera la tapaba 4 px). */
+:is(h1, h2)[tabindex="-1"]:focus-visible {
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
 button,
 input,
 select,
@@ -1123,7 +1130,8 @@ a.list-row:active {
 .set-grid {
   display: grid;
   /* REPS a 70 px para que quepa un objetivo como "10-15". */
-  grid-template-columns: 40px 1fr 62px 70px 40px;
+  /* minmax(0, 1fr): a 320 px el texto de «Última vez» ensanchaba la columna y la ✓ se salía 3 px. */
+  grid-template-columns: 40px minmax(0, 1fr) 62px 70px 40px;
   align-items: center;
   gap: 8px;
 }
@@ -1692,11 +1700,11 @@ a.list-row:active {
 
 /* Columnas según el tipo de registro */
 .set-grid.time {
-  grid-template-columns: 40px 1fr 110px 40px;
+  grid-template-columns: 40px minmax(0, 1fr) 110px 40px;
 }
 
 .set-grid.distance_time {
-  grid-template-columns: 40px 1fr 64px 80px 40px;
+  grid-template-columns: 40px minmax(0, 1fr) 64px 80px 40px;
 }
 
 /* Sin «Última vez» (primer día con el ejercicio): peso y repeticiones a partes iguales. */

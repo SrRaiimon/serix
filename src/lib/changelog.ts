@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.17',
+    items: [
+      ['Los programas de cuerpo completo llevan siempre algún press: antes había días (y algunas semanas cortas) sin ningún ejercicio de empuje.', 'Full-body programs always include a press: some days (and a few short weeks) had no pushing exercise at all.'],
+      ['Guardar como rutina pide el nombre, y los entrenos anteriores con el mismo nombre pasan a la rutina: «Frente a la última vez» sigue comparando con ellos y no salen rutinas repetidas.', 'Save as routine asks for a name, and earlier workouts with the same name move to the routine: "Compared with last time" still compares with them and no duplicate routines appear.'],
+      ['Repetir o guardar como rutina un entreno de la semana de descarga ya no copia las series recortadas.', 'Repeating or saving as a routine a workout from the deload week no longer copies the reduced sets.'],
+      ['Comidas: la grasa se lee bien de las etiquetas con «de las cuales» en la misma línea, los platos con el mismo alimento dos veces lo juntan, y abrir dos veces un enlace de alimento ya no lo guarda dos veces.', 'Food: fat is read properly from labels with "of which" on the same line, dishes with the same food twice merge it, and opening a food link twice no longer saves it twice.'],
+      ['Al escanear varios productos seguidos se avisa si las kcal de alguno no cuadran, y la cámara ya no se vuelve a encender al salir.', 'When scanning several products in a row you are warned if one\'s calories do not add up, and the camera no longer turns back on after you leave.'],
+      ['Con lector de pantalla, la semana de Inicio dice cada día y si entrenaste; y la ✓ del entreno cabe en pantallas de 320 px.', 'With a screen reader, the Home week reads each day and whether you trained; and the workout ✓ fits on 320 px screens.'],
+    ],
+  },
+  {
     version: '0.1.16',
     items: [
       ['Una receta o un alimento escaneado con valores imposibles (más de 100 g de algo en 100 g) se ajusta al guardarlo, y al restaurar una copia ya no se pierden ni el alimento ni lo apuntado con él.', 'A recipe or scanned food with impossible values (more than 100 g of something in 100 g) is adjusted when saved, and restoring a backup no longer loses the food or what you logged with it.'],
