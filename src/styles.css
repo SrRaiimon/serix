@@ -1732,13 +1732,19 @@ html.scroll-locked body {
   border-left: 1px solid var(--accent);
 }
 
+/* El texto va en un solo <span>: suelto, cada trozo era una columna del flex y a 375 px salían tres. */
 .group-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
   color: var(--text-2);
+}
+
+.group-head > svg {
+  flex: none;
+  margin-top: 2px;
 }
 
 .group-badge {

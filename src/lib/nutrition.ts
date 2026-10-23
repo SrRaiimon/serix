@@ -46,6 +46,22 @@ export interface Per100 { kcal: number; p: number; c: number; f: number; fiber?:
 export const OPTIONAL = ['fiber', 'sugar', 'salt'] as const
 export type Optional = (typeof OPTIONAL)[number]
 
+/** Lo más que pueden tener 100 g: 100 g de cada cosa y unas 900 kcal (grasa pura), con margen. */
+const PER100_MAX = { kcal: 1000, p: 100, c: 100, f: 100 } as const
+
+/**
+ * Valores por 100 g dentro de lo posible. Se usa al crear el alimento (receta, Open Food Facts) y al
+ * restaurar la copia (backup.ts), para que los dos lados acepten lo mismo: si la copia descartara un
+ * valor que la app dejó guardar, al restaurarla se perderían el alimento y todo lo apuntado con él.
+ */
+export function clampPer100(v: Per100): Per100 {
+  const clamp = (x: number, max: number) => Math.min(max, Math.max(0, x))
+  return {
+    kcal: clamp(v.kcal, PER100_MAX.kcal), p: clamp(v.p, PER100_MAX.p), c: clamp(v.c, PER100_MAX.c), f: clamp(v.f, PER100_MAX.f),
+    ...Object.fromEntries(OPTIONAL.filter((key) => typeof v[key] === 'number').map((key) => [key, clamp(v[key]!, 100)])),
+  }
+}
+
 /** Copia solo los opcionales que se saben. */
 export const optionals = (v: Partial<Record<Optional, number | null | undefined>>, k = 1): Partial<Record<Optional, number>> =>
   Object.fromEntries(OPTIONAL.filter((key) => typeof v[key] === 'number').map((key) => [key, v[key]! * k]))
@@ -97,12 +113,13 @@ export function recipeValues(r: Recipe): { per100: Per100; total: Per100; weight
   const k = weight > 0 ? 100 / weight : 0
   const round = (v: number) => Math.round(v * 10) / 10
   return {
-    per100: {
+    // Con un peso hecho muy bajo, 100 g del plato saldrían con más de 100 g de algo.
+    per100: clampPer100({
       kcal: Math.round(total.kcal * k), p: round(total.p * k), c: round(total.c * k), f: round(total.f * k),
       // Fibra, azúcares y sal solo si todos los ingredientes traen el dato.
       ...Object.fromEntries(OPTIONAL.filter((key) => r.items.every((i) => i.per100[key] !== undefined))
         .map((key) => [key, Math.round(r.items.reduce((n, i) => n + (i.per100[key]! * i.grams) / 100, 0) * k * 100) / 100])),
-    },
+    }),
     total, weight, portionG: Math.round(weight / Math.max(1, r.servings)),
   }
 }
@@ -740,7 +757,11 @@ export interface ScannedProduct {
   portion?: Portion
 }
 
-const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v)) ? Number(v) : undefined)
+// Número o texto con un número, nunca negativo (Open Food Facts trae a veces «-40» como texto).
+const n = (v: unknown) => {
+  const x = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN
+  return Number.isFinite(x) && x >= 0 ? x : undefined
+}
 
 /** Convierte la respuesta de Open Food Facts en un producto, o nada si no trae los valores por 100 g. */
 export function parseOffProduct(barcode: string, json: unknown, language: 'es' | 'en' = 'es'): ScannedProduct | undefined {
@@ -763,7 +784,7 @@ export function parseOffProduct(barcode: string, json: unknown, language: 'es' |
     barcode,
     name,
     brand: str(product.brands)?.split(',')[0].trim(),
-    per100: { kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f), ...optionals({ fiber: ok100(n(nut.fiber_100g)), sugar: ok100(n(nut.sugars_100g)), salt: ok100(n(nut.salt_100g)) }) },
+    per100: clampPer100({ kcal: Math.round(kcal), p: round1(p), c: round1(c), f: round1(f), ...optionals({ fiber: ok100(n(nut.fiber_100g)), sugar: ok100(n(nut.sugars_100g)), salt: ok100(n(nut.salt_100g)) }) }),
     ...(grams && grams > 0 && grams < 2000 && (!servingUnit || servingUnit === 'g' || servingUnit === 'ml')
       ? { portion: { label: portionLabel(str(product.serving_size)), g: round1(grams) } } : {}),
   }

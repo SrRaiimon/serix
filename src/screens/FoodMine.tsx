@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Sheet } from '../components/ui'
 import { editable, int, parseDecimal, uid } from '../lib/format'
 import { t } from '../lib/i18n'
-import { amountOf, recipeValues, type Recipe, type RecipeItem, suspectValue, dayTotals, loadBasicFoods, matches, type BasicFood, type MyFood, type SavedMeal } from '../lib/nutrition'
+import { amountOf, optionals, recipeValues, type Recipe, type RecipeItem, suspectValue, dayTotals, loadBasicFoods, matches, type BasicFood, type MyFood, type SavedMeal } from '../lib/nutrition'
 import { update, useData, withUndo } from '../lib/store'
 import { ShareFoodButton, g, nb, fromBasic, fromMine, type Pickable } from './FoodParts'
 
@@ -188,7 +188,8 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
     const food: MyFood = {
       id: initial?.id ?? uid(), name: name.trim().slice(0, 120), source: 'mine',
       ...(initial?.brand ? { brand: initial.brand } : {}),
-      per100: { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f! },
+      // Fibra, azúcares y sal no se editan aquí: se conservan los que tuviera.
+      per100: { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f!, ...optionals(initial?.per100 ?? {}) },
       ...(barcode ? { barcode } : {}),
       ...(portion && portion > 0 && portion <= 5000 ? { portion: { label: initial?.portion?.g === portion ? initial.portion.label : t('1 ración', '1 serving'), g: portion } } : {}),
     }

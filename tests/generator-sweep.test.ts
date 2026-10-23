@@ -84,3 +84,14 @@ test('barrido: hipertrofia con 3 días o más y 45 minutos o más lleva bíceps 
     return [...(has('biceps') ? [] : [`${tag}: sin bíceps`]), ...(has('triceps') ? [] : [`${tag}: sin tríceps`])].filter((x) => !known.has(x))
   }))
 })
+
+test('barrido: con banda, a 12-20 también los aislamientos; con el material «Bandas», todo el día salvo las excepciones dichas', () => {
+  // Excepciones: dominadas (a 6-10), negativas y nórdico (a 3-6) y las flexiones y remos fáciles de principiante.
+  const exempt = /pull-?up|chin-?up|negative|glute.?ham|^(Pushups|Push-Up_Wide|Decline_Push-Up|Push-Ups_-_Close_Triceps_Position|Inverted_Row)$/i
+  fails(all.flatMap(({ c, p, tag }) => p.days.flatMap((d) => d.exercises.flatMap((x) => {
+    const band = x.exercise.equipment === 'band'
+    if (!band && c.equipment !== 'bands') return []
+    if (x.exercise.category !== 'strength' || x.repsMin >= 12 || (!band && exempt.test(x.exercise.id))) return []
+    return [`${tag}: ${x.exercise.id} ${x.repsMin}-${x.repsMax}`]
+  }))))
+})

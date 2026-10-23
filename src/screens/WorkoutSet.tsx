@@ -155,6 +155,8 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
     onChange(patch)
   }
 
+  // Para el lector de pantalla: «C» y «D» sueltas no dicen nada.
+  const spoken = set.warmup ? t('calentamiento', 'warm-up') : set.kind === 'drop' ? 'drop set' : t(`serie ${label}`, `set ${label}`)
   return (
     <>
     <div id={`set-${set.id}`} className={`set-grid set-row ${tracking} ${set.done ? 'done' : ''} ${current ? 'current' : ''} ${fresh ? 'fresh' : ''}`}>
@@ -165,15 +167,16 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
       </button>
       {/* Con lastre (dominadas, fondos), «+12,5×10»: es lo añadido a tu peso, como en el resto de la app. */}
       {!fresh && <span className="set-prev">{previous ? `${setShortText(simple ? { ...previous, rpe: undefined } : previous, tracking, unit, bodyweight).replace(' × ', '×')}` : '—'}</span>}
+      {/* Con la serie: el lector de pantalla oía «Peso, Repeticiones, Marcar serie» en cada fila, iguales. */}
       {tracking === 'weight_reps' && (
         <>
-          <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
+          <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t(`Peso, ${spoken}`, `Weight, ${spoken}`)} value={weightText}
             onChange={(e) => {
               setWeightText(e.target.value)
               // Sin negativos (pegados o con teclado físico): restaban del peso movido. La ayuda de las asistidas es positiva.
               change({ weight: Math.max(0, toKg(parseDecimal(e.target.value) ?? 0, unit)) })
             }} />
-          <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label={t('Repeticiones', 'Reps')} value={repsText}
+          <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label={t(`Repeticiones, ${spoken}`, `Reps, ${spoken}`)} value={repsText}
             onChange={(e) => {
               const clean = e.target.value.replace(/\D/g, '')
               setRepsText(clean)
@@ -182,17 +185,17 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
         </>
       )}
       {tracking === 'distance_time' && (
-        <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Kilómetros', 'Kilometres')} value={distanceText}
+        <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t(`Kilómetros, ${spoken}`, `Kilometres, ${spoken}`)} value={distanceText}
           onChange={(e) => {
             setDistanceText(e.target.value)
             change({ distance: Math.max(0, parseDecimal(e.target.value) ?? 0) })
           }} />
       )}
       {tracking !== 'weight_reps' && (
-        <DurationInput key={set.duration ?? 0} seconds={set.duration ?? 0} placeholder={tracking === 'time' ? timePlaceholder : '0:00'} invalid={invalid}
+        <DurationInput key={set.duration ?? 0} setLabel={spoken} seconds={set.duration ?? 0} placeholder={tracking === 'time' ? timePlaceholder : '0:00'} invalid={invalid}
           onChange={(duration) => change({ duration })} />
       )}
-      <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? t('Desmarcar serie', 'Untick set') : t('Marcar serie', 'Tick set')}>
+      <button className={`set-check ${set.done ? 'done' : ''}`} onClick={toggle} aria-label={set.done ? t(`Desmarcar ${spoken}`, `Untick ${spoken}`) : t(`Marcar ${spoken}`, `Tick ${spoken}`)}>
         {set.done
           ? <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor" /><path d="M7 12.5l3.2 3.2L17 9" style={{ stroke: 'var(--on-ink)' }} strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
           : <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" stroke="currentColor" strokeWidth="1.8" fill="none" /></svg>}
@@ -405,7 +408,8 @@ function SetCountdown({ seconds, onStop, onFinish }: { seconds: number; onStop: 
   )
 }
 
-function DurationInput({ seconds, placeholder, invalid, onChange }: {
+function DurationInput({ setLabel, seconds, placeholder, invalid, onChange }: {
+  setLabel: string
   seconds: number
   placeholder: string
   invalid: boolean
@@ -413,7 +417,7 @@ function DurationInput({ seconds, placeholder, invalid, onChange }: {
 }) {
   const [digits, setDigits] = useState(secondsToDigits(seconds))
   return (
-    <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={placeholder} aria-label={t('Tiempo', 'Time')}
+    <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={placeholder} aria-label={t(`Tiempo, ${setLabel}`, `Time, ${setLabel}`)}
       value={formatDigits(digits)}
       // Al salir del campo, "0:90" pasa a verse como "1:30".
       onBlur={() => setDigits(secondsToDigits(digitsToSeconds(digits)))}

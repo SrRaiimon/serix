@@ -73,7 +73,7 @@ test('Open Food Facts: valores por 100 g, nombre en el idioma de la app y ració
   assert.equal(parseOffProduct('96385074', null), undefined)
 })
 
-test('copias: comidas y objetivo con valores fuera de rango se descartan', () => {
+test('copias: comidas con datos rotos y objetivo fuera de rango se descartan; un valor por 100 g imposible se recorta', () => {
   const base = { routines: [], sessions: [] }
   const parsed = parseBackup(JSON.stringify({
     ...base,
@@ -82,14 +82,15 @@ test('copias: comidas y objetivo con valores fuera de rango se descartan', () =>
         { id: 'ok', day: '2026-01-05', meal: 'lunch', name: 'Arroz', grams: 200, per100: { kcal: 145, p: 2.9, c: 31.8, f: 0.4 }, at: Date.UTC(2026, 0, 5) },
         { id: 'mal-dia', day: 'ayer', meal: 'lunch', name: 'X', grams: 100, per100: { kcal: 1, p: 1, c: 1, f: 1 } },
         { id: 'mal-comida', day: '2026-01-05', meal: 'elevenses', name: 'X', grams: 100, per100: { kcal: 1, p: 1, c: 1, f: 1 } },
-        { id: 'mal-valores', day: '2026-01-05', meal: 'lunch', name: 'X', grams: 100, per100: { kcal: 5000, p: 1, c: 1, f: 1 } },
+        { id: 'kcal-de-mas', day: '2026-01-05', meal: 'lunch', name: 'X', grams: 100, per100: { kcal: 5000, p: 1, c: 1, f: 1 } },
       ],
       foods: [{ id: 'f', name: '', per100: { kcal: 1, p: 1, c: 1, f: 1 } }, { id: 'g', name: 'Bien', barcode: 'abc', per100: { kcal: 100, p: 1, c: 1, f: 1 } }],
       meals: [{ id: 'vacia', name: 'Nada', items: [] }],
     },
     settings: { nutrition: { kcal: 99999, protein: 100, carbs: 100, fat: 50 } },
   }))
-  assert.deepEqual(parsed.nutrition.entries.map((e) => e.id), ['ok'])
+  assert.deepEqual(parsed.nutrition.entries.map((e) => e.id), ['ok', 'kcal-de-mas'])
+  assert.equal(parsed.nutrition.entries[1].per100.kcal, 1000)
   assert.deepEqual(parsed.nutrition.foods.map((f) => [f.name, f.barcode]), [['Bien', undefined]])
   assert.equal(parsed.nutrition.meals.length, 0)
   assert.equal(parsed.settings.nutrition, undefined)

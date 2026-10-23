@@ -269,7 +269,7 @@ function pickOrSubstitute(name: SlotName, variant: number, allowed: Set<string>,
 /** Empujes y remos con el propio cuerpo: desde intermedio se hacen más de 15 seguidas, así que a 12-20. */
 const EASY_BODYWEIGHT = /^(Pushups|Push-Up_Wide|Decline_Push-Up|Push-Ups_-_Close_Triceps_Position|Inverted_Row|Towel_Door_Row|Backpack_Row)$/
 
-function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }, level?: TrainingLevel) {
+function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; repsMax: number; rest: number }, level?: TrainingLevel, profile?: EquipmentProfile) {
   const out = { ...s }
   // Pierna sin carga de verdad (sin material o con la mochila): 12-20 para que cueste.
   const unloadedLegs = (e.equipment === 'bodyweight' || e.id === 'Backpack_Squat') && ['quads', 'glutes', 'hamstrings'].includes(e.muscle)
@@ -285,6 +285,10 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   else if (/negative/i.test(e.id)) Object.assign(out, { repsMin: 3, repsMax: 6, rest: Math.max(out.rest, 90) })
   // Dominadas estrictas: a 6-10 aunque ocupen un hueco de accesorio (unas supinas a 10-15 son para muy pocos).
   else if (PULLUP.test(e.id) && !/kipping|chest_to_bar|assisted/i.test(e.id)) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.max(out.rest, 90) })
+  // Con banda, a 12-20: la tensión sube al estirar, y a 6-10 no hay goma que dé estímulo ni forma de progresar.
+  // Va antes que los aislamientos (un curl con banda a 8-12 no cuesta) y, con el material «Bandas», vale para
+  // todo el día, también lo de peso corporal (las flexiones de principiante siguen a su rango, más abajo).
+  else if ((e.equipment === 'band' || (profile === 'bands' && !(level === 'beginner' && EASY_BODYWEIGHT.test(e.id)))) && out.repsMin < 12) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   // El hip thrust y el puente con carga: aunque vayan con barra, no son un básico a 3-5 repeticiones (el puente
   // sin peso va con la pierna sin carga, más abajo).
   else if (/hip_thrust|glute_bridge/i.test(e.id) && !unloadedLegs && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
@@ -294,8 +298,6 @@ function fitScheme(e: Exercise, kind: Kind, s: { sets: number; repsMin: number; 
   else if (/swing/i.test(e.id)) Object.assign(out, { repsMin: 10, repsMax: 15, rest: Math.min(out.rest, 90) })
   else if (unloadedLegs) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (level && level !== 'beginner' && EASY_BODYWEIGHT.test(e.id)) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
-  // Con banda, a 12-20: la tensión sube al estirar, y a 6-10 no hay goma que dé estímulo ni forma de progresar.
-  else if (e.equipment === 'band' && out.repsMin < 12) Object.assign(out, { repsMin: 12, repsMax: 20, rest: Math.min(out.rest, 90) })
   else if (e.equipment !== 'barbell' && out.repsMin < 6) Object.assign(out, { repsMin: 6, repsMax: 10, rest: Math.min(out.rest, 120) })
   return out
 }
@@ -848,7 +850,7 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
     if (c.goal === 'strength' && slot.kind === 'compound' && picked.some((p) => p.kind === 'compound')) {
       Object.assign(s, { sets: Math.max(3, s.sets - 1), repsMin: 6, repsMax: 10, rest: 120 })
     }
-    return fitScheme(exercise, slot.kind, s, c.level)
+    return fitScheme(exercise, slot.kind, s, c.level, c.equipment)
   }
   const picked: Picked[][] = []
   templates.forEach((template, index) => {
@@ -1000,7 +1002,7 @@ export function buildLibraryProgram(p: LibraryProgram, equipment: EquipmentProfi
       (found, name) => {
         const [schemeSets, repsMin, repsMax, rest] = p.scheme[found.slot.kind]
         const own = found.slot === slots[name] && found.exercise.equipment === 'barbell'
-        return fitScheme(found.exercise, found.slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest }, p.level)
+        return fitScheme(found.exercise, found.slot.kind, { sets: (own ? p.setsFor?.[name] : undefined) ?? schemeSets, repsMin, repsMax, rest }, p.level, p.equipment ?? equipment)
       },
       (found) => (p.progression && found.slot.kind === 'compound' ? { progression: p.progression } : {}))
     return { name: `${t(`Día ${index + 1}`, `Day ${index + 1}`)} · ${dayName(p.templates, index)}`, exercises }

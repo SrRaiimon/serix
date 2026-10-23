@@ -7,7 +7,7 @@ import type { AppData, AutoProgress, Measurement, Routine, RoutineExercise, Sess
 import { defaultSettings, MAX_EXERCISE_NOTE, DATA_VERSION, runMigrations } from './store'
 import { t } from './i18n'
 import { PLATE_OPTIONS } from './plates'
-import { ALL_MEALS, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
+import { ALL_MEALS, clampPer100, optionals, type FoodEntry, type FoodRef, type MyFood, type NutritionData, type NutritionGoals, type Per100, type PlanPrefs, type Recipe, type SavedMeal } from './nutrition'
 
 // Validación de copias de seguridad importadas. Solo se aceptan los campos conocidos, con su tipo y
 // dentro de rangos razonables; lo demás se descarta. Así un archivo manipulado o de otra app no
@@ -261,11 +261,14 @@ function exerciseNotes(v: unknown): Record<string, string> {
 
 // MARK: Comidas
 
+// Un valor fuera de rango se recorta en vez de descartar el alimento: descartarlo perdería también
+// todo lo apuntado con él (los límites son los de clampPer100, los mismos que al crearlo).
 function per100(v: unknown): Per100 | undefined {
   if (!isObj(v)) return undefined
-  const kcal = optNum(v.kcal, 0, 1000), p = optNum(v.p, 0, 100), c = optNum(v.c, 0, 100), f = optNum(v.f, 0, 100)
-  const extra = optionals({ fiber: optNum(v.fiber, 0, 100), sugar: optNum(v.sugar, 0, 100), salt: optNum(v.salt, 0, 100) })
-  return kcal !== undefined && p !== undefined && c !== undefined && f !== undefined ? { kcal, p, c, f, ...extra } : undefined
+  const fin = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? x : undefined)
+  const kcal = fin(v.kcal), p = fin(v.p), c = fin(v.c), f = fin(v.f)
+  if (kcal === undefined || p === undefined || c === undefined || f === undefined) return undefined
+  return clampPer100({ kcal, p, c, f, ...optionals({ fiber: fin(v.fiber), sugar: fin(v.sugar), salt: fin(v.salt) }) })
 }
 
 function foodRef(v: unknown): FoodRef | undefined {

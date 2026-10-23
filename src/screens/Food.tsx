@@ -10,7 +10,7 @@ import { update, updateSettings, useData, withUndo } from '../lib/store'
 import { dueMeals, takePendingAdd } from '../lib/foodReminders'
 import { FAST_PLANS, fastState, supplementStreak, toggleSupplement } from '../lib/habits'
 import { useRoute } from '../lib/router'
-import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
+import { buildDishes, fitDish, makePlan, mealTargets, pickDish, planMeals, rateDish, rateRemoved, usualFoods, type Dish } from '../lib/mealPlan'
 import { g, nb } from './FoodParts'
 import { AddFoodSheet, EntrySheet } from './FoodAdd'
 
@@ -49,7 +49,7 @@ export function FoodScreen() {
   const tomorrow = shiftDay(today, 1)
   const canPlan = day === today || day === tomorrow
   const plan = canPlan ? planFor(data.nutrition, day) : undefined
-  const pending = MEALS.filter((m) => plan?.meals[m] && !entries.some((e) => e.meal === m))
+  const pending = planMeals().filter((m) => plan?.meals[m] && !entries.some((e) => e.meal === m))
   const targets = target ? mealTargets(target, entries, pending) : {}
   const proposals = Object.fromEntries(pending.map((m) => {
     const slot = plan!.meals[m]!
@@ -94,7 +94,7 @@ export function FoodScreen() {
     d.nutrition.plans = [...(d.nutrition.plans ?? []).filter((p) => p.day >= today && p.day !== day), ...(next ? [next] : [])]
   })
   const newPlan = () => {
-    const open = MEALS.filter((m) => !entries.some((e) => e.meal === m))
+    const open = planMeals().filter((m) => !entries.some((e) => e.meal === m))
     const all = target ? mealTargets(target, entries, open) : {}
     setPlan(makePlan(dishes, data.nutrition, day, Math.floor(Math.random() * 2 ** 31), all))
   }
@@ -417,9 +417,9 @@ function WeekMenuSheet({ dishes, goals, opts, onClose, onCopied }: { dishes: Dis
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
     const day = shiftDay(dayKey(), i)
     const target = goalsForDay(goals, data.nutrition.entries, day, opts)
-    const targets = mealTargets(target, [], MEALS)
+    const targets = mealTargets(target, [], planMeals())
     const plan = makePlan(dishes, data.nutrition, day, seed + i, targets)
-    const meals = MEALS.flatMap((m) => {
+    const meals = planMeals().flatMap((m) => {
       const dish = dishes.find((x) => x.id === plan.meals[m]?.dish)
       return dish && targets[m] ? [{ meal: m, dish, items: fitDish(dish, targets[m]!) }] : []
     })

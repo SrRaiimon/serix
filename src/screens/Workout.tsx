@@ -220,7 +220,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
             return (
               <div key={session.exercises[run[0]].id} className="group-box">
                 <div className="group-head">
-                  <Link2 size={15} /> {groupKind(first.size)} {first.letter} · <strong>{round}</strong> · {t(`descanso ${rest(lastEx.rest)} tras cada ronda`, `${rest(lastEx.rest)} rest after each round`)}
+                  <Link2 size={15} /> <span>{groupKind(first.size)} {first.letter} · <strong>{round}</strong> · {t(`descanso ${rest(lastEx.rest)} tras cada ronda`, `${rest(lastEx.rest)} rest after each round`)}</span>
                 </div>
                 {run.map(block)}
               </div>

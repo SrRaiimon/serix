@@ -430,7 +430,7 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
           return (
           <div key={`${e.exerciseId}-${i}`} className={`list-row edit-row ${open ? 'open' : ''}`} style={slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
             {slots[i].letter && slots[i].first && (
-              <span className="group-head"><Link2 size={15} /> {groupKind(slots[i].size)} {slots[i].letter}: {t('sin descanso entre ejercicios', 'no rest between exercises')}</span>
+              <span className="group-head"><Link2 size={15} /> <span>{groupKind(slots[i].size)} {slots[i].letter}: {t('sin descanso entre ejercicios', 'no rest between exercises')}</span></span>
             )}
             <button className="edit-head" onClick={() => setExpanded(open ? undefined : i)} aria-expanded={open}>
               <Thumb exerciseId={e.exerciseId} size={40} />

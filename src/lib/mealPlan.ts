@@ -1,5 +1,5 @@
 import { dataLang } from './i18n'
-import { ALL_MEALS, dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
+import { activeMeals, ALL_MEALS, dayTotals, fold, MEALS, optionals, shiftDay, type BasicFood, type DayPlan, type FoodEntry, type FoodRef, type MealKey, type NutritionData, type Per100, type PlanPrefs } from './nutrition'
 
 // Menú del día propuesto: un plato por comida, con las cantidades ajustadas a lo que te queda del
 // objetivo. Los platos salen de una lista base (alimentos de la lista básica) y de lo que tú comes:
@@ -254,13 +254,16 @@ export function pickDish(dishes: Dish[], meal: MealKey, opts: { seed: number; da
   return pool[pool.length - 1]
 }
 
+/** Comidas con menú propuesto: las que tienes activadas y tienen platos (media mañana y recena no los tienen). */
+export const planMeals = () => MEALS.filter((m) => activeMeals().includes(m))
+
 /** Menú de un día: un plato por comida, sin repetir el principal. */
 export function makePlan(dishes: Dish[], data: Pick<NutritionData, 'entries' | 'prefs'>, day: string, seed: number, targets: Partial<Record<MealKey, { kcal: number; p: number }>> = {}): DayPlan {
   const usual = usualFoods(data.entries, day)
   const prefs = data.prefs ?? emptyPrefs()
   const avoid = new Set<string>()
   const meals: DayPlan['meals'] = {}
-  for (const meal of MEALS) {
+  for (const meal of planMeals()) {
     const dish = pickDish(dishes, meal, { seed, day, prefs, usual: usual[meal], avoid, target: targets[meal] })
     if (!dish) continue
     meals[meal] = { dish: dish.id }

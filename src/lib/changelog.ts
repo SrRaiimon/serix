@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.16',
+    items: [
+      ['Una receta o un alimento escaneado con valores imposibles (más de 100 g de algo en 100 g) se ajusta al guardarlo, y al restaurar una copia ya no se pierden ni el alimento ni lo apuntado con él.', 'A recipe or scanned food with impossible values (more than 100 g of something in 100 g) is adjusted when saved, and restoring a backup no longer loses the food or what you logged with it.'],
+      ['El menú propuesto solo usa las comidas que tienes activadas.', 'The suggested menu only uses the meals you have turned on.'],
+      ['Al corregir los valores de un alimento se conservan su fibra, sus azúcares y su sal.', 'Fixing a food\'s values keeps its fibre, sugars and salt.'],
+      ['Con bandas, los curls, las extensiones y los demás ejercicios de un solo músculo también van a 12-20 repeticiones, y tres ejercicios más explican cómo anclar la banda.', 'With bands, curls, extensions and other single-muscle exercises also go to 12-20 reps, and three more exercises explain how to anchor the band.'],
+      ['Con lector de pantalla, el peso, las repeticiones y el botón de marcar dicen de qué serie son; y la cabecera de las superseries cabe bien en pantallas estrechas.', 'With a screen reader, weight, reps and the tick button say which set they belong to; and the superset header fits properly on narrow screens.'],
+    ],
+  },
+  {
     version: '0.1.15',
     items: [
       ['Los ejercicios por lados (a una mano o una pierna) ya no salen con el doble de series al añadirlos a mano, al cambiar un ejercicio por otro o al guardar un entreno como rutina.', 'Exercises done per side (one arm or one leg) no longer get twice the sets when you add them by hand, swap an exercise or save a workout as a routine.'],
