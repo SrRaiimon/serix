@@ -203,7 +203,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   const plan = dayPlan(data.settings)
   const trainedToday = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
   // Lo que se nota de un vistazo: días sin entrenar y el grupo que más tiempo llevas sin tocar.
-  const daysOff = sessions.length ? Math.floor((startOfDay(Date.now()).getTime() - startOfDay(Math.max(...sessions.map((s) => s.start))).getTime()) / 86400000) : undefined
+  const daysOff = sessions.length ? Math.round((startOfDay(Date.now()).getTime() - startOfDay(Math.max(...sessions.map((s) => s.start))).getTime()) / 86400000) : undefined
   const forgotten = forgottenGroups(sessions)[0]
   // Con el objetivo de la semana ya cumplido, un entreno más es opcional: se dice y el botón pasa a secundario
   // (antes la semana decía «¡cumplido!» y aquí seguía «Empezar» como si tocara).

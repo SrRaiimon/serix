@@ -1,4 +1,4 @@
-import { fromKg, type Unit } from './format'
+import { dayKey, fromKg, type Unit } from './format'
 import { lang, t } from './i18n'
 import type { Session } from './store'
 import { trackingOf } from './tracking'
@@ -62,7 +62,7 @@ export function downloadCsv(sessions: Session[], unit: Unit) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `serix-${t('historial', 'history')}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `serix-${t('historial', 'history')}-${dayKey()}.csv`
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

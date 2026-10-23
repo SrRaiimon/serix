@@ -5,7 +5,7 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { ActionSheet, Card, Sheet, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { addDays, duration, fromKg, int, monthYear, num, parseDecimal, shortDay, toKg, uid, tonnes, tons, weight, weightValue } from '../lib/format'
+import { addDays, dayKey, duration, fromKg, int, monthYear, num, parseDecimal, shortDay, toKg, uid, tonnes, tons, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, newRecords, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
@@ -539,7 +539,7 @@ function WeightGoalSheet({ unit, onClose }: { unit: Unit; onClose: () => void })
   const latest = [...measurements].filter((m) => m.weight).sort((a, b) => b.date - a.date)[0]?.weight
   const goal = settings.weightGoal
   const [kgText, setKgText] = useState(goal ? num(fromKg(goal.kg, unit)) : '')
-  const [by, setBy] = useState(goal?.by ? new Date(goal.by).toISOString().slice(0, 10) : '')
+  const [by, setBy] = useState(goal?.by ? dayKey(goal.by) : '')
   const value = parseDecimal(kgText)
   const kg = value ? toKg(value, unit) : 0
   const from = goal?.from ?? latest
@@ -560,7 +560,7 @@ function WeightGoalSheet({ unit, onClose }: { unit: Unit; onClose: () => void })
         </label>
         <label className="list-row">
           <span className="grow">{t('Para (opcional)', 'By (optional)')}</span>
-          <input type="date" value={by} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
+          <input type="date" value={by} min={dayKey()} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
         </label>
       </div>
       <span className="small muted">{from
@@ -605,7 +605,7 @@ function GoalSheet({ sessions, unit, onClose }: { sessions: Session[]; unit: Uni
         </label>
         <label className="list-row">
           <span className="grow">{t('Para (opcional)', 'By (optional)')}</span>
-          <input type="date" value={by} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
+          <input type="date" value={by} min={dayKey()} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
         </label>
       </div>
       <span className="small muted">{best > 0

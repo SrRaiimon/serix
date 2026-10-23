@@ -65,10 +65,12 @@ export function RecipeSheet({ initial, initialName, onBack, onClose, onSaved }: 
     ...data.nutrition.foods.filter((f) => f.id !== initial?.id && matches(`${f.name} ${f.brand ?? ''}`, q)).map(fromMine),
     ...(basic ?? []).filter((f) => matches(`${f.es} ${f.en}`, q)).map(fromBasic),
   ].slice(0, 8)
+  // El peso cocinado, con los mismos límites que la copia de seguridad (si no, la receta cambiaba al restaurarla).
+  const cookedG = parseDecimal(cooked)
   const recipe: Recipe = {
     items: items.map(({ text, ...i }) => ({ ...i, grams: parseDecimal(text) ?? 0 })).filter((i) => i.grams > 0 && i.grams <= 5000),
     servings,
-    ...(parseDecimal(cooked) ? { cookedG: parseDecimal(cooked)! } : {}),
+    ...(cookedG !== null && cookedG >= 1 && cookedG <= 50000 ? { cookedG } : {}),
   }
   const values = recipeValues(recipe)
   const serving = amountOf(values.per100, values.portionG)

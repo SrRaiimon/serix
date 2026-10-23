@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { getData, updateSettings } from './store'
+import { dayKey } from './format'
 import { readZip, writeZip } from './zip'
 
 // Fotos de progreso. Solo se guardan en este móvil, en una base de datos aparte de la del resto de
@@ -164,7 +165,7 @@ export async function exportPhotos(list: Photo[]): Promise<Blob> {
   const entries = [] as { name: string; data: Uint8Array }[]
   const index: IndexEntry[] = []
   for (const p of [...list].sort((a, b) => a.date - b.date)) {
-    const file = `${new Date(p.date).toISOString().slice(0, 10)}-${p.pose}-${p.id.slice(0, 6)}.jpg`
+    const file = `${dayKey(p.date)}-${p.pose}-${p.id.slice(0, 6)}.jpg`
     entries.push({ name: file, data: new Uint8Array(await p.image.arrayBuffer()) })
     index.push({ file, date: p.date, pose: p.pose })
   }
@@ -187,9 +188,15 @@ export async function importPhotos(file: Blob): Promise<number> {
     const date = e.date, pose = POSES.find((p) => p === e.pose)
     if (!data || typeof date !== 'number' || !Number.isFinite(date) || !pose) continue
     if (existing.has(`${date}|${pose}`)) continue
-    // Se vuelve a reducir: así una imagen manipulada no entra tal cual y se rehace la miniatura.
-    const image = await shrink(new Blob([data as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' }), MAX_SIDE, 0.85)
-    const thumb = await shrink(image, THUMB_SIDE, 0.75)
+    // Se vuelve a reducir: así una imagen manipulada no entra tal cual y se rehace la miniatura. Una dañada se salta
+    // (antes cortaba la importación a medias con «No es un archivo de fotos» y sin enseñar las ya añadidas).
+    let image: Blob, thumb: Blob
+    try {
+      image = await shrink(new Blob([data as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' }), MAX_SIDE, 0.85)
+      thumb = await shrink(image, THUMB_SIDE, 0.75)
+    } catch {
+      continue
+    }
     await run('readwrite', (s) => s.put({ id: newId(), date, pose, image, thumb } satisfies Photo))
     existing.add(`${date}|${pose}`)
     added++

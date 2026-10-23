@@ -8,7 +8,7 @@ import { ActionSheet, Progress, useCatalog, useScrollLock, useTick, useToast } f
 import { groupKind, groupSlots } from '../lib/groups'
 import { clock, fromKg, int, rest, toKg } from '../lib/format'
 import { t } from '../lib/i18n'
-import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad, stall, workingSets } from '../lib/stats'
+import { e1rm, lastSets, loadSets, records, repRecordBeaten, repRecords, setLoad, setUnits, stall, workingSets } from '../lib/stats'
 import { finishedSessions, rpeOn, useData, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { adjustRestForEffort, prepareAudio } from '../lib/timer'
 import { trackingOf } from '../lib/tracking'
@@ -212,9 +212,10 @@ export function WorkoutScreen({ session }: { session: Session }) {
             if (run.length === 1) return block(run[0])
             const first = slots[run[0]]
             const lastEx = session.exercises[run[run.length - 1]]
-            // Rondas: tantas como series tenga el ejercicio que más tiene; hechas, las que han completado todos.
-            const rounds = Math.max(...run.map((i) => session.exercises[i].sets.length))
-            const done = Math.min(...run.map((i) => session.exercises[i].sets.filter((x) => x.done).length))
+            // Rondas: tantas como series tenga el ejercicio que más tiene; hechas, las que han completado todos. Con
+            // setUnits: el calentamiento y los drop sets no son rondas, y por lados la pareja es una.
+            const rounds = Math.max(...run.map((i) => setUnits(session.exercises[i].sets).length))
+            const done = Math.min(...run.map((i) => setUnits(session.exercises[i].sets).filter(Boolean).length))
             const round = done >= rounds ? t('rondas hechas', 'rounds done') : t(`ronda ${done + 1} de ${rounds}`, `round ${done + 1} of ${rounds}`)
             return (
               <div key={session.exercises[run[0]].id} className="group-box">

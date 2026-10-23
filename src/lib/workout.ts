@@ -366,7 +366,8 @@ export function addExercises(sessionId: string, exercises: Exercise[]) {
       session.exercises.push(blockDeload(d, sessionExercise({
         exerciseId: e.id, name: e.name, muscle: e.muscle, rest: d.settings.defaultRest,
         // El cardio de distancia suele ser una única serie.
-        repsMin: 0, repsMax: 0, sets: Math.max(last.filter((x) => x.kind !== 'drop').length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
+        // Series como las cuenta setUnits: por lados, la pareja es una (contar filas duplicaba las series).
+        repsMin: 0, repsMax: 0, sets: Math.max(setUnits(last).length, defaultTracking(e) === 'distance_time' ? 1 : 3), tracking: defaultTracking(e),
       }, history), { tracking: defaultTracking(e) }))
     }
   })
@@ -382,7 +383,8 @@ export function replaceSessionExercise(sessionId: string, sessionExerciseId: str
     const index = session?.exercises.findIndex((e) => e.id === sessionExerciseId) ?? -1
     if (!session || index < 0) return
     const old = session.exercises[index]
-    const pending = old.sets.filter((s) => !s.done).length
+    // Sin el calentamiento ni los drop sets, y por lados la pareja cuenta una (antes el nuevo salía con el doble).
+    const pending = setUnits(old.sets.filter((s) => !s.done)).length
     const tracking = defaultTracking(exercise)
     const fresh = sessionExercise({
       exerciseId: exercise.id, name: exercise.name, muscle: exercise.muscle, rest: old.rest,
@@ -441,12 +443,12 @@ export function saveAsRoutine(session: Session) {
       order: d.routines.length,
       createdAt: Date.now(),
       exercises: session.exercises.map((e) => {
-        // Los drop sets van pegados a otra serie: no cuentan como series de la rutina.
+        // Los drop sets van pegados a otra serie y por lados la pareja es una serie: setUnits, como el resumen.
         const main = workingSets(e).filter((s) => s.kind !== 'drop')
         const reps = main.map((s) => s.reps)
         return {
           exerciseId: e.exerciseId, name: e.name, muscle: e.muscle,
-          sets: Math.max(main.length, 1),
+          sets: Math.max(setUnits(main).length, 1),
           repsMin: reps.length ? Math.max(1, Math.min(...reps)) : 8,
           repsMax: reps.length ? Math.max(1, ...reps) : 12,
           rest: e.rest,

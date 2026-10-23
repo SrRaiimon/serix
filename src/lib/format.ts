@@ -111,6 +111,15 @@ export function startOfWeek(d: Date | number): Date {
   return x
 }
 
+/**
+ * AAAA-MM-DD en hora local. No toISOString().slice(0, 10): esa es la fecha en UTC, y en España entre las 00:00 y las
+ * 01:00-02:00 daba la de ayer (una medida apuntada a esa hora no dejaba elegir hoy).
+ */
+export function dayKey(d: Date | number = Date.now()): string {
+  const x = new Date(d)
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+}
+
 export function addDays(d: Date, n: number): Date {
   const x = new Date(d)
   x.setDate(x.getDate() + n)

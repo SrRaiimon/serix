@@ -2,7 +2,7 @@ import { ArrowRightLeft, Bell, BellRing, Database, Dumbbell, SlidersHorizontal, 
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { LineChart } from '../components/charts'
 import { ActionSheet, Card, Chip, Empty, LargeTitle, NavBar, Row, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
-import { day, duration, editable, tons, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, weight, type Unit } from '../lib/format'
+import { day, dayKey, duration, editable, tons, relative, fromKg, monthYear, num, parseDecimal, rest, restOptions, shortDay, startOfDay, toKg, uid, weight, type Unit } from '../lib/format'
 import { navigate } from '../lib/router'
 import { isStandalone, promptInstall, useCanPromptInstall } from '../lib/pwa'
 import { e1rm, sessionDuration, sessionVolume } from '../lib/stats'
@@ -500,7 +500,7 @@ export function MeasurementsScreen() {
 }
 
 function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void }) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(dayKey())
   const [values, setValues] = useState<Record<string, string>>({})
   // Una medida de 0 o negativa no se guarda (perímetros negativos al pegar un «-»).
   const parsed = Object.fromEntries(measureFields.map((f) => { const v = parseDecimal(values[f.key] ?? ''); return [f.key, v !== null && v > 0 ? v : null] }))
@@ -532,7 +532,7 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
       <div className="list">
         <label className="list-row">
           <span className="grow">{t('Fecha', 'Date')}</span>
-          <input type="date" value={date} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setDate(e.target.value)} />
+          <input type="date" value={date} max={dayKey()} onChange={(e) => setDate(e.target.value)} />
         </label>
       </div>
       <div className="list">

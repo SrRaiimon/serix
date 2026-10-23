@@ -68,7 +68,7 @@ function useShareImage(session: Session | undefined, unit: Unit, records: Person
     if (!session) return
     let cancelled = false
     const urls: string[] = []
-    const date = new Date(session.start).toISOString().slice(0, 10)
+    const date = dayKey(session.start)
     const make = (story: boolean) => svgToPng(shareCardSVG({ session, unit, records, story, secondaryOf: (id) => catalog.get(id)?.secondaryMuscles ?? [] }))
       .then((blob) => {
         if (cancelled) return

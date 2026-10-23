@@ -1,5 +1,5 @@
 import type { Catalog } from './catalog'
-import { clock, uid } from './format'
+import { clock, dayKey, uid } from './format'
 import type { EquipmentProfile, TrainingLevel } from './generator'
 import { plural, t } from './i18n'
 import type { Session, SessionExercise, SetEntry } from './store'
@@ -157,9 +157,8 @@ export function loadHint(equipment: string, level: TrainingLevel): string | unde
   return table[equipment]?.[i]
 }
 
-const pad = (n: number) => String(n).padStart(2, '0')
 /** Día local (AAAA-MM-DD). */
-export const wodDay = (at = Date.now()) => { const d = new Date(at); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` }
+export const wodDay = (at = Date.now()) => dayKey(at)
 
 /** El WOD de un día (variante 0) u otro distinto del mismo día (1, 2…), según tu material y nivel. */
 export function wodOf(day: string, equipment: EquipmentProfile, level: TrainingLevel, variant = 0, catalog?: Catalog): Wod {

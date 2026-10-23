@@ -1,6 +1,6 @@
 import { DECOR, HEAD, REGIONS, SILHOUETTE } from '../components/muscleShapes'
 import { day, duration, fromKg, int, tons, weight, type Unit } from './format'
-import { sessionDuration, sessionReps, sessionSets, sessionVolume, workingSets, type PersonalRecord } from './stats'
+import { sessionDuration, sessionReps, sessionSets, sessionVolume, setUnits, workingSets, type PersonalRecord } from './stats'
 import type { Session } from './store'
 import { setShortText, trackingOf } from './tracking'
 import { locale, plural, t } from './i18n'
@@ -80,7 +80,7 @@ export function shareCardSVG({ session, unit, records, secondaryOf, story = fals
     const tracking = trackingOf(e)
     const bestText = tracking !== 'weight_reps' ? setShortText(best, tracking, unit)
       : best.weight > 0 ? `${weight(best.weight, unit)} × ${best.reps}` : `${best.reps} rep.`
-    return [cut(e.name, 34), `${plural(sets.length, ['serie', 'series'], ['set', 'sets'])} · ${bestText}`]
+    return [cut(e.name, 34), `${plural(setUnits(sets).length, ['serie', 'series'], ['set', 'sets'])} · ${bestText}`]
   })
   const record = records[0]
 

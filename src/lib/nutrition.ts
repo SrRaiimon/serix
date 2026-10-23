@@ -1,7 +1,7 @@
 import { fold, makeSearch } from './search'
 import { sessionKcal } from './burn'
 import type { Tracking } from './tracking'
-import { addDays, startOfWeek } from './format'
+import { addDays, dayKey, startOfWeek } from './format'
 import { dataLang, lang, t } from './i18n'
 
 // Comidas: lo que comes cada día (calorías y macronutrientes) frente a un objetivo calculado con
@@ -593,11 +593,7 @@ export const dayTotals = (entries: { per100: Per100; grams: number }[]) => {
 /** Gramos como se muestran: enteros desde 10 g, con un decimal por debajo (8,3 g; 11 g). */
 export const shownGrams = (v: number) => (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10)
 
-/** AAAA-MM-DD en hora local. */
-export function dayKey(d: Date | number = Date.now()): string {
-  const x = new Date(d)
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
-}
+export { dayKey } from './format'
 
 export function shiftDay(key: string, days: number): string {
   const [y, m, d] = key.split('-').map(Number)

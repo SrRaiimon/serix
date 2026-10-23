@@ -1,3 +1,4 @@
+import { dayKey } from './format'
 import { isStandalone } from './pwa'
 import { getData, updateSettings, type AppData } from './store'
 
@@ -14,7 +15,7 @@ const SNOOZE_DAYS = 14
  * directamente en Drive, iCloud, el correo o Archivos; si no se puede, se descarga el archivo.
  */
 export async function exportBackup(): Promise<boolean> {
-  const name = `serix-copia-${new Date().toISOString().slice(0, 10)}.json`
+  const name = `serix-copia-${dayKey()}.json`
   const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' })
   const file = new File([blob], name, { type: 'application/json' })
   if (navigator.canShare?.({ files: [file] })) {

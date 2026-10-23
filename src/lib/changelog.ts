@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.15',
+    items: [
+      ['Los ejercicios por lados (a una mano o una pierna) ya no salen con el doble de series al añadirlos a mano, al cambiar un ejercicio por otro o al guardar un entreno como rutina.', 'Exercises done per side (one arm or one leg) no longer get twice the sets when you add them by hand, swap an exercise or save a workout as a routine.'],
+      ['Al cambiar el primer ejercicio del entreno, el nuevo ya no convierte las series de calentamiento en series de trabajo.', 'When you swap the first exercise of a workout, the new one no longer turns the warm-up sets into working sets.'],
+      ['Las superseries cuentan bien las rondas aunque lleven calentamiento o drop sets, y la imagen para compartir cuenta bien las series por lados.', 'Supersets count rounds properly even with warm-up or drop sets, and the share image counts per-side sets properly.'],
+      ['Pasada la medianoche, una medida nueva ya lleva la fecha de hoy (antes salía la de ayer y no se podía cambiar), y los días sin entrenar se cuentan bien la semana del cambio de hora.', 'After midnight, a new measurement now gets today\'s date (it used to show yesterday and could not be changed), and days without training are counted properly in the clock-change week.'],
+      ['Importar fotos: una foto dañada se salta en vez de cortar la importación a medias.', 'Importing photos: a damaged photo is skipped instead of stopping the import halfway.'],
+    ],
+  },
+  {
     version: '0.1.14',
     items: [
       ['Un enlace roto con un «%» (cortado por una app de mensajería) ya no deja la app en blanco.', 'A broken link with a stray "%" (cut by a messaging app) no longer leaves the app blank.'],
