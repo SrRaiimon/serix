@@ -25,6 +25,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.8 | 9,8 | 9,5 | 9,8 | 9,8 | 9,7 (9,725) |
 | 0.1.10 | 9,8 | 9,4 | 9,8 | 9,7 | 9,7 (9,675) |
 | 0.1.12 | 9,8 | 9,5 | 9,8 | 9,8 | 9,7 (9,725) |
+| 0.1.15 | 9,8 | 9,1 | 9,8 | 9,8 | 9,6 (9,625) |
 
 ## Rotación de zonas (serix-code)
 
@@ -34,7 +35,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 
 | Zona | Archivos | Revisada a fondo |
 |---|---|---|
-| Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | nunca |
+| Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | 0.1.15 |
 | Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | nunca |
 | Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | nunca |
 | Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | nunca |
@@ -47,37 +48,49 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Entreno | lib/workout.ts, screens/Workout*.tsx, screens/Routines.tsx (editor) | 0.1.15 |
 | Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.15 |
 
-## Pendientes tras 0.1.12 (la 0.1.13 arregla el caracol de la figura con letra grande en Safari, con test).
-## Crítica de diseño: 32/40; detector limpio; Lighthouse 99/100/100/100; axe 0; foco tapado 0 (Tab y ⇧Tab).
+## Pendientes tras 0.1.15 (0.1.13-0.1.15: caracol con letra grande, 10 fallos de un informe externo y la auditoría).
+## Crítica de diseño: 32/40; detector limpio; Lighthouse 98-99/100/100/100; axe 0; foco tapado 0 (Tab y ⇧Tab).
+## Nuevo de la crítica: `.group-head` (styles.css:1735) sin wrap: a 375 px la cabecera de superserie en tres columnas.
 
 ### serix-ux (9,8)
-- Guardar como rutina: desaparece «Frente a la última vez», la sesión libre antigua no se une a la rutina, la opción
-  sigue en sesiones ya guardadas (duplicados) y el nombre queda «Entrenamiento libre» sin pedirlo.
+- Guardar como rutina: pedir el nombre, mantener «Frente a la última vez», unir las sesiones anteriores a la rutina y
+  no ofrecerlo en sesiones ya guardadas (duplicados).
 - Torso A principiante 6d/60: 9 series de empuje frente a 3 de tirón (contar accesorios); variantes del mismo
-  aislamiento en días seguidos (extensión de cuádriceps y a una pierna, tríceps, jalón).
-- Kettlebell principiante 4d/45: Torso B de 3 ejercicios (~36 min), Torso A sin hombro.
-- RPE explicado dos veces la primera vez; changelog «bandas a 12-20» no se cumple en aislamientos; «Hacer sesión de
-  descarga» escondido en un segundo menú; escala 4-9 del mapa en oscuro.
+  aislamiento en días seguidos (extensión de cuádriceps y a una pierna, tríceps en polea y press francés, jalón).
+- Kettlebell principiante 4d/45: Torso B de 3 ejercicios (~36 min), Torso A sin hombro; Pierna B con dos zancadas.
+- RPE explicado dos veces la primera vez; bandas a 12-20 (changelog 0.1.12) no se cumple en curl, martillo, gemelos,
+  subida al banco ni flexión declinada; «Hacer sesión de descarga» en un segundo menú; tono 4-9 del mapa en oscuro.
 
-### serix-code (9,5)
-- repeatSession y saveAsRoutine copian las series recortadas por la descarga (5 → 3 → 2 al repetir en descarga; la
-  rutina guardada queda al 60 %): usar beforeDeload o la rutina de origen; tests.
-- hooks-order.test.ts solo ve `if (…) return` de una línea; no `if {` + `return (`, export default ni flechas.
-- undoDeload tras pasar a por lados con una serie hecha: solo quita la marca; test.
-- beforeDeload en sesiones antiguas (migrateData y backup.ts:110 lo conservan); test de finishSession.
-- Brazos: fits con y sin margen en balanceWeek; brazos fijos a 2 series; TIE.directArm sin test; generator.ts:599
-  dropAccessory en compuestos; weekly() repetido en los tests; deloadSets(2); partir generator.ts (1014).
+### serix-code (9,1)
+- **Alta (Comidas):** valores por 100 g sin límites al crearlos (nutrition.ts:94-107 recetas, :743-766 Open Food
+  Facts, FoodMine.tsx): la copia (backup.ts:264-280) los descarta y al restaurar se pierden el alimento y todos sus
+  apuntes. Una validPer100/clampPer100 común, y que el saneado recorte en vez de descartar.
+- Media: Open Food Facts acepta negativos en texto («-40», nutrition.ts:743); el menú propuesto usa las 4 comidas
+  fijas y no activeMeals() (Food.tsx:52/97, mealPlan.ts:263); «Corregir valores» borra fibra, azúcares y sal
+  (FoodMine.tsx:191).
+- Baja (Comidas): claves repetidas con el mismo alimento dos veces en un plato (mealPlan.ts:130, Food.tsx:653) y en
+  la lista de la compra (Food.tsx:712); fitDish redondea los fijos; setTimeout de la cámara tras cerrar
+  (FoodScan.tsx:51); sin aviso de valores dudosos al apuntar varios escaneados; «de las cuales» pierde la grasa
+  (nutrition.ts:930); dayGoalOptions memoizado sin medidas ni día (Food.tsx:37); abrir dos veces un enlace de
+  alimento lo duplica (FoodImport.tsx:30).
+- repeatSession y saveAsRoutine copian las series recortadas por la descarga (workout.ts:341, :446); test.
+- hooks-order.test.ts solo ve `if (…) return` de una línea; undoDeload tras pasar a por lados solo quita la marca;
+  beforeDeload en sesiones antiguas (migrateData y backup.ts:110) y test de finishSession.
+- Brazos: TIE.directArm sin test, generator.ts:599 dropAccessory, deloadSets(2), partir generator.ts (1014).
+- Decidir: setUnits da la pareja por hecha con un solo lado marcado (la ronda de superserie avanza tras la izquierda).
 
 ### serix-coach (9,8)
-- Bandas a 12-20 también en aislamientos (la regla isIsolation va antes): curl, laterales, gemelos a 8-12/10-15.
-- Seguridad en Band_Skull_Crusher (anclado detrás de la cabeza), Cross_Over_-_With_Bands, Hip_Extension_with_Bands.
-- Remo invertido: la barra de dominadas de puerta no sirve (pide barra a la altura de la cadera): alternativa bajo
-  una mesa robusta o no proponerlo solo por tener barra.
-- Cuerpo completo sin empuje (188), mismo ejercicio en días seguidos (335; objetivo < 100), días < 60 % del tiempo
-  en PPL (89), abdomen bajo en fatLoss/general (46), brazos sin gimnasio (57).
+- Empuje garantizado: 17 programas de 30 min sin ningún empuje en la semana (Fuerza 2d en los tres niveles) y días de
+  cuerpo completo con dos remos y sin empuje; test de barrido «cada programa lleva empuje».
+- Bandas a 12-20 también en aislamientos (generator.ts:293 isIsolation antes que la regla de bandas; 852 casos).
+- Seguridad de anclaje en Band_Skull_Crusher, Cross_Over_-_With_Bands, Hip_Extension_with_Bands.
+- Remo invertido fuera del gimnasio solo por la barra de puerta (generator.ts:141, 1065 casos): variante bajo una mesa
+  o no proponerlo.
+- Mismo ejercicio en días seguidos (335; objetivo < 100), días < 60 % en PPL, abdomen bajo en fatLoss/general (46),
+  brazos sin gimnasio en 2 días; las asistidas nunca proponen quitar ayuda al completar.
 
 ### serix-perf-a11y (9,8)
-- Peso, repeticiones y «Marcar serie» sin el número de serie para el lector.
-- La semana de Inicio sin significado para el lector (✓ y números sueltos).
-- Anillo de foco del h1 de Inicio pisa la fecha (outline-offset); ✓ de la cabecera del entreno a 320 px.
+- Peso, repeticiones y «Marcar serie» sin el número de serie para el lector (WorkoutSet.tsx:170/176/195).
+- La semana de Inicio sin significado para el lector (✓ y números sueltos; «3» de .week-count sin contexto).
+- Anillo de foco del h1 de Inicio y de «General» en Perfil pisa 4 px; ✓ de .set-head a 320 px se sale 3 px.
 - Test del orden de luminancia del mapa; 52 KiB de JS y 15 KiB de CSS sin usar.
