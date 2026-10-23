@@ -62,3 +62,9 @@ test('molestias: se recuerda la de la última vez que se hizo el ejercicio', () 
   assert.equal(lastPain('bench', better), undefined)
   assert.equal(lastPain('squat', history), undefined)
 })
+
+test('autorregulación en una asistida: si costó de más, más ayuda (no menos)', () => {
+  const e = { ...exercise('Assisted_Pull-Up', [set(40, 6, { rpe: 10 }), set(40, 6, { done: false })]), assisted: true }
+  const s = loadSuggestion(e, 8, kg)!
+  assert.ok(s.to > 40, `propone ${s.to} kg de ayuda`)
+})

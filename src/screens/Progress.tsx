@@ -5,7 +5,7 @@ import { MuscleHeatMap } from '../components/MuscleMap'
 import { ActionSheet, Card, Sheet, StatBand, Empty, LargeTitle, NavBar, Segmented, Thumb, useCatalog, useProgressive, useToast } from '../components/ui'
 import { periodCardSVG, periodLabel, summarize, type Period } from '../lib/periodCard'
 import { shareImage, svgToPng } from '../lib/shareCard'
-import { duration, fromKg, int, monthYear, num, parseDecimal, shortDay, toKg, uid, tonnes, tons, weight, weightValue } from '../lib/format'
+import { addDays, duration, fromKg, int, monthYear, num, parseDecimal, shortDay, toKg, uid, tonnes, tons, weight, weightValue } from '../lib/format'
 import { MAIN_GROUPS, muscleLabel } from '../lib/labels'
 import { navigate } from '../lib/router'
 import { exerciseHistory, monthToDate, newRecords, type ExercisePoint, sessionVolume, streakWeeks, muscleLoad, records, sessionDuration, setsByMuscle, STALL_SESSIONS, stalls, weekly, type PeriodStats } from '../lib/stats'
@@ -292,7 +292,7 @@ function WeightFoodCard() {
     if (!goal) return undefined
     const sessions = finishedSessions(data)
     const per = weeks.filter((w) => w.days >= 3).map((w) => {
-      const end = w.start.getTime() + 7 * 86400000
+      const end = addDays(w.start, 7).getTime()
       const inWeek = sessions.filter((x) => x.start >= w.start.getTime() && x.start < end)
       return { ok: w.p >= goal.protein * 0.9, records: inWeek.reduce((n, x) => n + newRecords(x, sessions).length, 0), trained: inWeek.length > 0 }
     }).filter((w) => w.trained)

@@ -23,7 +23,9 @@ test('CSV en español: punto y coma, coma decimal, comillas y solo series hechas
   assert.deepEqual(rows[2].slice(4, 11), ['1', 'Normal', '82,5', '8', '', '', '8,5'])
   assert.equal(rows[3][5], 'Drop set')
   assert.deepEqual(rows[4].slice(3, 9), ['Plancha', '1', 'Normal', '', '', '60'])
-  assert.equal(rows[2][11], 'Bien')
+  // La nota, en la primera fila del entreno (aquí, la de calentamiento) y solo en ella.
+  assert.equal(rows[1][11], 'Bien')
+  assert.equal(rows[2][11], '')
 })
 
 test('CSV en inglés y en libras', () => {
@@ -36,4 +38,16 @@ test('CSV en inglés y en libras', () => {
   } finally {
     setLang('es')
   }
+})
+
+test('exportar CSV: sin fórmulas de Excel, y la nota del entreno aunque empiece con calentamiento', () => {
+  setLang('es')
+  const s = session(0, [exercise('bench', [set(40, 10, { warmup: true }), set(80, 8)], { name: '=HYPERLINK("x")' })], { notes: '@nota' })
+  const rows = parseCsv(sessionsToCsv([s], 'kg'))
+  assert.equal(rows[1][3], `'=HYPERLINK("x")`)
+  assert.equal(rows[1][11], `'@nota`)
+  assert.equal(rows[2][11], '')
+  // La ayuda de las asistidas en negativo sigue siendo un número.
+  const a = session(0, [{ ...exercise('Assisted_Pull-Up', [set(20, 8)]), assisted: true }])
+  assert.equal(parseCsv(sessionsToCsv([a], 'kg'))[1][6], '-20')
 })

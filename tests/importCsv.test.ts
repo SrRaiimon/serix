@@ -105,3 +105,17 @@ test('sesiones: ejercicios sin equivalencia conservan su nombre y no se duplican
   // Volver a importar el mismo archivo no añade nada.
   assert.equal(toSessions(workouts, mapping, sessions).length, 0)
 })
+
+test('fechas de Hevy en francés, portugués y español, con tildes', () => {
+  assert.equal(parseDate('15 déc. 2025, 18:00'), new Date(2025, 11, 15, 18, 0).getTime())
+  assert.equal(parseDate('3 févr. 2025, 07:30'), new Date(2025, 1, 3, 7, 30).getTime())
+  assert.equal(parseDate('9 août 2025, 10:00'), new Date(2025, 7, 9, 10, 0).getTime())
+  assert.equal(parseDate('1 juil. 2025, 10:00'), new Date(2025, 6, 1, 10, 0).getTime())
+  assert.equal(parseDate('1 juin 2025, 10:00'), new Date(2025, 5, 1, 10, 0).getTime())
+  assert.equal(parseDate('12 fev 2025, 19:00'), new Date(2025, 1, 12, 19, 0).getTime())
+  assert.equal(parseDate('20 set 2025, 19:00'), new Date(2025, 8, 20, 19, 0).getTime())
+  assert.equal(parseDate('4 out 2025, 19:00'), new Date(2025, 9, 4, 19, 0).getTime())
+  assert.equal(parseDate('24 dez 2025, 19:00'), new Date(2025, 11, 24, 19, 0).getTime())
+  assert.equal(parseDate('5 ene 2025, 19:00'), new Date(2025, 0, 5, 19, 0).getTime())
+  assert.equal(parseDate('5 mai 2025, 19:00'), new Date(2025, 4, 5, 19, 0).getTime())
+})

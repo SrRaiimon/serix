@@ -5,9 +5,12 @@ import { useSyncExternalStore } from 'react'
 export type Tab = 'home' | 'routines' | 'food' | 'progress' | 'profile'
 export const tabs: Tab[] = ['home', 'routines', 'food', 'progress', 'profile']
 
+/** Sin romper con un «%» suelto (un enlace cortado por una app de mensajería): antes, URIError al cargar y pantalla en blanco. */
+const safeDecode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
+
 function current(): string[] {
   const path = location.hash.replace(/^#\/?/, '')
-  return path.split('/').filter(Boolean).map(decodeURIComponent)
+  return path.split('/').filter(Boolean).map(safeDecode)
 }
 
 let segments = current()

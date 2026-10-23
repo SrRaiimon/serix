@@ -502,7 +502,8 @@ export function MeasurementsScreen() {
 function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [values, setValues] = useState<Record<string, string>>({})
-  const parsed = Object.fromEntries(measureFields.map((f) => [f.key, parseDecimal(values[f.key] ?? '')]))
+  // Una medida de 0 o negativa no se guarda (perímetros negativos al pegar un «-»).
+  const parsed = Object.fromEntries(measureFields.map((f) => { const v = parseDecimal(values[f.key] ?? ''); return [f.key, v !== null && v > 0 ? v : null] }))
   const empty = Object.values(parsed).every((v) => v === null)
   // Grasa estimada con cintura y cuello (y cadera, en mujeres), si no se escribe a mano.
   const { nutrition } = useData().settings

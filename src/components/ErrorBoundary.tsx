@@ -14,8 +14,10 @@ interface State { error?: Error; key: string; report?: boolean }
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { key: this.props.resetKey }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
-    return { error }
+  // Lo lanzado puede no ser un Error (un texto, null…): sin message, render fallaba y la pantalla quedaba en blanco;
+  // con null, ni siquiera se veía el aviso.
+  static getDerivedStateFromError(error: unknown): Partial<State> {
+    return { error: error instanceof Error ? error : new Error(String(error)) }
   }
 
   static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
@@ -26,7 +28,8 @@ export class ErrorBoundary extends Component<Props, State> {
     const { error } = this.state
     if (!error) return this.props.children
     // Tras publicar una versión, una pantalla aún no descargada puede no existir ya: con recargar basta.
-    const chunk = /dynamically imported module|Importing a module script failed|Loading chunk|Failed to fetch/i.test(error.message)
+    const text = String(error.message ?? error)
+    const chunk = /dynamically imported module|Importing a module script failed|Loading chunk|Failed to fetch/i.test(text)
     return (
       <div className="screen rescue" role="alert">
         <h1>{t('Algo ha fallado en esta pantalla', 'Something went wrong on this screen')}</h1>
@@ -41,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <button className="btn plain" onClick={() => this.setState({ report: true })}>{t('Contar el fallo', 'Report the bug')}</button>
         {this.state.report && (
           <FeedbackSheet kind="bug" onClose={() => this.setState({ report: false })}
-            initial={`${t('La pantalla se quedó con «Algo ha fallado».', 'The screen showed "Something went wrong".')}\n${t('Error', 'Error')}: ${error.message.slice(0, 300)}\n${t('Pantalla', 'Screen')}: ${location.hash || '#/'}`} />
+            initial={`${t('La pantalla se quedó con «Algo ha fallado».', 'The screen showed "Something went wrong".')}\n${t('Error', 'Error')}: ${text.slice(0, 300)}\n${t('Pantalla', 'Screen')}: ${location.hash || '#/'}`} />
         )}
       </div>
     )

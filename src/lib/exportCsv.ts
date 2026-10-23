@@ -17,7 +17,12 @@ export function sessionsToCsv(sessions: Session[], unit: Unit): string {
   const es = lang() !== 'en' // en Europa: punto y coma y coma decimal
   const sep = es ? ';' : ','
   const number = (v: number | undefined) => (v === undefined ? '' : es ? String(Math.round(v * 100) / 100).replace('.', ',') : String(Math.round(v * 100) / 100))
-  const cell = (v: string) => (/["\n\r;,]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  // Un texto que empieza por = + - @ (o tabulador) lo toma Excel como fórmula: con un apóstrofo delante es solo texto.
+  // Los números negativos (la ayuda de las asistidas, «−20») sí van tal cual.
+  const cell = (raw: string) => {
+    const v = /^[=+\-@\t\r]/.test(raw) && !/^-?\d+([.,]\d+)?$/.test(raw) ? `'${raw}` : raw
+    return /["\n\r;,]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+  }
   const header = [
     t('Fecha', 'Date'), t('Entrenamiento', 'Workout'), t('Duración (min)', 'Duration (min)'), t('Ejercicio', 'Exercise'),
     t('Serie', 'Set'), t('Tipo', 'Type'), `${t('Peso', 'Weight')} (${unit})`, t('Repeticiones', 'Reps'),
@@ -28,6 +33,9 @@ export function sessionsToCsv(sessions: Session[], unit: Unit): string {
   const rows = [header]
   for (const s of [...sessions].sort((a, b) => a.start - b.start)) {
     const minutes = s.end ? Math.round((s.end - s.start) / 60000) : undefined
+    // La nota del entreno, en su primera fila (aunque sea de calentamiento): con «serie 1 del primer ejercicio», un
+    // primer ejercicio solo de calentamiento la perdía.
+    let notesWritten = false
     for (const e of s.exercises) {
       const weighted = trackingOf(e) === 'weight_reps'
       let n = 0
@@ -39,8 +47,9 @@ export function sessionsToCsv(sessions: Session[], unit: Unit): string {
           x.warmup ? '' : String(x.side === 'R' ? n : ++n),
           [typeText(x.warmup, x.kind), x.side === 'L' ? t('Izquierda', 'Left') : x.side === 'R' ? t('Derecha', 'Right') : ''].filter(Boolean).join(' · '),
           weighted || x.weight ? number(fromKg(e.assisted && x.weight > 0 ? -x.weight : x.weight, unit)) : '', weighted || x.reps ? String(x.reps) : '',
-          number(x.duration), number(x.distance), number(x.rpe), n === 1 && e === s.exercises[0] ? s.notes : '',
+          number(x.duration), number(x.distance), number(x.rpe), notesWritten ? '' : s.notes,
         ])
+        notesWritten = true
       }
     }
   }

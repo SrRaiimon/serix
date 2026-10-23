@@ -425,8 +425,10 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
           const tracking = trackingOf(e)
           const noRest = !!slots[i].letter && !slots[i].last
           const summary = `${targetText(e)} · ${noRest ? t('sin descanso', 'no rest') : t(`${rest(e.rest)} de descanso`, `${rest(e.rest)} rest`)}`
+          // La clave con el ejercicio: el tempo y el TM son campos sin control (defaultValue) y, con solo el índice, al
+          // quitar o cambiar uno de arriba el de abajo heredaba lo escrito en el anterior.
           return (
-          <div key={i} className={`list-row edit-row ${open ? 'open' : ''}`} style={slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
+          <div key={`${e.exerciseId}-${i}`} className={`list-row edit-row ${open ? 'open' : ''}`} style={slots[i].letter ? { boxShadow: 'inset 1px 0 0 var(--accent)' } : undefined}>
             {slots[i].letter && slots[i].first && (
               <span className="group-head"><Link2 size={15} /> {groupKind(slots[i].size)} {slots[i].letter}: {t('sin descanso entre ejercicios', 'no rest between exercises')}</span>
             )}

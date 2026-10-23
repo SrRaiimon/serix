@@ -254,7 +254,7 @@ function ResultSheet({ wod, draft, onClose }: { wod: Wod; draft: { start: number
       : { key: wod.key, format: wod.format, minutes: wod.minutes, rounds: wod.format === 'emom' ? Math.min(roundsN, wod.minutes) : roundsN, ...(wod.format === 'amrap' && Number(reps) > 0 ? { reps: Number(reps) } : {}) }
   const save = () => {
     if (!record) return
-    const kg = loaded ? toKg(parseDecimal(load) ?? 0, unit) : 0
+    const kg = loaded ? Math.max(0, toKg(parseDecimal(load) ?? 0, unit)) : 0
     const session = wodSession(wod, { ...record, ...(wod.benchmark ? { benchmark: wod.benchmark } : {}) }, catalog, draft.start, draft.end, kg)
     update((d) => { d.sessions.push(session) })
     onClose()

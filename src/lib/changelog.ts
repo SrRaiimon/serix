@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.14',
+    items: [
+      ['Un enlace roto con un «%» (cortado por una app de mensajería) ya no deja la app en blanco.', 'A broken link with a stray "%" (cut by a messaging app) no longer leaves the app blank.'],
+      ['Importar de Hevy o Strong en francés o portugués ya no pierde los entrenos de los meses con tilde o con otro nombre (déc., août, fev, out…).', 'Importing from Hevy or Strong in French or Portuguese no longer drops workouts from months with accents or other names (déc., août, fev, out…).'],
+      ['En las máquinas asistidas, si una serie cuesta de más, la app propone más ayuda (antes proponía menos).', 'On assisted machines, if a set is harder than planned, the app suggests more assistance (it used to suggest less).'],
+      ['La exportación a CSV ya no deja que un texto se abra como fórmula en Excel, y lleva siempre la nota del entreno.', 'CSV export no longer lets text open as a formula in Excel, and always includes the workout note.'],
+      ['Más arreglos: la semana del cambio de hora cuenta bien el domingo, la copia de seguridad se descarga en iPhone, no se aceptan pesos ni medidas negativas y al editar una rutina el tempo y el TM no se cambian de ejercicio.', 'More fixes: the clock-change week counts Sunday properly, backups download on iPhone, negative weights and measurements are no longer accepted, and editing a routine no longer moves tempo and TM to another exercise.'],
+    ],
+  },
+  {
     version: '0.1.13',
     items: [
       ['Arreglado: con la letra grande o muy grande, el icono del caracol (cámara lenta) ya no ocupa toda la figura del ejercicio en iPhone.', 'Fixed: with large or extra-large text, the snail icon (slow motion) no longer fills the whole exercise figure on iPhone.'],

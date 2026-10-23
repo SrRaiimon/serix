@@ -39,10 +39,12 @@ export function HomeScreen() {
   const { name, weeklyGoal, unit } = data.settings
   const weekStart = startOfWeek(Date.now()).getTime()
   const thisWeek = sessions.filter((s) => s.start >= weekStart)
-  const lastWeek = sessions.filter((s) => s.start >= weekStart - 7 * 86400000 && s.start < weekStart)
+  // Semanas del calendario (no 7 × 24 h): con el cambio de hora no cuadraban.
+  const prevWeekStart = addDays(new Date(weekStart), -7).getTime()
+  const lastWeek = sessions.filter((s) => s.start >= prevWeekStart && s.start < weekStart)
   const thisMonth = sessions.filter((s) => new Date(s.start).getMonth() === new Date().getMonth() && new Date(s.start).getFullYear() === new Date().getFullYear())
   const risk = streakAtRisk(sessions.map((s) => s.start), streakWeeks(sessions))
-  const recapDue = useMemo(() => weekdayIndex(Date.now()) <= 1 && data.settings.recapSeen !== weekStart && !!weekRecap(data, weekStart - 7 * 86400000), [data, weekStart])
+  const recapDue = useMemo(() => weekdayIndex(Date.now()) <= 1 && data.settings.recapSeen !== weekStart && !!weekRecap(data, addDays(new Date(weekStart), -7).getTime()), [data, weekStart])
   const notice = ([
     ['risk', !!risk],
     ['backup', backupDue(data, sessions.length)],
@@ -251,7 +253,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
 /** Los lunes y martes: cómo fue la semana pasada (entrenos, marcas, comida y peso). Se cierra hasta la próxima. */
 function WeekRecapCard({ weekStart }: { weekStart: number }) {
   const data = useData()
-  const recap = useMemo(() => weekRecap(data, weekStart - 7 * 86400000), [data, weekStart])
+  const recap = useMemo(() => weekRecap(data, addDays(new Date(weekStart), -7).getTime()), [data, weekStart])
   if (weekdayIndex(Date.now()) > 1 || data.settings.recapSeen === weekStart || !recap) return null
   const unit = data.settings.unit
   const lines = [

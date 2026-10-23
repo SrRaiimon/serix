@@ -38,7 +38,8 @@ function download(blob: Blob, name: string) {
   a.href = url
   a.download = name
   a.click()
-  URL.revokeObjectURL(url)
+  // Más tarde: revocarlo en el acto cancelaba la descarga en Safari de iPhone.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 /** ¿Toca recordar la copia? Solo cuando ya hay algo que perder: 3 entrenamientos o 5 días de comidas. */

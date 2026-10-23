@@ -98,18 +98,26 @@ export function parseDuration(text: string): number {
   return ms
 }
 
+/** Las tres primeras letras del mes, sin tildes, en inglés, español, francés y portugués. */
 const MONTHS: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
   ene: 0, abr: 3, ago: 7, dic: 11,
+  fev: 1, mai: 4, jui: 5, aou: 7, out: 9, dez: 11, set: 8, avr: 3,
 }
+/** «juin» y «juil.» empiezan igual: se distinguen por la cuarta letra. */
+const monthOf = (word: string) => (word.startsWith('juil') ? 6 : word.startsWith('juin') ? 5 : MONTHS[word.slice(0, 3)])
 
 /** Fechas de Strong («2020-12-30 18:51:52») y Hevy («22 Dec 2025, 08:00»), en hora local. */
 export function parseDate(text: string): number | undefined {
   const s = text.trim()
   let m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/)
   if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0)).getTime()
-  m = s.match(/^(\d{1,2}) ([A-Za-z]{3})[a-z]*\.? (\d{4}),? (\d{1,2}):(\d{2})/)
-  if (m && MONTHS[m[2].toLowerCase()] !== undefined) return new Date(+m[3], MONTHS[m[2].toLowerCase()], +m[1], +m[4], +m[5]).getTime()
+  // Sin tildes y con el mes en cualquier idioma: «15 déc. 2025, 18:00» o «3 fev 2025» no cuadraban con [A-Za-z] y el
+  // entreno se descartaba sin avisar.
+  const plain = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  m = plain.match(/^(\d{1,2}) ([A-Za-z]{3,})\.? (?:de )?(\d{4}),? (\d{1,2}):(\d{2})/)
+  const month = m ? monthOf(m[2].toLowerCase()) : undefined
+  if (m && month !== undefined) return new Date(+m[3], month, +m[1], +m[4], +m[5]).getTime()
   const parsed = Date.parse(s)
   return Number.isFinite(parsed) ? parsed : undefined
 }

@@ -170,7 +170,8 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
           <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Peso', 'Weight')} value={weightText}
             onChange={(e) => {
               setWeightText(e.target.value)
-              change({ weight: toKg(parseDecimal(e.target.value) ?? 0, unit) })
+              // Sin negativos (pegados o con teclado físico): restaban del peso movido. La ayuda de las asistidas es positiva.
+              change({ weight: Math.max(0, toKg(parseDecimal(e.target.value) ?? 0, unit)) })
             }} />
           <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label={t('Repeticiones', 'Reps')} value={repsText}
             onChange={(e) => {
@@ -184,7 +185,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
         <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t('Kilómetros', 'Kilometres')} value={distanceText}
           onChange={(e) => {
             setDistanceText(e.target.value)
-            change({ distance: parseDecimal(e.target.value) ?? 0 })
+            change({ distance: Math.max(0, parseDecimal(e.target.value) ?? 0) })
           }} />
       )}
       {tracking !== 'weight_reps' && (

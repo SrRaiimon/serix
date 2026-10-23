@@ -79,7 +79,8 @@ export function loadSuggestion(e: SessionExercise, target: number, unit: Unit): 
   if (Math.abs(diff) < 1) return undefined
   const pending = e.sets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop' && Math.abs(s.weight - last.weight) < 0.01)
   if (!pending.length) return undefined
-  const pct = Math.max(-0.1, Math.min(0.05, -diff * 0.04))
+  // En una máquina asistida el peso es la ayuda: si costó de más, más ayuda (al revés que con carga).
+  const pct = Math.max(-0.1, Math.min(0.05, -diff * 0.04)) * (e.assisted ? -1 : 1)
   const step = increment(unit)
   const to = toKg(Math.round(fromKg(last.weight * (1 + pct), unit) / step) * step, unit)
   if (Math.abs(to - last.weight) < 0.01 || to <= 0) return undefined
