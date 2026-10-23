@@ -26,6 +26,27 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.10 | 9,8 | 9,4 | 9,8 | 9,7 | 9,7 (9,675) |
 | 0.1.12 | 9,8 | 9,5 | 9,8 | 9,8 | 9,7 (9,725) |
 
+## Rotación de zonas (serix-code)
+
+En cada panel, `serix-code` revisa entera, además del diff, la zona revisada hace más tiempo («nunca» primero; a igual,
+la de más arriba). El diff solo enseña lo cambiado: los fallos de la 0.1.14 y la 0.1.15 estaban en código que no se
+volvía a leer. Al acabar el panel se apunta aquí la versión.
+
+| Zona | Archivos | Revisada a fondo |
+|---|---|---|
+| Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | nunca |
+| Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | nunca |
+| Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | nunca |
+| Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | nunca |
+| Guardado y varias pestañas | lib/store.ts (migraciones, mergeData, deshacer), lib/customExercises.ts | nunca |
+| Pantallas de edición | screens/SessionEdit.tsx, screens/Profile.tsx (medidas), screens/Photos.tsx, lib/photos.ts | nunca |
+| Generador y programas | lib/generator.ts, lib/generatorSlots.ts, lib/balance.ts, screens/RoutinesPrograms.tsx | 0.1.9 |
+| Importar y exportar | lib/importCsv.ts, lib/exportCsv.ts, lib/share.ts, lib/foodShare.ts, lib/transfer.ts, lib/zip.ts | 0.1.15 |
+| Copia de seguridad | lib/backup.ts, lib/protect.ts | 0.1.15 |
+| Progresión y autorregulación | lib/progression.ts, lib/autoreg.ts, lib/warmup.ts, lib/plates.ts, lib/bodyweight.ts | 0.1.15 |
+| Entreno | lib/workout.ts, screens/Workout*.tsx, screens/Routines.tsx (editor) | 0.1.15 |
+| Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.15 |
+
 ## Pendientes tras 0.1.12 (la 0.1.13 arregla el caracol de la figura con letra grande en Safari, con test).
 ## Crítica de diseño: 32/40; detector limpio; Lighthouse 99/100/100/100; axe 0; foco tapado 0 (Tab y ⇧Tab).
 
