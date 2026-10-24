@@ -201,6 +201,8 @@ function Main() {
   if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
   // Pasar datos desde otro móvil también se puede hacer antes del cuestionario inicial.
   if (route[0] === 'transfer') return <main className="app"><Suspense fallback={null}><TransferScreen mode={route[1]} /></Suspense></main>
+  // La privacidad se puede leer antes de dar ningún dato (enlace desde la bienvenida).
+  if (route[0] === 'legal') return <main className="app"><Suspense fallback={null}><LegalScreen /></Suspense></main>
   if (!data.settings.onboarded) return <Suspense fallback={null}><OnboardingScreen /></Suspense>
 
   const tab = currentTab(route)

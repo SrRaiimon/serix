@@ -35,7 +35,7 @@ export function QrCode({ text, label, className = '' }: { text: string; label: s
 }
 
 /** Hoja con el QR de un enlace y la opción de compartirlo como texto. */
-export function QrSheet({ title, url, onShare, onClose }: { title: string; url: string; onShare: () => void; onClose: () => void }) {
+export function QrSheet({ title, url, hint, onShare, onClose }: { title: string; url: string; hint?: string; onShare: () => void; onClose: () => void }) {
   const fits = useMemo(() => modules(url) !== null, [url])
   return (
     <Sheet title={title} onClose={onClose} right={<button className="nav-btn bold" onClick={onClose}>{t('Listo', 'Done')}</button>}>
@@ -44,7 +44,7 @@ export function QrSheet({ title, url, onShare, onClose }: { title: string; url: 
           <>
             <QrCode text={url} label={`${t('Código QR de', 'QR code for')} ${title}`} />
             <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>
-              {t('Escanéalo con la cámara de otro móvil: se abrirá Serix con la rutina lista para importar.', 'Scan it with another phone\'s camera: Serix will open with the routine ready to import.')}
+              {hint ?? t('Escanéalo con la cámara de otro móvil: se abrirá Serix con la rutina lista para importar.', 'Scan it with another phone\'s camera: Serix will open with the routine ready to import.')}
             </p>
           </>
         ) : (

@@ -56,8 +56,8 @@ export function IntervalScreen({ warmup, cooldown }: { warmup?: WarmupFocus; coo
             : mode === 'tabata'
             ? t('Rondas de trabajo y descanso. El clásico: 20 s a tope y 10 s de descanso, 8 rondas (4 minutos).', 'Rounds of work and rest. The classic: 20 s all-out and 10 s rest, 8 rounds (4 minutes).')
             : mode === 'emom'
-              ? t('«Every minute on the minute»: al empezar cada intervalo haces el trabajo y descansas lo que te sobre.', '"Every minute on the minute": at the start of each interval you do the work and rest for whatever time is left.')
-              : t('«As many rounds as possible»: todas las rondas que puedas en el tiempo fijado. Ve sumándolas con el botón.', '"As many rounds as possible": as many rounds as you can in the set time. Count them with the button.')}
+              ? t('Cada minuto («EMOM» en inglés): al empezar cada intervalo haces el trabajo y descansas lo que te sobre.', '"Every minute on the minute": at the start of each interval you do the work and rest for whatever time is left.')
+              : t('Máximas rondas («AMRAP» en inglés): todas las rondas que puedas en el tiempo fijado. Ve sumándolas con el botón.', '"As many rounds as possible": as many rounds as you can in the set time. Count them with the button.')}
         </p>
         <div className="list">
           {guided(mode) && (

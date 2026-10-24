@@ -1,10 +1,11 @@
 import { HeartPulse } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Segmented, Sheet } from '../components/ui'
-import { editable, fromKg, int, parseDecimal } from '../lib/format'
+import { editable, fromKg, int, parseDecimal, startOfDay, uid } from '../lib/format'
 import { t } from '../lib/i18n'
 import { ACTIVITY, adjustGoals, AIMS, CARRY_OVER_MAX, computeGoals, maintenanceKcal, proteinReference, trainingShift, defaultProteinPerKg, PROTEIN_PER_KG, activeMeals, type Aim, type Sex } from '../lib/nutrition'
-import { updateSettings, useData } from '../lib/store'
+import { update, updateSettings, useData } from '../lib/store'
+import { fillBodyweights } from '../lib/bodyweight'
 import { reminderTime } from '../lib/foodReminders'
 
 // Objetivo de calorías y macros (Comidas → Objetivo y la bienvenida): aparte de Food.tsx, que pasaba de 2000 líneas.
@@ -18,7 +19,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
     return best?.weight
   }, [data.measurements])
   const defaultAim: Aim = data.settings.goal === 'fatLoss' ? 'lose' : data.settings.goal === 'hypertrophy' ? 'gain' : 'keep'
-  const [sex, setSex] = useState<Sex>(saved?.sex ?? 'm')
+  // Sin elegir de entrada: es un dato tuyo y no se da por hecho.
+  const [sex, setSex] = useState<Sex | undefined>(saved?.sex)
   const [age, setAge] = useState(saved?.age ? String(saved.age) : '')
   const [height, setHeight] = useState(saved?.heightCm ? String(saved.heightCm) : '')
   const [weightText, setWeightText] = useState(saved?.weightKg ? editable(saved.weightKg) : lastWeight ? editable(Math.round(fromKg(lastWeight, 'kg') * 10) / 10) : '')
@@ -31,12 +33,13 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const [split, setSplit] = useState(data.settings.nutritionTrainingSplit !== false)
   const [burned, setBurned] = useState(data.settings.nutritionBurned === true)
   const [remind, setRemind] = useState(data.settings.foodReminders === true)
+  const [permission, setPermission] = useState(() => (typeof Notification !== 'undefined' ? Notification.permission : 'default'))
   const perKgValue = perKg ?? defaultProteinPerKg(aim)
   const [own, setOwn] = useState({ kcal: saved ? String(saved.kcal) : '', protein: saved ? String(saved.protein) : '', carbs: saved ? String(saved.carbs) : '', fat: saved ? String(saved.fat) : '' })
 
   const a = parseDecimal(age), h = parseDecimal(height), w = parseDecimal(weightText)
-  const ready = a !== null && a >= 14 && a <= 100 && h !== null && h >= 120 && h <= 230 && w !== null && w >= 30 && w <= 300
-  const computed = ready ? computeGoals({ sex, age: a!, heightCm: h!, weightKg: w!, activity, aim, ...(perKg ? { proteinPerKg: perKg } : {}) }) : undefined
+  const ready = sex !== undefined && a !== null && a >= 14 && a <= 100 && h !== null && h >= 120 && h <= 230 && w !== null && w >= 30 && w <= 300
+  const computed = ready ? computeGoals({ sex: sex!, age: a!, heightCm: h!, weightKg: w!, activity, aim, ...(perKg ? { proteinPerKg: perKg } : {}) }) : undefined
   const ownGoals = (() => {
     const kcal = parseDecimal(own.kcal), protein = parseDecimal(own.protein), carbs = parseDecimal(own.carbs), fat = parseDecimal(own.fat)
     return kcal && kcal >= 800 && kcal <= 8000 && [protein, carbs, fat].every((x) => x !== null && x >= 0 && x <= 1000)
@@ -57,6 +60,14 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const save = () => {
     if (!result) return
     updateSettings({ nutrition: { ...result, ...(proteinOnly ? { proteinOnly: true } : {}) }, nutritionCarryOver: carry, nutritionTrainingSplit: split, nutritionBurned: (split && burned) || undefined, foodReminders: remind || undefined })
+    // El peso escrito aquí cuenta como la pesada de hoy: antes Inicio lo volvía a preguntar un minuto después.
+    if (!manual && ready && w !== null) {
+      const today = startOfDay(Date.now()).getTime()
+      update((d) => {
+        if (!d.measurements.some((m) => m.weight !== undefined && m.date >= today)) d.measurements.push({ id: uid(), date: Date.now(), weight: w })
+      })
+      fillBodyweights()
+    }
     onClose()
   }
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
@@ -87,7 +98,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
         </div>
       ) : (
         <>
-          <Segmented value={sex} onChange={setSex} options={[{ value: 'm', label: t('Hombre', 'Male') }, { value: 'f', label: t('Mujer', 'Female') }]} />
+          <Segmented value={sex ?? ('' as Sex)} onChange={setSex} options={[{ value: 'm', label: t('Hombre', 'Male') }, { value: 'f', label: t('Mujer', 'Female') }]} />
+          <p className="tiny muted" style={{ margin: 0 }}>{t('El sexo, la edad, la altura y el peso solo sirven para la fórmula del gasto diario, y se quedan en tu móvil.', 'Sex, age, height and weight are only used for the daily energy formula, and they stay on your phone.')}</p>
           <div className="list">
             {numberRow(t('Edad', 'Age'), age, setAge, t('años', 'yrs'))}
             {numberRow(t('Altura', 'Height'), height, setHeight, 'cm')}
@@ -199,9 +211,11 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
         </span>
         <input type="checkbox" className="toggle" checked={remind} onChange={(e) => {
           setRemind(e.target.checked)
-          if (e.target.checked && typeof Notification !== 'undefined' && Notification.permission === 'default') void Notification.requestPermission()
+          if (e.target.checked && typeof Notification !== 'undefined' && Notification.permission === 'default') void Notification.requestPermission().then(setPermission)
         }} />
       </label>
+      {/* Con las notificaciones denegadas solo queda el aviso dentro de la app: se dice, en vez de activarlo sin más. */}
+      {remind && permission === 'denied' && <p className="small muted" style={{ margin: 0 }}>{t('Las notificaciones están bloqueadas para Serix: solo verás el aviso dentro de la app. Se activan en los ajustes del navegador.', 'Notifications are blocked for Serix: you will only see the reminder inside the app. Turn them on in the browser settings.')}</p>}
     </Sheet>
   )
 }

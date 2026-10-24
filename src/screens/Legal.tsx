@@ -58,6 +58,9 @@ const AESAN = <a href="https://www.aesan.gob.es/datos-abiertos/alimentos-y-bebid
 const ODBL = <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noreferrer">ODbL</a>
 const ETALAB = <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/" target="_blank" rel="noreferrer">Licence Ouverte 2.0</a>
 const ISSUES = <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer">GitHub</a>
+const GITHUB_PRIVACY = <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noreferrer">GitHub</a>
+const OFF_PRIVACY = <a href="https://world.openfoodfacts.org/privacy" target="_blank" rel="noreferrer">Open Food Facts</a>
+const AEPD = <a href="https://www.aepd.es" target="_blank" rel="noreferrer">AEPD</a>
 
 function LegalEs() {
   return (
@@ -88,7 +91,13 @@ function LegalEs() {
         <p><strong>Fotos de progreso:</strong> se guardan solo en este móvil, aparte del resto de datos. No van en la copia de seguridad ni en los resúmenes, y solo salen del móvil si las exportas tú en un .zip.</p>
         <p><strong>Importar desde otras apps:</strong> el archivo CSV de Strong o Hevy se lee y se convierte en el propio móvil; no se envía a ninguna parte.</p>
         <p><strong>Pasar datos a otro móvil:</strong> los datos viajan en códigos QR de una pantalla a la cámara del otro móvil, sin internet ni servidores. La cámara solo se usa mientras está abierta la pantalla de recibir, y la imagen se analiza en el propio móvil: no se guarda ni se envía a ninguna parte.</p>
-        <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos», o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
+        <p><strong>Recordatorio de comidas:</strong> si lo activas, la app pide permiso para mostrar notificaciones; las genera el propio móvil, sin servidor.</p>
+        <p><strong>Avisos por voz:</strong> usan las voces del móvil, y la app elige una del propio dispositivo si la hay. En algunos navegadores ciertas voces se generan en internet (por ejemplo, las «Google» de Chrome); con esas, el texto del aviso («Descanso terminado…») pasa por ese servicio.</p>
+        <p><strong>Datos de salud:</strong> el peso, las medidas, la grasa corporal y las molestias son datos de salud. Por eso se guardan solo en tu móvil y no salen de él salvo que los compartas tú.</p>
+        <p><strong>Una garantía que puedes comprobar:</strong> la página lleva una política de seguridad (CSP) que solo le permite conectarse con su propia web y con Open Food Facts. Aunque la app quisiera enviar algo a otro sitio, el navegador lo bloquearía.</p>
+        <p><strong>Quién está detrás:</strong> Serix lo hace SrRaiimon (seudónimo) a título personal. Como la app no tiene servidor, el autor no recibe ni guarda ningún dato tuyo. Los únicos terceros son {GITHUB_PRIVACY} (aloja la web) y {OFF_PRIVACY} (búsquedas de productos), cada uno con su política de privacidad.</p>
+        <p><strong>Tus derechos:</strong> como tus datos solo están en tu móvil, los ejerces tú directamente: verlos y llevártelos (copia de seguridad o CSV en Perfil), corregirlos y borrarlos. Si crees que no se respetan, puedes reclamar ante la {AEPD}.</p>
+        <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos» (todo menos el idioma, el tema y la unidad; con la opción de borrar también las fotos), o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
       </Section>
 
       <Section title="Contenido y licencias" icon={Scale}>
@@ -101,7 +110,7 @@ function LegalEs() {
       </Section>
 
       <Section title="Contacto" icon={Mail}>
-        <p>Para dudas, errores, pedir una licencia comercial o que se retire algún contenido, abre una incidencia en {ISSUES}.</p>
+        <p>Para dudas, errores, pedir una licencia comercial o que se retire algún contenido, abre una incidencia en {ISSUES}. Ten en cuenta que las incidencias de GitHub son públicas: no pongas en ellas datos personales.</p>
       </Section>
     </>
   )
@@ -136,7 +145,13 @@ function LegalEn() {
         <p><strong>Progress photos:</strong> they are only stored on this phone, separately from the rest of your data. They are not in the backup or in summaries, and they only leave the phone if you export them yourself as a .zip.</p>
         <p><strong>Importing from other apps:</strong> the Strong or Hevy CSV file is read and converted on the phone itself; it is not sent anywhere.</p>
         <p><strong>Moving data to another phone:</strong> the data travels in QR codes from one screen to the other phone's camera, with no internet or servers. The camera is only used while the receive screen is open, and the image is analysed on the phone itself: it is neither stored nor sent anywhere.</p>
-        <p><strong>Deleting your data:</strong> in Profile → “Delete all data”, or by removing the app. If you delete it without exporting a backup, it cannot be recovered.</p>
+        <p><strong>Meal reminders:</strong> if you turn them on, the app asks for permission to show notifications; they are created by the phone itself, with no server.</p>
+        <p><strong>Voice cues:</strong> they use the phone's voices, and the app picks an on-device one when there is one. In some browsers certain voices are generated online (for example Chrome's "Google" voices); with those, the cue text ("Rest is over…") goes through that service.</p>
+        <p><strong>Health data:</strong> weight, body measurements, body fat and discomfort are health data. That is why they are only stored on your phone and never leave it unless you share them yourself.</p>
+        <p><strong>A guarantee you can check:</strong> the page carries a security policy (CSP) that only lets it connect to its own site and to Open Food Facts. Even if the app wanted to send something elsewhere, the browser would block it.</p>
+        <p><strong>Who is behind it:</strong> Serix is made by SrRaiimon (a pseudonym) as a personal project. Since the app has no server, the author neither receives nor stores any of your data. The only third parties are {GITHUB_PRIVACY} (hosts the site) and {OFF_PRIVACY} (product searches), each with its own privacy policy.</p>
+        <p><strong>Your rights:</strong> since your data is only on your phone, you exercise them yourself: see and take your data (backup or CSV in Profile), correct it and delete it. If you think they are not respected, you can complain to your data protection authority (in Spain, the {AEPD}).</p>
+        <p><strong>Deleting your data:</strong> in Profile → “Delete all data” (everything except language, theme and unit; with the option to delete photos too), or by removing the app. If you delete it without exporting a backup, it cannot be recovered.</p>
       </Section>
 
       <Section title="Content and licences" icon={Scale}>
@@ -149,7 +164,7 @@ function LegalEn() {
       </Section>
 
       <Section title="Contact" icon={Mail}>
-        <p>For questions, bugs, to request a commercial licence or the removal of any content, open an issue on {ISSUES}.</p>
+        <p>For questions, bugs, to request a commercial licence or the removal of any content, open an issue on {ISSUES}. Bear in mind that GitHub issues are public: do not put personal data in them.</p>
       </Section>
     </>
   )

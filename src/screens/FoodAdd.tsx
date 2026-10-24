@@ -1,5 +1,6 @@
 import { Barcode, Star, Camera, ChefHat, ChevronRight, Globe, Minus, PenLine, Plus, RotateCcw, Search, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { online } from '../lib/offline'
 import { Segmented, Sheet } from '../components/ui'
 import { editable, int, parseDecimal, uid } from '../lib/format'
 import { dataLang, t } from '../lib/i18n'
@@ -52,6 +53,14 @@ export function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }
   useEffect(() => {
     if (query.trim().length >= 3 && !shops) loadAesan().then((d) => setShops(d.list), () => setShops('error'))
   }, [query, shops])
+  // Tras un fallo (sin cobertura) se vuelve a intentar sola al recuperar la conexión; antes había que
+  // cerrar y volver a abrir «Añadir».
+  useEffect(() => {
+    if (shops !== 'error') return
+    const retry = () => setShops(undefined)
+    window.addEventListener('online', retry)
+    return () => window.removeEventListener('online', retry)
+  }, [shops])
   useEffect(() => setShopsMax(15), [query])
   const searchOnline = async (text: string) => {
     abort.current?.abort()
@@ -281,8 +290,13 @@ export function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }
                 return foodRow(p.barcode, p.name, detailText(p.per100, grams, { brand: p.brand, portion: p.portion }), doubtfulValues(p.per100), () => pickProduct(p, 'aesan'), () => addProduct(p, 'aesan'), grams)
               })}
               {found.length > shopsMax && <button className="list-row accent" onClick={() => setShopsMax(60)}><Plus size={19} /> {t('Ver más productos', 'Show more products')}</button>}
-              {shops === undefined && <div className="list-row small muted">{t('Cargando productos…', 'Loading products…')}</div>}
-              {shops === 'error' && <div className="list-row small muted">{t('No se han podido cargar los productos. Comprueba la conexión.', 'Could not load the products. Check your connection.')}</div>}
+              {shops === undefined && <div className="list-row small muted">{t('Cargando productos del súper (casi 1 MB, solo la primera vez)…', 'Loading supermarket products (almost 1 MB, only the first time)…')}</div>}
+              {shops === 'error' && (
+                <div className="list-row" style={{ flexWrap: 'wrap' }}>
+                  <span className="grow small muted">{t('No se han podido cargar los productos. Comprueba la conexión.', 'Could not load the products. Check your connection.')}</span>
+                  <button className="btn secondary btn-sm" onClick={() => setShops(undefined)}><RotateCcw size={16} /> {t('Reintentar', 'Try again')}</button>
+                </div>
+              )}
               {Array.isArray(shops) && found.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
             </div>
             <p className="list-footer" style={{ margin: 0 }}>{t(`${AESAN_SOURCE}, actualizada el 29/09/2026 (datos de las etiquetas recogidos por Kantar Worldpanel; pueden haber cambiado). Valores por 100 g o 100 ml.`, `${AESAN_SOURCE} (Spanish Food Safety Agency), updated 29/09/2026 (label data collected by Kantar Worldpanel, may have changed). Values per 100 g or 100 ml.`)}</p>
@@ -300,7 +314,10 @@ export function AddFoodSheet({ day, meal: initialMeal, goals, onClose, onAdded }
             {offResults && offResults.length === 0 && <div className="list-row small muted">{t('Sin productos con ese nombre.', 'No products with that name.')}</div>}
             {off?.query === q && off.state === 'offline' ? (
               <div className="list-row" style={{ flexWrap: 'wrap' }}>
-                <span className="grow small">{t('Open Food Facts está saturado ahora mismo (es un servicio gratuito de voluntarios). Si sigue fallando, escanea el código de barras.', 'Open Food Facts is overloaded right now (a free volunteer service). If it keeps failing, scan the barcode.')}</span>
+                <span className="grow small">{online()
+                  ? t('Open Food Facts está saturado ahora mismo (es un servicio gratuito de voluntarios). Si sigue fallando, escanea el código de barras.', 'Open Food Facts is overloaded right now (a free volunteer service). If it keeps failing, scan the barcode.')
+                  // Sin red no es que esté saturado, y escanear tampoco serviría (también consulta Open Food Facts).
+                  : t('Sin conexión no se puede buscar en Open Food Facts. Los alimentos básicos sí funcionan.', 'Open Food Facts cannot be searched offline. Basic foods still work.')}</span>
                 <button className="btn secondary btn-sm" onClick={() => void searchOnline(q)}><RotateCcw size={16} /> {t('Reintentar', 'Try again')}</button>
               </div>
             ) : !(off?.query === q) && (

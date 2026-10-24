@@ -590,7 +590,8 @@ export function migrateData(stored: unknown): AppData | 'newer' | undefined {
   const nutrition = obj<Partial<NutritionData>>(d.nutrition, {})
   return {
     ...empty, ...(d as Partial<AppData>), version: DATA_VERSION,
-    routines: list(d.routines, empty.routines), sessions: list(d.sessions, empty.sessions), measurements: list(d.measurements, empty.measurements),
+    // Una medida sin fecha válida (antes se podía guardar con la fecha vacía) rompía las gráficas: fuera.
+    routines: list(d.routines, empty.routines), sessions: list(d.sessions, empty.sessions), measurements: list<Measurement>(d.measurements, empty.measurements).filter((m) => Number.isFinite(m.date)),
     friends: list(d.friends, empty.friends), challenges: list(d.challenges, empty.challenges), customExercises: list(d.customExercises, empty.customExercises),
     exerciseNotes: obj(d.exerciseNotes, empty.exerciseNotes),
     nutrition: { ...empty.nutrition, ...nutrition, entries: list(nutrition.entries, []), foods: list(nutrition.foods, []), meals: list(nutrition.meals, []) },
@@ -695,9 +696,11 @@ export function replaceData(data: AppData): Promise<void> {
 }
 
 export function resetData(): Promise<void> {
-  const keepOnboarding = state.settings
+  // Solo se quedan las preferencias del aparato (idioma, tema, letra, unidad): el nombre, el perfil de
+  // calorías, los objetivos y todo lo demás tuyo se borra, como dice el botón y la página de privacidad.
+  const { language, theme, textScale, unit, seenVersion, catalogVersion } = state.settings
   state = emptyData()
-  state.settings = { ...keepOnboarding, activeProgram: '', favorites: [] }
+  state.settings = { ...defaultSettings, unit, onboarded: true, language, theme, textScale, seenVersion, catalogVersion }
   emit()
   return flush()
 }

@@ -210,7 +210,8 @@ img {
 }
 
 /* Si el título y los botones no caben en una línea (pantallas estrechas, letra grande), los botones bajan. */
-.large-title > .grow { flex: 1 0 auto; }
+/* Con un nombre larguísimo sin espacios, el título se parte en vez de ensanchar la página. */
+.large-title > .grow { flex: 1 0 auto; min-width: 0; max-width: 100%; }
 .large-title > .row { margin-left: auto; }
 
 .large-title h1 {
@@ -221,6 +222,7 @@ img {
   font-stretch: 112%;
   margin: 0;
   letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
 }
 
 .subtitle {
@@ -2341,6 +2343,7 @@ html.scroll-locked body {
 .guide li.done .guide-mark { background: var(--green); color: #fff; }
 .guide li.current .guide-mark { background: var(--accent); color: var(--on-accent); }
 .link-btn { background: none; border: 0; padding: 4px 0; align-self: flex-start; text-decoration: underline; text-underline-offset: 2px; color: var(--text-2); }
+.onb-privacy { align-self: center; display: inline-flex; align-items: center; gap: 5px; margin-top: -6px; }
 .backup-later { align-self: center; padding: 4px 8px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -2701,7 +2704,8 @@ textarea { resize: none; }
 .up-text { color: var(--green-text); }
 .down-text { color: var(--red-text); }
 .readiness { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--fill); }
-.readiness-row { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 8px; }
+.readiness-row { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 8px; }
+.readiness-ends { display: block; line-height: 1.2; }
 .readiness-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .readiness-scale .chip { justify-content: center; padding: 0; min-height: 34px; }
 

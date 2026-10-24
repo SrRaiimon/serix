@@ -33,6 +33,10 @@ EQUIPMENT = {'body only': 'bodyweight', None: 'bodyweight', 'kettlebells': 'kett
              'medicine ball': 'medicine-ball', 'exercise ball': 'exercise-ball', 'foam roll': 'foam-roll'}
 # Material mal indicado en la lista original.
 EQUIPMENT_FIX = {'Bodyweight_Flyes': 'other', 'Chair_Squat': 'bodyweight'}
+# Músculo y nivel mal indicados en la lista original (la aducción trabaja los aductores; el muscle up es de
+# los más difíciles que hay, no intermedio).
+MUSCLE_FIX = {'Cable_Hip_Adduction': 'adductors'}
+LEVEL_FIX = {'Muscle_Up': 'expert', 'Kipping_Muscle_Up': 'expert'}
 CATEGORY = {'powerlifting': 'strength', 'olympic weightlifting': 'strength', 'strongman': 'strength'}
 
 
@@ -55,7 +59,7 @@ def main(src, mapping_path):
     assert all(len(steps_en[k]) == len(v) for k, v in steps.items()), [k for k, v in steps.items() if len(steps_en[k]) != len(v)]
     out = []
     for e in data:
-        muscle = MUSCLE[e['primaryMuscles'][0]]
+        muscle = MUSCLE_FIX.get(e['id'], MUSCLE[e['primaryMuscles'][0]])
         category = CATEGORY.get(e['category'], e['category'])
         out.append({
             'id': e['id'],
@@ -65,7 +69,7 @@ def main(src, mapping_path):
             'bodyPart': 'cardio' if category == 'cardio' else BODY_PART[muscle],
             'equipment': EQUIPMENT_FIX.get(e['id'], EQUIPMENT.get(e['equipment'], e['equipment'])),
             'category': category,
-            'level': e['level'],
+            'level': LEVEL_FIX.get(e['id'], e['level']),
             'secondaryMuscles': [MUSCLE[m] for m in e['secondaryMuscles'] if m in MUSCLE],
             'instructions': steps.get(e['id'], []),
             'instructionsEn': steps_en.get(e['id'], []),

@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { registerServiceWorker } from './lib/pwa'
 import { flushPending, refreshFromDisk } from './lib/store'
+import { installTapGuard } from './lib/tapGuard'
 import './styles.css'
 
 registerServiceWorker()
+installTapGuard()
 
 // Guarda al pasar a segundo plano (en móvil el navegador puede cerrar la app sin avisar), pero solo si hay
 // cambios: una pestaña que no ha tocado nada no debe escribir su copia, quizá vieja. Al volver, relee por

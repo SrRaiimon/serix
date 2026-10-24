@@ -37,10 +37,16 @@ Todo el contenido propio de Serix, en cualquiera de sus versiones a partir de la
 Estas partes no son del titular y **conservan sus propias licencias**, recogidas íntegras en
 [`public/licenses.txt`](public/licenses.txt):
 
-- React y React DOM (MIT), Lucide (ISC), qrcode-generator (MIT) y jsQR (Apache 2.0, con partes de
-  ZXing).
+- React y React DOM (MIT), Immer (MIT), Lucide (ISC), qrcode-generator (MIT) y jsQR (Apache 2.0,
+  con partes de ZXing).
+- barcode-detector y zxing-wasm (MIT, con ZXing-C++ bajo Apache 2.0).
+- Tesseract.js (Apache 2.0, con el motor Tesseract OCR y su modelo de español, Apache 2.0).
+- La **tipografía Archivo** (SIL Open Font License 1.1).
 - Los **datos de hecho** de los ejercicios (clasificación por músculos, material y nivel) y sus
   **nombres originales en inglés**, procedentes de la lista abierta Free Exercise DB.
+- Los **datos de alimentos**: tabla CIQUAL de la ANSES (Licence Ouverte 2.0), base de datos de
+  alimentos y bebidas comercializados en España de la AESAN (reutilizada según su aviso legal;
+  datos recogidos por Kantar Worldpanel) y Open Food Facts (ODbL).
 
 Nada en este aviso limita los derechos que esas licencias conceden sobre esas partes.
 
@@ -110,6 +116,12 @@ de los programas de ordenador (Directiva 2009/24/CE).
 
 ## 7. Otras condiciones
 
+- **Privacidad.** La app no tiene servidor propio ni cuentas; los datos se guardan solo en el
+  dispositivo del usuario. El titular no recibe ni trata datos personales. Los terceros son
+  GitHub Pages (alojamiento, que recibe la IP como cualquier web) y Open Food Facts (al buscar,
+  solo se envía el código de barras o el texto buscado, además de los datos técnicos de la conexión,
+  como la IP). El detalle completo está en la app, en **Perfil → Legal y privacidad**.
+
 - **Sin garantías.** Serix se ofrece tal cual, sin garantías y, en la medida en que la ley lo
   permita, sin responsabilidad del titular por su uso. Las orientaciones de entrenamiento son
   generales y no sustituyen a un profesional de la salud o del deporte.
@@ -135,7 +147,18 @@ Noncommercial License 1.0.0** (see [`LICENSE`](LICENSE), which is the binding te
 use is prohibited** without the author's prior written permission: selling it, charging for it,
 monetising it with ads or subscriptions, publishing it in app stores for profit, offering it to
 paying customers (gyms, trainers, companies), white-labelling it, or reusing its content in
-commercial products. Third-party components keep their own licenses (`public/licenses.txt`).
+commercial products. Third-party components keep their own licenses (`public/licenses.txt`):
+React, React DOM, Immer and qrcode-generator (MIT), Lucide (ISC), jsQR (Apache 2.0, with parts of
+ZXing), barcode-detector and zxing-wasm (MIT, with ZXing-C++ under Apache 2.0), Tesseract.js and the
+Tesseract OCR engine and Spanish model (Apache 2.0), and Archivo (SIL Open Font License 1.1).
+Exercise facts and original English names come from Free Exercise DB. Food data comes from ANSES's
+CIQUAL table (Licence Ouverte 2.0), AESAN's database of foods and beverages marketed in Spain
+(reused under its legal notice; data collected by Kantar Worldpanel), and Open Food Facts (ODbL).
 Violations end the license and may lead to civil and criminal action under Spanish and
 international intellectual property law. To request a commercial license, open an issue at
 <https://github.com/SrRaiimon/serix/issues>.
+
+**Privacy:** no accounts or own server; user data stays on the device, and the author does not
+receive or process personal data. GitHub Pages hosts the app and receives the IP address;
+Open Food Facts receives only the barcode or search text, plus technical connection data such as
+the IP address. Full details are in the app under **Profile → Legal and privacy**.

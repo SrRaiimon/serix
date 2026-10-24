@@ -1,5 +1,5 @@
 import { BlockCard } from '../components/Block'
-import { weekDone } from '../lib/schedule'
+import { dueToday } from '../lib/schedule'
 import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ActionSheet, Card, Empty, LargeTitle, NavBar, Sheet, Stepper, StatBand, Thumb, useCatalog, useToast } from '../components/ui'
@@ -62,6 +62,9 @@ export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
   const [menu, setMenu] = useState(false)
   const [editing, setEditing] = useState<string>()
   const [programMenu, setProgramMenu] = useState<string>()
+  const [deleting, setDeleting] = useState<string>()
+  // Rutina vacía recién creada: si se cierra sin ponerle ningún ejercicio, se quita (antes se quedaba).
+  const [created, setCreated] = useState<string>()
   const [toast, showToast] = useToast()
   const [qrSheet, openQr] = useQr(showToast)
   const active = data.settings.activeProgram
@@ -89,7 +92,13 @@ export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
     update((d) => {
       d.routines.push({ id, name: t('Nueva rutina', 'New routine'), notes: '', order: d.routines.length, createdAt: Date.now(), exercises: [] })
     })
+    setCreated(id)
     setEditing(id)
+  }
+  const closeEditor = () => {
+    if (editing && editing === created) update((d) => { d.routines = d.routines.filter((r) => r.id !== created || r.exercises.length > 0) })
+    setCreated(undefined)
+    setEditing(undefined)
   }
 
   return (
@@ -148,21 +157,25 @@ export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
           { label: t('Compartir programa', 'Share program'), onSelect: () => void sharePlan(groups.get(programMenu) ?? [], programMenu, programMenu, showToast) },
           { label: t('Mostrar código QR', 'Show QR code'), onSelect: () => void openQr(groups.get(programMenu) ?? [], programMenu, programMenu) },
           ...(programMenu !== active ? [{ label: t('Marcar como activo', 'Set as active'), onSelect: () => updateSettings({ activeProgram: programMenu }) }] : []),
-          {
-            label: t('Eliminar programa', 'Delete program'), destructive: true, onSelect: () => {
-              // Se borran sus rutinas (el historial se conserva) y se puede deshacer unos segundos.
-              withUndo(t('Programa eliminado', 'Program deleted'), () => update((d) => {
-                d.routines = d.routines.filter((r) => r.programName !== programMenu)
-                if (d.settings.activeProgram === programMenu) d.settings.activeProgram = ''
-              }))
-            },
-          },
+          // Borra todas sus rutinas de golpe: se pregunta antes (además de poder deshacerlo unos segundos).
+          { label: t('Eliminar programa', 'Delete program'), destructive: true, onSelect: () => setDeleting(programMenu) },
         ]} />
+      )}
+      {deleting && (
+        <ActionSheet title={t(`¿Eliminar «${deleting}»?`, `Delete "${deleting}"?`)} onClose={() => setDeleting(undefined)}
+          message={t(`Se borran sus ${groups.get(deleting)?.length ?? 0} rutinas. Tu historial de entrenos se conserva.`, `Its ${groups.get(deleting)?.length ?? 0} routines are deleted. Your workout history is kept.`)}
+          options={[{ label: t('Eliminar programa', 'Delete program'), destructive: true, onSelect: () => {
+            // Se borran sus rutinas (el historial se conserva) y se puede deshacer unos segundos.
+            withUndo(t('Programa eliminado', 'Program deleted'), () => update((d) => {
+              d.routines = d.routines.filter((r) => r.programName !== deleting)
+              if (d.settings.activeProgram === deleting) d.settings.activeProgram = ''
+            }))
+          } }]} />
       )}
       {showGenerator && <GeneratorSheet onClose={() => { setShowGenerator(false); if (generate) navigate('routines') }} />}
       {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
       {library && <LibrarySheet onClose={() => setLibrary(false)} on531={data.settings.simpleMode ? undefined : () => { setLibrary(false); setShow531(true) }} />}
-      {editing && <RoutineEditor id={editing} onClose={() => setEditing(undefined)} />}
+      {editing && <RoutineEditor id={editing} onClose={closeEditor} />}
       {qrSheet}
       {toast}
     </div>
@@ -176,7 +189,7 @@ function RoutineRow({ routine, data, next }: { routine: Routine; data: AppData; 
   return (
     <div className={`list-row routine-row ${next ? 'next' : ''}`}>
       <button className="routine-main" onClick={() => navigate('routines', routine.id)}>
-        {next && <span className="routine-next">{weekDone(data) ? t('La siguiente', 'Next one') : t('Te toca hoy', 'Up next')}</span>}
+        {next && <span className="routine-next">{dueToday(data) ? t('Te toca hoy', 'Up next') : t('La siguiente', 'Next one')}</span>}
         <span className="bold" style={{ display: 'block' }}>{routine.name}</span>
         <span className="small muted clamp-2">{routine.exercises.length ? muscleSummary(routine) : t('Sin ejercicios', 'No exercises')}</span>
         <span className="small routine-meta">
@@ -280,10 +293,10 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
           { value: duration.sets, label: duration.deload ? t('Series · descarga', 'Sets · deload') : t('Series', 'Sets') },
-          { value: `~${duration.minutes}′`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
+          { value: `~${duration.minutes} min`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
-        <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Para hoy', 'Today\'s target')}</span>}</div>
+        <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Objetivo', 'Target')}</span>}</div>
         {duration.deload ? (
           <p className="list-footer" style={{ margin: '-6px 4px 0' }}>{t('Semana de descarga: menos series y un 10 % menos de peso para recuperar. La semana que viene vuelves a tus pesos.', 'Deload week: fewer sets and 10% less weight to recover. Next week you go back to your usual weights.')}</p>
         ) : routine.exercises.some((e) => e.progression) && (

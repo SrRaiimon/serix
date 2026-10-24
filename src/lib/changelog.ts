@@ -9,6 +9,19 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.18',
+    items: [
+      ['«Borrar todos los datos» ya borra también tu nombre, tus calorías y tus objetivos, y puede borrar las fotos.', '"Delete all data" now also deletes your name, calories and goals, and can delete your photos.'],
+      ['Un doble toque ya no guarda dos veces un programa, un alimento o una medida, ni se salta la vista previa del programa.', 'A double tap no longer saves a program, food or measurement twice, or skips the program preview.'],
+      ['En el cuestionario, tocar los días propuestos los fija (antes los quitaba).', 'In the questionnaire, tapping the suggested days sets them (before, it removed them).'],
+      ['La fila de la serie ya no se mueve al escribir, los pesos y repeticiones imposibles no se apuntan, y el descanso sigue aunque se cierre la app y se para al desmarcar la serie.', 'The set row no longer moves while you type, impossible weights and reps are not logged, and rest keeps going if the app closes and stops when you untick the set.'],
+      ['Después de entrenar, Inicio y Rutinas ya no dicen «Te toca hoy», y al terminar vuelves a Inicio.', 'After training, Home and Routines no longer say "Up next" for today, and finishing takes you back to Home.'],
+      ['Menos jerga: «Entreno del día», la escala de cómo estás con sus extremos, y el esfuerzo del cardio sin repeticiones.', 'Less jargon: "Workout of the day", the how-you-feel scale shows its ends, and cardio effort without reps.'],
+      ['Comidas: sin conexión lo dice claro, los productos del súper se reintentan solos, y recetas y alimentos con cifras imposibles avisan antes de guardar.', 'Food: offline is stated clearly, supermarket products retry by themselves, and recipes and foods with impossible numbers warn before saving.'],
+      ['La privacidad está más completa (tus derechos, datos de salud, quién está detrás) y se puede leer antes de empezar.', 'The privacy notice is more complete (your rights, health data, who is behind it) and can be read before you start.'],
+    ],
+  },
+  {
     version: '0.1.17',
     items: [
       ['Los programas de cuerpo completo llevan siempre algún press: antes había días (y algunas semanas cortas) sin ningún ejercicio de empuje.', 'Full-body programs always include a press: some days (and a few short weeks) had no pushing exercise at all.'],

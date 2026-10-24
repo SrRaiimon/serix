@@ -74,7 +74,11 @@ export function RecipeSheet({ initial, initialName, onBack, onClose, onSaved }: 
   }
   const values = recipeValues(recipe)
   const serving = amountOf(values.per100, values.portionG)
-  const ok = name.trim() && recipe.items.length > 0 && values.weight > 0
+  // El plato hecho pesa más que lo crudo si absorbe agua (arroz, pasta) y menos si la pierde (carne, salsas
+  // reducidas), pero no 16 veces menos: con 5 g para 80 g de arroz, cada ración contaba una sexta parte.
+  const raw = recipe.items.reduce((n, i) => n + i.grams, 0)
+  const cookedBad = cooked.trim() !== '' && (cookedG === null || (raw > 0 && (cookedG < raw * 0.25 || cookedG > raw * 5)))
+  const ok = name.trim() && recipe.items.length > 0 && values.weight > 0 && !cookedBad
   const add = (f: Pickable) => {
     const grams = f.portions[0]?.g ?? 100
     setItems([...items, { name: f.name, grams, per100: f.per100, ...(f.ref ? { ref: f.ref } : {}), text: editable(grams) }])
@@ -132,10 +136,11 @@ export function RecipeSheet({ initial, initialName, onBack, onClose, onSaved }: 
         </div>
         <label className="list-row">
           <span className="grow">{t('Peso del plato hecho', 'Cooked dish weight')}<span className="small muted" style={{ display: 'block' }}>{t('Opcional: pésalo en la olla para ajustar el agua', 'Optional: weigh the pot to account for water')}</span></span>
-          <input inputMode="decimal" value={cooked} placeholder={editable(Math.round(recipe.items.reduce((n, i) => n + i.grams, 0)))} style={{ textAlign: 'right', width: 72, fontSize: 17 }} onChange={(e) => setCooked(e.target.value)} aria-label={t('Peso del plato hecho en gramos', 'Cooked weight in grams')} />
+          <input inputMode="decimal" className={cookedBad ? 'invalid' : ''} value={cooked} placeholder={editable(Math.round(raw))} style={{ textAlign: 'right', width: 72, fontSize: 17 }} onChange={(e) => setCooked(e.target.value)} aria-label={t('Peso del plato hecho en gramos', 'Cooked weight in grams')} />
           <span className="muted">g</span>
         </label>
       </div>
+      {cookedBad && <p className="small muted" role="alert" style={{ margin: 0 }}>{t(`Revisa el peso del plato hecho: con ${g(raw)} g de ingredientes, tendría que estar entre ${g(raw * 0.25)} y ${g(raw * 5)} g.`, `Check the cooked weight: with ${g(raw)} g of ingredients it should be between ${g(raw * 0.25)} and ${g(raw * 5)} g.`)}</p>}
       {recipe.items.length > 0 && (
         <>
           <div className="list-header">{t(`Una ración · ${g(values.portionG)} g`, `One serving · ${g(values.portionG)} g`)}</div>
@@ -181,7 +186,9 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
   const [values, setValues] = useState({ kcal: fmt(initial?.per100.kcal), p: fmt(initial?.per100.p), c: fmt(initial?.per100.c), f: fmt(initial?.per100.f), portion: fmt(initial?.portion?.g) })
   const parsed = { kcal: parseDecimal(values.kcal), p: parseDecimal(values.p), c: parseDecimal(values.c), f: parseDecimal(values.f) }
   const valid = parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 1000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 100)
-  const ok = name.trim() && valid
+  // En 100 g no caben más de 100 g de proteína, hidratos y grasa juntos (50 + 50 + 50 se guardaba).
+  const overWeight = valid && parsed.p! + parsed.c! + parsed.f! > 100.5
+  const ok = name.trim() && valid && !overWeight
   const portion = parseDecimal(values.portion)
   const save = () => {
     if (!ok) return
@@ -247,7 +254,8 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
         {field('f', t('Grasa', 'Fat'), 'g')}
       </div>
       {/* Comprobación al escribir: las kcal frente a las que dan sus macros (lo mismo que el aviso). */}
-      {check && (suspect
+      {overWeight ? <p className="food-health doubt small" role="alert" style={{ margin: 0 }}><TriangleAlert size={16} aria-hidden="true" /> <span>{t('Proteína, hidratos y grasa suman más de 100 g en 100 g: revisa las cifras con la etiqueta.', 'Protein, carbs and fat add up to more than 100 g per 100 g: check the numbers against the label.')}</span></p>
+        : check && (suspect
         ? <p className="food-health doubt small" style={{ margin: 0 }}><TriangleAlert size={16} aria-hidden="true" /> <span>{t(`Con estos valores salen unas ${int(calc)} kcal, no ${int(check.kcal)}. Compara las cuatro cifras con la etiqueta; la que más se aleja parece ${labels[suspect]}.`, `These values give about ${int(calc)} kcal, not ${int(check.kcal)}. Compare all four numbers with the label; the one furthest off seems to be ${labels[suspect]}.`)}</span></p>
         : <p className="small muted" style={{ margin: 0 }}>{t(`Cuadra: sus macros dan unas ${int(calc)} kcal.`, `Adds up: its macros give about ${int(calc)} kcal.`)}</p>)}
       <div className="list">{field('portion', t('Una ración pesa', 'One serving weighs'), 'g')}</div>

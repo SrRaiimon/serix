@@ -32,8 +32,16 @@ let scheduled: { nodes: OscillatorNode[]; at: number } | undefined
 /** Si se amplió el descanso, los siguientes del entrenamiento se abren ya en grande. */
 let preferBig = false
 
+const SAVED = 'serix-rest'
+
 function set(next: TimerState) {
   state = next
+  // El descanso en curso se recuerda: si el móvil cierra la app (al cambiar a la música) o se recarga,
+  // la cuenta atrás sigue donde iba en vez de desaparecer.
+  try {
+    if (next.endAt) localStorage.setItem(SAVED, JSON.stringify({ endAt: next.endAt, total: next.total, next: nextLabel, setId: restSetId }))
+    else localStorage.removeItem(SAVED)
+  } catch { /* sin almacenamiento: solo se pierde al recargar */ }
   listeners.forEach((l) => l())
 }
 
@@ -256,6 +264,11 @@ export function addRest(seconds: number) {
   schedule()
 }
 
+/** Al desmarcar una serie se para el descanso que ella había empezado (antes seguía corriendo). */
+export function stopRestFor(setId: string) {
+  if (state.endAt && restSetId === setId) stopRest()
+}
+
 export function stopRest() {
   clearTimeout(finishTimeout)
   clearTimeout(voiceTimeout)
@@ -289,3 +302,14 @@ document.addEventListener('visibilitychange', () => {
   if (state.endAt && state.endAt <= Date.now()) finish()
   void clearRestNotification()
 })
+
+// Descanso que seguía en marcha al cerrar o recargar la app.
+try {
+  const saved = JSON.parse(localStorage.getItem(SAVED) ?? 'null') as { endAt?: number; total?: number; next?: string; setId?: string } | null
+  if (saved?.endAt && saved.endAt > Date.now() + 1000 && saved.total) {
+    nextLabel = saved.next
+    restSetId = saved.setId
+    set({ endAt: saved.endAt, total: saved.total })
+    schedule()
+  } else if (saved) localStorage.removeItem(SAVED)
+} catch { /* sin almacenamiento o dato roto: no hay descanso que recuperar */ }

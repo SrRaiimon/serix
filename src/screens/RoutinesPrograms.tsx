@@ -9,7 +9,8 @@ import { navigate } from '../lib/router'
 import { finishedSessions, updateSettings, useData } from '../lib/store'
 import { records } from '../lib/stats'
 import { defaultTracking, PROGRAM_TARGET_SECONDS, targetText } from '../lib/tracking'
-import { programDayMinutes, ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
+import { programDayMinutes, ProgramPreview, PullupBarRow } from '../components/Program'
+import { saveProgram } from '../lib/programs'
 import { t } from '../lib/i18n'
 
 export function GeneratorForm({ config, onChange }: { config: GeneratorConfig; onChange: (c: GeneratorConfig) => void }) {

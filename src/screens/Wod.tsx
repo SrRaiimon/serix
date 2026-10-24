@@ -40,7 +40,7 @@ export function WodScreen() {
 
   return (
     <>
-      <NavBar showBack title={t('WOD del día', 'Workout of the day')} />
+      <NavBar showBack title={t('Entreno del día', 'Workout of the day')} />
       <div className="screen with-nav">
         <section className="card wod-hero">
           <span className="small muted">{day(Date.now())}{wod.benchmark ? ` · ${t('prueba del sábado', 'Saturday test')}` : ''}</span>
@@ -71,7 +71,7 @@ export function WodScreen() {
           <button className="btn primary block" onClick={() => { unlockAudio(); setRun(true) }}><Play size={19} fill="currentColor" /> {t('Empezar', 'Start')}</button>
           <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button className="btn secondary btn-sm" onClick={() => setResult({ start: Date.now() - wod.minutes * 60000, end: Date.now(), rounds: wod.format === 'emom' ? wod.minutes : 0 })}><ListChecks size={16} /> {t('Apuntar resultado', 'Log result')}</button>
-            {!wod.benchmark || variant > 0 ? <button className="btn secondary btn-sm" onClick={() => setVariant(variant + 1)}><RefreshCw size={16} /> {t('Otro WOD', 'Another WOD')}</button> : null}
+            {!wod.benchmark || variant > 0 ? <button className="btn secondary btn-sm" onClick={() => setVariant(variant + 1)}><RefreshCw size={16} /> {t('Otro distinto', 'Another WOD')}</button> : null}
           </span>
         </section>
 
@@ -88,12 +88,12 @@ export function WodScreen() {
         )}
 
         <p className="small muted" style={{ margin: 0 }}>
-          {t('Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El WOD cambia cada día según tu material y tu nivel (Perfil → Generar un programa nuevo).',
+          {t('Adáptalo si hace falta: menos repeticiones, menos peso o un ejercicio más fácil. Lo importante es moverse bien y sin parar. El entreno del día cambia cada día según tu material y tu nivel (Perfil → Generar un programa nuevo).',
             'Scale it if you need to: fewer reps, less weight or an easier exercise. What matters is moving well and keeping going. The WOD changes every day based on your equipment and level (Profile → Generate a new program).')}
         </p>
 
         {history.length > 0 && (
-          <Card title={t('Tus últimos WOD', 'Your recent WODs')} icon={Flag}>
+          <Card title={t('Tus últimos entrenos del día', 'Your recent WODs')} icon={Flag}>
             {history.map((s) => (
               <button key={s.id} className="row between wod-try" onClick={() => navigate('progress', 'session', s.id)}>
                 <span className="clamp-1">{formatTitle(s.wod!)} · <span className="muted">{relative(s.start)}</span></span>

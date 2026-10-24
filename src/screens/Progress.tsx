@@ -543,7 +543,9 @@ function WeightGoalSheet({ unit, onClose }: { unit: Unit; onClose: () => void })
   const value = parseDecimal(kgText)
   const kg = value ? toKg(value, unit) : 0
   const from = goal?.from ?? latest
-  const valid = !!from && kg >= 30 && kg <= 300 && Math.abs(kg - from) >= 0.5
+  // Una fecha ya pasada (escrita a mano, el calendario no deja) no sirve de meta.
+  const pastDate = !!by && by < dayKey()
+  const valid = !!from && kg >= 30 && kg <= 300 && Math.abs(kg - from) >= 0.5 && !pastDate
   const save = () => {
     if (!valid || !from) return
     updateSettings({ weightGoal: { kg, from, createdAt: goal?.createdAt ?? Date.now(), ...(by ? { by: new Date(`${by}T12:00:00`).getTime() } : {}) } })
@@ -563,6 +565,7 @@ function WeightGoalSheet({ unit, onClose }: { unit: Unit; onClose: () => void })
           <input type="date" value={by} min={dayKey()} onChange={(e) => setBy(e.target.value)} aria-label={t('Fecha de la meta', 'Goal date')} />
         </label>
       </div>
+      {pastDate && <span className="small muted" role="alert">{t('La fecha de la meta tiene que ser de hoy en adelante.', 'The goal date must be today or later.')}</span>}
       <span className="small muted">{from
         ? t(`Partes de ${num(fromKg(from, unit))} ${unit}. Se mide con la tendencia de tus pesadas (Perfil → Medidas), no con la última, que varía mucho de un día a otro.`, `You start from ${num(fromKg(from, unit))} ${unit}. It uses the trend of your weigh-ins (Profile → Measurements), not the last one, which varies a lot day to day.`)
         : t('Primero apunta tu peso en Perfil → Medidas.', 'First log your weight in Profile → Measurements.')}</span>

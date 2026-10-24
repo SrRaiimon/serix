@@ -68,7 +68,7 @@ export function HomeScreen() {
 
       {/* Lo primero, lo que toca hoy: los avisos y novedades van debajo. */}
       {active ? <ContinueCard session={active} /> : next ? <NextCard routine={next} sessions={sessions} /> : guideVisible(data, sessions.length) ? null : (
-        <Card title={t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
+        <Card title={data.routines.length ? t('Prepara tu próxima rutina', 'Set up your next routine') : t('Crea tu primer programa', 'Create your first program')} icon={WandSparkles}>
           <span className="muted small">{t('Responde unas preguntas y te preparamos una rutina adaptada a tu objetivo y material.', 'Answer a few questions and we will build a routine for your goal and equipment.')}</span>
           <button className="btn primary" onClick={() => navigate('routines')}>{t('Ir a Rutinas', 'Go to Routines')}</button>
         </Card>
@@ -124,8 +124,8 @@ export function HomeScreen() {
       <div className="home-tools">
         {([
           [Zap, t('Entreno libre', 'Free workout'), t('Sin rutina', 'No routine'), startEmpty],
-          [Flame, t('WOD del día', 'Workout of the day'), t('Funcional corto', 'Short functional'), () => navigate('wod')],
-          [Timer, t('Temporizador', 'Timer'), t('Tabata, EMOM…', 'Tabata, EMOM…'), () => navigate('timer')],
+          [Flame, t('Entreno del día', 'Workout of the day'), t('Corto e intenso', 'Short and intense'), () => navigate('wod')],
+          [Timer, t('Temporizador', 'Timer'), t('Intervalos y cronómetro', 'Intervals and stopwatch'), () => navigate('timer')],
           [Dumbbell, t('Ejercicios', 'Exercises'), t('Cómo se hacen', 'How to do them'), () => navigate('exercises')],
         ] as const).map(([Icon, title, detail, go]) => (
           <button key={title} className="home-tool" onClick={go}>
@@ -208,14 +208,18 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   // Con el objetivo de la semana ya cumplido, un entreno más es opcional: se dice y el botón pasa a secundario
   // (antes la semana decía «¡cumplido!» y aquí seguía «Empezar» como si tocara).
   const done = weekDone(data)
-  const optional = done || (!!plan && !plan.today && !trainedToday)
+  // Ya entrenado hoy: el siguiente no toca hoy (antes salía «Empezar» en grande como si tocara otra vez).
+  const optional = done || trainedToday || (!!plan && !plan.today)
   return (
     <section className="hero" aria-labelledby="next-workout">
       <span className="hero-ribbon" aria-hidden="true" />
       <span className="small clamp-2 hero-meta">
         <span className="sr-only">{t('Siguiente entrenamiento', 'Next workout')}: </span>
         {done ? t('Semana cumplida · este es opcional', 'Week done · this one is optional')
-          : plan && !trainedToday ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
+          : trainedToday ? (plan
+            ? t(`Hoy ya has entrenado · el próximo, el ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`, `You already trained today · next one on ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`)
+            : t('Hoy ya has entrenado · este es el siguiente', 'You already trained today · this is the next one'))
+          : plan ? (plan.today ? t('Hoy toca entrenar', 'Today is a training day')
           : t(`Hoy descansas · el próximo, el ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`, `Rest day · next one on ${plan.next.toLocaleDateString(locale(), { weekday: 'long' })}`))
           : routine.programName ?? t('Siguiente entrenamiento', 'Next workout')}
       </span>
@@ -370,7 +374,10 @@ function IosDataWarning() {
   const key = 'iosWarnUntil'
   const read = () => { try { return Number(localStorage.getItem(key) ?? 0) } catch { return 0 } }
   const [until, setUntil] = useState(read)
-  if (!isIOS() || isStandalone() || Date.now() < until) return null
+  // Un navegador que sabe instalar la app (con su botón «Instalar») no es Safari de iPhone, aunque lo
+  // parezca (un Mac táctil): salían los dos avisos a la vez, con instrucciones distintas.
+  const canPrompt = useCanPromptInstall()
+  if (!isIOS() || canPrompt || isStandalone() || Date.now() < until) return null
   const later = () => {
     const next = Date.now() + 3 * 86400000
     try { localStorage.setItem(key, String(next)) } catch { /* sin almacenamiento: se vuelve a ver */ }

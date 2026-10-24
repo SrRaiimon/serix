@@ -131,11 +131,26 @@ export function rpeMeaning(rpe: number): string {
  */
 export function suspicious(set: SetEntry, lastMax: number, unit: Unit): string | undefined {
   const w = set.weight
-  if (w > 0 && (lastMax > 0 ? w > lastMax * 2 && w - lastMax >= 20 : w > 300)) {
-    return lastMax > 0
-      ? tr(`¿${weight(w, unit)}? La última vez lo máximo fue ${weight(lastMax, unit)}.`, `${weight(w, unit)}? Last time your top weight was ${weight(lastMax, unit)}.`)
-      : tr(`¿${weight(w, unit)}? Es muchísimo peso.`, `${weight(w, unit)}? That is a lot of weight.`)
-  }
-  if (set.reps > 100) return tr(`¿${set.reps} repeticiones?`, `${set.reps} reps?`)
-  return undefined
+  // Las dos dudas a la vez: antes, con el peso raro ya no se preguntaba por 99999999 repeticiones.
+  const doubts = [
+    w > 0 && (lastMax > 0 ? w > lastMax * 2 && w - lastMax >= 20 : w > 300)
+      ? (lastMax > 0
+        ? tr(`¿${weight(w, unit)}? La última vez lo máximo fue ${weight(lastMax, unit)}.`, `${weight(w, unit)}? Last time your top weight was ${weight(lastMax, unit)}.`)
+        : tr(`¿${weight(w, unit)}? Es muchísimo peso.`, `${weight(w, unit)}? That is a lot of weight.`))
+      : '',
+    set.reps > 100 ? tr(`¿${set.reps} repeticiones?`, `${set.reps} reps?`) : '',
+  ].filter(Boolean)
+  return doubts.length ? doubts.join(' ') : undefined
 }
+
+/** Lo mismo para cardio y series por tiempo: más de 100 km o más de 4 horas en una serie. */
+export function suspiciousTimed(set: SetEntry): string | undefined {
+  const doubts = [
+    (set.distance ?? 0) > 100 ? tr(`¿${set.distance} km?`, `${set.distance} km?`) : '',
+    (set.duration ?? 0) > 4 * 3600 ? tr(`¿${Math.round((set.duration ?? 0) / 3600)} horas?`, `${Math.round((set.duration ?? 0) / 3600)} hours?`) : '',
+  ].filter(Boolean)
+  return doubts.length ? doubts.join(' ') : undefined
+}
+
+/** Topes de lo que se puede apuntar en una serie: por encima no es un error de tecleo, es imposible. */
+export const SET_LIMITS = { kg: 1000, reps: 999, km: 1000 }

@@ -482,7 +482,7 @@ export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (li
       <div className="sheet-sticky">
         <FilterBar filter={filter} setFilter={setFilter} />
         <span className="small muted row" style={{ gap: 4 }}>
-          <span className="grow">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])} · <Info size={12} style={{ verticalAlign: -1 }} /> {t('para ver cómo se hace', 'to see how it is done')}</span>
+          <span className="grow">{plural(results.length, ['ejercicio', 'ejercicios'], ['exercise', 'exercises'])}{results.length > 0 && <> · <Info size={12} style={{ verticalAlign: -1 }} /> {t('para ver cómo se hace', 'to see how it is done')}</>}</span>
           <button className="link-btn small" style={{ color: 'var(--accent-text)' }} onClick={() => setCreating(true)}><Plus size={13} style={{ verticalAlign: -2 }} /> {t('Crear ejercicio', 'Create exercise')}</button>
         </span>
       </div>

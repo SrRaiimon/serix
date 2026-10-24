@@ -191,7 +191,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
               tres bloques (tarjeta, «¿Cómo estás?», «Calentar») y la serie 1 quedaba a media pantalla. */}
           <div className="workout-head">
             <div className="workout-head-row">
-              <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} />
+              <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} maxLength={80} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} onBlur={() => editSession(session.id, (s) => { s.name = s.name.trim() || t('Entrenamiento', 'Workout') })} />
               {total > 0 && <span className="workout-count">{t(`${done} de ${total} series`, `${done} of ${total} sets`)}</span>}
             </div>
             {total > 0 && <Progress value={done} total={total} />}

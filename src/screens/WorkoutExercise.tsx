@@ -98,8 +98,12 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   if (exercise.sets.some((x) => x.done)) firstSetDone = true
   const firstEver = index === 0 && exercise.sets[0]?.id === currentSet && !finishedSessions(data).length && !firstSetDone
   // Ejercicio nuevo sin peso puesto: una pista para elegirlo (la próxima vez ya se propone solo).
+  // Se queda hasta marcar la primera serie (no al escribir el peso): al quitarse, la fila subía y el toque
+  // que iba al ○ caía en otro sitio.
   const weightHint = trackingOf(exercise) === 'weight_reps' && !previous.length && !exercise.assisted
-    && exercise.sets.some((x) => x.id === currentSet && !x.weight)
+    && exercise.sets.some((x) => x.id === currentSet) && !exercise.sets.some((x) => x.done)
+  // «Uno con el que llegues a 12 repeticiones…»; sin objetivo de repeticiones (entreno libre), sin número.
+  const repsTarget = exercise.repsMax > 0 ? exercise.repsMax : undefined
   const edit = (fn: (e: SessionExercise, s: Session) => void) => editSession(sessionId, (s) => {
     const e = s.exercises.find((x) => x.id === exercise.id)
     if (e) fn(e, s)
@@ -240,7 +244,9 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
             {bodyweight
               ? t('Apunta las repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter your reps and tap ○ when the set is done: rest starts by itself.')
               : t('Apunta peso y repeticiones y toca ○ al acabar la serie: el descanso empieza solo.', 'Enter weight and reps and tap ○ when the set is done: rest starts by itself.')}
-            {weightHint && !bodyweight ? ` ${t(`Peso: uno con el que llegues a ${exercise.repsMax} repeticiones con 2 de margen.`, `Weight: one you can lift ${exercise.repsMax} times with 2 reps to spare.`)}` : ''}
+            {weightHint && !bodyweight ? ` ${repsTarget
+              ? t(`Peso: uno con el que hagas ${repsTarget} repeticiones y aún te queden 2 más.`, `Weight: one you can lift ${repsTarget} times with 2 more left in you.`)
+              : t('Peso: uno que muevas bien y con el que aún te queden 2 repeticiones más al acabar.', 'Weight: one you move well, with 2 more reps left in you at the end.')}` : ''}
           </span>
         </div>
       )}
@@ -252,7 +258,9 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
       {weightHint && !(firstEver && !bodyweight) && (
         <span className="small muted">
           {bodyweight ? t('Sin lastre, deja el peso en 0.', 'With no added weight, leave the weight at 0.')
-            : t(`¿Qué peso? Uno con el que llegues a ${exercise.repsMax} repeticiones bien hechas con 2 de margen. La próxima vez te lo proponemos.`, `Which weight? One you can lift ${exercise.repsMax} times with good form and 2 reps to spare. Next time we suggest it.`)}
+            : repsTarget
+              ? t(`¿Qué peso? Uno con el que hagas ${repsTarget} repeticiones bien hechas y aún te queden 2 más. La próxima vez te lo proponemos.`, `Which weight? One you can lift ${repsTarget} times with good form and 2 more left in you. Next time we suggest it.`)
+              : t('¿Qué peso? Uno que muevas bien y con el que aún te queden 2 repeticiones más. La próxima vez te lo proponemos.', 'Which weight? One you move well, with 2 more reps left in you. Next time we suggest it.')}
         </span>
       )}
       {/* Sin historial, la columna «Última vez» solo tendría rayas: se quita y los campos ganan sitio. */}
@@ -321,6 +329,9 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
               // Lo que toca después: la siguiente serie pendiente de este ejercicio o del siguiente.
               const later = exercise.sets.slice(i + 1).find((s) => !s.done)
               const nextUp = later ? spokenSet(exercise, later, unit) : upcoming ? spokenSet(upcoming, upcoming.sets.find((s) => !s.done)!, unit) : undefined
+              // Tras la última serie del entreno no hay nada que descansar.
+              const pending = data.sessions.find((s) => s.id === sessionId)?.exercises.some((e) => e.sets.some((s) => !s.done && s.id !== set.id))
+              if (!pending) return stopRest()
               startRest(set.warmup ? Math.min(exercise.rest, 60) : exercise.rest, nextUp, set.id)
               // Al fallo es RPE 10: el descanso se alarga ya.
               if (set.kind === 'failure' && !set.warmup && !simple) on.effort(set.id, 10, exercise.rest)

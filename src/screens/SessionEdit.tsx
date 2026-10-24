@@ -7,7 +7,7 @@ import { editable, fromKg, parseDecimal, toKg, uid } from '../lib/format'
 import { t } from '../lib/i18n'
 import { navigate } from '../lib/router'
 import { update, useData, withUndo, type Session, type SetEntry } from '../lib/store'
-import { defaultTracking, isSetFilled, trackingOf } from '../lib/tracking'
+import { defaultTracking, isSetFilled, SET_LIMITS, trackingOf } from '../lib/tracking'
 import { ExercisePicker } from './Exercises'
 
 // Corregir un entrenamiento ya terminado (pesos, repeticiones, series, ejercicios, fecha y hora) o apuntar
@@ -44,6 +44,8 @@ export function SessionEditSheet({ session, isNew = false, onClose }: { session:
     .filter((e) => e.sets.length > 0)
   const problem = !Number.isFinite(start) ? t('Revisa la fecha y la hora.', 'Check the date and time.')
     : start > Date.now() ? t('La fecha no puede ser futura.', 'The date cannot be in the future.')
+      // 01/01/1900 se guardaba y descolocaba el historial y las gráficas.
+      : start < Date.UTC(2000, 0, 1) ? t('Revisa el año de la fecha.', 'Check the year of the date.')
       : mins === null || mins < 1 || mins > 600 ? t('La duración tiene que estar entre 1 y 600 minutos.', 'Duration must be between 1 and 600 minutes.')
         : !cleaned.length ? t('Añade al menos un ejercicio con una serie.', 'Add at least one exercise with a set.') : undefined
 
@@ -125,16 +127,16 @@ export function SessionEditSheet({ session, isNew = false, onClose }: { session:
               <div key={x.id} className="edit-set-grid">
                 <span className="muted">{x.warmup ? t('C', 'W') : e.sets.slice(0, si + 1).filter((y) => !y.warmup).length}</span>
                 {tracking === 'weight_reps' && <>
-                  <NumField label={t('Peso', 'Weight')} value={x.weight ? fromKg(x.weight, unit) : 0} onChange={(v) => editSet(ei, si, { weight: toKg(v, unit) })} />
-                  <NumField label={t('Repeticiones', 'Reps')} integer value={x.reps} onChange={(v) => editSet(ei, si, { reps: Math.round(v) })} />
+                  <NumField label={t('Peso', 'Weight')} max={fromKg(SET_LIMITS.kg, unit)} value={x.weight ? fromKg(x.weight, unit) : 0} onChange={(v) => editSet(ei, si, { weight: toKg(v, unit) })} />
+                  <NumField label={t('Repeticiones', 'Reps')} integer max={SET_LIMITS.reps} value={x.reps} onChange={(v) => editSet(ei, si, { reps: Math.round(v) })} />
                 </>}
                 {tracking === 'time' && <>
-                  <NumField label={t('Segundos', 'Seconds')} integer value={x.duration ?? 0} onChange={(v) => editSet(ei, si, { duration: Math.round(v) })} />
+                  <NumField label={t('Segundos', 'Seconds')} integer max={4 * 3600} value={x.duration ?? 0} onChange={(v) => editSet(ei, si, { duration: Math.round(v) })} />
                   <span />
                 </>}
                 {tracking === 'distance_time' && <>
-                  <NumField label={t('Kilómetros', 'Kilometres')} value={x.distance ?? 0} onChange={(v) => editSet(ei, si, { distance: v })} />
-                  <NumField label={t('Minutos', 'Minutes')} value={(x.duration ?? 0) / 60} onChange={(v) => editSet(ei, si, { duration: Math.round(v * 60) })} />
+                  <NumField label={t('Kilómetros', 'Kilometres')} max={SET_LIMITS.km} value={x.distance ?? 0} onChange={(v) => editSet(ei, si, { distance: v })} />
+                  <NumField label={t('Minutos', 'Minutes')} max={600} value={(x.duration ?? 0) / 60} onChange={(v) => editSet(ei, si, { duration: Math.round(v * 60) })} />
                 </>}
                 <button className="icon-btn" onClick={() => edit((s) => { s.exercises[ei].sets.splice(si, 1) })} aria-label={t('Quitar serie', 'Remove set')}><X size={16} /></button>
               </div>
@@ -152,15 +154,19 @@ export function SessionEditSheet({ session, isNew = false, onClose }: { session:
 }
 
 /** Número editable que respeta lo que se escribe (comas, campo vacío) y avisa solo con valores válidos. */
-function NumField({ label, value, integer, onChange }: { label: string; value: number; integer?: boolean; onChange: (v: number) => void }) {
+function NumField({ label, value, integer, max, onChange }: { label: string; value: number; integer?: boolean; max: number; onChange: (v: number) => void }) {
   const [text, setText] = useState(value ? editable(Math.round(value * 100) / 100) : '')
+  // Lo pegado se lee hasta el primer signo que no es un número («12.5» repeticiones son 12, no 125), y lo
+  // que pasa del tope (1e9 kg, 99999999 s) se marca y no se guarda.
+  const n = text === '' ? 0 : parseDecimal(text)
+  const bad = n === null || n < 0 || n > max
   return (
-    <input className="set-input" inputMode={integer ? 'numeric' : 'decimal'} placeholder="0" aria-label={label} value={text}
+    <input className={`set-input ${bad ? 'invalid' : ''}`} inputMode={integer ? 'numeric' : 'decimal'} placeholder="0" aria-label={label} aria-invalid={bad || undefined} value={text}
       onChange={(e) => {
-        const v = integer ? e.target.value.replace(/\D/g, '') : e.target.value
+        const v = integer ? (e.target.value.match(/^\s*(\d+)/)?.[1] ?? '') : e.target.value
         setText(v)
         const n = v === '' ? 0 : parseDecimal(v)
-        if (n !== null && n >= 0) onChange(n)
+        if (n !== null && n >= 0 && n <= max) onChange(n)
       }} />
   )
 }

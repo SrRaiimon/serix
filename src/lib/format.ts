@@ -54,7 +54,8 @@ export function editable(value: number): string {
 
 export function parseDecimal(text: string): number | null {
   const clean = text.trim().replace(',', '.')
-  if (!clean) return null
+  // Solo números escritos a mano («82,5», «-3», «.5»): «1e9», «0x10» o «Infinity» pegados no son un peso.
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(clean)) return null
   const v = Number(clean)
   return Number.isFinite(v) ? v : null
 }

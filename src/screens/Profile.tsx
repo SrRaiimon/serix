@@ -79,7 +79,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <div className="list">
         <label className="list-row">
           <span>{t('Nombre', 'Name')}</span>
-          <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Tu nombre', 'Your name')} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
+          <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Tu nombre', 'Your name')} maxLength={40} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} onBlur={() => updateSettings({ name: settings.name.trim() })} />
         </label>
         <div className="list-row">
           <span className="grow">{t('Unidad de peso', 'Weight unit')}</span>
@@ -303,8 +303,9 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <Card>
         <div className="row">
           <div className="avatar">{initials}</div>
-          <div className="grow">
-            <strong style={{ fontSize: 20, display: 'block' }}>{settings.name || t('Tu perfil', 'Your profile')}</strong>
+          {/* min-width 0 y partir palabras: un nombre largo sin espacios ensanchaba toda la pantalla. */}
+          <div className="grow" style={{ minWidth: 0 }}>
+            <strong style={{ fontSize: 20, display: 'block', overflowWrap: 'anywhere' }}>{settings.name || t('Tu perfil', 'Your profile')}</strong>
             <span className="small muted" style={{ display: 'block' }}>
               {plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])} · {duration(sessions.reduce((t, s) => t + sessionDuration(s), 0))}
             </span>
@@ -369,8 +370,12 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void importData(f); e.target.value = '' }} />
 
       {confirmReset && (
-        <ActionSheet title={t('¿Borrar todos los datos?', 'Delete all data?')} message={t('Se eliminarán rutinas, historial y medidas. Las fotos de progreso se conservan (se borran desde su pantalla).', 'Routines, history and measurements will be deleted. Progress photos are kept (delete them from their own screen).')} onClose={() => setConfirmReset(false)}
-          options={[{ label: t('Borrar todo', 'Delete everything'), destructive: true, onSelect: () => withUndo(t('Datos borrados', 'Data deleted'), resetData) }]} />
+        <ActionSheet title={t('¿Borrar todos los datos?', 'Delete all data?')} message={t('Se eliminarán rutinas, historial, comidas, medidas, tu nombre y tus objetivos. Solo se quedan el idioma, el tema y la unidad.', 'Routines, history, food, measurements, your name and your goals will be deleted. Only language, theme and unit are kept.')} onClose={() => setConfirmReset(false)}
+          options={[
+            { label: t('Borrar todo', 'Delete everything'), destructive: true, onSelect: () => withUndo(t('Datos borrados', 'Data deleted'), resetData) },
+            // Las fotos van en su propio almacén y no se pueden deshacer: aparte, para quien quiere irse sin dejar nada.
+            { label: t('Borrar todo y también las fotos', 'Delete everything, photos too'), destructive: true, onSelect: () => { void resetData(); void import('../lib/photos').then((m) => m.deleteAllPhotos()) } },
+          ]} />
       )}
       {toast}
     </div>
@@ -418,6 +423,11 @@ const measureFields: { key: keyof Omit<Measurement, 'id' | 'date'>; label: strin
   { key: 'neck', get label() { return t('Cuello', 'Neck') }, unit: 'cm' },
   { key: 'hip', get label() { return t('Cadera', 'Hip') }, unit: 'cm' },
 ]
+
+/** Valores posibles de cada medida (peso en kg, grasa en %, perímetros en cm). */
+const MEASURE_RANGE: Record<(typeof measureFields)[number]['key'], [number, number]> = {
+  weight: [30, 300], bodyFat: [2, 70], waist: [30, 250], chest: [40, 250], arm: [10, 100], thigh: [20, 150], neck: [15, 80], hip: [40, 250],
+}
 
 function measurementSummary(m: Measurement, unit: Unit) {
   return measureFields
@@ -502,8 +512,17 @@ export function MeasurementsScreen() {
 function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void }) {
   const [date, setDate] = useState(dayKey())
   const [values, setValues] = useState<Record<string, string>>({})
-  // Una medida de 0 o negativa no se guarda (perímetros negativos al pegar un «-»).
+  // Una medida de 0 o negativa no se guarda (perímetros negativos al pegar un «-»), y fuera de lo posible
+  // (1000000000 kg, 250 % de grasa) tampoco: rompía las gráficas y la meta de peso.
   const parsed = Object.fromEntries(measureFields.map((f) => { const v = parseDecimal(values[f.key] ?? ''); return [f.key, v !== null && v > 0 ? v : null] }))
+  const outOfRange = measureFields.filter((f) => {
+    const v = parsed[f.key]
+    if (v === null) return !!values[f.key]?.trim()
+    const [min, max] = MEASURE_RANGE[f.key]
+    const value = f.key === 'weight' ? toKg(v, unit) : v
+    return value < min || value > max
+  })
+  const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(new Date(`${date}T12:00:00`).getTime()) && date <= dayKey()
   const empty = Object.values(parsed).every((v) => v === null)
   // Grasa estimada con cintura y cuello (y cadera, en mujeres), si no se escribe a mano.
   const { nutrition } = useData().settings
@@ -528,7 +547,7 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
   return (
     <Sheet title={t('Nueva medida', 'New measurement')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
-      right={<button className="nav-btn bold" disabled={empty} onClick={save}>{t('Guardar', 'Save')}</button>}>
+      right={<button className="nav-btn bold" disabled={empty || !validDate || outOfRange.length > 0} onClick={save}>{t('Guardar', 'Save')}</button>}>
       <div className="list">
         <label className="list-row">
           <span className="grow">{t('Fecha', 'Date')}</span>
@@ -539,12 +558,18 @@ function MeasurementEditor({ unit, onClose }: { unit: Unit; onClose: () => void 
         {measureFields.map((f) => (
           <label key={f.key} className="list-row">
             <span className="grow">{f.label}</span>
-            <input inputMode="decimal" placeholder="—" style={{ textAlign: 'right', width: 90 }} value={values[f.key] ?? ''}
+            <input inputMode="decimal" placeholder="—" aria-label={`${f.label} (${f.unit ?? unit})`} style={{ textAlign: 'right', width: 90 }} value={values[f.key] ?? ''}
               onChange={(e) => setValues({ ...values, [f.key]: e.target.value })} />
             <span className="muted" style={{ width: 28 }}>{f.unit ?? unit}</span>
           </label>
         ))}
       </div>
+      {(!validDate || outOfRange.length > 0) && (
+        <p className="small muted" role="alert" style={{ margin: 0, textAlign: "center" }}>
+          {!validDate ? t('Elige una fecha (hoy o antes).', 'Pick a date (today or earlier).')
+            : t(`Revisa: ${outOfRange.map((f) => f.label.toLowerCase()).join(', ')}. No parece un valor posible.`, `Check: ${outOfRange.map((f) => f.label.toLowerCase()).join(', ')}. That does not look like a possible value.`)}
+        </p>
+      )}
       <p className="list-footer" style={{ margin: 0 }}>
         {estimate !== undefined
           ? t(`Grasa corporal estimada: ${editable(estimate)} % (fórmula de la Marina de EE. UU., con cintura y cuello${nutrition?.sex === 'f' ? ' y cadera' : ''}). Se guardará si no escribes otra. Es orientativa: puede fallar 3-4 puntos.`,
@@ -692,7 +717,8 @@ export function OneRepMaxScreen() {
                 <div key={pct} className="list-row">
                   <strong style={{ width: 52 }}>{pct} %</strong>
                   <span className="grow small muted">{hint(pct)}</span>
-                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{num(Math.round((value * pct) / 100 / step) * step)} {unit}</span>
+                  {/* Hacia abajo al salto de disco: redondeando, con pesos pequeños el 95 % salía por encima del propio 1RM. */}
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{num(Math.floor((value * pct) / 100 / step) * step)} {unit}</span>
                 </div>
               ))}
             </div>

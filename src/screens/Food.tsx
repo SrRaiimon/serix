@@ -137,7 +137,8 @@ export function FoodScreen() {
       {target ? <DaySummary totals={totals} entries={entries} goals={target} base={baseGoals!} day={day} canMark={!!goalOpts.training && canPlan && !data.sessions.some((x) => dayKey(x.start) === day)} /> : (
         <Card title={t('Calcula tu objetivo', 'Work out your goal')}>
           <span className="small muted">{t('Con tu peso, altura, edad y actividad te decimos cuántas calorías y cuánta proteína te tocan al día para tu objetivo.', 'With your weight, height, age and activity we tell you how many calories and how much protein you need a day for your goal.')}</span>
-          <button className="btn primary" onClick={() => setGoals(true)}><Target size={18} /> {t('Calcular objetivo', 'Work out goal')}</button>
+          {/* Secundario: lo que se viene a hacer aquí es apuntar comida («Añadir» en cada comida); el objetivo es opcional. */}
+          <button className="btn secondary" onClick={() => setGoals(true)}><Target size={18} /> {t('Calcular objetivo (opcional)', 'Work out goal (optional)')}</button>
           {entries.length > 0 && <span className="small">{t(`Hoy llevas ${int(totals.kcal)} kcal y ${g(totals.p)} g de proteína.`, `So far today: ${int(totals.kcal)} kcal and ${g(totals.p)} g of protein.`)}</span>}
         </Card>
       )}

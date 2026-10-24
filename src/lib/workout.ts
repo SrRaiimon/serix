@@ -432,6 +432,9 @@ export function finishSession(id: string) {
     saved = true
   })
   resetRestView()
+  // Si se abrió el calentamiento desde el entreno, debajo quedaba el temporizador: al cerrar el resumen
+  // se acababa ahí. Se vuelve a Inicio.
+  if (saved && typeof location !== 'undefined' && location.hash.startsWith('#/timer')) location.hash = '/home'
   setUI({ open: false, summaryId: saved ? id : undefined })
   if (saved) navigator.vibrate?.(80)
 }

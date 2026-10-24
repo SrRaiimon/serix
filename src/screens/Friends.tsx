@@ -89,7 +89,7 @@ function ShareMine({ mine }: { mine: FriendSnapshot }) {
         <label className="list-row" style={{ padding: 0 }}>
           <span className="grow small">{t('¿Cómo te verán tus amigos?', 'How will your friends see you?')}</span>
           <input className="field" style={{ width: 140 }} placeholder={t('Tu nombre', 'Your name')} value={name}
-            onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
+            maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
         </label>
       )}
       <span className="small muted">
@@ -109,7 +109,8 @@ function ShareMine({ mine }: { mine: FriendSnapshot }) {
         <button className="btn primary grow" onClick={() => void share()}><Share2 size={18} /> {t('Compartir', 'Share')}</button>
         <button className="btn secondary" onClick={() => void encodeSnapshot(mine).then((c) => setQr(friendLink(c)))}><QrIcon size={18} /> QR</button>
       </div>
-      {qr && <QrSheet title={t('Tu reto', 'Your challenge')} url={qr} onClose={() => setQr(undefined)} onShare={() => void share()} />}
+      {qr && <QrSheet title={t('Tu resumen para amigos', 'Your summary for friends')} url={qr}
+        hint={t('Que tu amigo lo escanee con la cámara: se abrirá Serix con tu resumen para compararos.', 'Have your friend scan it with the camera: Serix will open with your summary to compare.')} onClose={() => setQr(undefined)} onShare={() => void share()} />}
       {toast}
     </Card>
   )

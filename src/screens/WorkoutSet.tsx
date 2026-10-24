@@ -4,9 +4,9 @@ import { ActionSheet, useTick } from '../components/ui'
 import { clock, editable, fromKg, increment, num, parseDecimal, toKg, weight, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { getData, useData, withUndo, type SetEntry, type SetKind } from '../lib/store'
-import { playTone, unlockAudio } from '../lib/timer'
+import { playTone, stopRestFor, unlockAudio } from '../lib/timer'
 import { digitsToSeconds, formatDigits, isSetFilled, rpeMeaning, rpeValues, secondsToDigits, setShortText, type Tracking } from '../lib/tracking'
-import { suspicious } from '../lib/tracking'
+import { SET_LIMITS, suspicious, suspiciousTimed } from '../lib/tracking'
 import { PlatesSheet } from './Plates'
 import { parseTempo, tempoAt } from '../lib/tempo'
 
@@ -71,7 +71,11 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
   const { open: askRpe, ask: onAskRpe, done: onRpeDone, picked: onRpePicked } = rpe
   const simple = useData().settings.simpleMode === true
   const [check, setCheck] = useState<string>()
+  const weightInput = useRef<HTMLInputElement>(null)
   const [weightText, setWeightText] = useState(set.weight > 0 ? editable(fromKg(set.weight, unit)) : '')
+  // Peso escrito que no se puede apuntar (no es un número o pasa de 1000 kg): se marca en rojo.
+  const typedWeight = parseDecimal(weightText)
+  const badWeight = (typedWeight === null && weightText.trim() !== '') || toKg(typedWeight ?? 0, unit) > SET_LIMITS.kg
   const [repsText, setRepsText] = useState(set.reps > 0 ? String(set.reps) : '')
   const [distanceText, setDistanceText] = useState(set.distance ? editable(set.distance) : '')
   const [invalid, setInvalid] = useState(false)
@@ -98,7 +102,12 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
     unlockAudio()
     if (set.done) {
       onRpeDone()
+      stopRestFor(set.id)
       return onChange({ done: false, doneAt: undefined, rpe: undefined })
+    }
+    if (tracking === 'weight_reps' && badWeight) {
+      navigator.vibrate?.(60)
+      return setCheck(t('Ese peso no se puede apuntar: revisa el número.', 'That weight cannot be logged: check the number.'))
     }
     if (needsWeight && tracking === 'weight_reps' && set.weight <= 0 && !set.warmup && !zeroOk.current) {
       return setCheck(t('¿Sin peso? Este ejercicio se hace con barra, mancuernas o máquina.', 'No weight? This exercise uses a barbell, dumbbells or a machine.'))
@@ -114,7 +123,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
         return
       }
       if (fill.reps) setRepsText(String(fill.reps))
-      const warning = tracking === 'weight_reps' ? suspicious({ ...set, ...fill }, lastMax, unit) : undefined
+      const warning = tracking === 'weight_reps' ? suspicious({ ...set, ...fill }, lastMax, unit) : suspiciousTimed({ ...set, ...fill })
       if (warning) {
         onChange(fill)
         return setCheck(warning)
@@ -131,7 +140,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
       return onCompleted()
     }
     // Un cero de más (800 en vez de 80) estropearía marcas y estadísticas: se pregunta antes.
-    const warning = tracking === 'weight_reps' ? suspicious(set, lastMax, unit) : undefined
+    const warning = tracking === 'weight_reps' ? suspicious(set, lastMax, unit) : suspiciousTimed(set)
     if (warning) return setCheck(warning)
     complete()
   }
@@ -170,15 +179,21 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
       {/* Con la serie: el lector de pantalla oía «Peso, Repeticiones, Marcar serie» en cada fila, iguales. */}
       {tracking === 'weight_reps' && (
         <>
-          <input className={`set-input ${weightText.length > 3 ? 'long' : ''}`} inputMode="decimal" placeholder="0" aria-label={t(`Peso, ${spoken}`, `Weight, ${spoken}`)} value={weightText}
+          <input ref={weightInput} className={`set-input ${weightText.length > 3 ? 'long' : ''} ${badWeight ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t(`Peso, ${spoken}`, `Weight, ${spoken}`)} aria-invalid={badWeight || undefined} value={weightText}
             onChange={(e) => {
               setWeightText(e.target.value)
               // Sin negativos (pegados o con teclado físico): restaban del peso movido. La ayuda de las asistidas es positiva.
-              change({ weight: Math.max(0, toKg(parseDecimal(e.target.value) ?? 0, unit)) })
+              // Lo que no es un número («abc») o no es posible (más de 1000 kg) se marca y no se apunta.
+              const v = parseDecimal(e.target.value)
+              const kg = Math.max(0, toKg(v ?? 0, unit))
+              if ((v === null && e.target.value.trim()) || kg > SET_LIMITS.kg) return
+              change({ weight: kg })
             }} />
           <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="numeric" placeholder={repsPlaceholder} aria-label={t(`Repeticiones, ${spoken}`, `Reps, ${spoken}`)} value={repsText}
             onChange={(e) => {
-              const clean = e.target.value.replace(/\D/g, '')
+              // Lo que se pega se lee hasta el primer signo que no es un número: «12.5» son 12 (antes, 125)
+              // y «1e9», 1 (antes, 19). Como mucho 3 cifras.
+              const clean = (e.target.value.match(/^\s*(\d+)/)?.[1] ?? '').slice(0, 3)
               setRepsText(clean)
               change({ reps: Number(clean) || 0 })
             }} />
@@ -188,7 +203,9 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
         <input className={`set-input ${invalid ? 'invalid' : ''}`} inputMode="decimal" placeholder="0" aria-label={t(`Kilómetros, ${spoken}`, `Kilometres, ${spoken}`)} value={distanceText}
           onChange={(e) => {
             setDistanceText(e.target.value)
-            change({ distance: Math.max(0, parseDecimal(e.target.value) ?? 0) })
+            const km = parseDecimal(e.target.value)
+            if ((km === null && e.target.value.trim()) || (km ?? 0) > SET_LIMITS.km) return
+            change({ distance: Math.max(0, km ?? 0) })
           }} />
       )}
       {tracking !== 'weight_reps' && (
@@ -224,12 +241,14 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
       {plates && <PlatesSheet weightKg={set.weight} onClose={() => setPlates(false)} />}
       {check && (
         <ActionSheet title={check} onClose={() => setCheck(undefined)} options={[
-          { label: t('Sí, es correcto', 'Yes, it is right'), onSelect: () => {
+          // Un peso imposible no se puede confirmar: solo corregirlo.
+          ...(badWeight ? [] : [{ label: t('Sí, es correcto', 'Yes, it is right'), onSelect: () => {
             // Confirmado «sin peso»: se sigue como si nada (rellenar repeticiones, avisos de peso…).
             if (set.weight <= 0) { zeroOk.current = true; return toggle() }
             complete()
-          } },
-          { label: t('Corregirlo', 'Fix it'), onSelect: () => setInvalid(true) },
+          } }]),
+          // «Corregirlo» lleva al campo del peso (antes el foco se quedaba en el ○).
+          { label: t('Corregirlo', 'Fix it'), onSelect: () => { setInvalid(true); if (tracking === 'weight_reps') setTimeout(() => weightInput.current?.focus(), 50) } },
         ]} />
       )}
     </div>
@@ -266,7 +285,7 @@ export function SetRow({ set, label, previous, current, context, rpe, onChange, 
     {set.note ? <button className="set-note small muted" onClick={() => editNote()}><StickyNote size={13} aria-hidden="true" /> {set.note}</button>
       : previous?.note && !set.done && <span className="set-note small muted"><StickyNote size={13} aria-hidden="true" /> {t(`La última vez: ${previous.note}`, `Last time: ${previous.note}`)}</span>}
     {set.done && !set.warmup && (askRpe || set.rpe !== undefined) && (
-      <RpeRow value={set.rpe} open={askRpe} onOpen={onAskRpe}
+      <RpeRow value={set.rpe} open={askRpe} onOpen={onAskRpe} timed={tracking !== 'weight_reps'}
         onPick={(rpe) => { onChange({ rpe }); onRpeDone(); onRpePicked(rpe) }} />
     )}
     </>
@@ -295,8 +314,13 @@ function rirLabel(rpe: number): string {
 }
 
 /** Esfuerzo percibido de la serie: selector compacto o, si ya está puesto, una etiqueta para cambiarlo. */
-function RpeRow({ value, open, onOpen, onPick }: {
+/** El esfuerzo en palabras, para el cardio (allí «te quedaban 2 reps» no tiene sentido). */
+const effortWord = (rpe: number) => rpe >= 10 ? t('a tope', 'all out') : rpe >= 9 ? t('muy duro', 'very hard') : rpe >= 8 ? t('duro', 'hard') : rpe >= 7 ? t('moderado', 'moderate') : t('suave', 'easy')
+
+function RpeRow({ value, open, onOpen, onPick, timed }: {
   value?: number
+  /** Cardio o series por tiempo: no hay repeticiones que contar, solo el esfuerzo. */
+  timed?: boolean
   open: boolean
   onOpen: () => void
   onPick: (rpe: number | undefined) => void
@@ -318,7 +342,7 @@ function RpeRow({ value, open, onOpen, onPick }: {
   }, [open])
   if (!open) {
     return value === undefined ? null : (
-      <button className="rpe-pill" onClick={onOpen}>RPE {num(value)} · {rpeMeaning(value)}</button>
+      <button className="rpe-pill" onClick={onOpen}>RPE {num(value)} · {timed ? effortWord(value) : rpeMeaning(value)}</button>
     )
   }
   return (
@@ -329,11 +353,13 @@ function RpeRow({ value, open, onOpen, onPick }: {
       </div>
       <div className="rpe-chips">
         {rpeValues.map((v) => (
-          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`} aria-label={`RPE ${num(v)}: ${v === 10 ? t('al fallo', 'to failure') : t(`te quedaban ${rirLabel(v)}`, `${rirLabel(v)} left`)}`}
-            onClick={() => onPick(value === v ? undefined : v)}><span>{num(v)}</span><small aria-hidden="true">{rirLabel(v)}</small></button>
+          <button key={v} className={`rpe-chip ${value === v ? 'active' : ''}`} aria-label={`RPE ${num(v)}: ${timed ? effortWord(v) : v === 10 ? t('al fallo', 'to failure') : t(`te quedaban ${rirLabel(v)}`, `${rirLabel(v)} left`)}`}
+            onClick={() => onPick(value === v ? undefined : v)}><span>{num(v)}</span>{!timed && <small aria-hidden="true">{rirLabel(v)}</small>}</button>
         ))}
       </div>
-      <span className="rpe-scale">{t('Debajo de cada número: cuántas repeticiones más podías hacer.', 'Below each number: how many more reps you could have done.')}</span>
+      <span className="rpe-scale">{timed
+        ? t('Del 6 (suave) al 10 (a tope, no podías más).', 'From 6 (easy) to 10 (all out, nothing left).')
+        : t('Debajo de cada número: cuántas repeticiones más podías hacer.', 'Below each number: how many more reps you could have done.')}</span>
       {help && (
         <span className="small muted">
           {t('Esfuerzo percibido: 10 = no podías hacer ni una más, 9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3. Es opcional; sirve para saber cuándo subir peso.',

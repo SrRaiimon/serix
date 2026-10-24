@@ -56,6 +56,15 @@ export function trainingCalendar(days: number[], time: string, title: string, al
  * descanso y otro entreno, opcional. Lo usan Inicio, Comidas, Rutinas y el entrenador, para que no digan
  * cosas distintas (antes la semana decía «¡cumplido!» y Rutinas seguía con «Te toca hoy»).
  */
+/** ¿Toca entrenar hoy? No si ya entrenaste hoy, si hoy no es uno de tus días fijos o si la semana está cumplida. */
+export function dueToday(data: { sessions: { start: number; end?: number }[]; settings: Pick<Settings, 'weeklyGoal' | 'trainingDays'> }, now = Date.now()): boolean {
+  const today = startOfDay(now).getTime()
+  if (data.sessions.some((s) => s.end !== undefined && s.start >= today)) return false
+  const plan = dayPlan(data.settings, now)
+  if (plan && !plan.today) return false
+  return !weekDone(data, now)
+}
+
 export function weekDone(data: { sessions: { start: number; end?: number }[]; settings: Pick<Settings, 'weeklyGoal'> }, now = Date.now()): boolean {
   const monday = new Date(now)
   monday.setHours(0, 0, 0, 0)

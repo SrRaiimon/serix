@@ -50,7 +50,8 @@ export function ReadinessCheck({ session, unit, warmup }: { session: Session; un
       </div>
       {rows.map((r) => (
         <div key={r.key} className="readiness-row">
-          <span className="small">{r.label}</span>
+          {/* Los extremos, a la vista (antes solo los oía el lector de pantalla y el 1 de «Agujetas» se leía al revés). */}
+          <span className="small">{r.label}<span className="tiny muted readiness-ends" aria-hidden="true">1 {r.low} · 5 {r.high}</span></span>
           <div className="readiness-scale" role="group" aria-label={`${r.label}: 1 ${r.low}, 5 ${r.high}`}>
             {[1, 2, 3, 4, 5].map((v) => (
               <button key={v} className={`chip ${draft[r.key] === v ? 'active' : ''}`} aria-pressed={draft[r.key] === v} onClick={() => pick(r.key, v)}>{v}</button>
@@ -181,9 +182,9 @@ export function RestBar() {
           <span className="rest-label">{t('Descanso', 'Rest')}</span>
           <span className="rest-time">{clock(Math.ceil(remaining))}</span>
         </button>
-        <button className="btn small plain" onClick={() => addRest(-15)}>−15</button>
-        <button className="btn small plain" onClick={() => addRest(15)}>+15</button>
-        <button className="btn small primary" onClick={stopRest}>{t('Saltar', 'Skip')}</button>
+        <button className="btn small plain" onClick={() => addRest(-15)} aria-label={t('15 segundos menos', '15 seconds less')}>−15 s</button>
+        <button className="btn small plain" onClick={() => addRest(15)} aria-label={t('15 segundos más', '15 seconds more')}>+15 s</button>
+        <button className="btn small primary" onClick={stopRest} aria-label={t('Saltar el descanso', 'Skip the rest')}>{t('Saltar', 'Skip')}</button>
       </div>
     </div>
     </Overlay>
@@ -218,7 +219,7 @@ function RestFullScreen({ remaining, progress }: { remaining: number; progress: 
         <div className="rest-full-actions">
           <button className="btn plain" onClick={() => addRest(-15)}>−15 s</button>
           <button className="btn plain" onClick={() => addRest(15)}>+15 s</button>
-          <button className="btn primary" onClick={stopRest}>{t('Saltar', 'Skip')}</button>
+          <button className="btn primary" onClick={stopRest}>{t('Saltar descanso', 'Skip rest')}</button>
         </div>
       </div>
     </Overlay>

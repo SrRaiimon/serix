@@ -1,11 +1,12 @@
-import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, ShieldCheck, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
 import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { CatalogContext, Chip, Segmented, StatBand } from '../components/ui'
 import { rest, type Unit } from '../lib/format'
 import { dayMinutes, equipmentInfo, equipmentProfiles, exerciseCount, generate, goalInfo, goalPreview, goals, levelInfo, levels, splitPreview, type GeneratedProgram, type GeneratorConfig } from '../lib/generator'
 import { navigate } from '../lib/router'
 import { getData, updateSettings, useData } from '../lib/store'
-import { ProgramPreview, PullupBarRow, saveProgram } from '../components/Program'
+import { ProgramPreview, PullupBarRow } from '../components/Program'
+import { saveProgram } from '../lib/programs'
 import { lang, LANGS, t } from '../lib/i18n'
 
 const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.GoalsSheet })))
@@ -85,6 +86,8 @@ export function OnboardingScreen() {
   // Con un número que cambia en cada intento: el mismo texto otra vez no se volvía a pintar y el lector no lo repetía.
   const [dayLimit, setDayLimitState] = useState<{ text: string; n: number }>()
   const setDayLimit = (text: string | undefined) => setDayLimitState((d) => (text ? { text, n: (d?.n ?? 0) + 1 } : undefined))
+  // Días tocados sobre el reparto sugerido mientras aún no llegan a 2 (todavía no se guardan).
+  const [picking, setPicking] = useState<number[]>()
   useEffect(() => setDayLimit(undefined), [step])
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
   const [foodStep, setFoodStep] = useState(false)
@@ -110,7 +113,7 @@ export function OnboardingScreen() {
             <span className="hero-ribbon" aria-hidden="true" />
             <span className="onb-hero-icon"><Utensils size={30} aria-hidden="true" /></span>
             <span className="small muted onb-step">{t('Programa guardado · Un último paso opcional', 'Program saved · One last optional step')}</span>
-            <h1 className="onb-question onb-screen-title" tabIndex={-1}>{t('¿Llevas también lo que comes?', 'Do you want to track your food too?')}</h1>
+            <h1 className="onb-question onb-screen-title" tabIndex={-1}>{t('¿Quieres apuntar también lo que comes?', 'Do you want to track your food too?')}</h1>
             <p className="onb-lead">{t('Con tu peso, altura y edad calculamos las calorías y la proteína que te tocan para tu objetivo.', 'With your weight, height and age we work out the calories and protein you need for your goal.')}</p>
           </div>
           <ul className="onb-features">
@@ -157,18 +160,27 @@ export function OnboardingScreen() {
   const weekLetters = t('LMXJVSD', 'MTWTFSS').split('')
   // Los días que has tocado (se guardan como tus días de entreno) o, si no, un reparto orientativo.
   // Fijados (los has tocado) en tinta; sugeridos, solo con borde: no deben parecer elegidos.
-  const fixedDays = !!settings.trainingDays?.length
-  const trainingDays = fixedDays ? settings.trainingDays! : (WEEK_PATTERN[settings.days] ?? [])
+  const fixedDays = !!settings.trainingDays?.length || !!picking
+  const trainingDays = picking ?? (settings.trainingDays?.length ? settings.trainingDays : (WEEK_PATTERN[settings.days] ?? []))
   const dayNames = [t('lunes', 'Monday'), t('martes', 'Tuesday'), t('miércoles', 'Wednesday'), t('jueves', 'Thursday'), t('viernes', 'Friday'), t('sábado', 'Saturday'), t('domingo', 'Sunday')]
   const toggleDay = (i: number) => {
-    const next = trainingDays.includes(i) ? trainingDays.filter((d) => d !== i) : [...trainingDays, i].sort((a, b) => a - b)
+    // Sobre el reparto sugerido, el primer toque empieza a elegir desde cero: quien toca L, X y V para
+    // fijarlos quiere esos tres (antes el toque en L lo quitaba, porque el sugerido contaba como elegido).
+    const base = fixedDays ? trainingDays : []
+    const next = base.includes(i) ? base.filter((d) => d !== i) : [...base, i].sort((a, b) => a - b)
+    navigator.vibrate?.(6)
+    if (next.length < 2 && !settings.trainingDays?.length) {
+      setPicking(next.length ? next : undefined)
+      setDayLimit(next.length ? t('Elige al menos otro día.', 'Pick at least one more day.') : undefined)
+      return
+    }
     // Entre 2 y 6 días, como en la lista de números. Si no se puede, se dice (antes el toque no hacía nada).
     if (next.length < 2 || next.length > 6) {
       setDayLimit(next.length < 2 ? t('Como mínimo, 2 días por semana.', 'At least 2 days a week.') : t('Como máximo, 6 días: uno para descansar.', 'At most 6 days: keep one to rest.'))
       return
     }
     setDayLimit(undefined)
-    navigator.vibrate?.(6)
+    setPicking(undefined)
     updateSettings({ days: next.length, trainingDays: next, weeklyGoal: next.length })
   }
 
@@ -200,7 +212,7 @@ export function OnboardingScreen() {
               <img className="onb-logo" src="icons/serix.svg" width={72} height={72} alt="" />
               <h1 className="onb-title">{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
               <p className="onb-lead">
-                {t('Casi 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Almost 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
+                {t('Más de 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Over 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
               </p>
             </div>
             <ul className="onb-features">
@@ -208,7 +220,11 @@ export function OnboardingScreen() {
               <Feature icon={Timer} text={t('Temporizador de descanso y registro rápido de series', 'Rest timer and quick set logging')} />
               <Feature icon={ChartLine} text={t('Récords, volumen y progreso por ejercicio', 'Records, volume and progress per exercise')} />
             </ul>
-            <span className="small muted onb-time">{t('Cuatro preguntas y un resumen: menos de un minuto.', 'Four questions and a summary: under a minute.')}</span>
+            <span className="small muted onb-time">{t('Cinco preguntas rápidas: menos de un minuto. Sin cuenta: todo se queda en tu móvil.', 'Five quick questions: under a minute. No account: everything stays on your phone.')}</span>
+            {/* Enlace discreto: un botón más empujaba «¿Vienes de otro móvil?» bajo el botón de Empezar. */}
+            <button className="link-btn small onb-privacy" onClick={() => navigate('legal')}>
+              <ShieldCheck size={14} aria-hidden="true" /> {t('Leer la privacidad antes de empezar', 'Read the privacy notice first')}
+            </button>
             <button className="btn plain block" onClick={() => navigate('transfer', 'receive')}>
               <ArrowRightLeft size={18} /> {t('¿Vienes de otro móvil? Pasa tus datos', 'Coming from another phone? Move your data')}
             </button>
@@ -240,7 +256,7 @@ export function OnboardingScreen() {
             <section className="onb-block">
               <h2 className="onb-label">{t('Días por semana', 'Days per week')}</h2>
               {/* Elegir el número deja un reparto orientativo (sin días fijos); tocar la semana fija tus días. */}
-              <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => updateSettings({ days, trainingDays: undefined })} />
+              <NumberPicker label={t('Días por semana', 'Days per week')} values={[2, 3, 4, 5, 6]} value={settings.days} onChange={(days) => { setPicking(undefined); updateSettings({ days, trainingDays: undefined }) }} />
               <div className="onb-week" role="group" aria-label={t('Qué días entrenas', 'Which days you train')}>
                 {weekLetters.map((letter, i) => (
                   <button key={i} className={trainingDays.includes(i) ? (fixedDays ? 'on' : 'hint') : ''} aria-pressed={fixedDays && trainingDays.includes(i)} onClick={() => toggleDay(i)}>
@@ -248,7 +264,7 @@ export function OnboardingScreen() {
                   </button>
                 ))}
               </div>
-              <span className="tiny muted" role="status">{dayLimit ? <strong className="onb-day-limit" key={dayLimit.n}>{dayLimit.text}</strong> : settings.trainingDays?.length
+              <span className="tiny muted" role="status">{dayLimit ? <strong className="onb-day-limit" key={dayLimit.n}>{dayLimit.text}</strong> : fixedDays
                 ? t('Tus días de entreno: Inicio te dirá cuándo toca. Se cambian en Perfil.', 'Your training days: Home will tell you when it is time. Change them in Profile.')
                 : t('Toca los días que te vengan bien para fijarlos (opcional).', 'Tap the days that suit you to set them (optional).')}</span>
               <p className="small onb-note">
@@ -319,7 +335,7 @@ export function OnboardingScreen() {
               <label className="list-row">
                 <span>{t('Nombre', 'Name')}</span>
                 <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Opcional', 'Optional')} autoComplete="given-name"
-                  value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} />
+                  maxLength={40} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} onBlur={() => updateSettings({ name: settings.name.trim() })} />
               </label>
               <div className="list-row">
                 <span className="grow">{t('Unidad de peso', 'Weight unit')}</span>
@@ -331,7 +347,7 @@ export function OnboardingScreen() {
             {/* Antes de crear el programa, a la vista y no al pie de la bienvenida. */}
             <div className="card onb-notice">
               <Suspense fallback={null}><HealthNotice /></Suspense>
-              <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil. Más detalles en Perfil → Legal y privacidad.', 'Your data is stored only on your phone. More details in Profile → Legal and privacy.')}</p>
+              <p className="small muted" style={{ margin: 0 }}>{t('Tus datos se guardan solo en tu móvil.', 'Your data is stored only on your phone.')} <button className="link-btn" onClick={() => navigate('legal')}>{t('Legal y privacidad', 'Legal and privacy')}</button></p>
             </div>
           </>
         )}
