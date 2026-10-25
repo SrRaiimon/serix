@@ -10,17 +10,37 @@ function serviceWorker(): Plugin {
     name: 'gym-service-worker',
     apply: 'build',
     generateBundle(_, bundle) {
-      // El lector de códigos de barras (.wasm, ~1 MB), el de etiquetas (ocr/, ~6 MB) y los productos de
-      // supermercado (aesan.json, ~2 MB) no se precargan: se guardan la primera vez que se usan, así no
-      // los descarga quien no los usa (ver sw-template.js).
-      const files = Object.keys(bundle).filter((f) => !f.endsWith('.map') && !f.endsWith('.wasm') && !f.startsWith('ocr/'))
-      const statics = ['./', 'index.html', 'manifest.webmanifest', 'exercises_index.json', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json', 'licenses.txt',
-        'icons/serix-32.png', 'icons/serix-192.png', 'icons/serix-512.png', 'icons/serix-maskable-192.png', 'icons/serix-maskable-512.png', 'icons/serix-180.png', 'icons/serix-167.png', 'icons/serix-152.png', 'icons/serix.svg']
-      // Sin duplicados: cache.addAll falla si una misma URL aparece dos veces.
+      // Arranque, cuestionario, las cinco pestañas y lo del gimnasio (entreno, intervalos, entreno del día y la
+      // figura de cómo se hace) sin conexión; lo demás (fotos, amigos, importar, informe…) se guarda al usarlo.
+      const core = new Set([
+        '/screens/Onboarding.tsx', '/screens/Legal.tsx', '/screens/Routines.tsx', '/screens/Workout.tsx',
+        '/screens/Session.tsx', '/screens/Food.tsx', '/screens/FoodGoals.tsx', '/screens/Profile.tsx',
+        '/screens/Progress.tsx', '/screens/Intervals.tsx', '/screens/Wod.tsx',
+        '/components/Coach.tsx', '/components/News.tsx', '/components/MoveFigure.tsx',
+      ])
+      const files = new Set<string>()
+      const include = (file: string) => {
+        if (files.has(file)) return
+        files.add(file)
+        const item = bundle[file]
+        // Solo imports estáticos: seguir los dinámicos volvería a descargar todos los idiomas y lectores.
+        if (item?.type === 'chunk') item.imports.forEach(include)
+      }
+      for (const [file, item] of Object.entries(bundle)) {
+        if (item.type === 'chunk' && (item.isEntry || [...core].some((id) => item.facadeModuleId?.replaceAll('\\', '/').endsWith(id)))) include(file)
+        if (/\.(css|woff2)$/.test(file)) include(file)
+      }
+      // Los catálogos se conservan: nombres, instrucciones y alimentos básicos funcionan desde la primera visita.
+      const statics = ['index.html', 'manifest.webmanifest', 'exercises_index.json', 'exercises_es.json', 'exercise_ids_v1.json', 'foods.json',
+        'icons/serix-32.png', 'icons/serix-192.png', 'icons/serix.svg']
       const precache = [...new Set([...statics, ...files])]
-      // Lo que no se precarga pero se puede descargar de una vez desde Perfil para usar sin conexión
-      // (ver src/lib/offline.ts). aesan.json va con el mismo ?v= que en loadAesan (src/lib/nutrition.ts).
-      const optional = [...Object.keys(bundle).filter((f) => f.endsWith('.wasm')), ...Object.keys(OCR_FILES), 'aesan.json?v=3']
+      // «Usar sin conexión» también descarga las pantallas, idiomas e iconos que ahora son opcionales.
+      const optional = [...new Set([
+        ...Object.keys(bundle).filter((f) => !f.endsWith('.map') && !files.has(f) && !statics.includes(f)),
+        ...Object.keys(OCR_FILES), 'aesan.json?v=3', 'licenses.txt',
+        'icons/serix-512.png', 'icons/serix-maskable-192.png', 'icons/serix-maskable-512.png',
+        'icons/serix-180.png', 'icons/serix-167.png', 'icons/serix-152.png',
+      ])]
       const version = Date.now().toString(36)
       const template = readFileSync('src/sw-template.js', 'utf8')
       this.emitFile({

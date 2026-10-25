@@ -1,5 +1,5 @@
 // Usar Serix sin conexión. La app, el catálogo y los pasos de los ejercicios ya se guardan al
-// instalarla; el escáner de códigos, los productos del súper y el lector de etiquetas se guardan al
+// instalarla; las pantallas secundarias, otros idiomas, escáneres y productos del súper se guardan al
 // usarlos la primera vez. Desde Perfil se pueden descargar también de una vez (unos 17 MB), para el
 // gimnasio o el súper sin cobertura. Lo hace el service worker (ver src/sw-template.js).
 

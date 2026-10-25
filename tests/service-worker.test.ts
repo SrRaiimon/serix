@@ -108,10 +108,10 @@ test('service worker: los iconos, de la red y sin conexión de lo guardado (el l
   assert.equal(await sw.get('icons/serix-192.png'), 'red:/serix/icons/serix-192.png')
   assert.ok(sw.fetched.some((u) => u.endsWith('/icons/serix-192.png')), 'pedido a la red')
   sw.setOnline(false)
-  assert.equal(await sw.get('icons/serix-192.png'), 'red:icons/serix-192.png', 'el guardado al instalar')
+  assert.equal(await sw.get('icons/serix-192.png'), 'red:/serix/icons/serix-192.png', 'la última descarga guardada')
   // Con la red colgada no se espera para siempre: pasado el tiempo límite, el guardado.
   sw.setHang(true)
-  assert.equal(await sw.get('icons/serix-192.png'), 'red:icons/serix-192.png', 'red colgada')
+  assert.equal(await sw.get('icons/serix-192.png'), 'red:/serix/icons/serix-192.png', 'red colgada')
 })
 
 test('service worker: al activarse conserva la versión anterior y borra las más viejas, nunca lo ajeno', async () => {
@@ -120,4 +120,18 @@ test('service worker: al activarse conserva la versión anterior y borra las má
   await sw.fire('install')
   await sw.fire('activate')
   assert.deepEqual((await sw.caches.keys()).sort(), ['otra-app', 'serix-aesan-v3', 'serix-b', 'serix-c', 'serix-ocr-v1'])
+})
+
+test('service worker: pantallas, idiomas y lectores opcionales se guardan al visitarlos y funcionan offline', async () => {
+  const sw = load('b')
+  await sw.fire('install')
+  const files = ['assets/Photos-abc.js', 'assets/fr-abc.js', 'assets/pt-abc.js', 'assets/jsQR-abc.js', 'icons/serix-512.png']
+  const cache = await sw.caches.open('serix-b')
+  for (const file of files) {
+    assert.equal(await cache.match(file), undefined)
+    assert.equal(await sw.get(file), `red:/serix/${file}`)
+    assert.ok(await cache.match(file), file)
+  }
+  sw.setOnline(false)
+  for (const file of files) assert.equal(await sw.get(file), `red:/serix/${file}`)
 })

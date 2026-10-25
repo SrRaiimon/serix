@@ -29,11 +29,57 @@ export function OnboardingScreen() {
   const [step, setStepState] = useState(() => {
     try { return Math.min(LAST, Number(sessionStorage.getItem('onb-step')) || 0) } catch { return 0 }
   })
-  const setStep = (to: number | ((s: number) => number)) => setStepState((s) => {
-    const n = typeof to === 'function' ? to(s) : to
+  const currentStep = useRef(step)
+  const goingBack = useRef(false)
+  const finishing = useRef(false)
+  const finishAtStart = useRef<(() => void) | undefined>(undefined)
+  const showStep = (n: number) => {
+    currentStep.current = n
+    setStepState(n)
     try { sessionStorage.setItem('onb-step', String(n)) } catch { /* sin almacenamiento: empieza desde el principio */ }
-    return n
-  })
+  }
+  useEffect(() => {
+    const n = currentStep.current
+    // El paso cero ocupa la entrada original: Atrás desde él sigue saliendo como antes.
+    // Al restaurar una sesión, reconstruir sus pasos; StrictMode encuentra ya la misma entrada.
+    if (history.state?.serixOnb !== n) {
+      history.replaceState({ serixOnb: 0 }, '')
+      for (let i = 1; i <= n; i++) history.pushState({ serixOnb: i }, '')
+    }
+    const onPop = (e: PopStateEvent) => {
+      const previous = e.state?.serixOnb
+      if (!Number.isInteger(previous) || previous < 0 || previous > LAST) return
+      goingBack.current = false
+      if (finishAtStart.current) {
+        if (previous === 0) finishAtStart.current()
+        else history.go(-previous)
+        return
+      }
+      if (previous !== currentStep.current) {
+        clearTimeout(advance.current)
+        showStep(previous)
+        setProgram(undefined)
+      }
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  const setStep = (to: number | ((s: number) => number)) => {
+    if (goingBack.current || finishing.current) return
+    const s = currentStep.current
+    const n = Math.max(0, Math.min(LAST, typeof to === 'function' ? to(s) : to))
+    if (n === s) return
+    clearTimeout(advance.current)
+    if (n < s) {
+      // El botón y el gesto recorren las entradas existentes, sin duplicarlas al volver.
+      goingBack.current = true
+      history.go(n - s)
+      return
+    }
+    // También al saltar al resumen: dejar los pasos intermedios para poder volver uno a uno.
+    for (let i = s + 1; i <= n; i++) history.pushState({ serixOnb: i }, '')
+    showStep(n)
+  }
   // Hacia dónde se mueve el cuestionario: al volver atrás, el paso entra por la izquierda.
   const shown = useRef({ step: 0, back: false })
   if (shown.current.step !== step) shown.current = { step, back: step < shown.current.step }
@@ -95,14 +141,29 @@ export function OnboardingScreen() {
   // Al pasar a la vista previa o al paso de comidas, el foco va a su título (como entre preguntas).
   useEffect(() => { if (program || foodStep) document.querySelector<HTMLElement>('.onb-screen-title')?.focus({ preventScroll: true }) }, [!!program, foodStep])
   const finish = (p?: GeneratedProgram) => {
-    // «Saltar» o terminar: la próxima vez el cuestionario empieza desde el principio.
-    try { sessionStorage.removeItem('onb-step') } catch { /* sin almacenamiento */ }
-    if (p) saveProgram(p)
-    // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
-    // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
-    const firstTime = settings.simpleMode === undefined && getData().sessions.length === 0
-    // Quien empieza no tiene «novedades» que ver: ya lo estrena todo.
-    updateSettings({ onboarded: true, seenVersion: __APP_VERSION__, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
+    if (finishing.current) return
+    finishing.current = true
+    clearTimeout(advance.current)
+    const complete = () => {
+      finishAtStart.current = undefined
+      history.replaceState(null, '')
+      // «Saltar» o terminar: la próxima vez el cuestionario empieza desde el principio.
+      try { sessionStorage.removeItem('onb-step') } catch { /* sin almacenamiento */ }
+      if (p) saveProgram(p)
+      // A quien empieza de cero le basta lo básico: el modo sencillo oculta RPE y opciones avanzadas (se
+      // cambia en Perfil). Solo la primera vez: al repetir el cuestionario no se toca lo que ya usa.
+      const firstTime = settings.simpleMode === undefined && getData().sessions.length === 0
+      // Quien empieza no tiene «novedades» que ver: ya lo estrena todo.
+      updateSettings({ onboarded: true, seenVersion: __APP_VERSION__, ...(firstTime && settings.level === 'beginner' ? { simpleMode: true } : {}) })
+    }
+    finishAtStart.current = complete
+    // Volver antes de desmontar: GoalsSheet sigue abierta y su limpieza ya no encuentra su entrada.
+    // Si se cerró con Atrás, esa entrada ya se consumió y no se cuenta de nuevo.
+    const steps = currentStep.current + (history.state?.serixDialog ? 1 : 0)
+    if (!goingBack.current) {
+      if (steps) history.go(-steps)
+      else complete()
+    }
   }
 
   if (foodStep) {

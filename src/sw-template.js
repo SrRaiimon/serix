@@ -55,7 +55,11 @@ self.addEventListener('fetch', (event) => {
   // los de verdad) y, sin conexión, de lo guardado: el logo de la bienvenida y el de los avisos no se rompen.
   // Con cobertura mala la red no falla, se queda colgada: a los 3 s, lo guardado (o seguir esperando a la red).
   if (url.pathname.includes('/icons/')) {
-    const net = fetch(request)
+    const net = fetch(request).then(async (res) => {
+      // Los iconos grandes ya no se precargan: conservar la primera descarga para instalarlos sin conexión.
+      if (res.ok) await (await caches.open(APP_CACHE)).put(request, res.clone())
+      return res
+    })
     event.respondWith(
       withTimeout(net, ICON_TIMEOUT)
         .catch(() => caches.match(request, MATCH).then((hit) => hit || net))
@@ -83,7 +87,7 @@ self.addEventListener('fetch', (event) => {
   // descargarlos la primera vez y después funcionan sin conexión. El .wasm cambia de nombre con cada
   // versión, así que va en la caché de la versión (se borra con ella).
   const keep = cacheFor(url.pathname)
-  if (keep) {
+  if (keep !== APP_CACHE || url.pathname.endsWith('.wasm')) {
     event.respondWith(
       caches.open(keep).then((cache) => cache.match(request, keep === AESAN_CACHE ? { ignoreVary: true } : MATCH).then((hit) => hit || fetch(request).then((res) => {
         if (res.ok) cache.put(request, res.clone())
@@ -99,12 +103,18 @@ self.addEventListener('fetch', (event) => {
     caches.open(APP_CACHE)
       .then((cache) => cache.match(request, MATCH))
       .then((hit) => hit || caches.match(request, MATCH))
-      .then((hit) => hit || fetch(request)),
+      .then((hit) => hit || fetch(request).then(async (res) => {
+        // Los chunks con huella son inmutables: CacheFirst tras la primera visita, también sus dependencias.
+        if (res.ok && (url.pathname.startsWith(`${scope}assets/`) || url.pathname === `${scope}licenses.txt`)) {
+          await (await caches.open(APP_CACHE)).put(request, res.clone())
+        }
+        return res
+      })),
   )
 })
 
 function cacheFor(pathname) {
-  return pathname.includes('/ocr/') ? OCR_CACHE : pathname.endsWith('/aesan.json') ? AESAN_CACHE : pathname.endsWith('.wasm') ? APP_CACHE : undefined
+  return pathname.includes('/ocr/') ? OCR_CACHE : pathname.endsWith('/aesan.json') ? AESAN_CACHE : APP_CACHE
 }
 
 /** Cuáles de los archivos opcionales están ya guardados (para usar sin conexión). */

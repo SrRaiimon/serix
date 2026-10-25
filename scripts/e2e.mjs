@@ -81,20 +81,143 @@ async function main() {
     q.onsuccess = () => { const g = q.result.transaction('kv').objectStore('kv').get('data'); g.onsuccess = () => res(g.result) }
   }))
   const check = (ok, message) => { if (!ok) throw new Error(message) }
+  // history.length cuenta también Adelante: lo que importa para Atrás es volver al índice original.
+  const historyIndex = async () => (await send('Page.getNavigationHistory')).currentIndex
+  // Dar tiempo a CDP a responder antes de que Atrás abandone el documento.
+  const browserBack = async () => { await run(() => { setTimeout(() => history.back(), 50) }); await wait(550) }
+  const freshOnboarding = async () => {
+    // Cada salida se prueba desde cero, con datos aislados en el perfil temporal de Chrome.
+    await send('Storage.clearDataForOrigin', { origin: `http://127.0.0.1:${PORT}`, storageTypes: 'indexeddb,local_storage' })
+    await run(() => sessionStorage.clear())
+    await send('Page.reload')
+    await click('^Español$', 15000)
+  }
+
+  // Apagar también el servidor: así ni el service worker ni la caché HTTP pueden ocultar una falta de caché.
+  const setOffline = async (offline) => {
+    if (offline) await new Promise((resolve, reject) => server.httpServer.close((err) => err ? reject(err) : resolve()))
+    else await new Promise((resolve) => server.httpServer.listen(PORT, '127.0.0.1', resolve))
+    await send('Network.enable')
+    await send('Network.setCacheDisabled', { cacheDisabled: true })
+    await send('Network.emulateNetworkConditions', { offline, latency: 0, downloadThroughput: -1, uploadThroughput: -1 })
+  }
+  const chooseLanguage = async (language) => {
+    await run(() => { location.hash = '#/profile/general' })
+    await wait(700)
+    await run((value) => {
+      const select = [...document.querySelectorAll('select')].find((s) => [...s.options].some((o) => o.value === value))
+      select.value = value
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    }, language)
+    await wait(700)
+  }
+
+  const checkOfflineTabs = async (language) => {
+    const titles = language === 'es' ? ['Rutinas', 'Comidas', 'Progreso', 'Perfil'] : ['Routines', 'Food', 'Progress', 'Profile']
+    for (const [i, route] of ['routines', 'food', 'progress', 'profile'].entries()) {
+      await run((hash) => { location.hash = hash }, `#/${route}`)
+      await send('Page.reload')
+      await wait(1000)
+      check(await run((title) => !document.querySelector('.rescue') && [...document.querySelectorAll('h1')].some((h) => h.textContent.trim() === title), titles[i]), `${titles[i]} no abre offline (${language})`)
+    }
+    await run(() => { location.hash = '#/' })
+    await wait(700)
+  }
 
   await send('Runtime.enable')
   await send('Page.enable')
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true })
   await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` })
 
-  step = 'cuestionario'
+  step = 'historial del cuestionario: Atrás y Saltar'
   // El idioma sale del sistema: en los servidores de GitHub es inglés. Se elige español, como haría alguien.
   await click('^Español$', 15000)
+  step = 'primera visita sin conexión'
+  await run(async () => {
+    await navigator.serviceWorker.ready
+    if (!navigator.serviceWorker.controller) await new Promise((resolve) => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true }))
+  })
+  await setOffline(true)
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => !!document.querySelector('.onb') && document.body.innerText.includes('Empezar')), 'No arranca offline en español tras la primera visita')
+  await click('^English$')
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => document.documentElement.lang === 'en' && document.body.innerText.includes('Start')), 'No arranca offline en inglés tras la primera visita')
+  await click('^Español$')
+  await setOffline(false)
+  step = 'historial del cuestionario: Atrás y Saltar'
+  const initialIndex = await historyIndex()
   await click('^Empezar$')
-  for (let i = 0; i < 4; i++) await click('^Continuar$')
-  await click('^Crear mi programa$')
-  await click('^Guardar programa$')
-  await click('^Solo quiero entrenar$')
+  await click('^Continuar$')
+  await click('^Continuar$')
+  await browserBack()
+  check(await run(() => history.state?.serixOnb === 2 && sessionStorage.getItem('onb-step') === '2'), 'Atrás no volvió del paso 3 al 2')
+  await click('^Saltar$')
+  check(await historyIndex() === initialIndex, 'Saltar dejó pasos del cuestionario detrás de Inicio')
+  check(await run(() => !!document.querySelector('.tabbar') && !history.state?.serixOnb), 'Saltar no terminó el cuestionario')
+  await browserBack()
+  check(await historyIndex() === initialIndex - 1, 'Atrás desde Inicio consumió un paso muerto')
+  const previous = await send('Page.getNavigationHistory')
+  check(!previous.entries[previous.currentIndex].url.startsWith(`http://127.0.0.1:${PORT}`), 'Atrás sigue dentro del cuestionario')
+  await run(() => { setTimeout(() => history.forward(), 50) })
+  await wait(800)
+
+  for (const exit of ['Cancelar', 'Atrás', 'Solo quiero entrenar']) {
+    step = `historial al terminar: ${exit}`
+    await freshOnboarding()
+    const startIndex = await historyIndex()
+    await click('^Empezar$')
+    for (let i = 0; i < 4; i++) await click('^Continuar$')
+    await click('^Crear mi programa$')
+    await click('^Guardar programa$')
+    if (exit === 'Solo quiero entrenar') await click('^Solo quiero entrenar$')
+    else {
+      await click('^Sí, calcular mis calorías$')
+      check(await run(() => !!history.state?.serixDialog), 'GoalsSheet no añadió su entrada')
+      if (exit === 'Cancelar') await click('^Cancelar$')
+      else await browserBack()
+    }
+    await wait(500)
+    check(await historyIndex() === startIndex, `${exit}: quedaron pasos muertos o hubo un doble retroceso`)
+    check(await run(() => !!document.querySelector('.tabbar') && !document.querySelector('[role="dialog"]') && history.state === null), `${exit}: no terminó en Inicio sin hojas`)
+  }
+
+  step = 'historial de hojas: sustitución y Atrás'
+  const homeHash = await run(() => location.hash)
+  const homeIndex = await historyIndex()
+  await run(() => { location.hash = '#/routines' })
+  await click('^Nueva$')
+  const menuIndex = await historyIndex()
+  await click('^Nueva rutina vacía')
+  check(await run(() => !!document.querySelector('[aria-label="Editar rutina"]')), 'No se abrió el editor')
+  check(await historyIndex() === menuIndex, 'El editor añadió una entrada en vez de sustituir la ActionSheet')
+  await browserBack()
+  check(await run(() => !document.querySelector('[role="dialog"]') && location.hash === '#/routines'), 'Atrás no cerró solo el editor')
+  check(await historyIndex() === menuIndex - 1, 'Cerrar el editor dejó una entrada muerta')
+  await browserBack()
+  check(await historyIndex() === homeIndex && await run(() => location.hash) === homeHash, 'Atrás después del editor no volvió a Inicio')
+  console.log('e2e historial: Atrás y Saltar, terminar con y sin GoalsSheet, y sustituir y cerrar hojas correctos')
+
+  step = 'pantalla secundaria guardada al visitarla'
+  check(await run(async () => {
+    const keys = (await Promise.all((await caches.keys()).map(async (name) => (await (await caches.open(name)).keys()).map((r) => r.url)))).flat()
+    return !keys.some((url) => /assets\/Photos-/.test(url))
+  }), 'Fotos sigue en la precarga')
+  await run(() => { location.hash = '#/profile/photos' })
+  await wait(1000)
+  check(await run(() => document.body.innerText.includes('Fotos de progreso')), 'No abrió Fotos online')
+  await setOffline(true)
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => document.body.innerText.includes('Fotos de progreso') && !document.querySelector('.rescue')), 'La pantalla secundaria visitada no funciona offline')
+  await run(() => { location.hash = '#/' })
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => !!document.querySelector('.tabbar') && document.documentElement.lang === 'es'), 'Inicio no arranca offline en español')
+
+  await checkOfflineTabs('es')
 
   step = 'entreno'
   await click('^Empezar$')
@@ -127,6 +250,21 @@ async function main() {
   await wait(600)
   d = await data()
   check(d.nutrition.entries.length === 1, `Debería haber 1 alimento apuntado y hay ${d.nutrition.entries.length}`)
+
+  step = 'inicio y pantalla visitada offline en inglés'
+  await chooseLanguage('en')
+  await run(() => { location.hash = '#/' })
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => document.documentElement.lang === 'en' && /Home/.test(document.querySelector('.tabbar')?.textContent ?? '')), 'Inicio no arranca offline en inglés')
+  await run(() => { location.hash = '#/profile/photos' })
+  await send('Page.reload')
+  await wait(1000)
+  check(await run(() => document.body.innerText.includes('Progress photos')), 'Fotos no funciona offline en inglés')
+  await checkOfflineTabs('en')
+  await chooseLanguage('es')
+  await setOffline(false)
+  console.log('e2e offline: primera visita e Inicio en español e inglés, entreno y comida guardados, y Fotos visitada; servidor apagado y caché HTTP desactivada')
 
   step = 'pantallas'
   for (const hash of ['#/routines', '#/progress', '#/profile', '#/profile/general', '#/profile/training', '#/profile/alerts', '#/profile/data', '#/exercises', '#/timer', '#/progress/report']) {

@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Minus, Plus, Trophy, type LucideIcon } from 'lucide-react'
-import { createContext, Fragment, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { createContext, Fragment, useContext, useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import type { Catalog } from '../lib/catalog'
 import { createPortal } from 'react-dom'
 import { back } from '../lib/router'
@@ -180,8 +180,10 @@ export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: nu
   return <MuscleThumb exercise={exercise} size={size} />
 }
 
-// Pila de hojas abiertas: Escape cierra solo la de arriba y el resto de la app queda inerte mientras haya alguna.
+// Pila de hojas abiertas: Escape y Atrás cierran solo la de arriba; lo de detrás queda inerte.
 const dialogStack: object[] = []
+const dialogPops = new WeakSet<PopStateEvent>()
+let pendingDialog: string | undefined
 
 let liveRegion: HTMLElement | undefined
 /**
@@ -216,9 +218,29 @@ export function announce(text: string) {
 function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
   const close = useRef(onClose)
   close.current = onClose
+  const id = useId()
+  const entry = useRef({ active: false, entered: false })
   useEffect(() => {
-    const token = {}
+    const token = entry.current
+    token.active = true
     dialogStack.push(token)
+    // StrictMode reutiliza la entrada: su desmontaje de prueba no debe añadir ni consumir historial.
+    if (!token.entered) {
+      // Si otra hoja acaba de cerrarse, el editor nuevo ocupa su entrada, no deja una muerta debajo.
+      if (pendingDialog && history.state?.serixDialog === pendingDialog) {
+        history.replaceState({ serixDialog: id }, '')
+        pendingDialog = undefined
+      } else history.pushState({ serixDialog: id }, '')
+      token.entered = true
+    }
+    if (pendingDialog === id) pendingDialog = undefined
+    const onPop = (e: PopStateEvent) => {
+      if (dialogPops.has(e) || dialogStack[dialogStack.length - 1] !== token || e.state?.serixDialog === id) return
+      // Marcar antes de cerrar: aunque se desmonte ya, la hoja inferior no consume este mismo Atrás.
+      dialogPops.add(e)
+      close.current()
+    }
+    window.addEventListener('popstate', onPop)
     const before = document.activeElement as HTMLElement | null
     // Todo lo que hay en body salvo esta hoja (la app y otra hoja de debajo) queda inerte mientras está abierta.
     let top: Element | null = ref.current
@@ -237,11 +259,21 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
+      window.removeEventListener('popstate', onPop)
+      token.active = false
+      if (history.state?.serixDialog === id) pendingDialog = id
       dialogStack.splice(dialogStack.indexOf(token), 1)
       release(silenced)
       if (before?.isConnected) before.focus({ preventScroll: true })
+      queueMicrotask(() => {
+        // Si onClose navegó, la entrada actual ya es otra: no deshacer esa navegación.
+        if (!token.active && pendingDialog === id) {
+          pendingDialog = undefined
+          if (history.state?.serixDialog === id) history.back()
+        }
+      })
     }
-  }, [ref])
+  }, [ref, id])
 }
 
 /** Hoja modal a pantalla casi completa, como las de iOS. */

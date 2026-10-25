@@ -12,6 +12,7 @@ import { bodyPartLabel, bodyPartOrder, categoryKeys, categoryLabel, equipmentLab
 import { navigate } from '../lib/router'
 import { exerciseHistory, exerciseUsage, type ExerciseUsage } from '../lib/stats'
 import { alternatives } from '../lib/alternatives'
+import { orderPickerExercises } from '../lib/exercisePicker'
 import { equipmentInfo, STAPLES } from '../lib/generator'
 import { finishedSessions, update, useData } from '../lib/store'
 import { defaultTargetSeconds, defaultTracking, setShortText, trackingOf } from '../lib/tracking'
@@ -446,12 +447,11 @@ export function ExercisePicker({ onDone, onClose, single, title }: { onDone: (li
   const [selected, setSelected] = useState<Exercise[]>([])
   const [preview, setPreview] = useState<Exercise>()
   const usage = useUsage()
-  // Los que ya haces, primero (sin buscar, del más reciente al más antiguo).
+  // Sin buscar: los usados por fecha, los básicos de gimnasio y el resto, dentro de lo filtrado.
   const results = useMemo(() => {
     const list = rank(catalog, catalog.filter(filter, settings.favorites), filter.query, usage)
     if (filter.query.trim()) return list
-    const last = (e: Exercise) => usage.get(e.id)?.last ?? 0
-    return [...list].sort((a, b) => last(b) - last(a))
+    return orderPickerExercises(list, usage)
   }, [catalog, filter, settings.favorites, usage])
   const { shown, sentinel } = useProgressive(results, JSON.stringify(filter))
   const toggle = (e: Exercise) => {

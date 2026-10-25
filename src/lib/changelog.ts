@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.19',
+    items: [
+      ['El botón Atrás del móvil cierra la hoja abierta y, en el cuestionario, vuelve al paso anterior.', 'Your phone’s Back button closes the open sheet and goes back one step in the questionnaire.'],
+      ['Al añadir ejercicios, si estás empezando ves primero los básicos: press de banca, sentadilla, peso muerto…', 'When adding exercises, beginners see the basics first: bench press, squat, deadlift…'],
+      ['La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.', 'The first visit downloads around 35% less; secondary features are saved when you use them.'],
+    ],
+  },
+  {
     version: '0.1.18',
     items: [
       ['«Borrar todos los datos» ya borra también tu nombre, tus calorías y tus objetivos, y puede borrar las fotos.', '"Delete all data" now also deletes your name, calories and goals, and can delete your photos.'],

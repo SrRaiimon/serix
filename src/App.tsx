@@ -16,8 +16,8 @@ import { HomeScreen } from './screens/Home'
 import { UndoToast } from './components/UndoToast'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
-// El resto de pantallas se descargan al abrirlas (el service worker las guarda todas para usarlas sin
-// conexión), así la app arranca antes. Inicio va en el paquete principal porque es la primera.
+// Las pantallas se cargan al abrirlas: el service worker precarga las básicas y guarda las secundarias
+// al visitarlas. Inicio va en el paquete principal porque es la primera.
 const screens = {
   exercises: () => import('./screens/Exercises'),
   food: () => import('./screens/Food'),
