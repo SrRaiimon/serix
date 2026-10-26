@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
 import { buildDishes, makePlan, planMeals } from '../src/lib/mealPlan'
-import { parseOffProduct, recipeValues, setMealSettings, type BasicFood } from '../src/lib/nutrition'
+import { cleanFoodName, invalidFoodCalories, parseOffProduct, recipeValues, setMealSettings, type BasicFood } from '../src/lib/nutrition'
 
 // Los valores por 100 g con los mismos límites al crear el alimento y al restaurar la copia: antes una receta con
 // el peso hecho muy bajo pasaba de 100 g de proteína, la copia la descartaba y al restaurar se perdían la receta y
@@ -47,4 +47,15 @@ test('menú propuesto: solo las comidas activadas', () => {
     setMealSettings(undefined, undefined)
   }
   assert.equal(Object.keys(makePlan(dishes, { entries: [] }, '2026-03-10', 1).meals).length, 4)
+})
+
+test('alimento propio: las calorías imposibles tienen aviso, incluidos texto y negativos', () => {
+  for (const value of ['999999', '1000.1', '-1', 'abc', '1e9', 'Infinity', '12,5,3']) assert.equal(invalidFoodCalories(value), true, value)
+  for (const value of ['', ' ', '0', '1000', '82,5', '82.5']) assert.equal(invalidFoodCalories(value), false, value)
+})
+
+test('alimento propio: nombre sin espacios exteriores y con un máximo de 80 caracteres', () => {
+  assert.equal(cleanFoodName('  Mi batido  '), 'Mi batido')
+  assert.equal(cleanFoodName('x'.repeat(360)), 'x'.repeat(80))
+  assert.equal(cleanFoodName('   '), '')
 })

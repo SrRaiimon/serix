@@ -4,7 +4,7 @@ import { navigate } from '../lib/router'
 import { focusFor } from '../lib/warmupRoutine'
 import { BatteryLow, ChevronDown, Link2, Maximize2, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ActionSheet, Progress, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
+import { ActionSheet, Progress, useBackLayer, useCatalog, useScrollLock, useTick, useToast } from '../components/ui'
 import { groupKind, groupSlots } from '../lib/groups'
 import { clock, fromKg, int, rest, toKg } from '../lib/format'
 import { t } from '../lib/i18n'
@@ -153,6 +153,7 @@ export function WorkoutScreen({ session }: { session: Session }) {
   const started = allSets.some((s) => s.done)
 
   useScrollLock()
+  useBackLayer(minimizeWorkout)
   // El audio se prepara cuando el móvil está libre, no al marcar la primera serie.
   useEffect(() => {
     const idle = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 300))

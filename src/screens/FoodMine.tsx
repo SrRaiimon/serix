@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Sheet } from '../components/ui'
 import { editable, int, parseDecimal, uid } from '../lib/format'
 import { t } from '../lib/i18n'
-import { amountOf, optionals, recipeValues, type Recipe, type RecipeItem, suspectValue, dayTotals, loadBasicFoods, matches, type BasicFood, type MyFood, type SavedMeal } from '../lib/nutrition'
+import { cleanFoodName, invalidFoodCalories, amountOf, optionals, recipeValues, type Recipe, type RecipeItem, suspectValue, dayTotals, loadBasicFoods, matches, type BasicFood, type MyFood, type SavedMeal } from '../lib/nutrition'
 import { update, useData, withUndo } from '../lib/store'
 import { ShareFoodButton, g, nb, fromBasic, fromMine, type Pickable } from './FoodParts'
 
@@ -182,9 +182,10 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
       setReading({ state: 'error' })
     }
   }
-  const [name, setName] = useState(initial?.name ?? initialName ?? '')
+  const [name, setName] = useState(cleanFoodName(initial?.name ?? initialName ?? ''))
   const [values, setValues] = useState({ kcal: fmt(initial?.per100.kcal), p: fmt(initial?.per100.p), c: fmt(initial?.per100.c), f: fmt(initial?.per100.f), portion: fmt(initial?.portion?.g) })
   const parsed = { kcal: parseDecimal(values.kcal), p: parseDecimal(values.p), c: parseDecimal(values.c), f: parseDecimal(values.f) }
+  const badCalories = invalidFoodCalories(values.kcal)
   const valid = parsed.kcal !== null && parsed.kcal >= 0 && parsed.kcal <= 1000 && [parsed.p, parsed.c, parsed.f].every((x) => x !== null && x >= 0 && x <= 100)
   // En 100 g no caben más de 100 g de proteína, hidratos y grasa juntos (50 + 50 + 50 se guardaba).
   const overWeight = valid && parsed.p! + parsed.c! + parsed.f! > 100.5
@@ -193,7 +194,7 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
   const save = () => {
     if (!ok) return
     const food: MyFood = {
-      id: initial?.id ?? uid(), name: name.trim().slice(0, 120), source: 'mine',
+      id: initial?.id ?? uid(), name: cleanFoodName(name), source: 'mine',
       ...(initial?.brand ? { brand: initial.brand } : {}),
       // Fibra, azúcares y sal no se editan aquí: se conservan los que tuviera.
       per100: { kcal: parsed.kcal!, p: parsed.p!, c: parsed.c!, f: parsed.f!, ...optionals(initial?.per100 ?? {}) },
@@ -216,7 +217,7 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
   const field = (key: keyof typeof values, label: string, unit: string) => (
     <label className={`list-row ${suspect === key ? 'suspect' : ''}`}>
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder={key === 'portion' ? '—' : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} aria-invalid={suspect === key || undefined} />
+      <input inputMode="decimal" placeholder={key === 'portion' ? '—' : '0'} style={{ textAlign: 'right', width: 88, fontSize: 17 }} value={values[key]} onChange={(e) => setValues({ ...values, [key]: e.target.value })} aria-label={label} aria-invalid={(key === 'kcal' && badCalories) || suspect === key || undefined} />
       <span className="muted" style={{ width: 28 }}>{unit}</span>
     </label>
   )
@@ -244,7 +245,7 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
         </span>
       </button>
       <div className="list">
-        <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} placeholder={t('Nombre (p. ej. «Mi batido»)', 'Name (e.g. "My shake")')} onChange={(e) => setName(e.target.value)} /></label>
+        <label className="list-row"><input className="grow" style={{ fontSize: 17 }} value={name} maxLength={80} onBlur={() => setName(cleanFoodName(name))} placeholder={t('Nombre (p. ej. «Mi batido»)', 'Name (e.g. "My shake")')} onChange={(e) => setName(e.target.value)} /></label>
       </div>
       <div className="list-header">{t('Por 100 g (lo pone la etiqueta)', 'Per 100 g (on the label)')}</div>
       <div className="list">
@@ -254,6 +255,7 @@ export function MyFoodSheet({ barcode: newBarcode, initialName, initial, onBack,
         {field('f', t('Grasa', 'Fat'), 'g')}
       </div>
       {/* Comprobación al escribir: las kcal frente a las que dan sus macros (lo mismo que el aviso). */}
+      {badCalories && <p className="food-health doubt small" role="alert" style={{ margin: 0 }}><TriangleAlert size={16} aria-hidden="true" /> <span>{t('Las calorías por 100 g deben ser un número entre 0 y 1000. Revisa la etiqueta.', 'Calories per 100 g must be a number between 0 and 1000. Check the label.')}</span></p>}
       {overWeight ? <p className="food-health doubt small" role="alert" style={{ margin: 0 }}><TriangleAlert size={16} aria-hidden="true" /> <span>{t('Proteína, hidratos y grasa suman más de 100 g en 100 g: revisa las cifras con la etiqueta.', 'Protein, carbs and fat add up to more than 100 g per 100 g: check the numbers against the label.')}</span></p>
         : check && (suspect
         ? <p className="food-health doubt small" style={{ margin: 0 }}><TriangleAlert size={16} aria-hidden="true" /> <span>{t(`Con estos valores salen unas ${int(calc)} kcal, no ${int(check.kcal)}. Compara las cuatro cifras con la etiqueta; la que más se aleja parece ${labels[suspect]}.`, `These values give about ${int(calc)} kcal, not ${int(check.kcal)}. Compare all four numbers with the label; the one furthest off seems to be ${labels[suspect]}.`)}</span></p>

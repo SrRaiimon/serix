@@ -1,6 +1,6 @@
 import { HeartPulse, Flame, Check, Minimize2, Timer } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Overlay, useScrollLock, useTick } from '../components/ui'
+import { Overlay, useBackLayer, useScrollLock, useTick } from '../components/ui'
 import { clock, fromKg, increment, toKg, weight, type Unit } from '../lib/format'
 import { t } from '../lib/i18n'
 import { type Session, type SetEntry } from '../lib/store'
@@ -78,6 +78,7 @@ export function ReadinessCheck({ session, unit, warmup }: { session: Session; un
  */
 export function FocusMode({ session, unit, onClose }: { session: Session; unit: Unit; onClose: () => void }) {
   useScrollLock()
+  useBackLayer(onClose)
   const timer = useRestTimer()
   const now = useTick(250)
   const exercise = session.exercises.find((e) => e.sets.some((x) => !x.done))

@@ -184,6 +184,23 @@ export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: nu
 const dialogStack: object[] = []
 const dialogPops = new WeakSet<PopStateEvent>()
 let pendingDialog: string | undefined
+const historyLayers = new Map<string, { active: boolean; parent?: string }>()
+let pruningHistory = false
+// Al terminar se desmontan a la vez el entreno y su confirmación: se retiran ambas entradas.
+function pruneHistory() {
+  if (pruningHistory) return
+  let id = history.state?.serixDialog as string | undefined
+  let steps = 0
+  while (id && historyLayers.has(id) && !historyLayers.get(id)!.active) {
+    steps++
+    id = historyLayers.get(id)!.parent
+  }
+  if (steps) {
+    pruningHistory = true
+    window.addEventListener('popstate', () => { pruningHistory = false }, { once: true })
+    history.go(-steps)
+  }
+}
 
 let liveRegion: HTMLElement | undefined
 /**
@@ -211,26 +228,28 @@ export function announce(text: string) {
   setTimeout(() => { region.textContent = text }, 60)
 }
 
-/**
- * Hace de una hoja un diálogo accesible: el foco entra en ella al abrir (y vuelve al botón que la abrió al cerrar),
- * Escape la cierra, y lo de detrás (la app y cualquier hoja de debajo) queda inerte: Tab y el lector no se salen.
- */
-function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
+// Historial compartido: Atrás cierra solo la última capa abierta, sin perder el entreno.
+export function useBackLayer(onClose: () => void) {
   const close = useRef(onClose)
   close.current = onClose
   const id = useId()
-  const entry = useRef({ active: false, entered: false })
+  const entry = useRef({ active: false, entered: false, parent: undefined as string | undefined })
   useEffect(() => {
     const token = entry.current
     token.active = true
+    historyLayers.set(id, token)
     dialogStack.push(token)
     // StrictMode reutiliza la entrada: su desmontaje de prueba no debe añadir ni consumir historial.
     if (!token.entered) {
       // Si otra hoja acaba de cerrarse, el editor nuevo ocupa su entrada, no deja una muerta debajo.
       if (pendingDialog && history.state?.serixDialog === pendingDialog) {
+        token.parent = historyLayers.get(pendingDialog)?.parent
         history.replaceState({ serixDialog: id }, '')
         pendingDialog = undefined
-      } else history.pushState({ serixDialog: id }, '')
+      } else {
+        token.parent = history.state?.serixDialog
+        history.pushState({ serixDialog: id }, '')
+      }
       token.entered = true
     }
     if (pendingDialog === id) pendingDialog = undefined
@@ -239,8 +258,32 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
       // Marcar antes de cerrar: aunque se desmonte ya, la hoja inferior no consume este mismo Atrás.
       dialogPops.add(e)
       close.current()
+      queueMicrotask(pruneHistory)
     }
     window.addEventListener('popstate', onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      token.active = false
+      if (history.state?.serixDialog === id) pendingDialog = id
+      dialogStack.splice(dialogStack.indexOf(token), 1)
+      queueMicrotask(() => {
+        // Si onClose navegó, la entrada actual ya es otra: no deshacer esa navegación.
+        if (!token.active && pendingDialog === id) {
+          pendingDialog = undefined
+          pruneHistory()
+        }
+      })
+    }
+  }, [id])
+  return entry.current
+}
+
+// La accesibilidad de las hojas se conserva separada del historial de las pantallas completas.
+function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
+  const close = useRef(onClose)
+  close.current = onClose
+  const token = useBackLayer(onClose)
+  useEffect(() => {
     const before = document.activeElement as HTMLElement | null
     // Todo lo que hay en body salvo esta hoja (la app y otra hoja de debajo) queda inerte mientras está abierta.
     let top: Element | null = ref.current
@@ -259,21 +302,10 @@ function useDialog(ref: React.RefObject<HTMLElement | null>, onClose: () => void
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
-      window.removeEventListener('popstate', onPop)
-      token.active = false
-      if (history.state?.serixDialog === id) pendingDialog = id
-      dialogStack.splice(dialogStack.indexOf(token), 1)
       release(silenced)
       if (before?.isConnected) before.focus({ preventScroll: true })
-      queueMicrotask(() => {
-        // Si onClose navegó, la entrada actual ya es otra: no deshacer esa navegación.
-        if (!token.active && pendingDialog === id) {
-          pendingDialog = undefined
-          if (history.state?.serixDialog === id) history.back()
-        }
-      })
     }
-  }, [ref, id])
+  }, [ref, token])
 }
 
 /** Hoja modal a pantalla casi completa, como las de iOS. */

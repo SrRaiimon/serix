@@ -267,6 +267,7 @@
 "Cargando ejercicios…": "A carregar exercícios…",
 "Casa A": "Casa A",
 "Casa B": "Casa B",
+"Las calorías por 100 g deben ser un número entre 0 y 1000. Revisa la etiqueta.": "As calorias por 100 g têm de ser um número entre 0 e 1000. Confere o rótulo.",
 "Más de 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.": "Mais de 900 exercícios com os músculos que cada um trabalha, rotinas adaptadas a ti, registo de cada série e estatísticas do teu progresso.",
 "Casi listo · ~{0} h": "Quase pronto · ~{0} h",
 "Catálogo no cargado": "Catálogo não carregado",
@@ -2253,5 +2254,7 @@
 "La privacidad está más completa (tus derechos, datos de salud, quién está detrás) y se puede leer antes de empezar.": "A política de privacidade está mais completa (os teus direitos, dados de saúde, quem está por trás) e pode ser lida antes de começar.",
 "El botón Atrás del móvil cierra la hoja abierta y, en el cuestionario, vuelve al paso anterior.": "O botão Voltar do telemóvel fecha o painel aberto e, no questionário, volta ao passo anterior.",
 "Al añadir ejercicios, si estás empezando ves primero los básicos: press de banca, sentadilla, peso muerto…": "Ao adicionar exercícios, se estás a começar vês primeiro os básicos: supino, agachamento, peso morto…",
-"La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.": "A primeira visita descarrega cerca de 35 % menos; as funcionalidades secundárias ficam guardadas quando as usas."
+"La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.": "A primeira visita descarrega cerca de 35 % menos; as funcionalidades secundárias ficam guardadas quando as usas.",
+"El botón Atrás del móvil minimiza el entreno en curso y cierra el modo Foco, en vez de salir de la app.": "O botão Voltar do telemóvel minimiza o treino em curso e fecha o modo Foco, em vez de sair da app.",
+"Al crear un alimento con calorías imposibles, la app te explica qué revisar.": "Ao criares um alimento com calorias impossíveis, a app explica-te o que rever."
 }

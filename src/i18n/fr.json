@@ -267,6 +267,7 @@
 "Cargando ejercicios…": "Chargement des exercices…",
 "Casa A": "Maison A",
 "Casa B": "Maison B",
+"Las calorías por 100 g deben ser un número entre 0 y 1000. Revisa la etiqueta.": "Les calories pour 100 g doivent être un nombre entre 0 et 1000. Vérifie l’étiquette.",
 "Más de 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.": "Plus de 900 exercices avec les muscles travaillés, des routines adaptées à toi, le suivi de chaque série et des statistiques sur tes progrès.",
 "Casi listo · ~{0} h": "Presque prêt · ~{0} h",
 "Catálogo no cargado": "Catalogue non chargé",
@@ -2253,5 +2254,7 @@
 "La privacidad está más completa (tus derechos, datos de salud, quién está detrás) y se puede leer antes de empezar.": "Les informations sur la confidentialité sont plus complètes (tes droits, les données de santé, l’auteur de l’appli) et se lisent avant de commencer.",
 "El botón Atrás del móvil cierra la hoja abierta y, en el cuestionario, vuelve al paso anterior.": "Le bouton Retour du téléphone ferme le panneau ouvert et revient à l’étape précédente du questionnaire.",
 "Al añadir ejercicios, si estás empezando ves primero los básicos: press de banca, sentadilla, peso muerto…": "Quand tu ajoutes des exercices, si tu débutes, les classiques apparaissent en premier : développé couché, squat, soulevé de terre…",
-"La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.": "La première visite télécharge environ 35 % de données en moins ; les fonctions secondaires sont enregistrées quand tu les utilises."
+"La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.": "La première visite télécharge environ 35 % de données en moins ; les fonctions secondaires sont enregistrées quand tu les utilises.",
+"El botón Atrás del móvil minimiza el entreno en curso y cierra el modo Foco, en vez de salir de la app.": "Le bouton Retour du téléphone réduit l’entraînement en cours et ferme le mode Focus, au lieu de quitter l’app.",
+"Al crear un alimento con calorías imposibles, la app te explica qué revisar.": "Quand tu crées un aliment avec des calories impossibles, l’app t’explique quoi vérifier."
 }

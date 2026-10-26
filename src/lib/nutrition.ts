@@ -1,7 +1,7 @@
 import { fold, makeSearch } from './search'
 import { sessionKcal } from './burn'
 import type { Tracking } from './tracking'
-import { addDays, dayKey, startOfWeek } from './format'
+import { addDays, dayKey, parseDecimal, startOfWeek } from './format'
 import { dataLang, lang, t } from './i18n'
 
 // Comidas: lo que comes cada día (calorías y macronutrientes) frente a un objetivo calculado con
@@ -987,3 +987,10 @@ export function parseNutritionLabel(text: string): Partial<Per100> & { portion?:
   if (portion && Number(portion[1]) > 0 && Number(portion[1]) <= 2000) out.portion = Number(portion[1])
   return out
 }
+
+// Límites del formulario de alimento propio; el campo vacío aún no necesita un aviso.
+export function invalidFoodCalories(value: string): boolean {
+  const kcal = parseDecimal(value)
+  return value.trim() !== '' && (kcal === null || kcal < 0 || kcal > 1000)
+}
+export const cleanFoodName = (name: string): string => name.trim().slice(0, 80)
