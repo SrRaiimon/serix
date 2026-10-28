@@ -120,7 +120,10 @@ de los programas de ordenador (Directiva 2009/24/CE).
   dispositivo del usuario. El titular no recibe ni trata datos personales. Los terceros son
   GitHub Pages (alojamiento, que recibe la IP como cualquier web) y Open Food Facts (al buscar,
   solo se envía el código de barras o el texto buscado, además de los datos técnicos de la conexión,
-  como la IP). El detalle completo está en la app, en **Perfil → Legal y privacidad**.
+  como la IP). Para consultas de privacidad o para ejercer tus derechos de acceso, rectificación
+  o borrado, escribe a [srraiimon@gmail.com](mailto:srraiimon@gmail.com). También puedes usar
+  [GitHub](https://github.com/SrRaiimon/serix/issues), pero sus incidencias son públicas:
+  no incluyas datos personales. El detalle completo está en la app, en **Perfil → Legal y privacidad**.
 
 - **Sin garantías.** Serix se ofrece tal cual, sin garantías y, en la medida en que la ley lo
   permita, sin responsabilidad del titular por su uso. Las orientaciones de entrenamiento son
@@ -161,4 +164,7 @@ international intellectual property law. To request a commercial license, open a
 **Privacy:** no accounts or own server; user data stays on the device, and the author does not
 receive or process personal data. GitHub Pages hosts the app and receives the IP address;
 Open Food Facts receives only the barcode or search text, plus technical connection data such as
-the IP address. Full details are in the app under **Profile → Legal and privacy**.
+the IP address. For privacy questions or to exercise your rights of access, correction or deletion,
+email [srraiimon@gmail.com](mailto:srraiimon@gmail.com). You can also use
+[GitHub](https://github.com/SrRaiimon/serix/issues), but issues are public: do not include personal
+data. Full details are in the app under **Profile → Legal and privacy**.

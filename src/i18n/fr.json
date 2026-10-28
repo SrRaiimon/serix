@@ -790,7 +790,6 @@
 "Isquiotibiales": "Ischio-jambiers",
 "Izquierda": "Gauche",
 "Jueves": "Jeudi",
-"Kettlebells": "Kettlebells",
 "Kilómetros": "Kilomètres",
 "Kilómetros por sesión": "Kilomètres par séance",
 "LMXJVSD": "LMMJVSD",
@@ -2256,5 +2255,13 @@
 "Al añadir ejercicios, si estás empezando ves primero los básicos: press de banca, sentadilla, peso muerto…": "Quand tu ajoutes des exercices, si tu débutes, les classiques apparaissent en premier : développé couché, squat, soulevé de terre…",
 "La primera visita descarga cerca de un 35 % menos; lo secundario se guarda al usarlo.": "La première visite télécharge environ 35 % de données en moins ; les fonctions secondaires sont enregistrées quand tu les utilises.",
 "El botón Atrás del móvil minimiza el entreno en curso y cierra el modo Foco, en vez de salir de la app.": "Le bouton Retour du téléphone réduit l’entraînement en cours et ferme le mode Focus, au lieu de quitter l’app.",
-"Al crear un alimento con calorías imposibles, la app te explica qué revisar.": "Quand tu crées un aliment avec des calories impossibles, l’app t’explique quoi vérifier."
+"Al crear un alimento con calorías imposibles, la app te explica qué revisar.": "Quand tu crées un aliment avec des calories impossibles, l’app t’explique quoi vérifier.",
+"{0} tonelada": "{0} tonne",
+"La privacidad ya tiene un correo de contacto para tus consultas y derechos.": "La confidentialité dispose désormais d’une adresse e-mail pour tes questions et tes droits.",
+"Las incidencias de GitHub son públicas: no incluyas datos personales.": "Les tickets GitHub sont publics : n’y mets pas de données personnelles.",
+"LASTRE": "LEST",
+"Para consultas de privacidad o para ejercer tus derechos de acceso, rectificación o borrado, escribe a": "Pour toute question sur la confidentialité ou pour exercer tes droits d’accès, de rectification ou d’effacement, écris à",
+"Pesas rusas (kettlebells)": "Kettlebells",
+"También puedes usar": "Tu peux aussi utiliser",
+"Textos más claros en español: pesas rusas, lastre y toneladas.": "Des textes plus clairs en espagnol pour les kettlebells, le lest et les tonnes."
 }

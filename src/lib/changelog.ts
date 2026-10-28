@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.21',
+    items: [
+      ['La privacidad ya tiene un correo de contacto para tus consultas y derechos.', 'The privacy notice now includes a contact email for your questions and rights.'],
+      ['Textos más claros en español: pesas rusas, lastre y toneladas.', 'Clearer Spanish wording for kettlebells, added weight and tonnes.'],
+    ],
+  },
+  {
     version: '0.1.20',
     items: [
       ['El botón Atrás del móvil minimiza el entreno en curso y cierra el modo Foco, en vez de salir de la app.', 'Your phone’s Back button minimizes the current workout and closes Focus mode instead of leaving the app.'],

@@ -269,7 +269,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         {tracking === 'weight_reps' && <>
           {exercise.assisted
             ? <span title={t('Ayuda de la máquina', 'Machine assistance')}>{t('AYUDA', 'ASSIST')}</span>
-            : <span title={bodyweight ? t('Lastre añadido (0 = sin peso)', 'Added weight (0 = none)') : exercise.perHand ? t('Peso de cada mancuerna', 'Weight of each dumbbell') : undefined}>{bodyweight ? `+${unit.toUpperCase()}` : exercise.perHand ? `${unit.toUpperCase()} ${t('C/U', 'EACH')}` : unit.toUpperCase()}</span>}
+            : <span title={bodyweight ? t('Lastre añadido (0 = sin peso)', 'Added weight (0 = none)') : exercise.perHand ? t('Peso de cada mancuerna', 'Weight of each dumbbell') : undefined}>{bodyweight ? t('LASTRE', `+${unit.toUpperCase()}`) : exercise.perHand ? `${unit.toUpperCase()} ${t('C/U', 'EACH')}` : unit.toUpperCase()}</span>}
           <span>REPS</span>
         </>}
         {tracking === 'time' && <span>{t('TIEMPO', 'TIME')}</span>}

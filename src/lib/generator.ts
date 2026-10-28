@@ -28,7 +28,7 @@ export const levels: { id: TrainingLevel; label: string; detail: string }[] = [
 export const equipmentProfiles: { id: EquipmentProfile; label: string; detail: string; allowed: string[] }[] = [
   { id: 'gym', get label() { return t('Gimnasio completo', 'Full gym') }, get detail() { return t('Barras, máquinas, poleas y mancuernas.', 'Barbells, machines, cables and dumbbells.') }, allowed: ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'band', 'kettlebell', 'ez-bar', 'medicine-ball', 'exercise-ball'] },
   { id: 'dumbbells', get label() { return t('Mancuernas y banco', 'Dumbbells and bench') }, get detail() { return t('En casa o en un gimnasio pequeño, con pesos que puedas cambiar.', 'At home or in a small gym, with adjustable weights.') }, allowed: ['dumbbell', 'bodyweight'] },
-  { id: 'kettlebell', get label() { return t('Kettlebells', 'Kettlebells') }, get detail() { return t('Una o varias pesas rusas.', 'One or more kettlebells.') }, allowed: ['kettlebell', 'bodyweight'] },
+  { id: 'kettlebell', get label() { return t('Pesas rusas (kettlebells)', 'Kettlebells') }, get detail() { return t('Una o varias pesas rusas.', 'One or more kettlebells.') }, allowed: ['kettlebell', 'bodyweight'] },
   { id: 'bands', get label() { return t('Bandas elásticas', 'Resistance bands') }, get detail() { return t('Gomas de varias resistencias, para casa o de viaje.', 'Bands of several strengths, for home or travel.') }, allowed: ['band', 'bodyweight'] },
   { id: 'bodyweight', get label() { return t('Solo peso corporal', 'Bodyweight only') }, get detail() { return t('Sin material: en casa, en un parque o de viaje.', 'No equipment: at home, in a park or on the road.') }, allowed: ['bodyweight'] },
 ]

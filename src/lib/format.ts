@@ -36,12 +36,15 @@ const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
  * Antes convivían cuatro formatos (8068 kg, 12.678 kg, 8,1 t…): el separador de miles del español solo sale
  * desde 5 cifras, así que el mismo dato cambiaba de aspecto según la pantalla.
  */
-export const tons = (kg: number, unit: Unit) => (fromKg(kg, unit) < 1000 ? volume(kg, unit) : tonnes(kg, unit))
+export const tons = (kg: number, unit: Unit, full = false) => (fromKg(kg, unit) < 1000 ? volume(kg, unit) : tonnes(kg, unit, full))
 
 /** Siempre en toneladas con un decimal («0,4 t»): para comparar con una cifra que ya va en toneladas. */
-export const tonnes = (kg: number, unit: Unit) => {
+export const tonnes = (kg: number, unit: Unit, full = false) => {
   const v = fromKg(kg, unit)
   const short = (Math.round(v / 100) / 10).toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+  // En los resúmenes de Inicio se escribe la unidad para quien no conoce la abreviatura.
+  if (full && unit === 'kg') return Math.round(v / 100) === 10
+    ? t(`${short} tonelada`, `${short} tonne`) : t(`${short} toneladas`, `${short} tonnes`)
   return unit === 'kg' ? `${short} t` : `${short}k lb`
 }
 

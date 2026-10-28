@@ -1,3 +1,4 @@
+import { lang, setLang } from '../src/lib/i18n'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { clock, editable, fromKg, parseDecimal, rest, startOfWeek, toKg, tons } from '../src/lib/format'
@@ -49,4 +50,22 @@ test('volumen en toneladas a partir de 1000', () => {
   assert.equal(tons(6000, 'kg'), '6,0 t')
   assert.equal(tons(950, 'kg'), '950 kg')
   assert.equal(tons(10000, 'lb'), '22,0k lb')
+})
+
+test('volumen de Inicio: toneladas escritas en español e inglés, y kg por debajo de una', () => {
+  const before = lang()
+  try {
+    setLang('es')
+    assert.equal(tons(3200, 'kg', true), '3,2 toneladas')
+    assert.equal(tons(1000, 'kg', true), '1,0 tonelada')
+    assert.equal(tons(999, 'kg', true), '999 kg')
+    assert.equal(tons(0, 'kg', true), '0 kg')
+    assert.equal(tons(10000, 'lb', true), tons(10000, 'lb'))
+    setLang('en')
+    assert.equal(tons(3200, 'kg', true), '3.2 tonnes')
+    assert.equal(tons(1000, 'kg', true), '1.0 tonne')
+    assert.equal(tons(999, 'kg', true), '999 kg')
+  } finally {
+    setLang(before)
+  }
 })

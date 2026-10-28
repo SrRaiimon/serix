@@ -109,10 +109,10 @@ export function HomeScreen() {
         // ninguno, el de la pasada sale en su resumen de arriba: en esos casos, lo movido este mes (la misma cifra dos
         // veces, si no). Sin resumen y sin entrenos, la semana pasada.
         thisWeek.length > 1
-          ? t(`${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} esta semana`, `${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} this week`)
+          ? t(`${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} esta semana`, `${tons(thisWeek.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} this week`)
           : thisWeek.length === 1 || notice === 'recap'
-            ? t(`${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit)} este mes`, `${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit)} this month`)
-            : t(`${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} la sem. pasada`, `${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit)} last week`),
+            ? t(`${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} este mes`, `${tons(thisMonth.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} this month`)
+            : t(`${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} la sem. pasada`, `${tons(lastWeek.reduce((n, x) => n + sessionVolume(x), 0), unit, true)} last week`),
       ] : undefined} />
 
       {/* El entrenador tira del generador y de las alternativas: se carga después de pintar Inicio. */}

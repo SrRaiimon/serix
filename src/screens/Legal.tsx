@@ -62,6 +62,18 @@ const GITHUB_PRIVACY = <a href="https://docs.github.com/site-policy/privacy-poli
 const OFF_PRIVACY = <a href="https://world.openfoodfacts.org/privacy" target="_blank" rel="noreferrer">Open Food Facts</a>
 const AEPD = <a href="https://www.aepd.es" target="_blank" rel="noreferrer">AEPD</a>
 
+// El correo permite consultar sobre datos personales sin publicarlos en una incidencia.
+function PrivacyContact() {
+  return (
+    <p>
+      {t('Para consultas de privacidad o para ejercer tus derechos de acceso, rectificación o borrado, escribe a', 'For privacy questions or to exercise your rights of access, correction or deletion, email')}{' '}
+      <a href="mailto:srraiimon@gmail.com">srraiimon@gmail.com</a>.{' '}
+      {t('También puedes usar', 'You can also use')} {ISSUES}.{' '}
+      {t('Las incidencias de GitHub son públicas: no incluyas datos personales.', 'GitHub issues are public: do not include personal data.')}
+    </p>
+  )
+}
+
 function LegalEs() {
   return (
     <>
@@ -97,6 +109,7 @@ function LegalEs() {
         <p><strong>Una garantía que puedes comprobar:</strong> la página lleva una política de seguridad (CSP) que solo le permite conectarse con su propia web y con Open Food Facts. Aunque la app quisiera enviar algo a otro sitio, el navegador lo bloquearía.</p>
         <p><strong>Quién está detrás:</strong> Serix lo hace SrRaiimon (seudónimo) a título personal. Como la app no tiene servidor, el autor no recibe ni guarda ningún dato tuyo. Los únicos terceros son {GITHUB_PRIVACY} (aloja la web) y {OFF_PRIVACY} (búsquedas de productos), cada uno con su política de privacidad.</p>
         <p><strong>Tus derechos:</strong> como tus datos solo están en tu móvil, los ejerces tú directamente: verlos y llevártelos (copia de seguridad o CSV en Perfil), corregirlos y borrarlos. Si crees que no se respetan, puedes reclamar ante la {AEPD}.</p>
+        <PrivacyContact />
         <p><strong>Borrar tus datos:</strong> en Perfil → «Borrar todos los datos» (todo menos el idioma, el tema y la unidad; con la opción de borrar también las fotos), o eliminando la app. Si los borras sin exportar una copia, no se pueden recuperar.</p>
       </Section>
 
@@ -151,6 +164,7 @@ function LegalEn() {
         <p><strong>A guarantee you can check:</strong> the page carries a security policy (CSP) that only lets it connect to its own site and to Open Food Facts. Even if the app wanted to send something elsewhere, the browser would block it.</p>
         <p><strong>Who is behind it:</strong> Serix is made by SrRaiimon (a pseudonym) as a personal project. Since the app has no server, the author neither receives nor stores any of your data. The only third parties are {GITHUB_PRIVACY} (hosts the site) and {OFF_PRIVACY} (product searches), each with its own privacy policy.</p>
         <p><strong>Your rights:</strong> since your data is only on your phone, you exercise them yourself: see and take your data (backup or CSV in Profile), correct it and delete it. If you think they are not respected, you can complain to your data protection authority (in Spain, the {AEPD}).</p>
+        <PrivacyContact />
         <p><strong>Deleting your data:</strong> in Profile → “Delete all data” (everything except language, theme and unit; with the option to delete photos too), or by removing the app. If you delete it without exporting a backup, it cannot be recovered.</p>
       </Section>
 
