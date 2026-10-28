@@ -1,3 +1,4 @@
+import { RecentDiscomfortCard } from '../components/Discomfort'
 import { AlertTriangle, Utensils, ArrowDownRight, ArrowUpRight, Scale, Calendar, ChartColumn, ChartLine, Dumbbell, FileText, Info, PersonStanding, Plus, Search, Sparkles, Target, X, Share2, TrendingDown, Trophy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, HBarChart, LineChart } from '../components/charts'
@@ -50,6 +51,7 @@ export function ProgressScreen() {
   return (
     <div className="screen">
       <LargeTitle title={t('Progreso', 'Progress')} />
+      <RecentDiscomfortCard sessions={data.sessions} />
       {sessions.length === 0 ? (
         <>
         <WeightFoodCard />

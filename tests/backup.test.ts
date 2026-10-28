@@ -1,20 +1,20 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { MAX_BACKUP_BYTES, parseBackup } from '../src/lib/backup'
-import { defaultSettings, type AppData, type Settings } from '../src/lib/store'
+import { DATA_VERSION, defaultSettings, type AppData, type Settings } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
 
 // Required<Settings>: si se añade un ajuste nuevo, este test no compila hasta incluirlo aquí, y la
 // prueba de ida y vuelta comprueba que la copia de seguridad también lo guarda.
 const allSettings: Required<Settings> = {
-  ...defaultSettings, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
+  ...defaultSettings, appBadge: false, onboarded: true, name: 'Ana', favorites: ['bench'], barKg: 15,
   catalogVersion: 2, block: { start: Date.UTC(2026, 0, 5), weeks: 5 }, effortRestOff: true, exerciseModes: { Pullups: { assisted: true }, Dumbbell_Lunges: { unilateral: true }, Dumbbell_Bicep_Curl: { perHand: true } }, simpleMode: true, guideHidden: true, guideProgressSeen: true, shareBodyWeight: true, friendShareAt: Date.UTC(2026, 0, 3), friendReminderOff: true, friendReminderSnooze: Date.UTC(2026, 0, 6), language: 'en', theme: 'dark', lockScreenAlert: true, voice: true, plates: { kg: [20, 10, 5, 2.5, 1.25, 0.5], lb: [45, 25, 10, 5, 2.5] }, lastBackupAt: Date.UTC(2026, 0, 2), backupSnoozeUntil: Date.UTC(2026, 0, 9),
   nutrition: { kcal: 2600, protein: 150, carbs: 300, fat: 72, sex: 'f', age: 31, heightCm: 168, weightKg: 62.5, activity: 1.55, aim: 'gain', proteinOnly: true, adjust: -150 },
   nutritionCarryOver: false, nutritionTrainingSplit: false, nutritionAdviceAt: Date.UTC(2026, 0, 4), foodReminders: true, recapSeen: Date.UTC(2026, 0, 5), trainingDays: [0, 2, 4], nutritionBurned: true, trainingTime: '07:30', lastPhotoAt: Date.UTC(2026, 0, 2), photoSnooze: Date.UTC(2026, 0, 8), weighSnooze: Date.UTC(2026, 0, 7), seenVersion: '0.0.58', textScale: 1.12, dayRoutines: { 0: 'r1' }, supplements: ['Creatina'], fasting: { hours: 16, start: Date.UTC(2026, 0, 4, 21) }, meals: ['breakfast', 'brunch', 'lunch', 'dinner'], mealNames: { brunch: 'Almuerzo del curro' }, easyWeek: Date.UTC(2026, 0, 5), pullupBar: true, coachHidden: { week: Date.UTC(2026, 0, 5), ids: ['swap:bench'] }, weightGoal: { kg: 75, from: 80, createdAt: Date.UTC(2026, 0, 1), by: Date.UTC(2026, 5, 1) }, liftGoals: [{ id: 'g1', exerciseId: 'bench', name: 'Press de banca', kg: 100, from: 90, createdAt: Date.UTC(2026, 0, 1), by: Date.UTC(2026, 5, 1) }],
 }
 
 const sample = (): AppData => ({
-  version: 1,
+  version: DATA_VERSION,
   routines: [{
     id: 'r1', name: 'Pecho', notes: 'nota', order: 0, createdAt: Date.UTC(2026, 0, 1),
     exercises: [{ exerciseId: 'bench', name: 'Press', muscle: 'chest', sets: 3, repsMin: 8, repsMax: 12, rest: 90, groupId: 'g', progression: 'wave531', trainingMax: 100, tmSince: Date.UTC(2026, 0, 1) }],

@@ -5,7 +5,7 @@
 //
 // Uso: npm run build && npm run e2e   (CHROME_PATH para indicar otro Chrome)
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { preview } from 'vite'
@@ -81,6 +81,21 @@ async function main() {
     q.onsuccess = () => { const g = q.result.transaction('kv').objectStore('kv').get('data'); g.onsuccess = () => res(g.result) }
   }))
   const check = (ok, message) => { if (!ok) throw new Error(message) }
+  // Revisión móvil de las nuevas hojas y avisos, en ambos temas; las capturas son opcionales.
+  const checkDiscomfortLayout = async (name) => {
+    await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true })
+    for (const theme of ['light', 'dark']) {
+      await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: theme }] })
+      await wait(150)
+      check(await run(() => document.documentElement.scrollWidth <= innerWidth), `${name}: desbordamiento horizontal a 375 px`)
+      if (process.env.SERIX_E2E_SHOTS) {
+        const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false })
+        writeFileSync(join(process.env.SERIX_E2E_SHOTS, `${name}-${theme}.png`), Buffer.from(shot.data, 'base64'))
+      }
+    }
+    await send('Emulation.setEmulatedMedia', { features: [] })
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true })
+  }
   // history.length cuenta también Adelante: lo que importa para Atrás es volver al índice original.
   const historyIndex = async () => (await send('Page.getNavigationHistory')).currentIndex
   // Dar tiempo a CDP a responder antes de que Atrás abandone el documento.
@@ -252,6 +267,13 @@ async function main() {
   // La segunda serie, con un solo toque y sin escribir nada: se apuntan las repeticiones del objetivo.
   await run(() => document.querySelector('.set-row.current button.set-check')?.click())
   await wait(500)
+  // Registrar una zona y un lado no añade pasos al marcado normal de series.
+  await run(() => document.querySelector('button[aria-label="Opciones del ejercicio"]').click())
+  await click('^Me ha molestado$')
+  await checkDiscomfortLayout('molestia-zonas')
+  await click('^Izquierdo$')
+  await click('^Hombro$')
+  check((await data()).sessions.find((s) => !s.end)?.exercises[0].discomfort?.side === 'left', 'No se guardó la molestia con su lado')
   await click('^Terminar$')
   await click('^Terminar y guardar$')
   await click('^Listo$')
@@ -261,6 +283,34 @@ async function main() {
   check(done.length === 1, `Debería haber 1 entrenamiento terminado y hay ${done.length}`)
   check(done[0].exercises[0].sets.some((x) => x.done && x.weight === 40 && x.reps === 8), 'La serie de 40 × 8 no se ha guardado')
   check(done[0].exercises[0].sets.filter((x) => x.done && x.reps > 0).length >= 2, 'Marcar una serie sin escribir las repeticiones no la ha apuntado')
+
+  step = 'molestia en el siguiente entreno'
+  await run(() => { location.hash = '#/progress' })
+  await wait(700)
+  check(await run(() => !!document.querySelector('.discomfort-recent')), 'Falta Molestias recientes en Progreso')
+  await checkDiscomfortLayout('molestias-progreso')
+  await run((id) => { location.hash = '#/progress/session/' + id }, done[0].id)
+  await click('^Repetir este entrenamiento$')
+  check(await run(() => document.body.innerText.includes('La última vez te molestó el hombro')), 'No recuerda la molestia al repetir')
+  await run(() => document.querySelector('.discomfort-warning').scrollIntoView({ block: 'center' }))
+  await checkDiscomfortLayout('molestia-aviso')
+  const weightsBefore = (await data()).sessions.find((s) => !s.end).exercises[0].sets.filter((s) => !s.done).map((s) => s.weight)
+  await click('^Bajar un 10 %$')
+  const weightsAfter = (await data()).sessions.find((s) => !s.end).exercises[0].sets.filter((s) => !s.done).map((s) => s.weight)
+  check(JSON.stringify(weightsAfter) === JSON.stringify(weightsBefore.map((w) => Math.max(0, Math.floor(w * 0.9 / 2.5) * 2.5))), 'La propuesta no bajó al escalón de peso esperado')
+  await click('^Cambiar de ejercicio$')
+  check(await run(() => !!document.querySelector('input[placeholder="Buscar otro ejercicio"]')), 'No abrió las alternativas existentes')
+  await browserBack()
+  await click('^Ya no me molesta$')
+  check(await run(() => !document.querySelector('.discomfort-warning')), 'Sigue avisando después de resolver la molestia')
+  await send('Page.reload')
+  await wait(900)
+  await run(() => document.querySelector('.active-bar').click())
+  await wait(500)
+  check(await run(() => !document.querySelector('.discomfort-warning')), 'El aviso resuelto reaparece al recargar')
+  await click('^Descartar entrenamiento$')
+  await click('^Descartar$')
+  console.log('e2e molestias: zona y lado, Progreso, siguiente entreno, bajar carga, alternativas y resolución persistente correctos')
 
   step = 'comida'
   await run(() => { location.hash = '#/food' })

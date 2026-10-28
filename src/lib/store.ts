@@ -1,3 +1,4 @@
+import { cleanDiscomfort, type Discomfort } from './discomfort'
 import { produce, setAutoFreeze } from 'immer'
 import { useSyncExternalStore } from 'react'
 import { setWeightSteps, type Unit } from './format'
@@ -112,6 +113,8 @@ export interface SessionExercise {
   /** Molestia o dolor durante el ejercicio (1-10) y dónde; se avisa la próxima vez. */
   pain?: number
   painNote?: string
+  /** Registro opcional por zona; resolverlo silencia el aviso, sin borrar el historial. */
+  discomfort?: Discomfort
   sets: SetEntry[]
 }
 
@@ -198,6 +201,8 @@ export interface Settings {
   minutes: number
   equipment: EquipmentProfile
   favorites: string[]
+  /** Número en el icono cuando toca entrenar; activado salvo que se desmarque. */
+  appBadge?: boolean
   restSound: boolean
   /** Barra con la que se calculan los discos (kg). Sin valor = la olímpica. */
   barKg?: number
@@ -293,12 +298,13 @@ export const defaultSettings: Settings = {
   minutes: 60,
   equipment: 'gym',
   favorites: [],
+  appBadge: true,
   restSound: true,
   rpe: true,
 }
 
 const emptyData = (): AppData => ({
-  version: 1,
+  version: DATA_VERSION,
   routines: [],
   sessions: [],
   measurements: [],
@@ -569,7 +575,7 @@ async function save(data: AppData): Promise<void> {
 
 /** Versión de los datos que entiende esta app. Para cambiar su forma, súbela y añade su paso en MIGRATIONS. */
 export const DATA_VERSION = 1
-/** MIGRATIONS[n] pasa los datos de la versión n a la n + 1 (aún no hace falta ninguna). */
+/** MIGRATIONS[n] pasa los datos de la versión n a la n + 1. */
 const MIGRATIONS: Record<number, (d: Record<string, unknown>) => void> = {}
 
 /** Aplica en orden las migraciones pendientes (a una copia). También para las copias de seguridad antiguas. */
@@ -591,7 +597,9 @@ export function migrateData(stored: unknown): AppData | 'newer' | undefined {
   return {
     ...empty, ...(d as Partial<AppData>), version: DATA_VERSION,
     // Una medida sin fecha válida (antes se podía guardar con la fecha vacía) rompía las gráficas: fuera.
-    routines: list(d.routines, empty.routines), sessions: list(d.sessions, empty.sessions), measurements: list<Measurement>(d.measurements, empty.measurements).filter((m) => Number.isFinite(m.date)),
+    routines: list(d.routines, empty.routines), sessions: list<Session>(d.sessions, empty.sessions).map((s) => ({ ...s,
+      exercises: list<SessionExercise>(s.exercises, []).map((e) => ({ ...e, discomfort: cleanDiscomfort(e.discomfort) })),
+    })), measurements: list<Measurement>(d.measurements, empty.measurements).filter((m) => Number.isFinite(m.date)),
     friends: list(d.friends, empty.friends), challenges: list(d.challenges, empty.challenges), customExercises: list(d.customExercises, empty.customExercises),
     exerciseNotes: obj(d.exerciseNotes, empty.exerciseNotes),
     nutrition: { ...empty.nutrition, ...nutrition, entries: list(nutrition.entries, []), foods: list(nutrition.foods, []), meals: list(nutrition.meals, []) },

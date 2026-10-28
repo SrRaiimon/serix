@@ -1,3 +1,4 @@
+import { cleanDiscomfort } from './discomfort'
 import { uid } from './format'
 import { cleanBlock } from './block'
 import { cleanCustomExercise, MAX_CUSTOM_EXERCISES } from './customExercises'
@@ -114,6 +115,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     perHand: v.perHand === true ? true : undefined,
     tempo: cleanTempo(v.tempo),
     bodyweight: optNum(v.bodyweight, 20, 400),
+    discomfort: cleanDiscomfort(v.discomfort),
     pain: optNum(v.pain, 1, 10),
     painNote: typeof v.painNote === 'string' && v.painNote.trim() ? v.painNote.slice(0, 100) : undefined,
     sets: list(v.sets, setEntry, 100),
@@ -174,6 +176,7 @@ function settings(v: unknown): Settings {
   const s = isObj(v) ? v : {}
   const d = defaultSettings
   return {
+    appBadge: s.appBadge !== false,
     name: str(s.name, '', 60), unit: oneOf(s.unit, ['kg', 'lb'] as const) ?? d.unit,
     defaultRest: num(s.defaultRest, 0, 900, d.defaultRest), weeklyGoal: num(s.weeklyGoal, 1, 7, d.weeklyGoal),
     recapSeen: optNum(s.recapSeen, EPOCH_MIN, EPOCH_MAX),

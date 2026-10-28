@@ -1,11 +1,13 @@
 // Un ejercicio del entreno: sus series, sus avisos (estancado, molestia, primera vez) y sus menús.
-import { EffortSuggestion, PainSheet, PainWarning } from '../components/Coaching'
+import { EffortSuggestion, PainWarning } from '../components/Coaching'
+import { DiscomfortAdvice, DiscomfortSheet } from '../components/Discomfort'
 import { navigate } from '../lib/router'
 import { ArrowUpRight, BatteryLow, Check, Ellipsis, Info, Plus, StickyNote, TrendingDown, TrendingUp } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ActionSheet, Thumb } from '../components/ui'
 import { linkWithNext, normalizeGroups, unlink, type GroupSlot } from '../lib/groups'
 import { clock, fromKg, increment, int, num, rest, restOptions, toKg, weight, type Unit } from '../lib/format'
+import { discomfortSide, discomfortZone, lastDiscomfort, lightenDiscomfort, repeatedDiscomfort, resolveDiscomfort } from '../lib/discomfort'
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { progressionHint, STALL_SESSIONS, type Stall } from '../lib/stats'
@@ -91,6 +93,17 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   const [painOpen, setPainOpen] = useState(false)
   const data = useData()
   const { exerciseNotes, settings } = data
+  const previousDiscomfort = useMemo(() => lastDiscomfort(data.sessions, exercise.exerciseId, sessionId),
+    [data.sessions, exercise.exerciseId, sessionId])
+  // Un registro por zona, incluso resuelto, sustituye al antiguo aviso numérico de ese ejercicio.
+  const hasZoneHistory = useMemo(() => data.sessions.some((s) => s.id !== sessionId && s.end !== undefined
+    && s.exercises.some((e) => e.exerciseId === exercise.exerciseId && e.discomfort)),
+    [data.sessions, exercise.exerciseId, sessionId])
+  const warningZone = exercise.discomfort?.zone ?? previousDiscomfort?.discomfort.zone
+  // El historial solo se recorre de nuevo si cambian las sesiones o la zona del aviso.
+  const recurringDiscomfort = useMemo(() => warningZone !== undefined && repeatedDiscomfort(data.sessions, warningZone),
+    [data.sessions, warningZone])
+  const [lighterEpisode, setLighterEpisode] = useState<number>()
   const simple = settings.simpleMode === true
   const note = exerciseNotes[exercise.exerciseId]
   // Primer entrenamiento: se explica cómo se apunta una serie justo donde hay que hacerlo.
@@ -214,7 +227,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
         <StallBox best={stalled.best} unit={unit} onDeload={() => edit((e) => applyDeload(e, unit))} onVariants={() => setReplacing(true)} />
       )}
 
-      {painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
+      {!hasZoneHistory && !exercise.discomfort && painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
         <PainWarning last={painBefore} onAlternatives={() => setReplacing(true)}
           onLighter={() => edit((e) => {
             const step = increment(unit)
@@ -224,6 +237,20 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
       {exercise.pain !== undefined && (
         <button className="pain-pill" onClick={() => setPainOpen(true)}>{t('Molestia', 'Discomfort')} {exercise.pain}/10{exercise.painNote ? ` · ${exercise.painNote}` : ''}</button>
       )}
+      {previousDiscomfort && !exercise.discomfort && <div className="discomfort-warning" role="status">
+        <strong>{t(`La última vez te molestó ${discomfortZone(previousDiscomfort.discomfort.zone, true)}`, `Last time you had discomfort in ${discomfortZone(previousDiscomfort.discomfort.zone, true)}`)}</strong>
+        {previousDiscomfort.discomfort.side && <span className="small muted">{discomfortSide(previousDiscomfort.discomfort.side)}</span>}
+        <div className="discomfort-actions">
+          <button className="btn small secondary" disabled={lighterEpisode === previousDiscomfort.discomfort.at || !exercise.sets.some((s) => !s.done && s.weight > 0)} onClick={() => {
+            edit((e) => lightenDiscomfort(e, unit))
+            setLighterEpisode(previousDiscomfort.discomfort.at)
+          }}>{exercise.assisted ? t('Aumentar ayuda un 10 %', 'Increase assistance by 10%') : t('Bajar un 10 %', 'Go 10% lighter')}</button>
+          <button className="btn small secondary" onClick={() => setReplacing(true)}>{t('Cambiar de ejercicio', 'Change exercise')}</button>
+          <button className="btn small plain" onClick={() => update((d) => resolveDiscomfort(d.sessions, previousDiscomfort))}>{t('Ya no me molesta', 'It no longer bothers me')}</button>
+        </div>
+      </div>}
+      {exercise.discomfort && <button className="pain-pill" onClick={() => setPainOpen(true)}>{t('Molestia', 'Discomfort')} · {discomfortZone(exercise.discomfort.zone)}{exercise.discomfort.side ? ` · ${discomfortSide(exercise.discomfort.side)}` : ''}</button>}
+      {recurringDiscomfort && <DiscomfortAdvice />}
       {tracking === 'weight_reps' && (
         <EffortSuggestion exercise={exercise} settings={settings} at={startedAt}
           onApply={(ids, kg) => edit((e) => { for (const x of e.sets) if (ids.includes(x.id)) x.weight = kg })} />
@@ -364,7 +391,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
           ...(barbell && tracking === 'weight_reps' && workKg > 0 ? [{ label: t(`Discos para ${weight(workKg, unit)}`, `Plates for ${weight(workKg, unit)}`), onSelect: () => setPlates(true) }] : []),
           ...(tracking === 'weight_reps' && lastWorking && !simple ? [{ label: t('Añadir drop set', 'Add drop set'), onSelect: addDropSet }] : []),
           { label: note ? t('Editar nota del ejercicio', 'Edit exercise note') : t('Añadir nota del ejercicio', 'Add exercise note'), onSelect: () => setNoteOpen(true) },
-          { label: exercise.pain !== undefined ? t('Editar molestia', 'Edit discomfort') : t('Anotar molestia', 'Log discomfort'), onSelect: () => setPainOpen(true) },
+          { label: t('Me ha molestado', 'It caused discomfort'), onSelect: () => setPainOpen(true) },
           ...(total > 1 ? [{ label: t('Ordenar y superseries…', 'Order and supersets…'), onSelect: () => setMenu('order') }] : []),
           { label: t('Ajustes del ejercicio…', 'Exercise settings…'), onSelect: () => setMenu('settings') },
           { label: t('Quitar ejercicio', 'Remove exercise'), destructive: true, onSelect: () => withUndo(t(`Quitado: ${exercise.name}`, `Removed: ${exercise.name}`), () => editList((list, i) => { list.splice(i, 1) })) },
@@ -378,10 +405,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
           onRest={() => setRestMenu(true)} onTracking={() => setTrackingMenu(true)} onClose={() => setMenu(false)} />
       )}
       {painOpen && (
-        <PainSheet exercise={exercise} onClose={() => setPainOpen(false)} onSave={(pain, painNote) => edit((e) => {
-          e.pain = pain
-          e.painNote = pain !== undefined && painNote ? painNote : undefined
-        })} />
+        <DiscomfortSheet value={exercise.discomfort} onClose={() => setPainOpen(false)} onSave={(value) => edit((e) => { e.discomfort = value })} />
       )}
       {restMenu && (
         <ActionSheet title={t('Descanso entre series', 'Rest between sets')} onClose={() => setRestMenu(false)}

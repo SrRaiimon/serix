@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.22',
+    items: [
+      ['Un número en el icono te recuerda si hoy toca entrenar; se actualiza al abrir la app y puedes desactivarlo en Avisos.', 'A number on the icon reminds you if today is a training day; it updates when you open the app and you can turn it off in Alerts.'],
+      ['Anota si un ejercicio te molesta: la próxima vez puedes bajar el peso, cambiarlo o quitar el recordatorio. En Progreso ves las molestias recientes.', 'Log discomfort from an exercise: next time you can lower the weight, swap it or dismiss the reminder. See recent discomfort in Progress.'],
+    ],
+  },
+  {
     version: '0.1.21',
     items: [
       ['La privacidad ya tiene un correo de contacto para tus consultas y derechos.', 'The privacy notice now includes a contact email for your questions and rights.'],

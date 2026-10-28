@@ -404,7 +404,8 @@ export function replaceSessionExercise(sessionId: string, sessionExerciseId: str
       targetSeconds: tracking === 'time' ? old.targetSeconds : undefined,
       groupId: old.groupId,
     }, finishedSessions(d))
-    if (old.sets.some((s) => s.done)) {
+    // La molestia pertenece al ejercicio original, aunque se cambie antes de completar una serie.
+    if (old.sets.some((s) => s.done) || old.discomfort) {
       old.sets = old.sets.filter((s) => s.done)
       session.exercises.splice(index + 1, 0, fresh)
     } else {
@@ -422,9 +423,9 @@ export function finishSession(id: string) {
     // Sin la copia de antes de la descarga: solo sirve durante el entreno (para quitarla) y se guardaba para siempre.
     session.exercises = session.exercises
       .map(({ beforeDeload: _before, ...e }) => ({ ...e, sets: e.sets.filter((s) => s.done) }))
-      .filter((e) => e.sets.length > 0)
+      .filter((e) => e.sets.length > 0 || e.discomfort)
     normalizeGroups(session.exercises)
-    if (!session.exercises.length) {
+    if (!session.exercises.some((e) => e.sets.length > 0)) {
       d.sessions = d.sessions.filter((s) => s.id !== id)
       return
     }

@@ -1,6 +1,7 @@
 import { ChartLine, ChevronUp, ClipboardList, Dumbbell, House, User, Utensils } from 'lucide-react'
 import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { mealByTime, requestAdd, useFoodReminders } from './lib/foodReminders'
+import { useAppBadge } from './lib/appBadge'
 import { fillBodyweights, registerBodyweightExercises } from './lib/bodyweight'
 import { CatalogContext, useTick } from './components/ui'
 import { Catalog, loadCatalog, type CatalogData } from './lib/catalog'
@@ -68,6 +69,7 @@ const WorkoutScreen = lazy(() => screens.workout().then((m) => ({ default: m.Wor
 const FigureGallery = lazy(() => import('./components/MoveFigure').then((m) => ({ default: m.FigureGallery })))
 
 export default function App() {
+  useAppBadge()
   const [raw, setRaw] = useState<CatalogData>()
   const [error, setError] = useState<string>()
   const [early, setEarly] = useState(false)

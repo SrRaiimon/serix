@@ -218,6 +218,13 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <div className="list">
         <label className="list-row">
           <span className="grow">
+            {t('Número en el icono los días que toca entrenar', 'Number on the icon on training days')}
+            <span className="small muted" style={{ display: 'block' }}>{t('Se actualiza cuando abres la app o vuelves a ella; cerrada no puede cambiar. En iPhone, solo con la app instalada y los avisos permitidos.', 'It updates when you open or return to the app; it cannot change while closed. On iPhone, it needs the installed app and notifications allowed.')}</span>
+          </span>
+          <input type="checkbox" className="toggle" checked={settings.appBadge !== false} onChange={(e) => updateSettings({ appBadge: e.target.checked })} />
+        </label>
+        <label className="list-row">
+          <span className="grow">
             {t('Pitido al terminar el descanso', 'Beep when rest ends')}
             <span className="small muted" style={{ display: 'block' }}>{t('En iPhone no suena con el modo silencio activado', 'On iPhone it does not sound in silent mode')}</span>
           </span>
