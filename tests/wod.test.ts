@@ -14,7 +14,7 @@ test('WOD: el mismo día sale el mismo, y «otro» es distinto', () => {
 })
 
 test('WOD: solo ejercicios que existen y que tu material permite', () => {
-  for (const equipment of ['gym', 'dumbbells', 'kettlebell', 'bands', 'bodyweight'] as const) {
+  for (const equipment of ['gym', 'dumbbells', 'kettlebell', 'bands', 'suspension', 'bodyweight'] as const) {
     const allowed = new Set([...equipmentInfo(equipment).allowed, ...(equipment === 'gym' ? ['other', 'machine', 'medicine-ball'] : []), 'other'])
     for (const day of days) {
       for (const level of ['beginner', 'intermediate', 'advanced'] as const) {

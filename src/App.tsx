@@ -85,7 +85,7 @@ export default function App() {
     if (!raw) return undefined
     const c = new Catalog(raw.exercises, raw.legacy, JSON.parse(customKey))
     // Para el «+» del lastre en todas las pantallas (bodyweight.ts), también en los ejercicios propios.
-    registerBodyweightExercises(c.exercises.filter((e) => e.equipment === 'bodyweight').map((e) => e.id))
+    registerBodyweightExercises(c.exercises.filter((e) => (e.equipment === 'bodyweight' || e.equipment === 'suspension')).map((e) => e.id))
     return c
   }, [raw, language, customKey])
 

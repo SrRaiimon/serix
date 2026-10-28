@@ -248,6 +248,7 @@ export const ALIASES: Record<string, string> = {
   'face pull (cable)': 'Face_Pull',
   'face pull': 'Face_Pull',
   'upright row (barbell)': 'Upright_Barbell_Row',
+  'shoulder press (landmine)': 'Landmine_Half_Kneeling_Shoulders_Press',
   'shrug (barbell)': 'Barbell_Shrug',
   'shrug (dumbbell)': 'Dumbbell_Shrug',
   'pull up': 'Pullups',
@@ -343,9 +344,9 @@ export const ALIASES: Record<string, string> = {
 }
 
 const EQUIPMENT: Record<string, string> = {
-  barbell: 'barbell', dumbbell: 'dumbbell', cable: 'cable', machine: 'machine', 'smith machine': 'machine',
+  barbell: 'barbell', dumbbell: 'dumbbell', cable: 'cable', machine: 'machine', 'smith machine': 'smith',
   kettlebell: 'kettlebell', band: 'band', bodyweight: 'bodyweight', assisted: 'bodyweight', weighted: 'bodyweight',
-  'ez bar': 'ez-bar', 'trap bar': 'other', 'medicine ball': 'medicine-ball', 'plate loaded': 'machine',
+  'ez bar': 'ez-bar', 'trap bar': 'trap-bar', landmine: 'landmine', trx: 'suspension', suspension: 'suspension', 'suspension trainer': 'suspension', 'medicine ball': 'medicine-ball', 'plate loaded': 'machine',
 }
 
 // Palabras que no ayudan a reconocer el movimiento.
@@ -376,7 +377,9 @@ export function matchExercise(name: string, catalog: Catalog): Exercise | undefi
     if (!shared) continue
     // Proporción de palabras en común respecto a las dos (las palabras de más restan).
     let score = (2 * shared) / (base.size + w.size)
-    if (equipment && e.equipment === equipment) score += 0.15
+    // Machine, Assisted y Weighted no coinciden siempre con nuestra clasificación: solo bonifican.
+    // Los tipos específicos necesitan algo más de peso para distinguirlos de una barra o polea.
+    if (equipment && e.equipment === equipment) score += ['smith', 'trap-bar', 'landmine', 'suspension'].includes(equipment) ? 0.3 : 0.15
     if (shared === base.size) score += 0.1
     if (score > bestScore) { bestScore = score; best = e }
   }

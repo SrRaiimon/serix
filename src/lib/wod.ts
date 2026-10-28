@@ -81,6 +81,7 @@ const POOL: Entry[] = [
 ]
 
 const KITS: Record<EquipmentProfile, Kit[]> = {
+  suspension: ['none'],
   gym: ['none', 'bar', 'box', 'rope', 'machine', 'ball', 'dumbbell', 'kettlebell', 'barbell'],
   dumbbells: ['none', 'dumbbell'],
   kettlebell: ['none', 'kettlebell'],

@@ -15,16 +15,21 @@ BODY = {'abs': 'core', 'abductors': 'legs', 'adductors': 'legs', 'calves': 'legs
         'quads': 'legs', 'biceps': 'arms', 'forearms': 'arms', 'triceps': 'arms', 'pectorals': 'chest', 'lats': 'back',
         'spine': 'back', 'upper-back': 'back', 'traps': 'back', 'delts': 'shoulders', 'neck': 'shoulders'}
 ORDER = ['id', 'name', 'nameEn', 'muscle', 'bodyPart', 'equipment', 'category', 'level', 'secondaryMuscles', 'tags', 'extra',
-         'instructions', 'instructionsEn']
+         'tracking', 'instructions', 'instructionsEn']
 
 full = json.loads(FULL.read_text())
 mine = {e['id'] for e in EXTRA['exercises']}
 base = [e for e in full['exercises'] if not e.get('extra')]
 for e in base:
     e.pop('tags', None)
+    # Las reclasificaciones sobreviven a regenerar el catálogo base; nunca cambian un id.
+    if e['id'] in EXTRA.get('equipmentOverrides', {}):
+        e['equipment'] = EXTRA['equipmentOverrides'][e['id']]
 ids = {e['id'] for e in base}
 clash = mine & ids
 assert not clash, f'Ya existen en el catálogo: {clash}'
+assert len(mine) == len(EXTRA['exercises']), 'Ids propios repetidos'
+assert set(EXTRA.get('equipmentOverrides', {})) <= ids, 'Reclasificación de un id inexistente'
 
 tagged = {}
 for tag, lst in EXTRA['tags'].items():
@@ -45,7 +50,7 @@ for x in EXTRA['exercises']:
 
 exercises = sorted(base + added, key=lambda e: e['id'])
 full.update(exercises=exercises, count=len(exercises),
-            source='Datos de ejercicios: lista de Free Exercise DB (solo nombres y clasificación) y ejercicios propios de Serix')
+            source='Datos de ejercicios: Free Exercise DB y openGym (solo nombres y clasificación); textos y figuras propios de Serix')
 FULL.write_text(json.dumps(full, ensure_ascii=False, separators=(',', ':')))
 index = dict(full, exercises=[{k: v for k, v in e.items() if k not in ('instructions', 'instructionsEn')} for e in exercises])
 INDEX.write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':')))

@@ -119,3 +119,18 @@ test('fechas de Hevy en francés, portugués y español, con tildes', () => {
   assert.equal(parseDate('5 ene 2025, 19:00'), new Date(2025, 0, 5, 19, 0).getTime())
   assert.equal(parseDate('5 mai 2025, 19:00'), new Date(2025, 4, 5, 19, 0).getTime())
 })
+
+
+test('Strong y Hevy: el material bonifica sin excluir poleas, peso corporal u otro material', () => {
+  for (const [name, expected] of [
+    ['Lat Pulldown (Machine)', 'Wide-Grip_Lat_Pulldown'],
+    ['Pull Up (Assisted)', 'Band_Assisted_Pull-Up'],
+    ['Leg Press (Machine)', 'Leg_Press'],
+    ['Squat (Smith Machine)', 'Smith_Machine_Squat'],
+    ['Shrug (Trap Bar)', 'Trap_Bar_Standing_Shrug'],
+    // Sin alias exacto: ejercitan también la búsqueda por palabras, no solo la tabla de equivalencias.
+    ['Wide-Grip Lat Pulldown (Machine)', 'Wide-Grip_Lat_Pulldown'],
+    ['Band Assisted Pull-Up (Assisted)', 'Band_Assisted_Pull-Up'],
+    ['Weighted Pull Ups (Weighted)', 'Weighted_Pull_Ups'],
+  ]) assert.equal(matchExercise(name, catalog)?.id, expected, name)
+})

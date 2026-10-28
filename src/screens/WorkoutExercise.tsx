@@ -23,7 +23,7 @@ import { addsLoad, BODYWEIGHT_LIFTS } from '../lib/bodyweight'
 import { SetRow, type SetContext } from './WorkoutSet'
 
 /** Material con el que una serie se hace con peso (para avisar si se marca a 0). */
-const LOADED = new Set(['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'machine', 'cable'])
+const LOADED = new Set(['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'machine', 'cable', 'smith', 'landmine', 'trap-bar'])
 
 /** Lo que el material cambia en el registro de un ejercicio. */
 interface Kit {

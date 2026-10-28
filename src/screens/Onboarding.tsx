@@ -1,4 +1,4 @@
-import { Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, ShieldCheck, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
+import { Anchor, Anvil, ArrowRightLeft, Barcode, BicepsFlexed, Building2, ChartBar, ChartLine, ChevronLeft, ChevronRight, CircleCheck, Circle, Dumbbell, Flame, Heart, PersonStanding, RotateCcw, ShieldCheck, Sparkles, Target, Timer, Utensils, WandSparkles, Weight, type LucideIcon } from 'lucide-react'
 import { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { CatalogContext, Chip, Segmented, StatBand } from '../components/ui'
 import { rest, type Unit } from '../lib/format'
@@ -14,7 +14,7 @@ const GoalsSheet = lazy(() => import('./FoodGoals').then((m) => ({ default: m.Go
 const HealthNotice = lazy(() => import('./Legal').then((m) => ({ default: m.HealthNotice })))
 
 const goalIcons: Record<string, LucideIcon> = { hypertrophy: BicepsFlexed, strength: Anvil, fatLoss: Flame, general: Heart }
-const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, bodyweight: PersonStanding }
+const equipmentIcons: Record<string, LucideIcon> = { gym: Building2, dumbbells: Dumbbell, kettlebell: Weight, bands: RotateCcw, suspension: Anchor, bodyweight: PersonStanding }
 // Iconos distintos a los del material (en la misma pantalla no deben repetirse dos opciones con el mismo dibujo).
 
 const LAST = 5

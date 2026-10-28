@@ -201,7 +201,7 @@ function settings(v: unknown): Settings {
     goal: oneOf(s.goal, ['hypertrophy', 'strength', 'fatLoss', 'general'] as const) ?? d.goal,
     level: oneOf(s.level, ['beginner', 'intermediate', 'advanced'] as const) ?? d.level,
     days: num(s.days, 2, 6, d.days), minutes: num(s.minutes, 20, 120, d.minutes),
-    equipment: oneOf(s.equipment, ['gym', 'dumbbells', 'kettlebell', 'bands', 'bodyweight'] as const) ?? d.equipment,
+    equipment: oneOf(s.equipment, ['gym', 'dumbbells', 'kettlebell', 'bands', 'suspension', 'bodyweight'] as const) ?? d.equipment,
     favorites: list(s.favorites, (x) => (typeof x === 'string' ? x.slice(0, 200) : undefined), 2000),
     restSound: bool(s.restSound, d.restSound), rpe: bool(s.rpe, d.rpe),
     lockScreenAlert: s.lockScreenAlert === true ? true : undefined,

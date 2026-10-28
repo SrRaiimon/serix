@@ -61,13 +61,13 @@ async function main() {
     return r.result.value
   }
   pageText = () => run(() => document.body.innerText.slice(0, 600))
-  /** Espera a que haya un botón o enlace con ese texto y lo pulsa. */
+  /** Busca por texto o nombre accesible: los botones de icono solo tienen aria-label. */
   const click = async (text, timeout = 8000) => {
     const start = Date.now()
     while (Date.now() - start < timeout) {
       const ok = await run((src) => {
         const re = new RegExp(src)
-        const el = [...document.querySelectorAll('button, a')].find((b) => re.test(b.textContent.trim()) && !b.disabled)
+        const el = [...document.querySelectorAll('button, a')].find((b) => (re.test(b.textContent.trim()) || re.test(b.getAttribute('aria-label') ?? '')) && !b.disabled)
         el?.click()
         return !!el
       }, text)
@@ -233,6 +233,31 @@ async function main() {
   check(await run(() => !!document.querySelector('.tabbar') && document.documentElement.lang === 'es'), 'Inicio no arranca offline en español')
 
   await checkOfflineTabs('es')
+
+  step = 'catálogo ampliado sin conexión'
+  check(await run(async () => {
+    const [full, index] = await Promise.all(['exercises_es.json', 'exercises_index.json'].map(async (url) => (await fetch(url)).json()))
+    return full.count === 1081 && index.count === full.count
+      && ['suspension', 'smith', 'landmine', 'trap-bar'].every((eq) => index.exercises.some((e) => e.equipment === eq))
+      && full.exercises.find((e) => e.id === 'Suspension_Leg_Curl')?.instructionsEn.length >= 4
+  }), 'El catálogo ampliado o sus instrucciones no están disponibles sin conexión')
+  await run(() => { location.hash = '#/exercises' })
+  await wait(700)
+  await click('^Filtros$')
+  await run(() => {
+    const select = [...document.querySelectorAll('select')].find((s) => [...s.options].some((o) => o.value === 'suspension'))
+    select.value = 'suspension'
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  await checkDiscomfortLayout('catalogo-filtros')
+  await click('^Listo$')
+  await click('^Curl femoral en suspensión')
+  check(await run(() => document.body.innerText.includes('Túmbate boca arriba con los talones en las cunas')), 'No abre los pasos del ejercicio nuevo sin conexión')
+  await checkDiscomfortLayout('catalogo-suspension')
+  await browserBack()
+  await run(() => { location.hash = '#/' })
+  await wait(700)
+  console.log('e2e catálogo: 1081 ejercicios sin conexión, materiales nuevos, filtro de suspensión y pasos originales correctos')
 
   step = 'entreno'
   await click('^Empezar$')

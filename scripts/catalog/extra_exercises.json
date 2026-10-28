@@ -1,5 +1,5 @@
 {
- "_": "Ejercicios propios de Serix (texto escrito para la app): funcional y en casa. Los añade scripts/catalog/add_extra.py; su figura está en SAME_AS (src/lib/figures.ts).",
+ "_": "Ejercicios propios de Serix: nombres españoles, pasos es/en y figuras originales. Referencia factual de las ampliaciones: https://github.com/DuarteSantos8/openGym/tree/main/catalogue (solo nombre inglés, material y músculo principal; secundarios revisados por Serix). No se reutilizan descripciones, instrucciones, traducciones, imágenes ni vídeos de openGym/Gym visual. Los añade add_extra.py; las figuras están en SAME_AS (src/lib/figures.ts).",
  "exercises": [
   {
    "id": "Wall_Ball",
@@ -1726,6 +1726,4348 @@
     "Alternate legs.",
     "Tip: lower slowly (3 seconds) so it is hard without weight; once 20 feel easy, move on to the split squat."
    ]
+  },
+  {
+   "id": "Suspension_Power_Pull",
+   "name": "Remo con giro en suspensión",
+   "nameEn": "Suspension Power Pull",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1086"
+   },
+   "instructions": [
+    "Comprueba el anclaje, sujeta las dos asas juntas con una mano e inclínate atrás con los pies apoyados.",
+    "Tira del asa hacia las costillas mientras giras el pecho hacia el anclaje y alcanzas hacia él con la mano libre.",
+    "Estira el brazo de apoyo y abre el pecho hacia el lado contrario con control.",
+    "Consejo: Haz todas las repeticiones con un brazo antes de cambiar y evita soltar tensión de la cinta."
+   ],
+   "instructionsEn": [
+    "Check the anchor, hold both handles together in one hand and lean back with your feet planted.",
+    "Pull the handle towards your ribs while turning your chest towards the anchor and reaching towards it with your free hand.",
+    "Straighten your supporting arm and turn your chest away under control.",
+    "Tip: Finish your repetitions on one arm before switching and keep tension in the strap."
+   ]
+  },
+  {
+   "id": "Suspension_Self_Assisted_Pull_Up",
+   "name": "Dominada con apoyo de pies en suspensión",
+   "nameEn": "Suspension Self-Assisted Pull-Up",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1094"
+   },
+   "instructions": [
+    "Ajusta las asas por encima de la cabeza y siéntate debajo con los pies firmes en el suelo.",
+    "Tira de las asas para elevar el pecho, ayudándote con los pies solo lo necesario.",
+    "Baja despacio hasta estirar los brazos manteniendo los pies apoyados.",
+    "Consejo: Usa las piernas para regular la dificultad, sin impulsarte de golpe."
+   ],
+   "instructionsEn": [
+    "Set the handles above your head and sit underneath with your feet firmly on the floor.",
+    "Pull on the handles to raise your chest, using your feet only as much as needed.",
+    "Lower slowly until your arms straighten while keeping your feet supported.",
+    "Tip: Use your legs to adjust the difficulty without suddenly pushing off."
+   ]
+  },
+  {
+   "id": "Suspension_Fly",
+   "name": "Aperturas de pecho en suspensión",
+   "nameEn": "Suspension Fly",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5737"
+   },
+   "instructions": [
+    "Fija las cintas a un anclaje resistente, toma las asas y oriéntate de espaldas al anclaje con el cuerpo ligeramente inclinado.",
+    "Abre los brazos lentamente y deja avanzar el cuerpo en bloque, con los codos algo flexionados.",
+    "Junta las manos delante del pecho para devolver el cuerpo al inicio.",
+    "Consejo: Empieza casi de pie: las aperturas requieren más control que una flexión."
+   ],
+   "instructionsEn": [
+    "Secure the straps to a sturdy anchor, hold the handles and face away from the anchor with a slight forward lean.",
+    "Open your arms slowly and let your body move forwards as one unit with your elbows slightly bent.",
+    "Bring your hands together in front of your chest to return your body to the start.",
+    "Tip: Start nearly upright: flyes require more control than a push-up."
+   ]
+  },
+  {
+   "id": "Suspender_Face_Pull",
+   "name": "Face pull en suspensión",
+   "nameEn": "Suspension Face Pull",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1113"
+   },
+   "instructions": [
+    "Mira hacia el anclaje, agarra las asas e inclínate atrás con los brazos largos y el cuerpo alineado.",
+    "Tira hacia la cara y separa las manos, llevando los codos hacia fuera.",
+    "Estira los brazos lentamente sin adelantar la cabeza.",
+    "Consejo: Termina con las manos a ambos lados de la cara, sin forzar el cuello."
+   ],
+   "instructionsEn": [
+    "Face the anchor, hold the handles and lean back with long arms and your body aligned.",
+    "Pull towards your face and separate your hands, moving your elbows outwards.",
+    "Straighten your arms slowly without pushing your head forwards.",
+    "Tip: Finish with your hands on either side of your face without straining your neck."
+   ]
+  },
+  {
+   "id": "Suspender_Y_Lateral_Raise",
+   "name": "Elevación en Y en suspensión",
+   "nameEn": "Suspension Y-Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "upper-back"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1107"
+   },
+   "instructions": [
+    "De cara a un anclaje seguro, sujeta las asas con los pulgares arriba e inclínate ligeramente hacia atrás.",
+    "Eleva los brazos en diagonal formando una Y, con los pulgares orientados hacia arriba.",
+    "Baja los brazos despacio sin perder la posición del tronco.",
+    "Consejo: Busca un gesto pequeño y limpio antes de aumentar la resistencia."
+   ],
+   "instructionsEn": [
+    "Face a secure anchor, hold the handles with your thumbs up and lean slightly backwards.",
+    "Raise your arms diagonally into a Y with your thumbs pointing upwards.",
+    "Lower your arms slowly without changing your torso position.",
+    "Tip: Aim for a small, controlled movement before increasing resistance."
+   ]
+  },
+  {
+   "id": "Suspension_Shoulder_External_Rotation",
+   "name": "Rotación externa en suspensión",
+   "nameEn": "Suspension Shoulder External Rotation",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1096"
+   },
+   "instructions": [
+    "Mira al anclaje, sujeta las asas y eleva los codos a la altura de los hombros con los antebrazos hacia delante; inclínate muy poco.",
+    "Gira los antebrazos hacia fuera manteniendo los codos en su sitio.",
+    "Regresa despacio hasta la posición inicial sin dejar que la resistencia tire de golpe.",
+    "Consejo: Reduce la resistencia si necesitas mover el tronco para completar el giro."
+   ],
+   "instructionsEn": [
+    "Face the anchor, hold the handles and raise your elbows to shoulder height with your forearms forwards; use only a slight lean.",
+    "Rotate your forearms outwards while keeping your elbows in place.",
+    "Return slowly to the starting position without letting the resistance jerk your arms.",
+    "Tip: Reduce resistance if you need to move your torso to complete the rotation."
+   ]
+  },
+  {
+   "id": "Suspender_Arm_Curl",
+   "name": "Curl de bíceps en suspensión",
+   "nameEn": "Suspension Biceps Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1070"
+   },
+   "instructions": [
+    "De cara al anclaje, agarra las asas con las palmas arriba e inclínate atrás manteniendo los brazos delante de los hombros.",
+    "Dobla los codos para acercar las manos a la frente mientras elevas el cuerpo en bloque.",
+    "Estira los brazos despacio y vuelve a inclinar el cuerpo sin dejar caer la cadera.",
+    "Consejo: Acerca los pies al anclaje solo si puedes mantener los codos a la misma altura."
+   ],
+   "instructionsEn": [
+    "Face the anchor, grip the handles palms up and lean back with your arms in front of your shoulders.",
+    "Bend your elbows to bring your hands towards your forehead as you raise your body as one unit.",
+    "Straighten your arms slowly and lean your body back without dropping your hips.",
+    "Tip: Move your feet closer to the anchor only if you can keep your elbows at the same height."
+   ]
+  },
+  {
+   "id": "Suspension_Triceps_Extension",
+   "name": "Extensión de tríceps en suspensión",
+   "nameEn": "Suspension Triceps Extension",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "abs",
+    "delts"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5876"
+   },
+   "instructions": [
+    "De espaldas al anclaje, sujeta las asas delante de la frente y adelanta el cuerpo con los pies firmes.",
+    "Dobla los codos y acerca la frente a las manos, manteniendo el cuerpo recto.",
+    "Empuja las asas estirando los codos para devolver el cuerpo al inicio.",
+    "Consejo: Usa una inclinación suave al empezar y no dejes que los codos se abran."
+   ],
+   "instructionsEn": [
+    "Face away from the anchor, hold the handles in front of your forehead and lean forwards with your feet planted.",
+    "Bend your elbows and bring your forehead towards your hands while keeping your body straight.",
+    "Push through the handles by straightening your elbows to return your body to the start.",
+    "Tip: Start with a gentle lean and do not let your elbows flare out."
+   ]
+  },
+  {
+   "id": "Suspender_Calf_Raise",
+   "name": "Elevación de gemelos con apoyo en suspensión",
+   "nameEn": "Suspension Calf Raise",
+   "muscle": "calves",
+   "secondaryMuscles": [],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1154"
+   },
+   "instructions": [
+    "De pie frente al anclaje, sujeta las asas para equilibrarte y coloca los pies a la anchura de las caderas.",
+    "Eleva los talones y sube sobre la parte delantera de los pies.",
+    "Baja los talones lentamente hasta recuperar el apoyo, sin rebotar.",
+    "Consejo: Reparte el apoyo entre el dedo gordo y el pequeño para no volcar el tobillo."
+   ],
+   "instructionsEn": [
+    "Stand facing the anchor, hold the handles for balance and place your feet hip-width apart.",
+    "Raise your heels and rise onto the balls of your feet.",
+    "Lower your heels slowly until you regain support, without bouncing.",
+    "Tip: Spread your weight between your big and little toes so your ankles do not roll."
+   ]
+  },
+  {
+   "id": "Suspender_Squat",
+   "name": "Sentadilla con apoyo en suspensión",
+   "nameEn": "Suspension Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1143"
+   },
+   "instructions": [
+    "De cara al anclaje, sujeta las asas a la altura del pecho y apoya ambos pies en el suelo.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Face the anchor, hold the handles at chest height and plant both feet on the floor.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Suspender_Side_Lunge",
+   "name": "Zancada lateral con apoyo en suspensión",
+   "nameEn": "Suspension Side Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1132"
+   },
+   "instructions": [
+    "Sujeta las asas frente al anclaje y separa bastante los pies, manteniendo los brazos largos.",
+    "Desplaza la cadera hacia un lado y dobla esa rodilla, dejando la otra pierna alargada.",
+    "Empuja con el pie de la pierna doblada para volver al centro.",
+    "Consejo: Mantén el pie de apoyo entero en el suelo y alterna los lados con control."
+   ],
+   "instructionsEn": [
+    "Hold the handles facing the anchor and spread your feet wide while keeping your arms long.",
+    "Shift your hips to one side and bend that knee, keeping your other leg long.",
+    "Push through the foot of your bent leg to return to the centre.",
+    "Tip: Keep your whole supporting foot on the floor and alternate sides under control."
+   ]
+  },
+  {
+   "id": "Suspender_Rear_Lunge",
+   "name": "Zancada atrás con apoyo en suspensión",
+   "nameEn": "Suspension Rear Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1129"
+   },
+   "instructions": [
+    "De pie frente al anclaje, sujeta las asas sin colgar todo tu peso de ellas.",
+    "Da un paso atrás y dobla ambas rodillas hasta acercar la rodilla trasera al suelo.",
+    "Empuja con el pie delantero y vuelve a juntar los pies con control.",
+    "Consejo: Mantén los pies en dos líneas paralelas para conservar el equilibrio."
+   ],
+   "instructionsEn": [
+    "Stand facing the anchor and hold the handles without hanging all your weight from them.",
+    "Step backwards and bend both knees until your rear knee approaches the floor.",
+    "Push through your front foot and bring your feet back together under control.",
+    "Tip: Keep your feet on two parallel tracks to maintain balance."
+   ]
+  },
+  {
+   "id": "Suspender_Single_Leg_Deadlift",
+   "name": "Peso muerto a una pierna con apoyo en suspensión",
+   "nameEn": "Suspension Single-Leg Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1155"
+   },
+   "instructions": [
+    "Sujeta las asas frente al anclaje y reparte el peso sobre un pie, usando las cintas solo para equilibrarte.",
+    "Inclina el tronco desde la cadera mientras llevas la pierna libre hacia atrás, con la rodilla de apoyo suave.",
+    "Vuelve a erguirte desde la cadera sin girar la pelvis hacia un lado.",
+    "Consejo: Mantén las caderas mirando al suelo y usa apoyo si pierdes el equilibrio."
+   ],
+   "instructionsEn": [
+    "Hold the handles facing the anchor and shift your weight onto one foot, using the straps only for balance.",
+    "Hinge forwards at your hip as your free leg moves backwards, keeping your supporting knee soft.",
+    "Return to standing from your hip without rotating your pelvis to one side.",
+    "Tip: Keep your hips facing the floor and use support if you lose balance."
+   ]
+  },
+  {
+   "id": "Suspension_Single_Leg_Squat",
+   "name": "Sentadilla a una pierna con apoyo en suspensión",
+   "nameEn": "Suspension Single-Leg Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1101"
+   },
+   "instructions": [
+    "Sujeta las asas de un anclaje seguro, apoya un pie y eleva la otra pierna por delante.",
+    "Dobla la rodilla de apoyo y baja la cadera mientras mantienes la otra pierna por delante.",
+    "Empuja con el pie de apoyo y ayúdate de las asas para volver a estar de pie.",
+    "Consejo: Baja solo hasta donde puedas mantener el talón apoyado."
+   ],
+   "instructionsEn": [
+    "Hold the handles of a secure anchor, plant one foot and lift your other leg in front.",
+    "Bend your supporting knee and lower your hips while keeping your other leg in front.",
+    "Push through your supporting foot and use the handles to return to standing.",
+    "Tip: Lower only as far as you can keep your heel planted."
+   ]
+  },
+  {
+   "id": "Suspension_Hip_Abduction",
+   "name": "Abducción de cadera en suspensión",
+   "nameEn": "Suspension Hip Abduction",
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1077"
+   },
+   "instructions": [
+    "Túmbate boca arriba con los talones en las cunas de las cintas y eleva ligeramente la cadera, con las piernas largas.",
+    "Separa la pierna o las piernas del centro del cuerpo sin girar la pelvis.",
+    "Regresa despacio hacia el centro, manteniendo tensión en la resistencia.",
+    "Consejo: Haz el gesto desde la cadera y evita inclinar el tronco para ganar recorrido."
+   ],
+   "instructionsEn": [
+    "Lie on your back with your heels in the strap cradles and lift your hips slightly, keeping your legs long.",
+    "Move your leg or legs away from the centre of your body without rotating your pelvis.",
+    "Return slowly towards the centre while keeping tension against the resistance.",
+    "Tip: Move from your hip and avoid leaning your torso to gain range."
+   ]
+  },
+  {
+   "id": "Suspension_Hip_Bridge",
+   "name": "Puente de glúteos en suspensión",
+   "nameEn": "Suspension Glute Bridge",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1078"
+   },
+   "instructions": [
+    "Túmbate boca arriba con los talones en las cunas y las rodillas dobladas; deja los brazos en el suelo.",
+    "Empuja con los talones y eleva la cadera hasta alinear tronco y muslos.",
+    "Baja la cadera despacio manteniendo las costillas recogidas.",
+    "Consejo: Termina extendiendo la cadera, sin arquear la zona lumbar."
+   ],
+   "instructionsEn": [
+    "Lie on your back with your heels in the cradles and your knees bent; rest your arms on the floor.",
+    "Push through your heels and raise your hips until your torso and thighs line up.",
+    "Lower your hips slowly while keeping your ribs down.",
+    "Tip: Finish by extending your hips rather than arching your lower back."
+   ]
+  },
+  {
+   "id": "Suspension_Leg_Curl",
+   "name": "Curl femoral en suspensión",
+   "nameEn": "Suspension Leg Curl",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1083"
+   },
+   "instructions": [
+    "Túmbate boca arriba con los talones en las cunas, las piernas largas y las cintas tensas.",
+    "Eleva la cadera y dobla las rodillas para acercar los talones a los glúteos.",
+    "Aleja los talones despacio manteniendo la cadera elevada.",
+    "Consejo: Acorta el recorrido si la pelvis empieza a caer o a girar."
+   ],
+   "instructionsEn": [
+    "Lie on your back with your heels in the cradles, legs long and straps taut.",
+    "Raise your hips and bend your knees to bring your heels towards your glutes.",
+    "Move your heels away slowly while keeping your hips raised.",
+    "Tip: Shorten the range if your pelvis starts dropping or rotating."
+   ]
+  },
+  {
+   "id": "Suspender_Body_Saw",
+   "name": "Plancha con balanceo en suspensión",
+   "nameEn": "Suspension Body Saw",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1110"
+   },
+   "instructions": [
+    "Coloca los pies en las cunas y apoya los antebrazos en el suelo, con los codos debajo de los hombros.",
+    "Desplaza el cuerpo unos centímetros hacia atrás desde los hombros manteniendo la plancha.",
+    "Vuelve hacia delante con control sin subir ni dejar caer la cadera.",
+    "Consejo: Empieza con recorridos muy cortos y respira durante todo el gesto."
+   ],
+   "instructionsEn": [
+    "Place your feet in the cradles and rest your forearms on the floor with your elbows below your shoulders.",
+    "Shift your body a few centimetres backwards from your shoulders while keeping your plank.",
+    "Move forwards again under control without raising or dropping your hips.",
+    "Tip: Start with very short movements and keep breathing throughout."
+   ]
+  },
+  {
+   "id": "Suspension_Mountain_Climber",
+   "name": "Escalador en suspensión",
+   "nameEn": "Suspension Mountain Climber",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1084"
+   },
+   "instructions": [
+    "Coloca los pies en las cunas y adopta una plancha alta, con las manos debajo de los hombros.",
+    "Acerca una rodilla al pecho sin mover la pelvis hacia los lados.",
+    "Estira esa pierna y alterna con la otra a un ritmo que puedas controlar.",
+    "Consejo: Mantén los hombros sobre las manos durante toda la serie."
+   ],
+   "instructionsEn": [
+    "Place your feet in the cradles and take a high plank position with your hands below your shoulders.",
+    "Bring one knee towards your chest without shifting your pelvis sideways.",
+    "Straighten that leg and alternate with the other at a pace you can control.",
+    "Tip: Keep your shoulders above your hands throughout the set."
+   ]
+  },
+  {
+   "id": "Suspension_Side_Bridge",
+   "name": "Plancha lateral en suspensión",
+   "nameEn": "Suspension Side Bridge",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts",
+    "glutes"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1098"
+   },
+   "instructions": [
+    "Túmbate de lado, coloca ambos pies en las cunas y apoya el antebrazo inferior en el suelo.",
+    "Eleva la cadera hasta alinear el tronco con las piernas y mantén la postura.",
+    "Respira durante el tiempo elegido, baja con control y repite al otro lado.",
+    "Consejo: Coloca el codo debajo del hombro y evita girar el pecho hacia el suelo."
+   ],
+   "instructionsEn": [
+    "Lie on your side, place both feet in the cradles and rest your lower forearm on the floor.",
+    "Raise your hips until your torso lines up with your legs and hold the position.",
+    "Breathe for your chosen time, lower under control and repeat on the other side.",
+    "Tip: Place your elbow below your shoulder and avoid turning your chest towards the floor."
+   ]
+  },
+  {
+   "id": "Suspension_Trainer_Front_Plank",
+   "name": "Plancha en suspensión",
+   "nameEn": "Suspension Forearm Plank",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts",
+    "glutes"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7275"
+   },
+   "instructions": [
+    "Coloca los pies en las cunas y apoya los antebrazos, dejando las rodillas en el suelo para prepararte.",
+    "Separa ligeramente el cuerpo del apoyo y mantén una línea entre hombros, caderas y tobillos.",
+    "Respira con normalidad durante el tiempo elegido y apoya las rodillas para terminar.",
+    "Consejo: Termina la serie si no puedes mantener la cadera a la altura del tronco."
+   ],
+   "instructionsEn": [
+    "Place your feet in the cradles and rest on your forearms, leaving your knees on the floor to prepare.",
+    "Lift your body clear of the support and maintain a line from shoulders through hips to ankles.",
+    "Breathe normally for your chosen time and lower your knees to finish.",
+    "Tip: End the set if you cannot keep your hips in line with your torso."
+   ]
+  },
+  {
+   "id": "Suspension_Trainer_Pike",
+   "name": "Pica abdominal en suspensión",
+   "nameEn": "Suspension Pike",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7274"
+   },
+   "instructions": [
+    "Coloca los pies en las cunas y parte de una plancha alta con las manos firmes en el suelo.",
+    "Eleva la cadera hacia el techo con las piernas casi rectas, acercando los pies a las manos.",
+    "Vuelve despacio a la plancha sin hundir la zona lumbar.",
+    "Consejo: Empuja el suelo con las manos y mantén la cabeza entre los brazos."
+   ],
+   "instructionsEn": [
+    "Place your feet in the cradles and start in a high plank with your hands firmly on the floor.",
+    "Raise your hips towards the ceiling with your legs nearly straight, bringing your feet towards your hands.",
+    "Return slowly to the plank without letting your lower back sag.",
+    "Tip: Push the floor away with your hands and keep your head between your arms."
+   ]
+  },
+  {
+   "id": "Suspension_Twist",
+   "name": "Giro de tronco en suspensión",
+   "nameEn": "Suspension Torso Rotation",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "suspension",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1105"
+   },
+   "instructions": [
+    "De lado al anclaje, sujeta ambas asas juntas delante del pecho y mantén los pies separados.",
+    "Gira el tronco y lleva el agarre hacia un lado manteniendo la pelvis estable.",
+    "Vuelve al centro despacio y completa las repeticiones antes de cambiar de lado.",
+    "Consejo: Usa un recorrido corto que puedas frenar sin tirones."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the anchor, hold both handles together in front of your chest and keep your feet apart.",
+    "Rotate your torso and move the grip towards one side while keeping your pelvis stable.",
+    "Return to the centre slowly and complete your repetitions before switching sides.",
+    "Tip: Use a short range that you can slow down without jerking."
+   ]
+  },
+  {
+   "id": "Smith_Bent_Over_Row_Chest_Supported",
+   "name": "Remo con pecho apoyado en multipower",
+   "nameEn": "Chest-Supported Smith Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "11762"
+   },
+   "instructions": [
+    "Coloca un banco inclinado dentro del multipower, apoya el pecho y toma la barra con los brazos largos; comprueba el recorrido y los topes.",
+    "Tira hacia la parte alta del pecho, llevando los codos atrás y algo separados del cuerpo.",
+    "Aleja el agarre con control hasta estirar los brazos, sin perder el apoyo del pecho.",
+    "Consejo: Ajusta el asiento para que no tengas que levantar los hombros al tirar."
+   ],
+   "instructionsEn": [
+    "Place an incline bench inside the Smith machine, support your chest and hold the bar with long arms; check its path and safety stops.",
+    "Pull towards your upper chest, bringing your elbows back and slightly away from your body.",
+    "Move the grip away with control until your arms are straight, keeping your chest supported.",
+    "Tip: Adjust the seat so you do not need to shrug as you pull."
+   ]
+  },
+  {
+   "id": "Smith_One_Arm_Row",
+   "name": "Remo a una mano en multipower",
+   "nameEn": "Smith Single-Arm Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1360"
+   },
+   "instructions": [
+    "Ponte de lado a la barra, inclina el tronco y apoya la mano libre en un banco; toma la barra con la otra mano y libera el gancho.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the bar, hinge forwards and support your free hand on a bench; hold the bar with your other hand and release the hook.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Smith_Seated_Calf_Raise",
+   "name": "Gemelos sentado en multipower",
+   "nameEn": "Smith Seated Calf Raise",
+   "muscle": "calves",
+   "secondaryMuscles": [],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4370"
+   },
+   "instructions": [
+    "Siéntate en un banco con la barra acolchada sobre los muslos, cerca de las rodillas; apoya el antepié en un bloque estable y fija los topes.",
+    "Eleva los talones y sube sobre la parte delantera de los pies.",
+    "Baja los talones lentamente hasta recuperar el apoyo, sin rebotar.",
+    "Consejo: Reparte el apoyo entre el dedo gordo y el pequeño para no volcar el tobillo."
+   ],
+   "instructionsEn": [
+    "Sit on a bench with the padded bar across your thighs near your knees; rest your forefeet on a stable block and set the stops.",
+    "Raise your heels and rise onto the balls of your feet.",
+    "Lower your heels slowly until you regain support, without bouncing.",
+    "Tip: Spread your weight between your big and little toes so your ankles do not roll."
+   ]
+  },
+  {
+   "id": "Smith_Drag_Curl",
+   "name": "Curl de arrastre en multipower",
+   "nameEn": "Smith Drag Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4546"
+   },
+   "instructions": [
+    "De pie junto a la barra baja, agárrala con las palmas hacia delante y libera los ganchos sin separar los codos del cuerpo.",
+    "Dobla los codos llevándolos hacia atrás para que la barra suba pegada al cuerpo.",
+    "Desciende lentamente por el mismo recorrido hasta alargar los brazos.",
+    "Consejo: No eleves los hombros para ganar recorrido al final."
+   ],
+   "instructionsEn": [
+    "Stand by the low bar, grip it palms forwards and release the hooks while keeping your elbows close to your body.",
+    "Bend your elbows and move them backwards so the bar travels close to your body.",
+    "Lower slowly along the same path until your arms lengthen.",
+    "Tip: Do not shrug to gain extra range at the top."
+   ]
+  },
+  {
+   "id": "Smith_Jm_Bench_Press",
+   "name": "Press JM en multipower",
+   "nameEn": "Smith JM Press",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "9385"
+   },
+   "instructions": [
+    "Túmbate en un banco bajo la barra, usa un agarre cerrado y sitúa los codos entre pecho y cabeza; ajusta los topes antes de liberar la barra.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Lie on a bench under the bar, use a close grip and position your elbows between your chest and head; set the stops before releasing the bar.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Smith_Front_Squat",
+   "name": "Sentadilla frontal en multipower",
+   "nameEn": "Smith Front Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1595"
+   },
+   "instructions": [
+    "Apoya la barra en la parte delantera de los hombros, eleva los codos y coloca los topes antes de liberar los ganchos.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Rest the bar across the front of your shoulders, raise your elbows and set the stops before releasing the hooks.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Smith_Hack_Squat",
+   "name": "Sentadilla hack en multipower",
+   "nameEn": "Smith Hack Squat",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0755"
+   },
+   "instructions": [
+    "Apoya la barra sobre los trapecios, adelanta los pies lo suficiente para bajar con el tronco erguido y ajusta los topes.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Rest the bar across your upper traps, move your feet forward enough to squat with an upright torso and set the stops.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Smith_Hip_Thrust",
+   "name": "Hip thrust en multipower",
+   "nameEn": "Smith Hip Thrust",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3110"
+   },
+   "instructions": [
+    "Apoya la parte alta de la espalda en un banco estable y coloca la barra acolchada sobre la cadera; fija los topes y libera la barra.",
+    "Empuja el suelo y eleva la cadera hasta que el tronco quede alineado con los muslos.",
+    "Desciende desde la cadera con control, manteniendo la parte alta de la espalda apoyada.",
+    "Consejo: Mira al frente y evita terminar con las costillas abiertas o la espalda arqueada."
+   ],
+   "instructionsEn": [
+    "Rest your upper back on a stable bench and place the padded bar across your hips; set the stops and release the bar.",
+    "Push the floor away and lift your hips until your torso lines up with your thighs.",
+    "Lower from your hips under control, keeping your upper back supported.",
+    "Tip: Look forwards and avoid finishing with flared ribs or an arched back."
+   ]
+  },
+  {
+   "id": "Smith_Bent_Knee_Good_Morning",
+   "name": "Buenos días en multipower",
+   "nameEn": "Smith Bent-Knee Good Morning",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "spine",
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0749"
+   },
+   "instructions": [
+    "Coloca la barra sobre los trapecios, separa los pies a la anchura de las caderas y ajusta los topes por debajo de tu recorrido.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Place the bar across your upper traps, stand hip-width apart and set the stops just below your intended range.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Smith_Sumo_Deadlift",
+   "name": "Peso muerto sumo en multipower",
+   "nameEn": "Smith Sumo Deadlift",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7374"
+   },
+   "instructions": [
+    "Separa los pies más que los hombros con las puntas hacia fuera y toma la barra entre las piernas; coloca los topes bajos.",
+    "Empuja el suelo y levanta la carga extendiendo caderas y rodillas a la vez.",
+    "Lleva la cadera atrás y dobla las rodillas para apoyar la carga con suavidad.",
+    "Consejo: Tensa el abdomen antes de cada repetición y evita tirar de golpe."
+   ],
+   "instructionsEn": [
+    "Set your feet wider than shoulder width with toes turned out and grip the bar between your legs; position the stops low.",
+    "Push the floor away and lift the load by extending your hips and knees together.",
+    "Send your hips back and bend your knees to set the load down gently.",
+    "Tip: Brace your abdomen before each repetition and avoid jerking the load."
+   ]
+  },
+  {
+   "id": "Smith_Step_Up",
+   "name": "Subida al cajón en multipower",
+   "nameEn": "Smith Step-Up",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "11879"
+   },
+   "instructions": [
+    "Coloca un cajón estable bajo la barra, apoya la barra sobre los trapecios y sube un pie completo al cajón; comprueba los topes.",
+    "Empuja con la pierna apoyada arriba para subir el cuerpo hasta estirar esa rodilla.",
+    "Baja despacio con la misma pierna de apoyo hasta tocar el suelo con el otro pie.",
+    "Consejo: Elige una altura que te permita subir sin saltar con el pie de abajo."
+   ],
+   "instructionsEn": [
+    "Place a stable box under the bar, rest the bar across your upper traps and plant one whole foot on the box; check the stops.",
+    "Push through the leg on the step to raise your body until that knee straightens.",
+    "Lower slowly using the same supporting leg until your other foot touches the floor.",
+    "Tip: Choose a height that lets you rise without jumping off your lower foot."
+   ]
+  },
+  {
+   "id": "Smith_Rack_Pull",
+   "name": "Peso muerto desde topes en multipower",
+   "nameEn": "Smith Rack Pull",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4171"
+   },
+   "instructions": [
+    "Coloca los topes justo por debajo de las rodillas, toma la barra con los brazos largos y lleva la cadera hacia atrás.",
+    "Empuja el suelo y levanta la carga extendiendo caderas y rodillas a la vez.",
+    "Lleva la cadera atrás y dobla las rodillas para apoyar la carga con suavidad.",
+    "Consejo: Tensa el abdomen antes de cada repetición y evita tirar de golpe."
+   ],
+   "instructionsEn": [
+    "Set the stops just below knee height, hold the bar with long arms and hinge your hips backwards.",
+    "Push the floor away and lift the load by extending your hips and knees together.",
+    "Send your hips back and bend your knees to set the load down gently.",
+    "Tip: Brace your abdomen before each repetition and avoid jerking the load."
+   ]
+  },
+  {
+   "id": "Smith_Staggered_Stance_Romanian_Deadlift",
+   "name": "Peso muerto rumano con apoyo alterno en multipower",
+   "nameEn": "Smith Staggered-Stance Romanian Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "8800"
+   },
+   "instructions": [
+    "Toma la barra delante de los muslos y retrasa un pie medio paso, apoyando solo su antepié; deja la mayor parte del peso en la pierna delantera.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Hold the bar in front of your thighs and stagger one foot half a step back onto its forefoot; keep most weight on your front leg.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Smith_Seated_Wrist_Curl",
+   "name": "Curl de muñeca sentado en multipower",
+   "nameEn": "Smith Seated Wrist Curl",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "smith",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1426"
+   },
+   "instructions": [
+    "Siéntate frente a la barra baja y apoya los antebrazos sobre los muslos, con las palmas arriba y las muñecas libres.",
+    "Flexiona solo la muñeca para acercar la palma al antebrazo.",
+    "Extiende la muñeca lentamente hasta volver al inicio.",
+    "Consejo: Mantén el antebrazo apoyado y usa poca resistencia."
+   ],
+   "instructionsEn": [
+    "Sit facing the low bar and rest your forearms on your thighs, palms up and wrists free.",
+    "Bend only your wrist to bring your palm towards your forearm.",
+    "Extend your wrist slowly to return to the start.",
+    "Tip: Keep your forearm supported and use light resistance."
+   ]
+  },
+  {
+   "id": "Landmine_One_Arm_Bent_Over_Bench_Row",
+   "name": "Remo landmine a una mano con apoyo",
+   "nameEn": "Bench-Supported Single-Arm Landmine Row",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4039"
+   },
+   "instructions": [
+    "Fija un extremo de la barra en un soporte landmine, apoya una mano y una rodilla en un banco y agarra el extremo cargado con la otra mano.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Secure one end of the bar in a landmine anchor, support one hand and knee on a bench and grip the loaded end with your other hand.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Landmine_Kneeling_Squeeze_Press",
+   "name": "Press de pecho landmine de rodillas",
+   "nameEn": "Landmine Kneeling Squeeze Press",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "triceps"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3921"
+   },
+   "instructions": [
+    "Arrodíllate frente a la barra anclada y sujeta su extremo con las dos manos juntas a la altura del pecho.",
+    "Empuja el agarre alejándolo del pecho hasta casi estirar los codos.",
+    "Dobla los codos y vuelve lentamente hasta una profundidad que puedas controlar.",
+    "Consejo: Mantén las muñecas alineadas con los antebrazos y evita abrir los codos en cruz."
+   ],
+   "instructionsEn": [
+    "Kneel facing the anchored bar and hold its end with both hands together at chest height.",
+    "Press the grip away from your chest until your elbows are nearly straight.",
+    "Bend your elbows and return slowly to a depth you can control.",
+    "Tip: Keep your wrists in line with your forearms and avoid flaring your elbows straight out."
+   ]
+  },
+  {
+   "id": "Landmine_Half_Kneeling_Shoulders_Press",
+   "name": "Press landmine en media rodilla",
+   "nameEn": "Half-Kneeling Landmine Press",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "pectorals",
+    "abs"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "9695"
+   },
+   "instructions": [
+    "Con la barra bien anclada, apoya una rodilla y adelanta el pie contrario; sujeta el extremo a la altura del hombro del lado arrodillado.",
+    "Empuja el extremo de la barra hacia arriba y delante, siguiendo su arco.",
+    "Acerca de nuevo la barra al hombro de forma lenta y controlada.",
+    "Consejo: Mantén las costillas recogidas y deja que el omóplato acompañe al brazo."
+   ],
+   "instructionsEn": [
+    "With the bar securely anchored, kneel on one knee with the opposite foot forwards; hold the end at the shoulder on your kneeling side.",
+    "Press the end of the bar upwards and forwards along its arc.",
+    "Bring the bar back towards your shoulder slowly and under control.",
+    "Tip: Keep your ribs down and let your shoulder blade move with your arm."
+   ]
+  },
+  {
+   "id": "Landmine_Lateral_Raise",
+   "name": "Elevación lateral landmine",
+   "nameEn": "Landmine Lateral Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3237"
+   },
+   "instructions": [
+    "Ponte de lado al extremo de una barra anclada y sujétalo con la mano más alejada, por delante del muslo contrario.",
+    "Eleva los brazos hacia los lados hasta aproximadamente la altura de los hombros, con los codos suaves.",
+    "Baja lentamente sin dejar caer la carga ni encoger los hombros.",
+    "Consejo: Usa un recorrido que controles y evita dar impulso con las piernas."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the end of an anchored bar and hold it with your far hand in front of your opposite thigh.",
+    "Raise your arms out to the sides to about shoulder height, keeping your elbows soft.",
+    "Lower slowly without dropping the load or shrugging.",
+    "Tip: Use a range you can control and avoid driving with your legs."
+   ]
+  },
+  {
+   "id": "Landmine_Front_Squat",
+   "name": "Sentadilla frontal landmine",
+   "nameEn": "Landmine Front Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4246"
+   },
+   "instructions": [
+    "De cara al anclaje, sujeta el extremo de la barra con ambas manos frente al pecho y separa los pies a la anchura de los hombros.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Face the anchor, hold the end of the bar with both hands in front of your chest and stand shoulder-width apart.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Landmine_Rear_Lunge",
+   "name": "Zancada atrás landmine",
+   "nameEn": "Landmine Rear Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3919"
+   },
+   "instructions": [
+    "Frente al anclaje, sujeta el extremo de la barra junto al pecho con ambas manos y deja espacio para retroceder.",
+    "Da un paso atrás y dobla ambas rodillas hasta acercar la rodilla trasera al suelo.",
+    "Empuja con el pie delantero y vuelve a juntar los pies con control.",
+    "Consejo: Mantén los pies en dos líneas paralelas para conservar el equilibrio."
+   ],
+   "instructionsEn": [
+    "Face the anchor, hold the end of the bar at your chest with both hands and leave room to step backwards.",
+    "Step backwards and bend both knees until your rear knee approaches the floor.",
+    "Push through your front foot and bring your feet back together under control.",
+    "Tip: Keep your feet on two parallel tracks to maintain balance."
+   ]
+  },
+  {
+   "id": "Landmine_Romanian_Deadlift",
+   "name": "Peso muerto rumano landmine",
+   "nameEn": "Landmine Romanian Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4113"
+   },
+   "instructions": [
+    "Ponte frente al anclaje con el extremo de la barra entre las manos, delante de los muslos y con los pies separados.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Face the anchor with the end of the bar held in both hands in front of your thighs and your feet apart.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Landmine_Single_Leg_Landmine_Rdl",
+   "name": "Peso muerto rumano a una pierna landmine",
+   "nameEn": "Landmine Single-Leg RDL",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3918"
+   },
+   "instructions": [
+    "De lado al extremo anclado, sujeta la barra con una mano y carga el peso sobre la pierna contraria.",
+    "Inclina el tronco desde la cadera mientras llevas la pierna libre hacia atrás, con la rodilla de apoyo suave.",
+    "Vuelve a erguirte desde la cadera sin girar la pelvis hacia un lado.",
+    "Consejo: Mantén las caderas mirando al suelo y usa apoyo si pierdes el equilibrio."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the anchored end, hold the bar in one hand and shift your weight onto the opposite leg.",
+    "Hinge forwards at your hip as your free leg moves backwards, keeping your supporting knee soft.",
+    "Return to standing from your hip without rotating your pelvis to one side.",
+    "Tip: Keep your hips facing the floor and use support if you lose balance."
+   ]
+  },
+  {
+   "id": "Landmine_Cossack_Squat",
+   "name": "Sentadilla cosaca landmine",
+   "nameEn": "Landmine Cossack Squat",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "adductors"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "10052"
+   },
+   "instructions": [
+    "Sujeta el extremo de la barra anclada frente al pecho y adopta una postura amplia con las puntas algo abiertas.",
+    "Desplaza la cadera hacia un lado y dobla esa rodilla, dejando la otra pierna alargada.",
+    "Empuja con el pie de la pierna doblada para volver al centro.",
+    "Consejo: Mantén el pie de apoyo entero en el suelo y alterna los lados con control."
+   ],
+   "instructionsEn": [
+    "Hold the end of the anchored bar in front of your chest and take a wide stance with your toes turned slightly out.",
+    "Shift your hips to one side and bend that knee, keeping your other leg long.",
+    "Push through the foot of your bent leg to return to the centre.",
+    "Tip: Keep your whole supporting foot on the floor and alternate sides under control."
+   ]
+  },
+  {
+   "id": "Landmine_Squat_And_Press",
+   "name": "Sentadilla y press landmine",
+   "nameEn": "Landmine Squat and Press",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2976"
+   },
+   "instructions": [
+    "Sujeta el extremo de la barra anclada junto al pecho; al terminar cada sentadilla, empújalo en diagonal por encima de la cabeza y bájalo antes de repetir.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Hold the end of the anchored bar at your chest; after each squat, press it diagonally overhead and lower it before repeating.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Landmine_Kneeling_180s",
+   "name": "Giro landmine de rodillas",
+   "nameEn": "Kneeling Landmine Rotation",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "landmine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "11092"
+   },
+   "instructions": [
+    "Arrodíllate frente a la barra anclada, sujeta el extremo con ambas manos y mantenlo delante del pecho.",
+    "Gira el tronco y lleva el agarre hacia un lado manteniendo la pelvis estable.",
+    "Vuelve al centro despacio y completa las repeticiones antes de cambiar de lado.",
+    "Consejo: Usa un recorrido corto que puedas frenar sin tirones."
+   ],
+   "instructionsEn": [
+    "Kneel facing the anchored bar, hold its end with both hands and keep it in front of your chest.",
+    "Rotate your torso and move the grip towards one side while keeping your pelvis stable.",
+    "Return to the centre slowly and complete your repetitions before switching sides.",
+    "Tip: Use a short range that you can slow down without jerking."
+   ]
+  },
+  {
+   "id": "Trap_Bar_Bent_Over_Row",
+   "name": "Remo con barra hexagonal",
+   "nameEn": "Trap Bar Bent-Over Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "trap-bar",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4104"
+   },
+   "instructions": [
+    "Entra en la barra hexagonal, toma las asas y lleva la cadera atrás hasta inclinar el tronco con la espalda estable.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Step inside the trap bar, grip its handles and send your hips back to hinge forwards with a stable back.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Trap_Bar_Standing_Shrug",
+   "name": "Encogimientos con barra hexagonal",
+   "nameEn": "Trap Bar Standing Shrug",
+   "muscle": "traps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "trap-bar",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4103"
+   },
+   "instructions": [
+    "Entra en la barra hexagonal, levántala como en un peso muerto y queda de pie con las asas a los lados.",
+    "Eleva los hombros hacia las orejas con los brazos largos.",
+    "Baja los hombros despacio hasta recuperar su posición natural.",
+    "Consejo: Sube y baja en vertical; no dibujes círculos con los hombros."
+   ],
+   "instructionsEn": [
+    "Step inside the trap bar, lift it with a deadlift and stand upright with the handles at your sides.",
+    "Raise your shoulders towards your ears with your arms long.",
+    "Lower your shoulders slowly to their natural position.",
+    "Tip: Move straight up and down rather than rolling your shoulders."
+   ]
+  },
+  {
+   "id": "Trap_Bar_Farmers_Carry",
+   "name": "Paseo del granjero con barra hexagonal",
+   "nameEn": "Trap Bar Farmer's Carry",
+   "muscle": "traps",
+   "secondaryMuscles": [
+    "abs",
+    "forearms"
+   ],
+   "equipment": "trap-bar",
+   "category": "strength",
+   "level": "beginner",
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2912"
+   },
+   "instructions": [
+    "Levanta la barra hexagonal desde dentro, mantén los brazos largos y prepara un pasillo libre de obstáculos.",
+    "Camina con pasos cortos manteniendo los hombros a la misma altura.",
+    "Al acabar el tramo, detente y baja la carga doblando caderas y rodillas.",
+    "Consejo: Evita inclinarte hacia la carga y deja espacio libre para girar."
+   ],
+   "instructionsEn": [
+    "Lift the trap bar while standing inside it, keep your arms long and choose a clear walking lane.",
+    "Walk with short steps while keeping your shoulders level.",
+    "At the end of the distance, stop and lower the load by bending your hips and knees.",
+    "Tip: Avoid leaning towards the load and leave enough clear space to turn."
+   ]
+  },
+  {
+   "id": "Trap_Bar_Split_Stance_Rdl",
+   "name": "Peso muerto rumano con apoyo alterno y barra hexagonal",
+   "nameEn": "Trap Bar Split-Stance RDL",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "trap-bar",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3652"
+   },
+   "instructions": [
+    "Entra en la barra hexagonal y retrasa un pie medio paso; levanta la barra con el peso repartido sobre todo en la pierna delantera.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Step inside the trap bar and stagger one foot half a step back; lift the bar with most of your weight on your front leg.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Cable_High_Row_With_Chest_Support",
+   "name": "Remo alto en polea con pecho apoyado",
+   "nameEn": "Chest-Supported Cable High Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7597"
+   },
+   "instructions": [
+    "Coloca un banco inclinado mirando a una polea alta, apoya el pecho y toma el agarre con ambos brazos largos.",
+    "Tira hacia la parte alta del pecho, llevando los codos atrás y algo separados del cuerpo.",
+    "Aleja el agarre con control hasta estirar los brazos, sin perder el apoyo del pecho.",
+    "Consejo: Ajusta el asiento para que no tengas que levantar los hombros al tirar."
+   ],
+   "instructionsEn": [
+    "Place an incline bench facing a high pulley, support your chest and take the grip with both arms long.",
+    "Pull towards your upper chest, bringing your elbows back and slightly away from your body.",
+    "Move the grip away with control until your arms are straight, keeping your chest supported.",
+    "Tip: Adjust the seat so you do not need to shrug as you pull."
+   ]
+  },
+  {
+   "id": "Cable_Bent_Over_Row",
+   "name": "Remo inclinado en polea",
+   "nameEn": "Cable Bent-Over Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3859"
+   },
+   "instructions": [
+    "Pon la polea abajo, toma el agarre con ambas manos y lleva la cadera atrás para inclinar el tronco sin redondearlo.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Set the pulley low, take the grip with both hands and send your hips back to hinge forwards without rounding your torso.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Cable_Seated_Pullover",
+   "name": "Pullover sentado en polea",
+   "nameEn": "Cable Seated Pullover",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "triceps",
+    "abs"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4180"
+   },
+   "instructions": [
+    "Siéntate en un banco de espaldas a una polea alta y toma una cuerda por encima de la cabeza, con el tronco estable.",
+    "Lleva los brazos hacia las caderas manteniendo una ligera flexión de codos y las costillas recogidas.",
+    "Vuelve por el mismo arco hasta notar tensión en los dorsales, sin arquear la espalda.",
+    "Consejo: Mantén casi fijo el ángulo del codo para no transformar el gesto en un jalón."
+   ],
+   "instructionsEn": [
+    "Sit on a bench facing away from a high pulley and take a rope overhead while keeping your torso stable.",
+    "Move your arms towards your hips, keeping a slight bend in your elbows and your ribs down.",
+    "Return along the same arc until your lats are under tension, without arching your back.",
+    "Tip: Keep your elbow angle nearly fixed so the movement does not become a pulldown."
+   ]
+  },
+  {
+   "id": "Cable_Decline_Fly",
+   "name": "Aperturas declinadas en polea",
+   "nameEn": "Cable Decline Fly",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0158"
+   },
+   "instructions": [
+    "Sitúa un banco declinado entre dos poleas bajas, asegura los pies y toma un asa con cada mano.",
+    "Junta las manos por delante del pecho en un arco, manteniendo los codos ligeramente doblados.",
+    "Abre los brazos despacio sin llevar los codos más atrás de lo que puedas controlar.",
+    "Consejo: Conserva la misma curva en los brazos durante toda la repetición."
+   ],
+   "instructionsEn": [
+    "Position a decline bench between two low pulleys, secure your feet and take one handle in each hand.",
+    "Bring your hands together in an arc in front of your chest, keeping your elbows slightly bent.",
+    "Open your arms slowly without taking your elbows further back than you can control.",
+    "Tip: Keep the same gentle bend in your arms throughout the repetition."
+   ]
+  },
+  {
+   "id": "Cable_Seated_Chest_Press",
+   "name": "Press de pecho sentado en polea",
+   "nameEn": "Cable Seated Chest Press",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "triceps"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2144"
+   },
+   "instructions": [
+    "Coloca un banco con respaldo entre dos poleas a la altura del pecho y siéntate con un asa junto a cada costado.",
+    "Empuja el agarre alejándolo del pecho hasta casi estirar los codos.",
+    "Dobla los codos y vuelve lentamente hasta una profundidad que puedas controlar.",
+    "Consejo: Mantén las muñecas alineadas con los antebrazos y evita abrir los codos en cruz."
+   ],
+   "instructionsEn": [
+    "Place a bench with back support between two chest-height pulleys and sit with a handle beside each side of your chest.",
+    "Press the grip away from your chest until your elbows are nearly straight.",
+    "Bend your elbows and return slowly to a depth you can control.",
+    "Tip: Keep your wrists in line with your forearms and avoid flaring your elbows straight out."
+   ]
+  },
+  {
+   "id": "Cable_Forearm_Pronation",
+   "name": "Pronación de antebrazo en polea",
+   "nameEn": "Cable Forearm Pronation",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "8881"
+   },
+   "instructions": [
+    "Siéntate junto a una polea baja con el antebrazo apoyado; sujeta un agarre corto con la palma de lado y gira la palma hacia el suelo, sin doblar la muñeca.",
+    "Gira el antebrazo hasta orientar la palma hacia abajo, manteniendo el codo apoyado.",
+    "Deshaz el giro despacio hasta recuperar la posición inicial.",
+    "Consejo: mantén el antebrazo apoyado y usa poca resistencia."
+   ],
+   "instructionsEn": [
+    "Sit beside a low pulley with your forearm supported; hold a short grip with your palm sideways and turn your palm towards the floor without bending your wrist.",
+    "Rotate your forearm until your palm faces down while keeping your elbow supported.",
+    "Reverse the rotation slowly to return to your starting position.",
+    "Tip: keep your forearm supported and use light resistance."
+   ]
+  },
+  {
+   "id": "Cable_Reverse_Wrist_Curl",
+   "name": "Extensión de muñeca en polea",
+   "nameEn": "Cable Reverse Wrist Curl",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0210"
+   },
+   "instructions": [
+    "Toma una barra de polea baja con las palmas abajo y apoya los antebrazos en un banco, dejando las muñecas libres.",
+    "Eleva el dorso de la mano doblando solo la muñeca.",
+    "Baja la mano despacio sin levantar el antebrazo.",
+    "Consejo: Mantén un agarre suave y evita dar tirones con los dedos."
+   ],
+   "instructionsEn": [
+    "Hold a low-pulley bar palms down and rest your forearms on a bench with your wrists free.",
+    "Raise the back of your hand by bending only your wrist.",
+    "Lower your hand slowly without lifting your forearm.",
+    "Tip: Keep a gentle grip and avoid jerking with your fingers."
+   ]
+  },
+  {
+   "id": "Cable_Standing_Calf_Raise",
+   "name": "Elevación de gemelos en polea",
+   "nameEn": "Cable Standing Calf Raise",
+   "muscle": "calves",
+   "secondaryMuscles": [],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1375"
+   },
+   "instructions": [
+    "Toma dos asas de poleas bajas a los lados del cuerpo y ponte de pie con los pies paralelos.",
+    "Eleva los talones y sube sobre la parte delantera de los pies.",
+    "Baja los talones lentamente hasta recuperar el apoyo, sin rebotar.",
+    "Consejo: Reparte el apoyo entre el dedo gordo y el pequeño para no volcar el tobillo."
+   ],
+   "instructionsEn": [
+    "Hold two low-pulley handles at your sides and stand with your feet parallel.",
+    "Raise your heels and rise onto the balls of your feet.",
+    "Lower your heels slowly until you regain support, without bouncing.",
+    "Tip: Spread your weight between your big and little toes so your ankles do not roll."
+   ]
+  },
+  {
+   "id": "Cable_Y_Raise",
+   "name": "Elevación en Y en polea",
+   "nameEn": "Cable Y-Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "upper-back"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3342"
+   },
+   "instructions": [
+    "Cruza dos asas de poleas bajas y toma una con cada mano; mantén los pies firmes y los pulgares arriba.",
+    "Eleva los brazos en diagonal formando una Y, con los pulgares orientados hacia arriba.",
+    "Baja los brazos despacio sin perder la posición del tronco.",
+    "Consejo: Busca un gesto pequeño y limpio antes de aumentar la resistencia."
+   ],
+   "instructionsEn": [
+    "Cross two low-pulley handles and take one in each hand; keep your feet planted and your thumbs up.",
+    "Raise your arms diagonally into a Y with your thumbs pointing upwards.",
+    "Lower your arms slowly without changing your torso position.",
+    "Tip: Aim for a small, controlled movement before increasing resistance."
+   ]
+  },
+  {
+   "id": "Cable_Lying_Bench_Cross_Lateral_Raise",
+   "name": "Elevación lateral tumbado en polea",
+   "nameEn": "Lying Cable Lateral Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "9872"
+   },
+   "instructions": [
+    "Túmbate boca arriba en un banco entre dos poleas bajas y toma los agarres cruzados junto a las caderas.",
+    "Eleva los brazos hacia los lados hasta aproximadamente la altura de los hombros, con los codos suaves.",
+    "Baja lentamente sin dejar caer la carga ni encoger los hombros.",
+    "Consejo: Usa un recorrido que controles y evita dar impulso con las piernas."
+   ],
+   "instructionsEn": [
+    "Lie on your back on a bench between two low pulleys and take the crossed handles beside your hips.",
+    "Raise your arms out to the sides to about shoulder height, keeping your elbows soft.",
+    "Lower slowly without dropping the load or shrugging.",
+    "Tip: Use a range you can control and avoid driving with your legs."
+   ]
+  },
+  {
+   "id": "Cable_Drag_Curl",
+   "name": "Curl de arrastre en polea",
+   "nameEn": "Cable Drag Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1632"
+   },
+   "instructions": [
+    "Coloca una barra en la polea baja y agárrala con las palmas arriba, de pie a un paso de la máquina.",
+    "Dobla los codos llevándolos hacia atrás para que la barra suba pegada al cuerpo.",
+    "Desciende lentamente por el mismo recorrido hasta alargar los brazos.",
+    "Consejo: No eleves los hombros para ganar recorrido al final."
+   ],
+   "instructionsEn": [
+    "Attach a bar to the low pulley and grip it palms up while standing one step from the machine.",
+    "Bend your elbows and move them backwards so the bar travels close to your body.",
+    "Lower slowly along the same path until your arms lengthen.",
+    "Tip: Do not shrug to gain extra range at the top."
+   ]
+  },
+  {
+   "id": "Cable_Incline_Biceps_Curl",
+   "name": "Curl inclinado en polea",
+   "nameEn": "Cable Incline Biceps Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5703"
+   },
+   "instructions": [
+    "Sitúa un banco inclinado entre dos poleas bajas, siéntate con la espalda apoyada y deja los brazos algo por detrás del tronco.",
+    "Dobla los codos y acerca las manos hacia los hombros sin adelantar los brazos.",
+    "Estira los codos despacio hasta casi alargar los brazos por completo.",
+    "Consejo: Mantén las muñecas rectas y no impulses la carga con la espalda."
+   ],
+   "instructionsEn": [
+    "Place an incline bench between two low pulleys, sit with your back supported and let your arms hang slightly behind your torso.",
+    "Bend your elbows and bring your hands towards your shoulders without moving your upper arms forwards.",
+    "Straighten your elbows slowly until your arms are almost fully extended.",
+    "Tip: Keep your wrists straight and do not swing the load with your back."
+   ]
+  },
+  {
+   "id": "Cable_Concentration_Curl",
+   "name": "Curl concentrado en polea",
+   "nameEn": "Cable Concentration Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1631"
+   },
+   "instructions": [
+    "Siéntate junto a una polea baja y apoya el codo del brazo que trabaja en la cara interna del muslo; toma el asa con la palma arriba.",
+    "Dobla los codos y acerca las manos hacia los hombros sin adelantar los brazos.",
+    "Estira los codos despacio hasta casi alargar los brazos por completo.",
+    "Consejo: Mantén las muñecas rectas y no impulses la carga con la espalda."
+   ],
+   "instructionsEn": [
+    "Sit beside a low pulley and rest your working elbow against your inner thigh; hold the handle palm up.",
+    "Bend your elbows and bring your hands towards your shoulders without moving your upper arms forwards.",
+    "Straighten your elbows slowly until your arms are almost fully extended.",
+    "Tip: Keep your wrists straight and do not swing the load with your back."
+   ]
+  },
+  {
+   "id": "Cable_Kickback",
+   "name": "Patada de tríceps en polea",
+   "nameEn": "Cable Kickback",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0860"
+   },
+   "instructions": [
+    "Inclina el tronco frente a una polea baja y toma un asa; fija el codo junto al costado con el brazo paralelo al tronco.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Hinge forwards facing a low pulley and hold a handle; keep your elbow beside your ribs with your upper arm parallel to your torso.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Cable_Standing_High_Cross_Triceps_Extension",
+   "name": "Extensión de tríceps cruzada en poleas altas",
+   "nameEn": "Cross-Body Cable Triceps Extension",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3719"
+   },
+   "instructions": [
+    "Toma los cables de dos poleas altas cruzados delante del pecho, sin asas si el agarre es seguro, y fija los codos junto al cuerpo.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Take the cables from two high pulleys crossed in front of your chest, without handles only if the grip is secure, and keep your elbows beside your body.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Cable_Reverse_Preacher_Curl",
+   "name": "Curl predicador inverso en polea",
+   "nameEn": "Cable Reverse Preacher Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0209"
+   },
+   "instructions": [
+    "Coloca el banco predicador frente a una polea baja y apoya los brazos en el cojín; agarra la barra con las palmas abajo.",
+    "Dobla los codos y acerca las manos hacia los hombros sin adelantar los brazos.",
+    "Estira los codos despacio hasta casi alargar los brazos por completo.",
+    "Consejo: Mantén las muñecas rectas y no impulses la carga con la espalda."
+   ],
+   "instructionsEn": [
+    "Place the preacher bench facing a low pulley and rest your upper arms on its pad; grip the bar palms down.",
+    "Bend your elbows and bring your hands towards your shoulders without moving your upper arms forwards.",
+    "Straighten your elbows slowly until your arms are almost fully extended.",
+    "Tip: Keep your wrists straight and do not swing the load with your back."
+   ]
+  },
+  {
+   "id": "Cable_Front_Squat",
+   "name": "Sentadilla frontal en polea",
+   "nameEn": "Cable Front Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3349"
+   },
+   "instructions": [
+    "Pon la polea abajo y sujeta el agarre frente al pecho, de cara a la máquina y con los pies separados.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Set the pulley low and hold the grip in front of your chest, facing the machine with your feet apart.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Cable_Lateral_Lunge",
+   "name": "Zancada lateral en polea",
+   "nameEn": "Cable Lateral Lunge",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "adductors"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3350"
+   },
+   "instructions": [
+    "Sujeta un agarre de polea baja delante del pecho y adopta una postura amplia frente a la máquina.",
+    "Desplaza la cadera hacia un lado y dobla esa rodilla, dejando la otra pierna alargada.",
+    "Empuja con el pie de la pierna doblada para volver al centro.",
+    "Consejo: Mantén el pie de apoyo entero en el suelo y alterna los lados con control."
+   ],
+   "instructionsEn": [
+    "Hold a low-pulley grip in front of your chest and take a wide stance facing the machine.",
+    "Shift your hips to one side and bend that knee, keeping your other leg long.",
+    "Push through the foot of your bent leg to return to the centre.",
+    "Tip: Keep your whole supporting foot on the floor and alternate sides under control."
+   ]
+  },
+  {
+   "id": "Cable_Hip_Abduction_Toe_In",
+   "name": "Abducción de cadera en polea con punta hacia dentro",
+   "nameEn": "Cable Hip Abduction (Toe-In)",
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2756"
+   },
+   "instructions": [
+    "Coloca una tobillera en la polea baja y ponte de lado, con el cable en la pierna alejada de la máquina y la punta ligeramente hacia dentro.",
+    "Separa la pierna o las piernas del centro del cuerpo sin girar la pelvis.",
+    "Regresa despacio hacia el centro, manteniendo tensión en la resistencia.",
+    "Consejo: Haz el gesto desde la cadera y evita inclinar el tronco para ganar recorrido."
+   ],
+   "instructionsEn": [
+    "Attach an ankle cuff to the low pulley and stand sideways, with the cable on your far leg and your toes turned slightly in.",
+    "Move your leg or legs away from the centre of your body without rotating your pelvis.",
+    "Return slowly towards the centre while keeping tension against the resistance.",
+    "Tip: Move from your hip and avoid leaning your torso to gain range."
+   ]
+  },
+  {
+   "id": "Cable_Romanian_Deadlift",
+   "name": "Peso muerto rumano en polea",
+   "nameEn": "Cable Romanian Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "6552"
+   },
+   "instructions": [
+    "Coloca una barra corta en una polea baja, tómala con ambas manos y aléjate un paso con las rodillas suaves.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Attach a short bar to a low pulley, hold it with both hands and step back with soft knees.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Cable_Seated_Leg_Extension",
+   "name": "Extensión de cuádriceps sentado en polea",
+   "nameEn": "Cable Seated Leg Extension",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5664"
+   },
+   "instructions": [
+    "Siéntate en un banco de espaldas a una polea baja, engancha una tobillera y deja la rodilla fuera del borde.",
+    "Estira la rodilla hasta casi alargar la pierna, manteniendo el muslo apoyado.",
+    "Dobla la rodilla despacio y controla la vuelta hasta el inicio.",
+    "Consejo: Evita dar una patada rápida o despegar la cadera del asiento."
+   ],
+   "instructionsEn": [
+    "Sit on a bench facing away from a low pulley, attach an ankle cuff and let your knee sit beyond the edge.",
+    "Straighten your knee until your leg is almost extended, keeping your thigh supported.",
+    "Bend your knee slowly and control the return to the start.",
+    "Tip: Avoid kicking quickly or lifting your hips off the seat."
+   ]
+  },
+  {
+   "id": "Cable_Standing_Leg_Curl",
+   "name": "Curl femoral de pie en polea",
+   "nameEn": "Cable Standing Leg Curl",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "calves"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1547"
+   },
+   "instructions": [
+    "Coloca una tobillera en la polea baja, mira hacia la máquina y sujétate al soporte con ambas manos.",
+    "Dobla las rodillas y acerca los talones hacia los glúteos sin mover la cadera.",
+    "Estira las piernas lentamente sin bloquear las rodillas ni soltar la resistencia.",
+    "Consejo: Reduce el recorrido si necesitas arquear la espalda para seguir."
+   ],
+   "instructionsEn": [
+    "Attach an ankle cuff to the low pulley, face the machine and hold its support with both hands.",
+    "Bend your knees and bring your heels towards your glutes without moving your hips.",
+    "Straighten your legs slowly without locking your knees or releasing the resistance.",
+    "Tip: Shorten the range if you need to arch your back to continue."
+   ]
+  },
+  {
+   "id": "Cable_Standing_Hip_Flexion",
+   "name": "Flexión de cadera en polea",
+   "nameEn": "Cable Standing Hip Flexion",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "8191"
+   },
+   "instructions": [
+    "De espaldas a la polea baja, engancha una tobillera y apóyate con una mano; deja la pierna con cable ligeramente atrás.",
+    "Lleva la rodilla hacia delante y arriba desde la cadera, sin inclinar el tronco hacia atrás.",
+    "Baja la pierna despacio hasta volver al inicio sin dejar que el cable tire de golpe.",
+    "Consejo: Mantén el abdomen firme para que la carga no te lleve hacia atrás."
+   ],
+   "instructionsEn": [
+    "Face away from the low pulley, attach an ankle cuff and hold a support with one hand; let the working leg start slightly behind you.",
+    "Bring your knee forwards and upwards from your hip without leaning your torso back.",
+    "Lower your leg slowly to the start without letting the cable jerk you backwards.",
+    "Tip: Keep your abdomen firm so the load does not pull you backwards."
+   ]
+  },
+  {
+   "id": "Cable_Half_Kneeling_Pallof_Press",
+   "name": "Press Pallof en media rodilla en polea",
+   "nameEn": "Cable Half-Kneeling Pallof Press",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4193"
+   },
+   "instructions": [
+    "Ponte de lado a una polea a la altura del pecho, apoya una rodilla y sujeta el asa con ambas manos contra el esternón.",
+    "Aleja las manos del pecho y estira los brazos resistiendo el giro del tronco.",
+    "Acerca las manos al pecho despacio sin dejar que la resistencia te gire.",
+    "Consejo: Mantén pelvis y hombros orientados al frente y trabaja ambos lados."
+   ],
+   "instructionsEn": [
+    "Face sideways to a chest-height pulley, kneel on one knee and hold the handle with both hands against your breastbone.",
+    "Move your hands away from your chest and straighten your arms while resisting torso rotation.",
+    "Bring your hands back to your chest slowly without letting the resistance turn you.",
+    "Tip: Keep your pelvis and shoulders facing forwards and train both sides."
+   ]
+  },
+  {
+   "id": "Cable_Pallof_Press_With_Glute_Bridge",
+   "name": "Press Pallof con puente de glúteos",
+   "nameEn": "Cable Pallof Press with Glute Bridge",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4197"
+   },
+   "instructions": [
+    "Túmbate boca arriba de lado a una polea baja, dobla las rodillas y eleva la cadera; sujeta el asa sobre el pecho con ambas manos.",
+    "Aleja las manos del pecho y estira los brazos resistiendo el giro del tronco.",
+    "Acerca las manos al pecho despacio sin dejar que la resistencia te gire.",
+    "Consejo: Mantén pelvis y hombros orientados al frente y trabaja ambos lados."
+   ],
+   "instructionsEn": [
+    "Lie on your back sideways to a low pulley, bend your knees and lift your hips; hold the handle over your chest with both hands.",
+    "Move your hands away from your chest and straighten your arms while resisting torso rotation.",
+    "Bring your hands back to your chest slowly without letting the resistance turn you.",
+    "Tip: Keep your pelvis and shoulders facing forwards and train both sides."
+   ]
+  },
+  {
+   "id": "Cable_Vertical_Pallof_Press",
+   "name": "Press Pallof vertical en polea",
+   "nameEn": "Cable Vertical Pallof Press",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1213"
+   },
+   "instructions": [
+    "De lado a una polea a media altura, sujeta el asa frente al pecho; en vez de empujar al frente, eleva las manos por encima de la cabeza sin girarte.",
+    "Eleva las manos por encima de la cabeza sin dejar que el cable incline o gire el tronco.",
+    "Acerca las manos al pecho despacio sin dejar que la resistencia te gire.",
+    "Consejo: Mantén pelvis y hombros orientados al frente y trabaja ambos lados."
+   ],
+   "instructionsEn": [
+    "Stand sideways to a mid-height pulley and hold the handle in front of your chest; instead of pressing forwards, raise your hands overhead without turning.",
+    "Raise your hands overhead without letting the cable tilt or rotate your torso.",
+    "Bring your hands back to your chest slowly without letting the resistance turn you.",
+    "Tip: Keep your pelvis and shoulders facing forwards and train both sides."
+   ]
+  },
+  {
+   "id": "Cable_Kneeling_Side_Crunch",
+   "name": "Crunch lateral de rodillas en polea",
+   "nameEn": "Cable Kneeling Side Crunch",
+   "muscle": "abs",
+   "secondaryMuscles": [],
+   "equipment": "cable",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "6693"
+   },
+   "instructions": [
+    "Arrodíllate de lado a una polea alta y sujeta el asa junto a la sien, sin tirar de la cabeza.",
+    "Acerca las costillas a la cadera del lado que trabaja, inclinando el tronco lateralmente sin girarlo.",
+    "Desenrolla el tronco despacio hasta recuperar la posición inicial.",
+    "Consejo: No tires del cuello ni conviertas el gesto en una flexión grande de cadera."
+   ],
+   "instructionsEn": [
+    "Kneel sideways to a high pulley and hold the handle beside your temple without pulling on your head.",
+    "Bring your ribs towards the working-side hip by bending your torso sideways without rotating it.",
+    "Uncurl your torso slowly to return to the starting position.",
+    "Tip: Do not pull on your neck or turn the movement into a large hip bend."
+   ]
+  },
+  {
+   "id": "Band_Shrug",
+   "name": "Encogimientos con banda",
+   "nameEn": "Band Shrug",
+   "muscle": "traps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1018"
+   },
+   "instructions": [
+    "Pisa el centro de una banda y toma un extremo en cada mano, con los brazos a los lados.",
+    "Eleva los hombros hacia las orejas con los brazos largos.",
+    "Baja los hombros despacio hasta recuperar su posición natural.",
+    "Consejo: Sube y baja en vertical; no dibujes círculos con los hombros."
+   ],
+   "instructionsEn": [
+    "Stand on the centre of a band and hold an end in each hand with your arms at your sides.",
+    "Raise your shoulders towards your ears with your arms long.",
+    "Lower your shoulders slowly to their natural position.",
+    "Tip: Move straight up and down rather than rolling your shoulders."
+   ]
+  },
+  {
+   "id": "Band_Straight_Arm_Pulldown",
+   "name": "Jalón de brazos rectos con banda",
+   "nameEn": "Band Straight-Arm Pulldown",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "triceps",
+    "abs"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0928"
+   },
+   "instructions": [
+    "Fija la banda por encima de la cabeza en un anclaje seguro y toma sus extremos con los brazos hacia delante.",
+    "Lleva los brazos hacia las caderas manteniendo una ligera flexión de codos y las costillas recogidas.",
+    "Vuelve por el mismo arco hasta notar tensión en los dorsales, sin arquear la espalda.",
+    "Consejo: Mantén casi fijo el ángulo del codo para no transformar el gesto en un jalón."
+   ],
+   "instructionsEn": [
+    "Secure the band above head height and hold its ends with your arms reaching forwards.",
+    "Move your arms towards your hips, keeping a slight bend in your elbows and your ribs down.",
+    "Return along the same arc until your lats are under tension, without arching your back.",
+    "Tip: Keep your elbow angle nearly fixed so the movement does not become a pulldown."
+   ]
+  },
+  {
+   "id": "Band_Straight_Leg_Deadlift",
+   "name": "Peso muerto con piernas semirrígidas y banda",
+   "nameEn": "Band Straight-Leg Deadlift",
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "glutes",
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1010"
+   },
+   "instructions": [
+    "Pisa la banda con ambos pies y agarra los extremos delante de los muslos, con las rodillas ligeramente dobladas.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Stand on the band with both feet and hold the ends in front of your thighs with your knees slightly bent.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Band_Push_Up",
+   "name": "Flexiones con banda",
+   "nameEn": "Band Push-Up",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "triceps"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0915"
+   },
+   "instructions": [
+    "Pasa la banda por la parte alta de la espalda y sujeta sus extremos bajo las manos; adopta una plancha alta.",
+    "Dobla los codos y baja el pecho hacia el suelo manteniendo el cuerpo alineado.",
+    "Empuja el suelo hasta estirar los brazos, venciendo la tensión de la banda.",
+    "Consejo: Mantén las muñecas alineadas con los antebrazos y evita abrir los codos en cruz."
+   ],
+   "instructionsEn": [
+    "Pass the band across your upper back and secure its ends under your hands; take a high plank position.",
+    "Bend your elbows and lower your chest towards the floor while keeping your body aligned.",
+    "Push the floor away until your arms straighten against the tension of the band.",
+    "Tip: Keep your wrists in line with your forearms and avoid flaring your elbows straight out."
+   ]
+  },
+  {
+   "id": "Band_Standing_Chest_Press",
+   "name": "Press de pecho de pie con banda",
+   "nameEn": "Band Standing Chest Press",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "triceps"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3780"
+   },
+   "instructions": [
+    "Fija la banda detrás de ti a la altura del pecho, toma los extremos y adelanta un pie para estabilizarte.",
+    "Empuja el agarre alejándolo del pecho hasta casi estirar los codos.",
+    "Dobla los codos y vuelve lentamente hasta una profundidad que puedas controlar.",
+    "Consejo: Mantén las muñecas alineadas con los antebrazos y evita abrir los codos en cruz."
+   ],
+   "instructionsEn": [
+    "Secure the band behind you at chest height, hold its ends and step one foot forwards for stability.",
+    "Press the grip away from your chest until your elbows are nearly straight.",
+    "Bend your elbows and return slowly to a depth you can control.",
+    "Tip: Keep your wrists in line with your forearms and avoid flaring your elbows straight out."
+   ]
+  },
+  {
+   "id": "Band_Front_Raise",
+   "name": "Elevación frontal con banda",
+   "nameEn": "Band Front Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "pectorals"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0978"
+   },
+   "instructions": [
+    "Pisa el centro de la banda y toma un extremo en cada mano delante de los muslos.",
+    "Eleva los brazos por delante hasta la altura de los hombros, sin balancear el tronco.",
+    "Baja por el mismo recorrido manteniendo una ligera flexión de codos.",
+    "Consejo: Mantén el abdomen firme para que la carga no te lleve hacia atrás."
+   ],
+   "instructionsEn": [
+    "Stand on the centre of the band and hold one end in each hand in front of your thighs.",
+    "Raise your arms in front to shoulder height without swinging your torso.",
+    "Lower along the same path with a slight bend in your elbows.",
+    "Tip: Keep your abdomen firm so the load does not pull you backwards."
+   ]
+  },
+  {
+   "id": "Band_Y_Raise",
+   "name": "Elevación en Y con banda",
+   "nameEn": "Band Y-Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "upper-back"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1017"
+   },
+   "instructions": [
+    "Pisa una banda ligera y toma sus extremos con los pulgares arriba y las manos delante de los muslos.",
+    "Eleva los brazos en diagonal formando una Y, con los pulgares orientados hacia arriba.",
+    "Baja los brazos despacio sin perder la posición del tronco.",
+    "Consejo: Busca un gesto pequeño y limpio antes de aumentar la resistencia."
+   ],
+   "instructionsEn": [
+    "Stand on a light band and hold its ends with your thumbs up and your hands in front of your thighs.",
+    "Raise your arms diagonally into a Y with your thumbs pointing upwards.",
+    "Lower your arms slowly without changing your torso position.",
+    "Tip: Aim for a small, controlled movement before increasing resistance."
+   ]
+  },
+  {
+   "id": "Band_Rear_Delt_Row",
+   "name": "Remo al deltoides posterior con banda",
+   "nameEn": "Band Rear Delt Row",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1006"
+   },
+   "instructions": [
+    "Fija una banda a la altura del pecho, toma los extremos y separa los codos del tronco para tirar hacia el pecho alto.",
+    "Tira hacia la parte alta del pecho con los codos abiertos, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Anchor a band at chest height, hold its ends and keep your elbows away from your torso to pull towards your upper chest.",
+    "Pull towards your upper chest with your elbows out without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Band_Kickback",
+   "name": "Patada de tríceps con banda",
+   "nameEn": "Band Kickback",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0903"
+   },
+   "instructions": [
+    "Pisa un extremo de la banda e inclina el tronco; toma el otro extremo y fija el codo junto a las costillas.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Stand on one end of the band and hinge forwards; hold the other end and keep your elbow beside your ribs.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Band_Pushdown",
+   "name": "Extensión de tríceps hacia abajo con banda",
+   "nameEn": "Band Pushdown",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1502"
+   },
+   "instructions": [
+    "Fija la banda por encima de la cabeza, toma sus extremos y coloca los codos junto a los costados.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Anchor the band above your head, take its ends and place your elbows beside your ribs.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Band_Concentration_Curl",
+   "name": "Curl concentrado con banda",
+   "nameEn": "Band Concentration Curl",
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0976"
+   },
+   "instructions": [
+    "Siéntate, pisa un extremo de la banda y apoya el codo en la cara interna del muslo; toma el otro extremo con la palma arriba.",
+    "Dobla los codos y acerca las manos hacia los hombros sin adelantar los brazos.",
+    "Estira los codos despacio hasta casi alargar los brazos por completo.",
+    "Consejo: Mantén las muñecas rectas y no impulses la carga con la espalda."
+   ],
+   "instructionsEn": [
+    "Sit down, stand on one end of the band and rest your elbow against your inner thigh; hold the other end palm up.",
+    "Bend your elbows and bring your hands towards your shoulders without moving your upper arms forwards.",
+    "Straighten your elbows slowly until your arms are almost fully extended.",
+    "Tip: Keep your wrists straight and do not swing the load with your back."
+   ]
+  },
+  {
+   "id": "Band_Reverse_Curl",
+   "name": "Curl inverso con banda",
+   "nameEn": "Band Reverse Curl",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0917"
+   },
+   "instructions": [
+    "Pisa la banda con ambos pies y toma los extremos con las palmas hacia abajo y los codos junto al tronco.",
+    "Dobla los codos y acerca las manos hacia los hombros sin adelantar los brazos.",
+    "Estira los codos despacio hasta casi alargar los brazos por completo.",
+    "Consejo: Mantén las muñecas rectas y no impulses la carga con la espalda."
+   ],
+   "instructionsEn": [
+    "Stand on the band with both feet and hold the ends palms down with your elbows beside your torso.",
+    "Bend your elbows and bring your hands towards your shoulders without moving your upper arms forwards.",
+    "Straighten your elbows slowly until your arms are almost fully extended.",
+    "Tip: Keep your wrists straight and do not swing the load with your back."
+   ]
+  },
+  {
+   "id": "Band_Wrist_Curl",
+   "name": "Curl de muñeca con banda",
+   "nameEn": "Band Wrist Curl",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1016"
+   },
+   "instructions": [
+    "Siéntate, pisa un extremo de la banda y sujeta el otro con la palma arriba; apoya el antebrazo sobre el muslo.",
+    "Flexiona solo la muñeca para acercar la palma al antebrazo.",
+    "Extiende la muñeca lentamente hasta volver al inicio.",
+    "Consejo: Mantén el antebrazo apoyado y usa poca resistencia."
+   ],
+   "instructionsEn": [
+    "Sit down, stand on one end of the band and hold the other palm up; rest your forearm on your thigh.",
+    "Bend only your wrist to bring your palm towards your forearm.",
+    "Extend your wrist slowly to return to the start.",
+    "Tip: Keep your forearm supported and use light resistance."
+   ]
+  },
+  {
+   "id": "Band_Reverse_Wrist_Curl",
+   "name": "Extensión de muñeca con banda",
+   "nameEn": "Band Reverse Wrist Curl",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0994"
+   },
+   "instructions": [
+    "Siéntate, pisa un extremo de la banda y sujeta el otro con la palma abajo; deja la muñeca libre sobre el borde del muslo.",
+    "Eleva el dorso de la mano doblando solo la muñeca.",
+    "Baja la mano despacio sin levantar el antebrazo.",
+    "Consejo: Mantén un agarre suave y evita dar tirones con los dedos."
+   ],
+   "instructionsEn": [
+    "Sit down, stand on one end of the band and hold the other palm down; let your wrist move freely beyond your thigh.",
+    "Raise the back of your hand by bending only your wrist.",
+    "Lower your hand slowly without lifting your forearm.",
+    "Tip: Keep a gentle grip and avoid jerking with your fingers."
+   ]
+  },
+  {
+   "id": "Band_Hip_Abduction",
+   "name": "Abducción de cadera con banda",
+   "nameEn": "Band Hip Abduction",
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4031"
+   },
+   "instructions": [
+    "Coloca una banda cerrada alrededor de los tobillos y ponte de pie junto a un apoyo firme.",
+    "Separa la pierna o las piernas del centro del cuerpo sin girar la pelvis.",
+    "Regresa despacio hacia el centro, manteniendo tensión en la resistencia.",
+    "Consejo: Haz el gesto desde la cadera y evita inclinar el tronco para ganar recorrido."
+   ],
+   "instructionsEn": [
+    "Place a loop band around your ankles and stand beside a firm support.",
+    "Move your leg or legs away from the centre of your body without rotating your pelvis.",
+    "Return slowly towards the centre while keeping tension against the resistance.",
+    "Tip: Move from your hip and avoid leaning your torso to gain range."
+   ]
+  },
+  {
+   "id": "Band_Kneeling_Rear_Kick",
+   "name": "Patada de glúteo a cuatro apoyos con banda",
+   "nameEn": "Band Kneeling Rear Kick",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0906"
+   },
+   "instructions": [
+    "Ponte a cuatro apoyos y sujeta una banda entre las manos y la planta de un pie, comprobando que no resbale.",
+    "Lleva la pierna hacia atrás desde la cadera sin cambiar la forma de la espalda.",
+    "Vuelve despacio hasta la postura inicial sin apoyar de golpe la carga.",
+    "Consejo: Mantén el abdomen firme y usa un recorrido pequeño si la zona lumbar empieza a moverse."
+   ],
+   "instructionsEn": [
+    "Start on all fours and secure a band between your hands and the sole of one foot, checking that it cannot slip.",
+    "Move your leg backwards from your hip without changing the shape of your back.",
+    "Return slowly to your starting position without dropping the load.",
+    "Tip: Keep your abdomen firm and shorten the range if your lower back starts moving."
+   ]
+  },
+  {
+   "id": "Band_Lying_Leg_Curl",
+   "name": "Curl femoral tumbado con banda",
+   "nameEn": "Band Lying Leg Curl",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "calves"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0911"
+   },
+   "instructions": [
+    "Fija una banda a un punto bajo y sujétala a los tobillos; túmbate boca abajo con los pies hacia el anclaje.",
+    "Dobla las rodillas y acerca los talones hacia los glúteos sin mover la cadera.",
+    "Estira las piernas lentamente sin bloquear las rodillas ni soltar la resistencia.",
+    "Consejo: Reduce el recorrido si necesitas arquear la espalda para seguir."
+   ],
+   "instructionsEn": [
+    "Secure a band to a low anchor and attach it around your ankles; lie face down with your feet towards the anchor.",
+    "Bend your knees and bring your heels towards your glutes without moving your hips.",
+    "Straighten your legs slowly without locking your knees or releasing the resistance.",
+    "Tip: Shorten the range if you need to arch your back to continue."
+   ]
+  },
+  {
+   "id": "Band_Seated_Leg_Extension",
+   "name": "Extensión de cuádriceps sentado con banda",
+   "nameEn": "Band Seated Leg Extension",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3518"
+   },
+   "instructions": [
+    "Siéntate en una silla estable, fija la banda detrás y sujétala al tobillo de la pierna que trabaja.",
+    "Estira la rodilla hasta casi alargar la pierna, manteniendo el muslo apoyado.",
+    "Dobla la rodilla despacio y controla la vuelta hasta el inicio.",
+    "Consejo: Evita dar una patada rápida o despegar la cadera del asiento."
+   ],
+   "instructionsEn": [
+    "Sit on a stable chair, anchor the band behind you and secure it around the working ankle.",
+    "Straighten your knee until your leg is almost extended, keeping your thigh supported.",
+    "Bend your knee slowly and control the return to the start.",
+    "Tip: Avoid kicking quickly or lifting your hips off the seat."
+   ]
+  },
+  {
+   "id": "Band_Lunges",
+   "name": "Zancadas con banda",
+   "nameEn": "Band Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0909"
+   },
+   "instructions": [
+    "Pisa el centro de la banda con un pie y lleva sus extremos a los hombros; deja espacio para dar el paso atrás.",
+    "Da un paso atrás y dobla ambas rodillas hasta acercar la rodilla trasera al suelo.",
+    "Empuja con el pie delantero y vuelve a juntar los pies con control.",
+    "Consejo: Mantén los pies en dos líneas paralelas para conservar el equilibrio."
+   ],
+   "instructionsEn": [
+    "Stand on the centre of the band with one foot and hold its ends at your shoulders; leave room to step backwards.",
+    "Step backwards and bend both knees until your rear knee approaches the floor.",
+    "Push through your front foot and bring your feet back together under control.",
+    "Tip: Keep your feet on two parallel tracks to maintain balance."
+   ]
+  },
+  {
+   "id": "Band_Single_Stiff_Leg_Deadlift",
+   "name": "Peso muerto a una pierna con banda",
+   "nameEn": "Band Single-Leg Stiff-Leg Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0919"
+   },
+   "instructions": [
+    "Pisa la banda con el pie de apoyo y toma los extremos con ambas manos, dejando la otra pierna libre.",
+    "Inclina el tronco desde la cadera mientras llevas la pierna libre hacia atrás, con la rodilla de apoyo suave.",
+    "Vuelve a erguirte desde la cadera sin girar la pelvis hacia un lado.",
+    "Consejo: Mantén las caderas mirando al suelo y usa apoyo si pierdes el equilibrio."
+   ],
+   "instructionsEn": [
+    "Stand on the band with your supporting foot and hold the ends with both hands, leaving your other leg free.",
+    "Hinge forwards at your hip as your free leg moves backwards, keeping your supporting knee soft.",
+    "Return to standing from your hip without rotating your pelvis to one side.",
+    "Tip: Keep your hips facing the floor and use support if you lose balance."
+   ]
+  },
+  {
+   "id": "Band_Step_Up",
+   "name": "Subida al escalón con banda",
+   "nameEn": "Band Step-Up",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1008"
+   },
+   "instructions": [
+    "Coloca un pie sobre un escalón estable pisando la banda y sujeta los extremos a la altura de los hombros.",
+    "Empuja con la pierna apoyada arriba para subir el cuerpo hasta estirar esa rodilla.",
+    "Baja despacio con la misma pierna de apoyo hasta tocar el suelo con el otro pie.",
+    "Consejo: Elige una altura que te permita subir sin saltar con el pie de abajo."
+   ],
+   "instructionsEn": [
+    "Place one foot on a stable step on top of the band and hold its ends at shoulder height.",
+    "Push through the leg on the step to raise your body until that knee straightens.",
+    "Lower slowly using the same supporting leg until your other foot touches the floor.",
+    "Tip: Choose a height that lets you rise without jumping off your lower foot."
+   ]
+  },
+  {
+   "id": "Resistance_Band_Clam",
+   "name": "Almeja con banda",
+   "nameEn": "Resistance Band Clamshell",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "abductors"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2150"
+   },
+   "instructions": [
+    "Túmbate de lado con las rodillas dobladas, los pies juntos y una banda cerrada por encima de las rodillas.",
+    "Abre la rodilla de arriba manteniendo los pies juntos y la pelvis quieta.",
+    "Cierra la rodilla despacio sin dejar que la banda te arrastre.",
+    "Consejo: No gires todo el tronco para abrir más la rodilla."
+   ],
+   "instructionsEn": [
+    "Lie on your side with your knees bent, feet together and a loop band above your knees.",
+    "Open your top knee while keeping your feet together and your pelvis still.",
+    "Close your knee slowly without letting the band pull you back.",
+    "Tip: Do not rotate your whole torso to open your knee further."
+   ]
+  },
+  {
+   "id": "Band_Horizontal_Pallof_Press",
+   "name": "Press Pallof con banda",
+   "nameEn": "Band Horizontal Pallof Press",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0979"
+   },
+   "instructions": [
+    "Fija la banda a la altura del pecho, ponte de lado al anclaje y toma el extremo con ambas manos contra el pecho.",
+    "Aleja las manos del pecho y estira los brazos resistiendo el giro del tronco.",
+    "Acerca las manos al pecho despacio sin dejar que la resistencia te gire.",
+    "Consejo: Mantén pelvis y hombros orientados al frente y trabaja ambos lados."
+   ],
+   "instructionsEn": [
+    "Anchor the band at chest height, stand sideways to it and hold the end with both hands against your chest.",
+    "Move your hands away from your chest and straighten your arms while resisting torso rotation.",
+    "Bring your hands back to your chest slowly without letting the resistance turn you.",
+    "Tip: Keep your pelvis and shoulders facing forwards and train both sides."
+   ]
+  },
+  {
+   "id": "Band_Kneeling_Crunch",
+   "name": "Crunch de rodillas con banda",
+   "nameEn": "Band Kneeling Crunch",
+   "muscle": "abs",
+   "secondaryMuscles": [],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4080"
+   },
+   "instructions": [
+    "Fija la banda en alto, arrodíllate frente al anclaje y sujeta los extremos junto a las sienes.",
+    "Acerca las costillas a la pelvis curvando suavemente el tronco.",
+    "Desenrolla el tronco despacio hasta recuperar la posición inicial.",
+    "Consejo: No tires del cuello ni conviertas el gesto en una flexión grande de cadera."
+   ],
+   "instructionsEn": [
+    "Secure the band overhead, kneel facing the anchor and hold the ends beside your temples.",
+    "Bring your ribs towards your pelvis by gently curling your torso.",
+    "Uncurl your torso slowly to return to the starting position.",
+    "Tip: Do not pull on your neck or turn the movement into a large hip bend."
+   ]
+  },
+  {
+   "id": "Band_Half_Kneeling_Chop",
+   "name": "Leñador en media rodilla con banda",
+   "nameEn": "Band Half-Kneeling Chop",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4573"
+   },
+   "instructions": [
+    "Fija la banda en alto a un lado, apoya una rodilla y sujeta sus extremos con ambas manos por encima del hombro cercano al anclaje.",
+    "Lleva las manos en diagonal hacia la cadera contraria mientras giras el tronco de forma controlada.",
+    "Vuelve al centro despacio y completa las repeticiones antes de cambiar de lado.",
+    "Consejo: Usa un recorrido corto que puedas frenar sin tirones."
+   ],
+   "instructionsEn": [
+    "Anchor the band high to one side, kneel on one knee and hold its ends with both hands above the shoulder nearest the anchor.",
+    "Move your hands diagonally towards the opposite hip while rotating your torso under control.",
+    "Return to the centre slowly and complete your repetitions before switching sides.",
+    "Tip: Use a short range that you can slow down without jerking."
+   ]
+  },
+  {
+   "id": "Band_Upper_Body_Resistance_Dead_Bug",
+   "name": "Bicho muerto con tracción de banda",
+   "nameEn": "Band-Resisted Dead Bug",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "band",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2938"
+   },
+   "instructions": [
+    "Túmbate boca arriba con caderas y rodillas a 90 grados y tira de una banda anclada detrás de la cabeza hasta llevar las manos sobre el pecho.",
+    "Estira una pierna acercando el talón al suelo mientras mantienes la tensión con los brazos.",
+    "Recoge la pierna y alterna con la otra sin despegar la zona lumbar.",
+    "Consejo: Acorta el recorrido antes de que se arquee la espalda."
+   ],
+   "instructionsEn": [
+    "Lie on your back with hips and knees at 90 degrees and pull a band anchored behind your head until your hands are above your chest.",
+    "Extend one leg and bring your heel towards the floor while maintaining tension with your arms.",
+    "Bring your leg back and alternate with the other without lifting your lower back.",
+    "Tip: Shorten the range before your back starts to arch."
+   ]
+  },
+  {
+   "id": "Lever_Back_Extension",
+   "name": "Extensión lumbar en máquina",
+   "nameEn": "Lever Back Extension",
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0573"
+   },
+   "instructions": [
+    "Ajusta el asiento y el rodillo de la máquina de extensión lumbar, apoya los pies y coloca la espalda contra el cojín.",
+    "Extiende el tronco desde la cadera hasta quedar alineado con las piernas.",
+    "Inclínate hacia delante despacio manteniendo una posición controlada de la espalda.",
+    "Consejo: Detén la subida al quedar alineado; no necesitas echarte hacia atrás."
+   ],
+   "instructionsEn": [
+    "Adjust the seat and roller of the back-extension machine, plant your feet and place your back against the pad.",
+    "Extend your torso from your hips until it lines up with your legs.",
+    "Lean forwards slowly while keeping your back position controlled.",
+    "Tip: Stop rising when you are aligned; you do not need to lean backwards."
+   ]
+  },
+  {
+   "id": "Lever_Front_Pulldown",
+   "name": "Jalón al pecho en máquina de palanca",
+   "nameEn": "Lever Front Pulldown",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0579"
+   },
+   "instructions": [
+    "Ajusta el asiento de la máquina de jalón, fija los muslos bajo el cojín y toma las asas superiores.",
+    "Baja los codos hacia los costados y lleva el agarre hacia la parte alta del pecho.",
+    "Deja subir el agarre despacio hasta alargar los brazos, sin despegar la cadera.",
+    "Consejo: Evita inclinarte hacia atrás para mover más peso."
+   ],
+   "instructionsEn": [
+    "Adjust the pulldown machine seat, secure your thighs under the pad and grip the overhead handles.",
+    "Draw your elbows down beside your ribs and bring the grip towards your upper chest.",
+    "Let the grip rise slowly until your arms lengthen, keeping your hips in place.",
+    "Tip: Avoid leaning back to move extra weight."
+   ]
+  },
+  {
+   "id": "Lever_Pullover",
+   "name": "Pullover en máquina",
+   "nameEn": "Lever Pullover",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "triceps",
+    "abs"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2285"
+   },
+   "instructions": [
+    "Ajusta el asiento de la máquina de pullover, apoya la espalda y coloca los codos en sus almohadillas con los brazos elevados.",
+    "Lleva los brazos hacia las caderas manteniendo una ligera flexión de codos y las costillas recogidas.",
+    "Vuelve por el mismo arco hasta notar tensión en los dorsales, sin arquear la espalda.",
+    "Consejo: Mantén casi fijo el ángulo del codo para no transformar el gesto en un jalón."
+   ],
+   "instructionsEn": [
+    "Adjust the pullover machine seat, support your back and place your elbows on the pads with your arms raised.",
+    "Move your arms towards your hips, keeping a slight bend in your elbows and your ribs down.",
+    "Return along the same arc until your lats are under tension, without arching your back.",
+    "Tip: Keep your elbow angle nearly fixed so the movement does not become a pulldown."
+   ]
+  },
+  {
+   "id": "Lever_Narrow_Grip_Seated_Row",
+   "name": "Remo sentado bilateral en máquina",
+   "nameEn": "Lever Narrow-Grip Seated Row",
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0588"
+   },
+   "instructions": [
+    "Ajusta el asiento, apoya el pecho contra el cojín y toma las asas cercanas con ambas manos.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Adjust the seat, support your chest against the pad and take the close handles with both hands.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Assisted_Chest_Dip_Kneeling",
+   "name": "Fondos de pecho en máquina asistida",
+   "nameEn": "Assisted Chest Dip (Kneeling)",
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "delts",
+    "triceps"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0009"
+   },
+   "instructions": [
+    "Selecciona una ayuda suficiente, sube con cuidado a la plataforma de rodillas y toma las barras de fondos con el tronco algo inclinado.",
+    "Dobla los codos y baja el pecho entre las barras hasta donde controles los hombros.",
+    "Empuja las barras hacia abajo para subir con la ayuda de la plataforma.",
+    "Consejo: Mantén las muñecas alineadas con los antebrazos y evita abrir los codos en cruz."
+   ],
+   "instructionsEn": [
+    "Select enough assistance, step carefully onto the kneeling platform and hold the dip bars with a slight forward torso lean.",
+    "Bend your elbows and lower your chest between the bars as far as you can control your shoulders.",
+    "Push the bars down to rise with assistance from the platform.",
+    "Tip: Keep your wrists in line with your forearms and avoid flaring your elbows straight out."
+   ]
+  },
+  {
+   "id": "Lever_Gripper_Hands",
+   "name": "Cierre de manos en máquina de agarre",
+   "nameEn": "Lever Grip Squeeze",
+   "muscle": "forearms",
+   "secondaryMuscles": [],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2288"
+   },
+   "instructions": [
+    "Ajusta la resistencia de la máquina de agarre, apoya los antebrazos si tiene soporte y coloca los dedos alrededor de las palancas.",
+    "Cierra los dedos para juntar las palancas manteniendo las muñecas rectas.",
+    "Abre los dedos despacio hasta devolver las palancas al inicio.",
+    "Consejo: Mantén el antebrazo apoyado y usa poca resistencia."
+   ],
+   "instructionsEn": [
+    "Set the grip-machine resistance, support your forearms if pads are provided and wrap your fingers around the levers.",
+    "Close your fingers to bring the levers together while keeping your wrists straight.",
+    "Open your fingers slowly to return the levers to the start.",
+    "Tip: Keep your forearm supported and use light resistance."
+   ]
+  },
+  {
+   "id": "Lever_Sitting_Toe_Raise",
+   "name": "Elevación de puntas en máquina",
+   "nameEn": "Lever Seated Toe Raise",
+   "muscle": "calves",
+   "secondaryMuscles": [],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "9509"
+   },
+   "instructions": [
+    "Siéntate en la máquina de tibiales y coloca los talones en el apoyo, con el rodillo sobre el empeine.",
+    "Levanta la parte delantera de los pies manteniendo los talones apoyados.",
+    "Baja los dedos lentamente sin dejarlos caer.",
+    "Consejo: Mantén las rodillas quietas para que el movimiento salga de los tobillos."
+   ],
+   "instructionsEn": [
+    "Sit in the tibialis machine and place your heels on the support with the roller across your insteps.",
+    "Lift the fronts of your feet while keeping your heels supported.",
+    "Lower your toes slowly without letting them drop.",
+    "Tip: Keep your knees still so the movement comes from your ankles."
+   ]
+  },
+  {
+   "id": "Lever_Lateral_Raise",
+   "name": "Elevación lateral en máquina",
+   "nameEn": "Lever Lateral Raise",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0584"
+   },
+   "instructions": [
+    "Ajusta el asiento para alinear los hombros con el eje de la máquina y coloca los antebrazos o codos bajo las almohadillas.",
+    "Eleva los brazos hacia los lados hasta aproximadamente la altura de los hombros, con los codos suaves.",
+    "Baja lentamente sin dejar caer la carga ni encoger los hombros.",
+    "Consejo: Usa un recorrido que controles y evita dar impulso con las piernas."
+   ],
+   "instructionsEn": [
+    "Adjust the seat to line your shoulders up with the machine pivot and place your forearms or elbows beneath the pads.",
+    "Raise your arms out to the sides to about shoulder height, keeping your elbows soft.",
+    "Lower slowly without dropping the load or shrugging.",
+    "Tip: Use a range you can control and avoid driving with your legs."
+   ]
+  },
+  {
+   "id": "Lever_Overhead_Triceps_Extension",
+   "name": "Extensión de tríceps sobre la cabeza en máquina",
+   "nameEn": "Lever Overhead Triceps Extension",
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "forearms"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7864"
+   },
+   "instructions": [
+    "Ajusta el asiento, apoya la espalda y toma las asas de la máquina por detrás de la cabeza con los codos elevados.",
+    "Estira los codos manteniendo quieta la parte alta de los brazos.",
+    "Dobla los codos despacio hasta volver al inicio sin perder tensión.",
+    "Consejo: Mantén las muñecas alineadas y evita empujar con todo el cuerpo."
+   ],
+   "instructionsEn": [
+    "Adjust the seat, support your back and grip the machine handles behind your head with your elbows raised.",
+    "Straighten your elbows while keeping your upper arms still.",
+    "Bend your elbows slowly to return to the start without losing tension.",
+    "Tip: Keep your wrists aligned and avoid pushing with your whole body."
+   ]
+  },
+  {
+   "id": "Lever_Belt_Squat",
+   "name": "Sentadilla con cinturón en máquina",
+   "nameEn": "Lever Belt Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2950"
+   },
+   "instructions": [
+    "Coloca el cinturón de la máquina alrededor de la cadera, engancha la carga y sube a la plataforma antes de liberar el seguro.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Fit the machine belt around your hips, attach the load and step onto the platform before releasing the catch.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Lever_Pendulum_Squat_Plate_Loaded",
+   "name": "Sentadilla pendular en máquina",
+   "nameEn": "Lever Pendulum Squat (Plate-Loaded)",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4951"
+   },
+   "instructions": [
+    "Apoya la espalda y los hombros en la máquina pendular, coloca los pies en la plataforma y ajusta el tope de seguridad.",
+    "Dobla caderas y rodillas para bajar entre los pies hasta donde puedas mantener el apoyo completo.",
+    "Empuja el suelo y extiende las piernas para volver a estar de pie.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Support your back and shoulders in the pendulum squat machine, plant your feet on the platform and set the safety stop.",
+    "Bend your hips and knees to lower between your feet as far as you can keep your whole foot planted.",
+    "Push the floor away and straighten your legs to stand back up.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Lever_Hip_Thrust",
+   "name": "Hip thrust en máquina",
+   "nameEn": "Lever Hip Thrust",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2146"
+   },
+   "instructions": [
+    "Ajusta el respaldo y el cinturón o almohadilla sobre la cadera; coloca los pies para que las rodillas queden cerca de 90 grados arriba.",
+    "Empuja el suelo y eleva la cadera hasta que el tronco quede alineado con los muslos.",
+    "Desciende desde la cadera con control, manteniendo la parte alta de la espalda apoyada.",
+    "Consejo: Mira al frente y evita terminar con las costillas abiertas o la espalda arqueada."
+   ],
+   "instructionsEn": [
+    "Adjust the back support and belt or pad over your hips; position your feet so your knees are near 90 degrees at the top.",
+    "Push the floor away and lift your hips until your torso lines up with your thighs.",
+    "Lower from your hips under control, keeping your upper back supported.",
+    "Tip: Look forwards and avoid finishing with flared ribs or an arched back."
+   ]
+  },
+  {
+   "id": "Lever_Standing_Hip_Extension",
+   "name": "Extensión de cadera de pie en máquina",
+   "nameEn": "Lever Standing Hip Extension",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1031"
+   },
+   "instructions": [
+    "Ajusta el rodillo detrás del muslo y sujeta los apoyos de la máquina, manteniendo el tronco erguido.",
+    "Lleva la pierna hacia atrás desde la cadera sin cambiar la forma de la espalda.",
+    "Vuelve despacio hasta la postura inicial sin apoyar de golpe la carga.",
+    "Consejo: Mantén el abdomen firme y usa un recorrido pequeño si la zona lumbar empieza a moverse."
+   ],
+   "instructionsEn": [
+    "Position the roller behind your thigh and hold the machine supports while keeping your torso upright.",
+    "Move your leg backwards from your hip without changing the shape of your back.",
+    "Return slowly to your starting position without dropping the load.",
+    "Tip: Keep your abdomen firm and shorten the range if your lower back starts moving."
+   ]
+  },
+  {
+   "id": "Lever_Kneeling_Leg_Curl",
+   "name": "Curl femoral de rodillas en máquina",
+   "nameEn": "Lever Kneeling Leg Curl",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "calves"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0582"
+   },
+   "instructions": [
+    "Apoya una rodilla y el tronco en la máquina de curl unilateral; coloca el rodillo detrás del tobillo de la pierna libre.",
+    "Dobla las rodillas y acerca los talones hacia los glúteos sin mover la cadera.",
+    "Estira las piernas lentamente sin bloquear las rodillas ni soltar la resistencia.",
+    "Consejo: Reduce el recorrido si necesitas arquear la espalda para seguir."
+   ],
+   "instructionsEn": [
+    "Support one knee and your torso on the single-leg curl machine; position the roller behind the ankle of your free leg.",
+    "Bend your knees and bring your heels towards your glutes without moving your hips.",
+    "Straighten your legs slowly without locking your knees or releasing the resistance.",
+    "Tip: Shorten the range if you need to arch your back to continue."
+   ]
+  },
+  {
+   "id": "Lever_Side_Hip_Abduction",
+   "name": "Abducción de cadera de pie en máquina",
+   "nameEn": "Lever Side Hip Abduction",
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1034"
+   },
+   "instructions": [
+    "Ponte de lado al eje de la máquina, coloca el rodillo por fuera del muslo y agarra los apoyos.",
+    "Separa la pierna o las piernas del centro del cuerpo sin girar la pelvis.",
+    "Regresa despacio hacia el centro, manteniendo tensión en la resistencia.",
+    "Consejo: Haz el gesto desde la cadera y evita inclinar el tronco para ganar recorrido."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the machine pivot, place the roller against the outside of your thigh and hold the supports.",
+    "Move your leg or legs away from the centre of your body without rotating your pelvis.",
+    "Return slowly towards the centre while keeping tension against the resistance.",
+    "Tip: Move from your hip and avoid leaning your torso to gain range."
+   ]
+  },
+  {
+   "id": "Lever_Side_Hip_Adduction",
+   "name": "Aducción de cadera de pie en máquina",
+   "nameEn": "Lever Side Hip Adduction",
+   "muscle": "adductors",
+   "secondaryMuscles": [
+    "glutes"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1035"
+   },
+   "instructions": [
+    "Ponte de lado a la máquina y coloca el rodillo por dentro del muslo de la pierna que queda separada; agarra los apoyos.",
+    "Acerca la pierna hacia el centro del cuerpo sin girar la pelvis.",
+    "Separa la pierna despacio hasta recuperar la postura inicial.",
+    "Consejo: Haz el gesto desde la cadera y evita inclinar el tronco para ganar recorrido."
+   ],
+   "instructionsEn": [
+    "Stand sideways to the machine and position the roller against the inner thigh of your leg held out to the side; hold the supports.",
+    "Bring your leg towards the centre of your body without rotating your pelvis.",
+    "Move your leg out slowly to return to the starting position.",
+    "Tip: Move from your hip and avoid leaning your torso to gain range."
+   ]
+  },
+  {
+   "id": "Lever_Standing_Leg_Raise",
+   "name": "Flexión de cadera en máquina",
+   "nameEn": "Lever Standing Leg Raise",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1036"
+   },
+   "instructions": [
+    "Ajusta el rodillo por delante del muslo, sujeta los apoyos y mantén el pie de apoyo debajo de la cadera.",
+    "Eleva la rodilla desde la cadera sin inclinarte hacia atrás.",
+    "Baja la pierna despacio hasta recuperar la posición inicial.",
+    "Consejo: Mantén el abdomen firme para que la carga no te lleve hacia atrás."
+   ],
+   "instructionsEn": [
+    "Set the roller against the front of your thigh, hold the supports and keep your supporting foot beneath your hip.",
+    "Raise your knee from your hip without leaning backwards.",
+    "Lower your leg slowly to return to your starting position.",
+    "Tip: Keep your abdomen firm so the load does not pull you backwards."
+   ]
+  },
+  {
+   "id": "Lever_Seated_Twist",
+   "name": "Giro de tronco sentado en máquina",
+   "nameEn": "Lever Seated Twist",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1453"
+   },
+   "instructions": [
+    "Ajusta el asiento de la máquina de rotación, fija las piernas y apoya el pecho o los brazos según sus almohadillas.",
+    "Gira el tronco y lleva el agarre hacia un lado manteniendo la pelvis estable.",
+    "Vuelve al centro despacio y completa las repeticiones antes de cambiar de lado.",
+    "Consejo: Usa un recorrido corto que puedas frenar sin tirones."
+   ],
+   "instructionsEn": [
+    "Adjust the rotary-torso machine seat, secure your legs and support your chest or arms against its pads.",
+    "Rotate your torso and move the grip towards one side while keeping your pelvis stable.",
+    "Return to the centre slowly and complete your repetitions before switching sides.",
+    "Tip: Use a short range that you can slow down without jerking."
+   ]
+  },
+  {
+   "id": "Lever_Ab_Coaster_Crunch",
+   "name": "Crunch de rodillas en máquina deslizante",
+   "nameEn": "Lever Ab Coaster Crunch",
+   "muscle": "abs",
+   "secondaryMuscles": [],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "beginner",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5583"
+   },
+   "instructions": [
+    "Apoya las rodillas en el carro de la máquina abdominal y sujeta las asas con los antebrazos apoyados.",
+    "Acerca el carro hacia el pecho flexionando el tronco y elevando las rodillas.",
+    "Aleja el carro despacio sin soltarlo ni arquear la espalda.",
+    "Consejo: No tires del cuello ni conviertas el gesto en una flexión grande de cadera."
+   ],
+   "instructionsEn": [
+    "Kneel on the abdominal machine carriage and hold the handles with your forearms supported.",
+    "Draw the carriage towards your chest by curling your torso and raising your knees.",
+    "Move the carriage away slowly without releasing it or arching your back.",
+    "Tip: Do not pull on your neck or turn the movement into a large hip bend."
+   ]
+  },
+  {
+   "id": "Lever_Seated_Good_Morning",
+   "name": "Buenos días sentado en máquina",
+   "nameEn": "Lever Seated Good Morning",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "spine",
+    "forearms"
+   ],
+   "equipment": "machine",
+   "category": "strength",
+   "level": "intermediate",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3759"
+   },
+   "instructions": [
+    "Siéntate en la máquina de buenos días, apoya los pies y coloca el tronco bajo la almohadilla según el ajuste de la máquina.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Extiende la cadera para volver a sentarte erguido sin empujar con las piernas.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Sit in the seated good-morning machine, plant your feet and position your torso under the pad as the machine allows.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Extend your hips to sit upright again without pushing through your legs.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Dumbbell_Renegade_Row",
+   "name": "Remo renegado con mancuernas",
+   "nameEn": "Dumbbell Renegade Row",
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2980"
+   },
+   "instructions": [
+    "Apoya las manos sobre dos mancuernas que no rueden y adopta una plancha alta con los pies separados; rema con un brazo cada vez.",
+    "Lleva los codos hacia atrás y acerca el agarre a las costillas, sin encoger los hombros.",
+    "Estira los brazos poco a poco y deja que los omóplatos se separen sin redondear la zona lumbar.",
+    "Consejo: Mantén el tronco quieto: no conviertas el remo en un balanceo."
+   ],
+   "instructionsEn": [
+    "Place your hands on two dumbbells that cannot roll and take a high plank with your feet apart; row with one arm at a time.",
+    "Draw your elbows back and bring the grip towards your ribs without shrugging.",
+    "Straighten your arms gradually and let your shoulder blades move apart without rounding your lower back.",
+    "Tip: Keep your torso still rather than swinging to finish the row."
+   ]
+  },
+  {
+   "id": "Dumbbell_Z_Press",
+   "name": "Press Z con mancuernas",
+   "nameEn": "Dumbbell Z Press",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "upper-back"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5667"
+   },
+   "instructions": [
+    "Siéntate en el suelo con las piernas extendidas, el tronco erguido y una mancuerna junto a cada hombro.",
+    "Empuja hacia arriba hasta casi estirar los brazos, sin adelantar la cabeza.",
+    "Baja con control hasta devolver el agarre a la altura de los hombros.",
+    "Consejo: Aprieta el abdomen para no compensar arqueando la zona lumbar."
+   ],
+   "instructionsEn": [
+    "Sit on the floor with your legs extended, torso upright and a dumbbell beside each shoulder.",
+    "Press upwards until your arms are nearly straight without jutting your head forward.",
+    "Lower with control until the grip returns to shoulder height.",
+    "Tip: Brace your abdomen so you do not compensate by arching your lower back."
+   ]
+  },
+  {
+   "id": "Dumbbell_Cossack_Squats",
+   "name": "Sentadilla cosaca con mancuernas",
+   "nameEn": "Dumbbell Cossack Squat",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4562"
+   },
+   "instructions": [
+    "Sujeta una mancuerna junto al pecho y separa mucho los pies; al bajar hacia un lado, orienta hacia arriba la punta del pie de la pierna larga.",
+    "Desplaza la cadera hacia un lado y dobla esa rodilla, dejando la otra pierna alargada.",
+    "Empuja con el pie de la pierna doblada para volver al centro.",
+    "Consejo: Mantén el pie de apoyo entero en el suelo y alterna los lados con control."
+   ],
+   "instructionsEn": [
+    "Hold a dumbbell at your chest and spread your feet wide; as you lower to one side, point the toes of your straight leg upwards.",
+    "Shift your hips to one side and bend that knee, keeping your other leg long.",
+    "Push through the foot of your bent leg to return to the centre.",
+    "Tip: Keep your whole supporting foot on the floor and alternate sides under control."
+   ]
+  },
+  {
+   "id": "Dumbbell_Glute_Bridge",
+   "name": "Puente de glúteos con mancuerna",
+   "nameEn": "Dumbbell Glute Bridge",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3335"
+   },
+   "instructions": [
+    "Túmbate boca arriba con las rodillas dobladas y coloca una mancuerna acolchada sobre la cadera, sujetándola con ambas manos.",
+    "Empuja con los talones y eleva la cadera hasta alinear tronco y muslos.",
+    "Baja la cadera despacio manteniendo las costillas recogidas.",
+    "Consejo: Termina extendiendo la cadera, sin arquear la zona lumbar."
+   ],
+   "instructionsEn": [
+    "Lie on your back with bent knees and place a padded dumbbell across your hips, holding it with both hands.",
+    "Push through your heels and raise your hips until your torso and thighs line up.",
+    "Lower your hips slowly while keeping your ribs down.",
+    "Tip: Finish by extending your hips rather than arching your lower back."
+   ]
+  },
+  {
+   "id": "Dumbbell_Hip_Thrust",
+   "name": "Hip thrust con mancuerna",
+   "nameEn": "Dumbbell Hip Thrust",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4742"
+   },
+   "instructions": [
+    "Apoya la parte alta de la espalda en un banco estable y sujeta una mancuerna acolchada sobre la cadera con ambos pies firmes.",
+    "Empuja el suelo y eleva la cadera hasta que el tronco quede alineado con los muslos.",
+    "Desciende desde la cadera con control, manteniendo la parte alta de la espalda apoyada.",
+    "Consejo: Mira al frente y evita terminar con las costillas abiertas o la espalda arqueada."
+   ],
+   "instructionsEn": [
+    "Rest your upper back on a stable bench and hold a padded dumbbell across your hips with both feet planted.",
+    "Push the floor away and lift your hips until your torso lines up with your thighs.",
+    "Lower from your hips under control, keeping your upper back supported.",
+    "Tip: Look forwards and avoid finishing with flared ribs or an arched back."
+   ]
+  },
+  {
+   "id": "Dumbbell_Lateral_Lunge",
+   "name": "Zancada lateral con mancuernas",
+   "nameEn": "Dumbbell Lateral Lunge",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "adductors"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4853"
+   },
+   "instructions": [
+    "Sujeta las mancuernas junto a los muslos y separa los pies en una postura amplia.",
+    "Desplaza la cadera hacia un lado y dobla esa rodilla, dejando la otra pierna alargada.",
+    "Empuja con el pie de la pierna doblada para volver al centro.",
+    "Consejo: Mantén el pie de apoyo entero en el suelo y alterna los lados con control."
+   ],
+   "instructionsEn": [
+    "Hold the dumbbells beside your thighs and spread your feet into a wide stance.",
+    "Shift your hips to one side and bend that knee, keeping your other leg long.",
+    "Push through the foot of your bent leg to return to the centre.",
+    "Tip: Keep your whole supporting foot on the floor and alternate sides under control."
+   ]
+  },
+  {
+   "id": "Dumbbell_Lateral_Step_Up",
+   "name": "Subida lateral al cajón con mancuernas",
+   "nameEn": "Dumbbell Lateral Step-Up",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2468"
+   },
+   "instructions": [
+    "Ponte de lado a un cajón estable, toma una mancuerna en cada mano y apoya el pie más cercano entero sobre el cajón.",
+    "Empuja con la pierna apoyada arriba para subir el cuerpo hasta estirar esa rodilla.",
+    "Baja despacio con la misma pierna de apoyo hasta tocar el suelo con el otro pie.",
+    "Consejo: Elige una altura que te permita subir sin saltar con el pie de abajo."
+   ],
+   "instructionsEn": [
+    "Stand beside a stable box, hold a dumbbell in each hand and place your nearer foot fully on the box.",
+    "Push through the leg on the step to raise your body until that knee straightens.",
+    "Lower slowly using the same supporting leg until your other foot touches the floor.",
+    "Tip: Choose a height that lets you rise without jumping off your lower foot."
+   ]
+  },
+  {
+   "id": "Dumbbell_Single_Leg_Deadlift",
+   "name": "Peso muerto a una pierna con mancuernas",
+   "nameEn": "Dumbbell Single-Leg Deadlift",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1757"
+   },
+   "instructions": [
+    "Sujeta una mancuerna en cada mano y desplaza el peso sobre una pierna dejando la otra libre.",
+    "Inclina el tronco desde la cadera mientras llevas la pierna libre hacia atrás, con la rodilla de apoyo suave.",
+    "Vuelve a erguirte desde la cadera sin girar la pelvis hacia un lado.",
+    "Consejo: Mantén las caderas mirando al suelo y usa apoyo si pierdes el equilibrio."
+   ],
+   "instructionsEn": [
+    "Hold a dumbbell in each hand and shift your weight onto one leg while leaving the other free.",
+    "Hinge forwards at your hip as your free leg moves backwards, keeping your supporting knee soft.",
+    "Return to standing from your hip without rotating your pelvis to one side.",
+    "Tip: Keep your hips facing the floor and use support if you lose balance."
+   ]
+  },
+  {
+   "id": "Dumbbell_Staggered_Stance_Romanian_Deadlift",
+   "name": "Peso muerto rumano con apoyo alterno y mancuernas",
+   "nameEn": "Dumbbell Staggered-Stance Romanian Deadlift",
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4757"
+   },
+   "instructions": [
+    "Sujeta las mancuernas junto a los muslos y retrasa un pie medio paso, apoyando solo la punta para equilibrarte.",
+    "Lleva la cadera hacia atrás con las rodillas algo flexionadas, manteniendo la carga cerca del cuerpo.",
+    "Empuja con los pies y adelanta la cadera hasta recuperar la postura erguida.",
+    "Consejo: Detén la bajada antes de perder la posición de la espalda; no necesitas llegar al suelo."
+   ],
+   "instructionsEn": [
+    "Hold the dumbbells beside your thighs and stagger one foot half a step back, using its toes only for balance.",
+    "Send your hips backwards with your knees slightly bent, keeping the load close to your body.",
+    "Push through your feet and bring your hips forwards until you stand upright.",
+    "Tip: Stop lowering before your back position changes; you do not need to reach the floor."
+   ]
+  },
+  {
+   "id": "Dumbbell_Suitcase_Carry",
+   "name": "Paseo con mancuerna a un lado",
+   "nameEn": "Dumbbell Suitcase Carry",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "abs",
+    "forearms",
+    "traps"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2910"
+   },
+   "instructions": [
+    "Levanta una mancuerna con una mano y ponte erguido, con el brazo libre al lado y un pasillo despejado.",
+    "Camina con pasos cortos manteniendo los hombros a la misma altura.",
+    "Al acabar el tramo, detente y baja la carga doblando caderas y rodillas.",
+    "Consejo: Evita inclinarte hacia la carga y deja espacio libre para girar."
+   ],
+   "instructionsEn": [
+    "Lift a dumbbell in one hand and stand upright with your free arm at your side and a clear walking lane.",
+    "Walk with short steps while keeping your shoulders level.",
+    "At the end of the distance, stop and lower the load by bending your hips and knees.",
+    "Tip: Avoid leaning towards the load and leave enough clear space to turn."
+   ]
+  },
+  {
+   "id": "Dumbbell_Sumo_Deadlift",
+   "name": "Peso muerto sumo con mancuernas",
+   "nameEn": "Dumbbell Sumo Deadlift",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "8192"
+   },
+   "instructions": [
+    "Coloca las mancuernas entre los pies, separa estos más que los hombros y toma las asas con los brazos por dentro de las piernas.",
+    "Empuja el suelo y levanta la carga extendiendo caderas y rodillas a la vez.",
+    "Lleva la cadera atrás y dobla las rodillas para apoyar la carga con suavidad.",
+    "Consejo: Tensa el abdomen antes de cada repetición y evita tirar de golpe."
+   ],
+   "instructionsEn": [
+    "Place the dumbbells between your feet, set your feet wider than shoulder width and grip the handles with your arms inside your legs.",
+    "Push the floor away and lift the load by extending your hips and knees together.",
+    "Send your hips back and bend your knees to set the load down gently.",
+    "Tip: Brace your abdomen before each repetition and avoid jerking the load."
+   ]
+  },
+  {
+   "id": "Dumbbell_Curtsey_Lunge",
+   "name": "Zancada cruzada con mancuernas",
+   "nameEn": "Dumbbell Curtsey Lunge",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "0881"
+   },
+   "instructions": [
+    "Sujeta las mancuernas a los lados y, al dar el paso atrás, cruza ligeramente el pie por detrás de la pierna de apoyo.",
+    "Da un paso atrás y ligeramente cruzado, doblando las rodillas sin girar la rodilla delantera hacia dentro.",
+    "Empuja con el pie delantero y vuelve a juntar los pies con control.",
+    "Consejo: Mantén los pies en dos líneas paralelas para conservar el equilibrio."
+   ],
+   "instructionsEn": [
+    "Hold dumbbells at your sides and, as you step backwards, cross your foot slightly behind your supporting leg.",
+    "Step backwards and slightly across, bending your knees without turning your front knee inwards.",
+    "Push through your front foot and bring your feet back together under control.",
+    "Tip: Keep your feet on two parallel tracks to maintain balance."
+   ]
+  },
+  {
+   "id": "Dumbbell_Goblet_Wall_Sit",
+   "name": "Sentadilla isométrica en pared con mancuerna",
+   "nameEn": "Dumbbell Goblet Wall Sit",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "abs"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "beginner",
+   "tags": [
+    "home"
+   ],
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "7559"
+   },
+   "instructions": [
+    "Apoya la espalda en la pared, sujeta una mancuerna junto al pecho y adelanta los pies; baja hasta una posición que puedas sostener.",
+    "Mantén la posición sin deslizarte ni apoyar las manos en los muslos, respirando con normalidad.",
+    "Cuando acabe el tiempo, empuja con los pies para deslizar la espalda hacia arriba y levantarte.",
+    "Consejo: Lleva las rodillas en la dirección de los dedos de los pies, sin juntarlas al subir."
+   ],
+   "instructionsEn": [
+    "Rest your back against a wall, hold a dumbbell at your chest and step your feet forwards; lower into a position you can hold.",
+    "Hold the position without sliding or resting your hands on your thighs, breathing normally.",
+    "When your time ends, push through your feet to slide your back upwards and stand.",
+    "Tip: Let your knees track in the direction of your toes rather than collapsing inwards as you rise."
+   ]
+  },
+  {
+   "id": "Dumbbell_Standing_Windmill",
+   "name": "Molino con mancuerna",
+   "nameEn": "Dumbbell Standing Windmill",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "glutes",
+    "delts"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4901"
+   },
+   "instructions": [
+    "Eleva una mancuerna sobre un hombro, separa los pies y gira sus puntas un poco hacia el lado contrario al brazo elevado.",
+    "Lleva la cadera hacia un lado e inclina el tronco para deslizar la mano libre por la pierna.",
+    "Vuelve a erguirte desde la cadera manteniendo el brazo cargado estable.",
+    "Consejo: Usa poco peso y detén el gesto antes de perder el control del hombro."
+   ],
+   "instructionsEn": [
+    "Raise a dumbbell above one shoulder, spread your feet and turn your toes slightly away from the raised arm.",
+    "Shift your hips to one side and hinge your torso so your free hand slides down your leg.",
+    "Return to standing from your hips while keeping your loaded arm steady.",
+    "Tip: Use a light weight and stop before losing control of your shoulder."
+   ]
+  },
+  {
+   "id": "Dumbbell_Push_Press",
+   "name": "Press con impulso de piernas y mancuernas",
+   "nameEn": "Dumbbell Push Press",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "upper-back"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "1700"
+   },
+   "instructions": [
+    "Sujeta las mancuernas a la altura de los hombros; antes de empujar, flexiona ligeramente las rodillas con el tronco vertical.",
+    "Extiende las piernas con decisión y aprovecha ese impulso para empujar las mancuernas por encima de la cabeza.",
+    "Baja con control hasta devolver el agarre a la altura de los hombros.",
+    "Consejo: Aprieta el abdomen para no compensar arqueando la zona lumbar."
+   ],
+   "instructionsEn": [
+    "Hold the dumbbells at shoulder height; before pressing, bend your knees slightly with your torso upright.",
+    "Extend your legs firmly and use that drive to press the dumbbells overhead.",
+    "Lower with control until the grip returns to shoulder height.",
+    "Tip: Brace your abdomen so you do not compensate by arching your lower back."
+   ]
+  },
+  {
+   "id": "Dumbbell_One_Arm_Snatch",
+   "name": "Arrancada a una mano con mancuerna",
+   "nameEn": "Dumbbell Single-Arm Snatch",
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine",
+    "forearms"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3888"
+   },
+   "instructions": [
+    "Coloca una mancuerna entre los pies y tómala con una mano, llevando la cadera atrás y manteniendo el pecho orientado al frente.",
+    "Extiende caderas y piernas con fuerza y guía la mancuerna cerca del cuerpo hasta recibirla sobre la cabeza con el brazo largo.",
+    "Baja primero al hombro y después hacia el suelo con control; cambia de mano al terminar las repeticiones.",
+    "Consejo: Tensa el abdomen antes de cada repetición y evita tirar de golpe."
+   ],
+   "instructionsEn": [
+    "Place a dumbbell between your feet and grip it with one hand, sending your hips back and keeping your chest facing forwards.",
+    "Extend your hips and legs powerfully and guide the dumbbell close to your body until you receive it overhead with a long arm.",
+    "Lower to your shoulder first and then towards the floor under control; switch hands after completing your repetitions.",
+    "Tip: Brace your abdomen before each repetition and avoid jerking the load."
+   ]
+  },
+  {
+   "id": "Dumbbell_Overhead_Carry",
+   "name": "Paseo con mancuernas sobre la cabeza",
+   "nameEn": "Dumbbell Overhead Carry",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "abs",
+    "forearms",
+    "traps"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "tracking": "time",
+   "reference": {
+    "catalogue": "openGym",
+    "id": "2913"
+   },
+   "instructions": [
+    "Eleva dos mancuernas sobre los hombros con los brazos largos y prepara un recorrido despejado.",
+    "Camina con pasos cortos manteniendo los hombros a la misma altura.",
+    "Al acabar el tramo, detente, baja las mancuernas a los hombros y después a los lados antes de apoyarlas.",
+    "Consejo: Evita inclinarte hacia la carga y deja espacio libre para girar."
+   ],
+   "instructionsEn": [
+    "Raise two dumbbells over your shoulders with long arms and choose a clear walking route.",
+    "Walk with short steps while keeping your shoulders level.",
+    "At the end of the distance, stop, lower the dumbbells to your shoulders and then to your sides before setting them down.",
+    "Tip: Avoid leaning towards the load and leave enough clear space to turn."
+   ]
+  },
+  {
+   "id": "Dumbbell_Clean_And_Press",
+   "name": "Cargada y press con mancuernas",
+   "nameEn": "Dumbbell Clean and Press",
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "triceps",
+    "upper-back"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "3400"
+   },
+   "instructions": [
+    "Parte de pie con las mancuernas junto a los muslos; lleva la cadera atrás y usa la extensión de piernas para llevarlas a los hombros.",
+    "Empuja hacia arriba hasta casi estirar los brazos, sin adelantar la cabeza.",
+    "Baja a los hombros y después a los lados con control para preparar la siguiente cargada.",
+    "Consejo: Aprieta el abdomen para no compensar arqueando la zona lumbar."
+   ],
+   "instructionsEn": [
+    "Start standing with the dumbbells beside your thighs; hinge your hips back and use leg extension to bring them to your shoulders.",
+    "Press upwards until your arms are nearly straight without jutting your head forward.",
+    "Lower to your shoulders and then to your sides under control to prepare the next clean.",
+    "Tip: Brace your abdomen so you do not compensate by arching your lower back."
+   ]
+  },
+  {
+   "id": "Dumbbell_Plank_Pass_Through",
+   "name": "Arrastre de mancuerna en plancha",
+   "nameEn": "Dumbbell Plank Pass-Through",
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "delts",
+    "glutes"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "5497"
+   },
+   "instructions": [
+    "Adopta una plancha alta con los pies separados y coloca una mancuerna por fuera de una mano.",
+    "Pasa la mano contraria por debajo del pecho y arrastra la mancuerna hacia ese lado sin girar las caderas.",
+    "Vuelve a apoyar la mano y repite el arrastre con la otra, alternando los lados.",
+    "Consejo: Termina la serie si no puedes mantener la cadera a la altura del tronco."
+   ],
+   "instructionsEn": [
+    "Take a high plank with your feet apart and place a dumbbell outside one hand.",
+    "Reach your opposite hand under your chest and drag the dumbbell to that side without rotating your hips.",
+    "Plant your hand again and repeat the drag with the other hand, alternating sides.",
+    "Tip: End the set if you cannot keep your hips in line with your torso."
+   ]
+  },
+  {
+   "id": "Dumbbell_Overhead_Walking_Lunge",
+   "name": "Zancadas caminando con mancuernas sobre la cabeza",
+   "nameEn": "Dumbbell Overhead Walking Lunge",
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ],
+   "equipment": "dumbbell",
+   "category": "strength",
+   "level": "intermediate",
+   "tags": [
+    "home"
+   ],
+   "reference": {
+    "catalogue": "openGym",
+    "id": "4865"
+   },
+   "instructions": [
+    "Eleva las mancuernas sobre los hombros y deja un pasillo libre para avanzar, con el abdomen firme.",
+    "Da un paso hacia delante y dobla ambas rodillas manteniendo los brazos elevados y el tronco estable.",
+    "Empuja con la pierna delantera y adelanta la otra para enlazar la siguiente zancada.",
+    "Consejo: Mantén los pies en dos líneas paralelas para conservar el equilibrio."
+   ],
+   "instructionsEn": [
+    "Raise the dumbbells above your shoulders and leave a clear lane to walk forwards with your abdomen braced.",
+    "Step forwards and bend both knees while keeping your arms raised and your torso stable.",
+    "Push through your front leg and bring the other leg forwards into the next lunge.",
+    "Tip: Keep your feet on two parallel tracks to maintain balance."
+   ]
   }
  ],
  "tags": {
@@ -1779,5 +6121,37 @@
    "Push-Ups_-_Close_Triceps_Position",
    "Floor_Glute-Ham_Raise"
   ]
+ },
+ "equipmentOverrides": {
+  "Decline_Smith_Press": "smith",
+  "Smith_Incline_Shoulder_Raise": "smith",
+  "Smith_Machine_Behind_the_Back_Shrug": "smith",
+  "Smith_Machine_Bench_Press": "smith",
+  "Smith_Machine_Bent_Over_Row": "smith",
+  "Smith_Machine_Calf_Raise": "smith",
+  "Smith_Machine_Close-Grip_Bench_Press": "smith",
+  "Smith_Machine_Decline_Press": "smith",
+  "Smith_Machine_Hang_Power_Clean": "smith",
+  "Smith_Machine_Hip_Raise": "smith",
+  "Smith_Machine_Incline_Bench_Press": "smith",
+  "Smith_Machine_Leg_Press": "smith",
+  "Smith_Machine_One-Arm_Upright_Row": "smith",
+  "Smith_Machine_Overhead_Shoulder_Press": "smith",
+  "Smith_Machine_Pistol_Squat": "smith",
+  "Smith_Machine_Reverse_Calf_Raises": "smith",
+  "Smith_Machine_Squat": "smith",
+  "Smith_Machine_Stiff-Legged_Deadlift": "smith",
+  "Smith_Machine_Upright_Row": "smith",
+  "Smith_Single-Leg_Split_Squat": "smith",
+  "Landmine_180s": "landmine",
+  "Landmine_Linear_Jammer": "landmine",
+  "Trap_Bar_Deadlift": "trap-bar",
+  "Inverted_Row_with_Straps": "suspension",
+  "Suspended_Fallout": "suspension",
+  "Suspended_Push-Up": "suspension",
+  "Suspended_Reverse_Crunch": "suspension",
+  "Suspended_Row": "suspension",
+  "Suspended_Split_Squat": "suspension",
+  "Ring_Dips": "suspension"
  }
 }

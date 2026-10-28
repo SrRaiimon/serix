@@ -50,7 +50,7 @@ export interface CatalogData {
 
 /** Nombres de gimnasio que el catálogo llama de otra forma (en singular y sin tildes). */
 const SYNONYMS = [
-  ['multipower', 'smith'], ['gemelo', 'pantorrilla'], ['abdominal', 'abdomen', 'crunch'], ['pajaro', 'posterior'],
+  ['multipower', 'smith'], ['trx', 'suspension', 'suspender', 'suspended'], ['hexagonal', 'trap'], ['gemelo', 'pantorrilla'], ['abdominal', 'abdomen', 'crunch'], ['pajaro', 'posterior'],
   ['rompecraneo', 'frances'], ['trapecio', 'encogimiento'], ['lumbar', 'hiperextension'], ['femoral', 'isquiotibial', 'isquio'],
   ['hombro', 'deltoide'], ['pecho', 'pectoral'], ['dorsal', 'espalda'], ['culo', 'gluteo'], ['zancada', 'estocada', 'lunge'],
   ['kettlebell', 'pesa'], ['fondo', 'dip'], ['dominada', 'pullup', 'chinup'], ['jalon', 'pulldown'], ['sentadilla', 'squat'],

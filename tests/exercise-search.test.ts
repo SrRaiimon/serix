@@ -38,7 +38,7 @@ test('funcional y en casa: filtros y ejercicios propios con pasos en los dos idi
   const own = raw.filter((e) => e.extra)
   assert.ok(own.length >= 40)
   for (const e of own) {
-    assert.ok(e.tags?.length, `${e.id} sin etiqueta`)
+    if (e.tags) assert.ok(e.tags.every((tag) => tag === 'home' || tag === 'functional'), `${e.id}: etiqueta desconocida`)
     assert.ok(e.instructions?.length && e.instructions.length === e.instructionsEn?.length, `${e.id}: pasos`)
     assert.match(e.instructions!.at(-1)!, /^Consejo:/)
   }

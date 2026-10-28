@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.23',
+    items: [
+      ['145 ejercicios nuevos, con pasos en español e inglés y figuras de movimiento.', '145 new exercises, with steps in Spanish and English and movement figures.'],
+      ['Filtra por suspensión (TRX), multipower, landmine y barra hexagonal. También puedes generar rutinas de suspensión para casa.', 'Filter by suspension (TRX), Smith machine, landmine and trap bar. You can also generate suspension routines for home.'],
+    ],
+  },
+  {
     version: '0.1.22',
     items: [
       ['Un número en el icono te recuerda si hoy toca entrenar; se actualiza al abrir la app y puedes desactivarlo en Avisos.', 'A number on the icon reminds you if today is a training day; it updates when you open the app and you can turn it off in Alerts.'],
