@@ -2,7 +2,7 @@ import { Play, Snail } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useCatalog } from './ui'
 import { FIGURES, FLOOR, type Figure, type Part, type Pose, type Prop } from '../lib/figures'
-import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, type Joints, type Pt } from '../lib/figureEngine'
+import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, trapBarCenter, type Joints, type Pt } from '../lib/figureEngine'
 import { t as tr } from '../lib/i18n'
 
 // Figura de movimiento propia (dibujo original generado con código): un maniquí de perfil o de
@@ -101,6 +101,36 @@ function PropShape({ prop, j, pose, ids }: { prop: Prop; j: Joints; pose: Pose; 
           <rect x={x0} y={top - 3} width={x1 - x0} height={6} rx={3} fill={dark} />
         </g>
       )
+    }
+    case 'strap': {
+      // Cintas y empuñaduras propias: el anclaje queda fijo y el extremo sigue a la articulación.
+      const [ax, ay] = prop.point!
+      return <g><line x1={ax} y1={ay} x2={x} y2={y} stroke="var(--fig-dark-2)" strokeWidth={4} />
+        <circle cx={ax} cy={ay} r={5} fill={metal} />
+        <rect x={x - 7} y={y - 3} width={14} height={6} rx={2} fill={metal} /></g>
+    }
+    case 'landmine': case 'lever': {
+      const [ax, ay] = prop.point!
+      return <g><line x1={ax} y1={ay} x2={x} y2={y} stroke="var(--fig-dark-2)" strokeWidth={7} strokeLinecap="round" />
+        <circle cx={ax} cy={ay} r={7} fill={dark} />
+        {prop.type === 'landmine' && <circle cx={x * 0.87 + ax * 0.13} cy={y * 0.87 + ay * 0.13} r={13} fill={dark} />}
+      </g>
+    }
+    case 'smith': {
+      const [a, b] = prop.span!
+      return <g><line x1={a} y1={prop.y} x2={a} y2={FLOOR} stroke="var(--fig-dark-2)" strokeWidth={5} />
+        <line x1={b} y1={prop.y} x2={b} y2={FLOOR} stroke="var(--fig-dark-2)" strokeWidth={5} />
+        <line x1={Math.min(a - 10, x - 10)} y1={y} x2={Math.max(b + 10, x + 10)} y2={y} stroke="var(--fig-dark-2)" strokeWidth={6} />
+        <rect x={a - 5} y={y - 16} width={10} height={32} rx={3} fill={metal} />
+        <rect x={b - 5} y={y - 16} width={10} height={32} rx={3} fill={metal} /></g>
+    }
+    case 'trapBar': {
+      // Hexágono en perspectiva alrededor de las piernas, con asas y discos laterales.
+      const cx = trapBarCenter(j)
+      return <g><polygon points={`${cx - 44},${y} ${cx - 25},${y - 13} ${cx + 25},${y - 13} ${cx + 44},${y} ${cx + 25},${y + 13} ${cx - 25},${y + 13}`} fill="none" stroke="var(--fig-dark-2)" strokeWidth={5} />
+        <path d={`M${cx - 25},${y - 7}v14 M${cx + 25},${y - 7}v14`} stroke="var(--fig-dark-2)" strokeWidth={5} />
+        <rect x={cx - 53} y={y - 16} width={10} height={32} rx={3} fill={dark} />
+        <rect x={cx + 43} y={y - 16} width={10} height={32} rx={3} fill={dark} /></g>
     }
     case 'cable':
       return (

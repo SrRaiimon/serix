@@ -137,6 +137,11 @@ export function barFrontEnds(j: Joints): { x0: number; x1: number; y: number } {
   return { x0: left - 34, x1: right + 34, y }
 }
 
+/** En perfil, el asa cercana de la barra hexagonal coincide con la mano. */
+export function trapBarCenter(j: Joints): number {
+  return j.hip[0] === j.hip2[0] ? j.wrist[0] - 25 : (j.wrist[0] + j.wrist2[0]) / 2
+}
+
 /** Centro de la sombra en el suelo. */
 export function shadowX(figure: Figure, j: Joints): number {
   const pelvisX = figure.view === 'front' ? (j.hip[0] + j.hip2[0]) / 2 : j.hip[0]
@@ -175,6 +180,10 @@ export function fitViewBox(figure: Figure): string {
         case 'ball': add(x, y, prop.size ?? 10); break
         case 'platform': add(x, y, 34); break
         case 'grip': add(x, y, 18); break
+        case 'smith': add(prop.span![0] - 15, prop.y!); add(prop.span![1] + 15, FLOOR); add(x, y, 18); break
+        case 'trapBar': add(trapBarCenter(j), y, 56); break
+        case 'landmine': case 'lever': add(prop.point![0], prop.point![1], 8); add(x, y, 16); break
+        case 'strap':
         case 'cable': add(prop.point![0], prop.point![1], 6); add(x, y); break
         case 'band': { const [ax, ay] = prop.to ? j[prop.to] : prop.point!; add(ax, ay); add(x, y); break }
         case 'barFront': { const e = barFrontEnds(j); add(e.x0, e.y - 24); add(e.x1, e.y + 24); break }
