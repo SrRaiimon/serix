@@ -66,7 +66,7 @@ test('Las poleas de piernas salen del suelo y el pullover se hace sentado', () =
 })
 
 test('Las bandas tienen un extremo sujeto y no conservan mancuernas o discos prestados', () => {
-  for (const e of extras.filter(e => e.equipment === 'bands')) {
+  for (const e of extras.filter(e => e.equipment === 'band')) {
     const f = FIGURES[e.id], bands = f.props.filter(p => p.type === 'band')
     assert.ok(bands.length, e.id)
     assert.ok(bands.every(p => p.at && (p.to || p.point)), e.id)
@@ -79,6 +79,13 @@ test('Las máquinas sentadas y los transportes elevados mantienen los apoyos cor
     const f = FIGURES[id]
     assert.equal(f.anchor?.joint, 'hip', id)
     assert.ok(f.props.some(p => p.type === 'seat'), id)
+  }
+  for (const [id, joint] of [['Band_Kneeling_Rear_Kick', 'knee2'], ['Lever_Standing_Hip_Extension', 'ankle2'], ['Lever_Standing_Leg_Raise', 'ankle2']] as const) {
+    const f = FIGURES[id], start = place(f, poseAt(f, 0))[joint]
+    for (const t of [0.5, 1]) {
+      const point = place(f, poseAt(f, t))[joint]
+      assert.ok(Math.hypot(point[0] - start[0], point[1] - start[1]) < 1e-8, id)
+    }
   }
   for (const id of ['Dumbbell_Overhead_Carry', 'Dumbbell_Overhead_Walking_Lunge']) {
     const f = FIGURES[id]
