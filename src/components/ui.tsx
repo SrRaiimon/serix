@@ -173,10 +173,29 @@ export function Stepper({ label, value, min, max, onChange }: { label: string; v
   )
 }
 
+// Las figuras van en el mismo trozo que la animación de la ficha: se cargan aparte para no pesar en el
+// arranque y, mientras llegan (o si no hay conexión la primera vez), se ve el mapa muscular.
+type FigureModule = typeof import('./MoveFigure')
+let figureModule: FigureModule | undefined
+let figureLoading: Promise<FigureModule> | undefined
+function useFigureModule() {
+  const [mod, setMod] = useState(figureModule)
+  useEffect(() => {
+    if (mod) return
+    let alive = true
+    figureLoading ??= import('./MoveFigure')
+    figureLoading.then((m) => { figureModule = m; if (alive) setMod(m) }, () => { figureLoading = undefined })
+    return () => { alive = false }
+  }, [mod])
+  return mod
+}
+
 export function Thumb({ exerciseId, size = 56 }: { exerciseId: string; size?: number }) {
   const catalog = useCatalog()
+  const figures = useFigureModule()
   const exercise = catalog.get(exerciseId)
   if (!exercise) return <div className="thumb" style={{ width: size, height: size }} />
+  if (figures?.hasFigure(exercise.id)) return <figures.FigureThumb exercise={exercise} size={size} />
   return <MuscleThumb exercise={exercise} size={size} />
 }
 

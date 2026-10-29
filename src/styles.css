@@ -2039,6 +2039,25 @@ html.scroll-locked body {
   background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
 }
 
+/* Miniatura con la figura del ejercicio: a 40 px el maniquí necesita más contraste que en la ficha. */
+.fig-thumb {
+  --mm-body: #a3a9b5;
+  --mm-muscle-1: #f4f5f8;
+  --mm-muscle-2: #d3d7df;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fig-thumb {
+    --mm-body: #0b0c0f;
+    --mm-muscle-1: #737a88;
+    --mm-muscle-2: #555b67;
+  }
+}
+:root[data-theme="dark"] .fig-thumb {
+  --mm-body: #0b0c0f;
+  --mm-muscle-1: #737a88;
+  --mm-muscle-2: #555b67;
+}
+
 .rest-done {
   border: 0;
   width: 100%;

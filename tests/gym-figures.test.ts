@@ -3,7 +3,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { FIGURES, FLOOR } from '../src/lib/figures'
-import { fitViewBox, place, poseAt, trapBarCenter } from '../src/lib/figureEngine'
+import { fitViewBox, place, poseAt, thumbViewBox, trapBarCenter } from '../src/lib/figureEngine'
 
 const extras = (JSON.parse(readFileSync('scripts/catalog/extra_exercises.json', 'utf8')).exercises as
   { id: string; equipment: string; reference?: { catalogue: string } }[]).filter(e => e.reference?.catalogue === 'openGym')
@@ -95,4 +95,35 @@ test('Las máquinas sentadas y los transportes elevados mantienen los apoyos cor
       assert.ok(j.wrist2[1] < j.head[1], id)
     }
   }
+})
+
+test('El giro en suspensión y el paseo con una mancuerna se ven de frente', () => {
+  const twist = FIGURES.Suspension_Twist
+  assert.equal(twist.view, 'front')
+  assert.deepEqual(twist.props.map(p => [p.type, p.at]), [['strap', 'wrist'], ['strap', 'wrist2']])
+  // Las manos van de un lado al otro del cuerpo.
+  const side = (t: number) => { const j = place(twist, poseAt(twist, t)); return Math.sign(j.wrist[0] - (j.hip[0] + j.hip2[0]) / 2) }
+  assert.equal(side(0), -side(1))
+  const carry = FIGURES.Dumbbell_Suitcase_Carry
+  assert.equal(carry.view, 'front')
+  assert.equal(carry.props.filter(p => p.type === 'dumbbell').length, 1)
+  for (const t of [0, 0.5, 1]) {
+    const j = place(carry, poseAt(carry, t))
+    // La mancuerna cuelga junto a la pierna y el otro brazo se abre para equilibrar.
+    assert.ok(j.wrist[1] > j.hip[1] - 10)
+    assert.ok(j.wrist2[0] < j.shoulder2[0] - 15)
+  }
+})
+
+test('La tarjeta de la figura va de vertical a 4:3 y la miniatura es cuadrada y no corta el cuerpo', () => {
+  for (const [id, f] of Object.entries(FIGURES)) {
+    const [, , w, h] = fitViewBox(f).split(' ').map(Number)
+    assert.ok(w / h >= 260 / 280 - 1e-3 && w / h <= 4 / 3 + 1e-3, id)
+    const j = place(f, poseAt(f, 0.5))
+    const [x, y, side, side2] = thumbViewBox(j).split(' ').map(Number)
+    assert.equal(side, side2, id)
+    for (const p of Object.values(j)) assert.ok(p[0] >= x && p[0] <= x + side && p[1] >= y && p[1] <= y + side, id)
+  }
+  const bench = fitViewBox(FIGURES['Barbell_Bench_Press_-_Medium_Grip']).split(' ').map(Number)
+  assert.ok(bench[2] / bench[3] > 1, 'el press de banca usa una tarjeta apaisada')
 })

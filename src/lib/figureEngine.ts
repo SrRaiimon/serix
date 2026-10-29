@@ -149,11 +149,28 @@ export function shadowX(figure: Figure, j: Joints): number {
 }
 
 /**
+ * Encuadre cuadrado y ceñido al cuerpo en una postura (miniaturas): el de la animación deja sitio para
+ * todo el recorrido y el material, y a 40 px el muñeco quedaría diminuto. El material puede salirse.
+ */
+export function thumbViewBox(j: Joints): string {
+  const pts = Object.values(j)
+  const xs = pts.map((p) => p[0])
+  const ys = pts.map((p) => p[1])
+  const pad = 16
+  const [x0, x1, y0, y1] = [Math.min(...xs) - pad, Math.max(...xs) + pad, Math.min(...ys) - pad, Math.max(...ys) + pad]
+  const side = Math.max(x1 - x0, y1 - y0)
+  const r = (n: number) => Math.round(n * 10) / 10
+  return `${r((x0 + x1 - side) / 2)} ${r((y0 + y1 - side) / 2)} ${r(side)} ${r(side)}`
+}
+
+/**
  * Encuadre automático: recorre la animación entera (posturas intermedias y arco de los saltos),
- * calcula lo que ocupan figura, objetos, suelo y sombra, y devuelve un viewBox centrado con la
- * proporción de la tarjeta. Así ninguna figura se corta ni queda pequeña o descentrada.
+ * calcula lo que ocupan figura, objetos, suelo y sombra, y devuelve un viewBox centrado. La tarjeta es
+ * vertical para quien está de pie y se ensancha (hasta 4:3) para los tumbados o en banco, que en una
+ * tarjeta vertical quedaban como una franja con mucho hueco arriba y abajo.
  */
 const ASPECT = 260 / 280
+const WIDEST = 4 / 3
 const fitCache = new WeakMap<Figure, string>()
 export function fitViewBox(figure: Figure): string {
   const cached = fitCache.get(figure)
@@ -200,8 +217,8 @@ export function fitViewBox(figure: Figure): string {
   let h = maxY - minY + pad * 2
   // Mismo tamaño mínimo para que las figuras pequeñas no se amplíen de más.
   w = Math.max(w, 200); h = Math.max(h, 200)
-  if (w / h > ASPECT) h = w / ASPECT
-  else w = h * ASPECT
+  if (w / h > WIDEST) h = w / WIDEST
+  else if (w / h < ASPECT) w = h * ASPECT
   const box = `${((minX + maxX) / 2 - w / 2).toFixed(1)} ${((minY + maxY) / 2 - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`
   fitCache.set(figure, box)
   return box

@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.24',
+    items: [
+      ['Las listas de ejercicios muestran la figura de cada uno, así distingues de un vistazo los que trabajan el mismo músculo.', 'Exercise lists show each exercise’s figure, so you can tell apart those that work the same muscle at a glance.'],
+      ['Figuras más grandes en los ejercicios tumbados o en banco, y mejor dibujados el giro en suspensión y el paseo con mancuerna a un lado.', 'Bigger figures for lying and bench exercises, and clearer drawings for the suspension twist and the suitcase carry.'],
+    ],
+  },
+  {
     version: '0.1.23',
     items: [
       ['145 ejercicios nuevos, con pasos en español e inglés y figuras de movimiento.', '145 new exercises, with steps in Spanish and English and movement figures.'],

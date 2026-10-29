@@ -2,7 +2,7 @@ import { Play, Snail } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useCatalog } from './ui'
 import { FIGURES, FLOOR, type Figure, type Part, type Pose, type Prop } from '../lib/figures'
-import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, trapBarCenter, type Joints, type Pt } from '../lib/figureEngine'
+import { barFrontEnds, fitViewBox, place, poseAt, propAnchor, shadowX, step, thumbViewBox, trapBarCenter, type Joints, type Pt } from '../lib/figureEngine'
 import { t as tr } from '../lib/i18n'
 
 // Figura de movimiento propia (dibujo original generado con código): un maniquí de perfil o de
@@ -222,13 +222,13 @@ function zonesFor(figure: Figure, muscles?: Muscles) {
 
 const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
 
-export function Scene({ figure, pose, ids, muscles }: { figure: Figure; pose: Pose; ids: string; muscles?: Muscles }) {
+export function Scene({ figure, pose, ids, muscles, glow: glowing = true }: { figure: Figure; pose: Pose; ids: string; muscles?: Muscles; glow?: boolean }) {
   const j = place(figure, pose)
   const { primary, secondary } = zonesFor(figure, muscles)
   const glow = `url(#${ids}g)`
   const fill = (zone: Zone, far = false) =>
     primary.has(zone) ? `url(#${ids}p${far ? 'f' : ''})` : secondary.has(zone) ? `url(#${ids}s${far ? 'f' : ''})` : `url(#${ids}m${far ? 'f' : ''})`
-  const filter = (zone: Zone) => (primary.has(zone) ? glow : undefined)
+  const filter = (zone: Zone) => (glowing && primary.has(zone) ? glow : undefined)
   const isFront = figure.view === 'front'
   const pelvis: Pt = isFront ? [(j.hip[0] + j.hip2[0]) / 2, j.hip[1]] : j.hip
   const neck: Pt = isFront ? [(j.shoulder[0] + j.shoulder2[0]) / 2, j.shoulder[1] - 4] : j.shoulder
@@ -311,6 +311,22 @@ export function FigureDefs({ id }: { id: string }) {
         <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
     </defs>
+  )
+}
+
+/**
+ * Miniatura del ejercicio (listas, rutinas, entreno): la postura a mitad del movimiento, quieta y sin
+ * brillo, para distinguir de un vistazo ejercicios que trabajan el mismo músculo.
+ */
+export function FigureThumb({ exercise, size }: { exercise: Muscles & { id: string }; size: number }) {
+  const figure = FIGURES[exercise.id]
+  const ids = useId().replace(/:/g, '')
+  const pose = poseAt(figure, 0.5)
+  return (
+    <svg className="thumb muscle-thumb fig-thumb" width={size} height={size} viewBox={thumbViewBox(place(figure, pose))} aria-hidden="true">
+      <FigureDefs id={ids} />
+      <Scene figure={figure} pose={pose} ids={ids} muscles={exercise} glow={false} />
+    </svg>
   )
 }
 

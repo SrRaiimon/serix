@@ -3584,8 +3584,8 @@ const gymCorrections: Record<string, Figure> = {
   Suspension_Side_Bridge: gymGear(sidePlank, gymStraps([10, 15], true)),
   Suspension_Trainer_Front_Plank: gymGear(plank, gymStraps([10, 15], true)),
   Suspension_Trainer_Pike: gymGear(suspensionPike, gymStraps([10, 15], true)),
-  Suspension_Twist: { ...gymLean, work: ['core'],
-    frames: [{ ...gymLean.frames[0], upper: 50, fore: 50 }, { ...gymLean.frames[1], upper: -15, fore: -15 }] },
+  // De frente se ve el giro: las asas van de un lado a otro bajo el anclaje, con los brazos largos.
+  Suspension_Twist: { ...landmineArc, work: ['core'], props: gymStraps([130, -30]) },
   // Multipower: las guías quedan fijas mientras la barra sube y baja con la carga.
   Smith_Bent_Over_Row_Chest_Supported: gymSmith(FIGURES.Dumbbell_Incline_Row),
   Smith_One_Arm_Row: gymSmith({ ...FIGURES['Bent_Over_Two-Dumbbell_Row'],
@@ -3741,8 +3741,12 @@ const gymCorrections: Record<string, Figure> = {
       { ...STAND, torso: 0, thigh2: 195, shin2: 175, upper: 180, fore: 180 }] },
   Dumbbell_Single_Leg_Deadlift: gymGear(singleLegRdl, [gymDb]),
   Dumbbell_Staggered_Stance_Romanian_Deadlift: gymGear(gymStagger(FIGURES.Romanian_Deadlift), [gymDb]),
-  Dumbbell_Suitcase_Carry: { ...FIGURES.Farmers_Walk, view: 'side', props: [gymDb],
-    frames: gymFrames(FIGURES.Farmers_Walk, p => ({ ...p, torso: 0, upper2: 175, fore2: 155 })) },
+  // De frente para que se vea que la carga va en un solo lado: tronco recto y el otro brazo abierto.
+  Dumbbell_Suitcase_Carry: { view: 'front', work: ['core', 'forearms'], props: [gymDb], period: 1400,
+    frames: [
+      { ...SIDE_STAND, thigh: 177, thigh2: 169, shin2: 186, upper: 176, fore: 178, upper2: 150, fore2: 165, shift: -3 },
+      { ...SIDE_STAND, thigh: 169, thigh2: 177, shin: 186, upper: 176, fore: 178, upper2: 150, fore2: 165, shift: 3 },
+    ] },
   Dumbbell_Sumo_Deadlift: gymGear(FIGURES.Sumo_Deadlift, [gymDb, { ...gymDb, at: 'wrist2' }]),
   Dumbbell_Curtsey_Lunge: { ...lungeDumbbells, view: 'front', anchor: undefined, pinBack: false, props: [gymDb, { ...gymDb, at: 'wrist2' }],
     frames: [{ ...STAND, torso: 0, upper: 180, fore: 180 },
