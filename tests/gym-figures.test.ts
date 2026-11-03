@@ -127,3 +127,31 @@ test('La tarjeta de la figura va de vertical a 4:3 y la miniatura es cuadrada y 
   const bench = fitViewBox(FIGURES['Barbell_Bench_Press_-_Medium_Grip']).split(' ').map(Number)
   assert.ok(bench[2] / bench[3] > 1, 'el press de banca usa una tarjeta apaisada')
 })
+
+test('Cada figura lleva el material de su ejercicio y los pájaros no se dibujan de pie y erguidos', () => {
+  const NEEDS: Record<string, string[]> = {
+    dumbbell: ['dumbbell'], kettlebell: ['kettlebell'], cable: ['cable', 'grip'], band: ['band'], suspension: ['strap'],
+    smith: ['smith'], landmine: ['landmine'], 'trap-bar': ['trapBar'], barbell: ['plate', 'barFront', 'bar'], 'ez-bar': ['plate', 'barFront'],
+  }
+  const BORROWED: Record<string, string[]> = {
+    bodyweight: ['dumbbell', 'kettlebell', 'plate', 'barFront', 'cable', 'band', 'strap', 'landmine', 'smith', 'trapBar'],
+    band: ['dumbbell', 'kettlebell', 'plate', 'barFront', 'cable'], dumbbell: ['kettlebell', 'barFront', 'cable', 'band', 'plate'],
+    kettlebell: ['dumbbell', 'barFront', 'cable', 'band', 'plate'], barbell: ['dumbbell', 'kettlebell', 'cable'],
+    machine: ['dumbbell', 'kettlebell', 'band'], cable: ['dumbbell', 'kettlebell', 'plate', 'band'],
+  }
+  // Su texto pide otra pieza: la almohadilla del gemelo sentado, el agarre de muñeca, la barra anclada del
+  // empuje lineal y la mancuerna tumbada bajo las manos en una flexión clasificada como peso corporal.
+  const EXCEPTIONS = new Set(['Barbell_Seated_Calf_Raise', 'Wrist_Rotations_with_Straight_Bar', 'Single-Arm_Linear_Jammer', 'Close-Grip_Push-Up_off_of_a_Dumbbell'])
+  const catalog = JSON.parse(readFileSync('public/exercises_es.json', 'utf8')).exercises as { id: string; equipment: string }[]
+  const wrong: string[] = []
+  for (const e of catalog) {
+    if (EXCEPTIONS.has(e.id)) continue
+    const types = FIGURES[e.id].props.map(p => p.type as string)
+    if (NEEDS[e.equipment] && !types.some(t => NEEDS[e.equipment].includes(t))) wrong.push(`${e.id}: falta ${e.equipment}`)
+    for (const t of BORROWED[e.equipment] ?? []) if (types.includes(t)) wrong.push(`${e.id} (${e.equipment}) lleva ${t}`)
+  }
+  assert.deepEqual(wrong, [])
+  for (const id of ['Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise']) assert.ok(FIGURES[id].frames.every(p => p.torsoLen! < 1), id)
+  for (const id of ['Lying_Rear_Delt_Raise', 'Dumbbell_Lying_Rear_Lateral_Raise']) assert.ok(FIGURES[id].props.some(p => p.type === 'bench'), id)
+  assert.ok(FIGURES.GHD_Sit_Up.props.some(p => p.type === 'bench'))
+})

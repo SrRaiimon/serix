@@ -3769,6 +3769,154 @@ const gymCorrections: Record<string, Figure> = {
 for (const f of Object.values(gymCorrections)) f.props = f.props.map(p => p.type === 'band' ? { ...p, front: true } : p)
 Object.assign(FIGURES, gymCorrections)
 
+// Revisión de cada figura contra su descripción: muchas se prestaron de otro ejercicio y conservaban
+// su material o su postura. Aquí se cambian por los que dice el texto del propio ejercicio.
+const gymSwap = (f: Figure, from: Prop['type'], to: Prop['type'], extra: Partial<Prop> = {}): Figure => ({
+  ...f, props: f.props.map(p => p.type === from ? { ...p, type: to, ...extra } : p),
+})
+const gymAdd = (f: Figure, ...props: Prop[]): Figure => ({ ...f, props: [...f.props, ...props] })
+// La barra del multipower va donde estaba la carga: en los hombros en sentadillas, en las manos en lo demás.
+const gymSmithLoad = (id: string, at?: JointName): Figure => gymSmith(FIGURES[id], at ?? FIGURES[id].props.find(p => p.type === 'plate')?.at ?? 'wrist')
+const gymBandTo = (at: JointName, to: JointName): Prop => ({ type: 'band', at, to, front: true })
+const gymBandUp = (at: JointName, x: number): Prop => ({ type: 'band', at, point: [x, -20], front: true })
+const gymSuitcase: Prop = { type: 'plate', at: 'wrist', front: true, size: 20 }
+// Inclinado hacia quien mira: de frente, el tronco se ve más corto y los brazos se abren a los lados.
+const BENT_TOWARD = { torso: 0, head: 0, torsoLen: 0.55, thigh: 168, shin: 188 }
+const rearFlyBent: Figure = {
+  view: 'front', work: ['shoulders', 'back'], props: [gymDb, { ...gymDb, at: 'wrist2' }],
+  frames: [{ ...BENT_TOWARD, upper: 178, fore: 176 }, { ...BENT_TOWARD, upper: 92, fore: 94 }],
+}
+// Boca abajo en un banco inclinado: de perfil para que se vea el apoyo.
+const rearFlyProne: Figure = {
+  ...FIGURES.Dumbbell_Incline_Row, work: ['shoulders', 'back'],
+  frames: [FIGURES.Dumbbell_Incline_Row.frames[0], { ...FIGURES.Dumbbell_Incline_Row.frames[0], upper: -100, fore: -95 }],
+}
+const REAR_FLY_SIDE = { torso: 72, head: 80, thigh: 165, shin: 186, foot: 90 }
+const SMITH_LOADED = ['Decline_Smith_Press', 'Smith_Incline_Shoulder_Raise', 'Smith_Machine_Behind_the_Back_Shrug', 'Smith_Machine_Bench_Press',
+  'Smith_Machine_Bent_Over_Row', 'Smith_Machine_Calf_Raise', 'Smith_Machine_Close-Grip_Bench_Press', 'Smith_Machine_Decline_Press',
+  'Smith_Machine_Hang_Power_Clean', 'Smith_Machine_Incline_Bench_Press', 'Smith_Machine_One-Arm_Upright_Row', 'Smith_Machine_Overhead_Shoulder_Press',
+  'Smith_Machine_Pistol_Squat', 'Smith_Machine_Squat', 'Smith_Machine_Stiff-Legged_Deadlift', 'Smith_Machine_Upright_Row', 'Smith_Single-Leg_Split_Squat']
+const descriptionFixes: Record<string, Figure> = {
+  ...Object.fromEntries(SMITH_LOADED.map(id => [id, gymSmithLoad(id)])),
+  // Sin carga dibujada, pero con la barra sobre los trapecios o en los pies según su texto.
+  Smith_Machine_Reverse_Calf_Raises: gymSmithLoad('Smith_Machine_Reverse_Calf_Raises', 'shoulder'),
+  Smith_Machine_Hip_Raise: gymSmithLoad('Smith_Machine_Hip_Raise', 'ankle'),
+  Smith_Machine_Leg_Press: {
+    view: 'side', work: ['legs', 'glutes'], anchor: { joint: 'hip', at: [120, 204] }, shadow: 95,
+    props: [{ type: 'smith', at: 'ankle', span: [70, 220], y: -5 }],
+    frames: [
+      { torso: -90, head: -90, thigh: 4, shin: 4, foot: 90, upper: 92, fore: 90 },
+      { torso: -90, head: -90, thigh: -30, shin: 62, foot: 90, upper: 92, fore: 90 },
+    ],
+  },
+
+  // Bandas: la figura prestada llevaba mancuerna o polea.
+  Band_Curl: gymGear(FIGURES.Band_Curl, [gymBandTo('wrist', 'ankle')]),
+  Band_Hammer_Curl: gymGear(FIGURES.Band_Hammer_Curl, [gymBandTo('wrist', 'ankle')]),
+  Band_Face_Pull: gymSwap(FIGURES.Band_Face_Pull, 'cable', 'band', { front: true }),
+  Band_Row: gymSwap(FIGURES.Band_Row, 'cable', 'band', { front: true }),
+  Band_Lat_Pulldown: gymSwap(FIGURES.Kneeling_High_Pulley_Row, 'cable', 'band', { front: true }),
+  Band_Rear_Delt_Row: gymSwap(FIGURES['Cable_Rope_Rear-Delt_Rows'], 'cable', 'band', { front: true }),
+  Band_Hip_Abduction: gymGear(FIGURES.Band_Hip_Abduction, [gymBandTo('ankle', 'ankle2')]),
+  'Back_Flyes_-_With_Bands': {
+    view: 'front', work: ['shoulders', 'back'], props: [gymBandTo('wrist', 'wrist2')],
+    frames: [{ ...SIDE_STAND, upper: 140, fore: -40 }, { ...SIDE_STAND, upper: 90, fore: 90 }],
+  },
+  'Cross_Over_-_With_Bands': gymAdd(FIGURES['Cross_Over_-_With_Bands'], { ...gymBand([240, 92]), front: true }, { ...gymBand([20, 92], 'wrist2'), front: true }),
+  'Close-Grip_EZ-Bar_Curl_with_Band': gymAdd(FIGURES['Close-Grip_EZ-Bar_Curl_with_Band'], gymSuitcase),
+  Deadlift_with_Bands: gymAdd(FIGURES.Deadlift_with_Bands, gymBandTo('wrist', 'ankle')),
+  Rack_Pull_with_Bands: gymAdd(FIGURES.Rack_Pull_with_Bands, gymBandTo('wrist', 'ankle')),
+  Sumo_Deadlift_with_Bands: gymAdd(FIGURES.Sumo_Deadlift_with_Bands, gymBandTo('wrist', 'ankle'), gymBandTo('wrist2', 'ankle2')),
+  Squat_with_Bands: gymAdd(FIGURES.Squat_with_Bands, gymBandTo('shoulder', 'ankle')),
+  Box_Squat_with_Bands: gymAdd(FIGURES.Box_Squat_with_Bands, gymBandTo('shoulder', 'ankle')),
+  // Banda inversa: tira desde arriba y aligera la parte baja del movimiento.
+  Reverse_Band_Deadlift: gymAdd(FIGURES.Reverse_Band_Deadlift, gymBandUp('wrist', 152)),
+  Reverse_Band_Sumo_Deadlift: gymAdd(FIGURES.Reverse_Band_Sumo_Deadlift, gymBandUp('wrist', 175), gymBandUp('wrist2', 105)),
+  Reverse_Band_Box_Squat: gymAdd(FIGURES.Reverse_Band_Box_Squat, gymBandUp('shoulder', 133)),
+  Reverse_Band_Power_Squat: gymAdd(FIGURES.Reverse_Band_Power_Squat, gymBandUp('shoulder', 133)),
+  Reverse_Band_Bench_Press: gymAdd(FIGURES.Reverse_Band_Bench_Press, gymBandUp('wrist', 74)),
+
+  // Pájaros: inclinados o tumbados, como dice el texto, no de pie y erguidos.
+  Reverse_Flyes: rearFlyBent,
+  Reverse_Flyes_With_External_Rotation: { ...rearFlyBent, frames: [rearFlyBent.frames[0], { ...rearFlyBent.frames[1], fore: 20 }] },
+  'Seated_Bent-Over_Rear_Delt_Raise': { ...FIGURES['Seated_Bent-Over_Rear_Delt_Raise'],
+    frames: gymFrames(FIGURES['Seated_Bent-Over_Rear_Delt_Raise'], p => ({ ...p, torsoLen: 0.55, head: 0 })) },
+  'Bent_Over_Low-Pulley_Side_Lateral': { ...FIGURES['Bent_Over_Low-Pulley_Side_Lateral'],
+    frames: gymFrames(FIGURES['Bent_Over_Low-Pulley_Side_Lateral'], p => ({ ...p, torso: 0, torsoLen: 0.55, head: 0 })) },
+  Lying_Rear_Delt_Raise: rearFlyProne,
+  Dumbbell_Lying_Rear_Lateral_Raise: rearFlyProne,
+  Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench: {
+    view: 'side', work: ['shoulders', 'back'], props: [{ type: 'bench', span: [178, 245], y: 112 }, gymDb],
+    frames: [{ ...REAR_FLY_SIDE, upper: 180, fore: 176 }, { ...REAR_FLY_SIDE, upper: -100, fore: -95 }],
+  },
+
+  // Material que no corresponde.
+  Kettlebell_Curl: gymSwap(FIGURES.Kettlebell_Curl, 'dumbbell', 'kettlebell'),
+  Kettlebell_Hammer_Curl: gymSwap(FIGURES.Kettlebell_Hammer_Curl, 'dumbbell', 'kettlebell'),
+  Kettlebell_Reverse_Lunge: gymSwap(FIGURES.Kettlebell_Reverse_Lunge, 'dumbbell', 'kettlebell'),
+  Kettlebell_Split_Squat: gymSwap(FIGURES.Kettlebell_Split_Squat, 'dumbbell', 'kettlebell'),
+  Dumbbell_Renegade_Row: gymSwap(FIGURES.Dumbbell_Renegade_Row, 'kettlebell', 'dumbbell'),
+  'Bent-Arm_Dumbbell_Pullover': gymSwap(FIGURES['Bent-Arm_Dumbbell_Pullover'], 'plate', 'dumbbell'),
+  Straight_Raises_on_Incline_Bench: gymSwap(FIGURES.Straight_Raises_on_Incline_Bench, 'dumbbell', 'plate', { size: 20 }),
+  Bodyweight_Reverse_Lunge: gymGear(FIGURES.Bodyweight_Reverse_Lunge, []),
+  Standing_Towel_Triceps_Extension: gymGear(FIGURES.Standing_Towel_Triceps_Extension, []),
+  Round_The_World_Shoulder_Stretch: gymGear(FIGURES.Round_The_World_Shoulder_Stretch, []),
+  Cable_Deadlifts: gymSwap(FIGURES.Cable_Deadlifts, 'plate', 'cable', { point: [250, 214] }),
+  'Standing_Low-Pulley_One-Arm_Triceps_Extension': gymSwap(FIGURES['Standing_Low-Pulley_One-Arm_Triceps_Extension'], 'dumbbell', 'cable', { point: [40, 214] }),
+  Trap_Bar_Deadlift: gymTrap(FIGURES.Trap_Bar_Deadlift),
+  Landmine_180s: gymLandmine(FIGURES.Landmine_180s, [130, 218]),
+  Landmine_Linear_Jammer: gymLandmine(FIGURES.Landmine_Linear_Jammer, FIGURES.Landmine_Linear_Jammer.props[0].point),
+  'Single-Arm_Linear_Jammer': gymLandmine(FIGURES['Single-Arm_Linear_Jammer'], FIGURES['Single-Arm_Linear_Jammer'].props[0].point),
+  Inverted_Row_with_Straps: gymSwap(FIGURES.Inverted_Row_with_Straps, 'cable', 'strap'),
+  Suspended_Fallout: gymSwap(FIGURES.Suspended_Fallout, 'cable', 'strap'),
+  'Suspended_Push-Up': gymSwap(FIGURES['Suspended_Push-Up'], 'cable', 'strap'),
+  Suspended_Reverse_Crunch: gymSwap(FIGURES.Suspended_Reverse_Crunch, 'cable', 'strap'),
+  Suspended_Row: gymSwap(FIGURES.Suspended_Row, 'cable', 'strap'),
+  Suspended_Split_Squat: gymSwap(FIGURES.Suspended_Split_Squat, 'cable', 'strap'),
+  Ring_Dips: gymGear(FIGURES.Ring_Dips, gymStraps([140, -30])),
+
+  // Material que faltaba.
+  'Close-Grip_Push-Up_off_of_a_Dumbbell': gymAdd(FIGURES['Close-Grip_Push-Up_off_of_a_Dumbbell'], gymDb),
+  Man_Maker: gymAdd(FIGURES.Man_Maker, gymDb),
+  Dumbbell_Seated_Box_Jump: gymAdd(FIGURES.Dumbbell_Seated_Box_Jump, { type: 'bench', span: [20, 82], y: 180 }, gymDb),
+  Calf_Raise_On_A_Dumbbell: gymGear(FIGURES.Calf_Raise_On_A_Dumbbell, [{ type: 'dumbbell', point: [152, 214], front: true }]),
+  'Dumbbell_Seated_One-Leg_Calf_Raise': gymSwap(FIGURES['Dumbbell_Seated_One-Leg_Calf_Raise'], 'pad', 'dumbbell'),
+  Weighted_Bench_Dip: gymAdd(FIGURES.Weighted_Bench_Dip, { type: 'plate', at: 'knee', angle: -62, offset: 22, size: 16, front: true }),
+  Ball_Leg_Curl: gymSwap(FIGURES.Ball_Leg_Curl, 'pad', 'ball', { size: 16 }),
+  Box_Skip: gymAdd(FIGURES.Box_Skip, { type: 'box', span: [165, 235], y: 166 }),
+  'Flat_Bench_Leg_Pull-In': { ...FIGURES['Flat_Bench_Leg_Pull-In'], anchor: { joint: 'hip', at: [128, 166] }, props: [{ type: 'bench', span: [35, 150], y: 178 }] },
+  Bodyweight_Bulgarian_Split_Squat: gymGear(FIGURES.Split_Squat_with_Dumbbells, FIGURES.Split_Squat_with_Dumbbells.props.filter(p => p.type === 'bench')),
+  Bosu_Ball_Cable_Crunch_With_Side_Bends: gymAdd(FIGURES.Exercise_Ball_Crunch, gymCable([12, 214])),
+
+  // Postura distinta de la que describe el texto.
+  Cable_Forearm_Pronation: FIGURES.Cable_Wrist_Curl,
+  Oblique_Crunches: sideJackknife,
+  Shotgun_Row: {
+    view: 'side', work: ['back'], props: [gymCable([250, 198])],
+    frames: [
+      { torso: 12, head: 6, thigh: 150, shin: 186, thigh2: 198, shin2: 172, foot: 90, foot2: 140, upper: 118, fore: 104, upper2: 180, fore2: 180 },
+      { torso: 12, head: 6, thigh: 150, shin: 186, thigh2: 198, shin2: 172, foot: 90, foot2: 140, upper: -28, fore: 88, upper2: 180, fore2: 180 },
+    ],
+  },
+  GHD_Sit_Up: {
+    view: 'side', work: ['core', 'legs'], anchor: { joint: 'hip', at: [118, 134] }, shadow: 90,
+    props: [{ type: 'bench', span: [84, 150], y: 147 }, { type: 'pad', at: 'ankle', size: 9 }],
+    frames: [
+      { torso: -100, head: -95, thigh: 88, shin: 150, foot: 60, upper: -112, fore: -112 },
+      { torso: 16, head: 26, thigh: 88, shin: 150, foot: 60, upper: 128, fore: 118 },
+    ],
+  },
+  Chest_Stretch_on_Stability_Ball: {
+    view: 'side', work: ['chest'], anchor: { joint: 'knee', at: [92, 214] }, shadow: 95,
+    props: [{ type: 'ball', point: [208, 192], size: 25 }],
+    frames: [
+      { torso: 48, head: 58, thigh: 172, shin: -90, foot: -100, upper: 84, fore: 84 },
+      { torso: 76, head: 84, thigh: 164, shin: -90, foot: -100, upper: 76, fore: 76 },
+    ],
+  },
+}
+Object.assign(FIGURES, descriptionFixes)
+
 // Ejercicios en los que se avanza (caminar, correr, arrastrar, gatear): sus pies y manos no se clavan
 // al suelo en la animación (ver plantedPoints en figureEngine.ts).
 const GAIT = /walk|run(?!ner)|jog|treadmill|crawl|drag|carry|march|sprint|skip(?!ping_rope)|inchworm|sled|yoke|farmers|conans|stair|step_mill|elliptical|bike|cycling|recumbent/i

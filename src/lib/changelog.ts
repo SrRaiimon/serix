@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.25',
+    items: [
+      ['Revisadas las figuras de los 1081 ejercicios: 86 corregidas para que coincidan con su descripción.', 'All 1081 exercise figures reviewed: 86 corrected to match their description.'],
+      ['El multipower ya se ve con su máquina, los ejercicios con banda, cintas o pesa rusa llevan ese material y los pájaros se hacen inclinados o tumbados.', 'Smith machine exercises now show the machine, band, strap and kettlebell exercises show that gear, and rear delt raises are bent over or lying.'],
+    ],
+  },
+  {
     version: '0.1.24',
     items: [
       ['Las listas de ejercicios muestran la figura de cada uno, así distingues de un vistazo los que trabajan el mismo músculo.', 'Exercise lists show each exercise’s figure, so you can tell apart those that work the same muscle at a glance.'],
