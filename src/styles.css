@@ -1964,11 +1964,18 @@ html.scroll-locked body {
 
 /* Figura de movimiento (MoveFigure): mismo estilo que el mapa muscular (silueta + paneles de músculo) */
 :root {
-  --fig-metal-1: #eef0f4;
-  --fig-metal-2: #c7ccd6;
+  --fig-metal-1: #dde0e7;
+  --fig-metal-2: #aab0bd;
   --fig-dark-1: #9aa2b1;
   --fig-dark-2: #6f7787;
   --fig-gear-ring: rgba(0, 0, 0, 0.12);
+  --fig-b1: #f6f7fa;
+  --fig-b2: #cfd4de;
+  --fig-bf1: #dfe2e9;
+  --fig-bf2: #bcc2ce;
+  --fig-line: #7f8798;
+  --fig-line-far: #a5abb8;
+  --fig-hair: #5d6474;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1978,6 +1985,13 @@ html.scroll-locked body {
     --fig-dark-1: #a3abb9;
     --fig-dark-2: #6b7382;
     --fig-gear-ring: rgba(255, 255, 255, 0.1);
+    --fig-b1: #8f97a6;
+    --fig-b2: #606776;
+    --fig-bf1: #535967;
+    --fig-bf2: #3f4450;
+    --fig-line: #0d0f13;
+    --fig-line-far: #0d0f13;
+    --fig-hair: #474d5a;
   }
 }
 
@@ -1988,6 +2002,13 @@ html.scroll-locked body {
   --fig-dark-1: #a3abb9;
   --fig-dark-2: #6b7382;
   --fig-gear-ring: rgba(255, 255, 255, 0.1);
+  --fig-b1: #8f97a6;
+  --fig-b2: #606776;
+  --fig-bf1: #535967;
+  --fig-bf2: #3f4450;
+  --fig-line: #0d0f13;
+  --fig-line-far: #0d0f13;
+  --fig-hair: #474d5a;
 }
 
 .move-figure {
@@ -2012,7 +2033,14 @@ html.scroll-locked body {
   margin: 0 auto;
 }
 
-.fig-body { fill: var(--mm-body); }
+/* Trazo por debajo del relleno: los solapes de muslo, rodilla y pierna no dejan líneas dentro de la silueta. */
+.fig-part { stroke: var(--fig-line); stroke-width: 2.2; stroke-linejoin: round; paint-order: stroke; }
+.fig-part-far { stroke: var(--fig-line-far); }
+.fig-hair { fill: var(--fig-hair); }
+.fig-stop-b1 { stop-color: var(--fig-b1); }
+.fig-stop-b2 { stop-color: var(--fig-b2); }
+.fig-stop-bf1 { stop-color: var(--fig-bf1); }
+.fig-stop-bf2 { stop-color: var(--fig-bf2); }
 .fig-stop-p1, .mm-stop-p1 { stop-color: var(--mm-p1); }
 .fig-stop-p2, .mm-stop-p2 { stop-color: var(--mm-p2); }
 .fig-stop-p3, .mm-stop-p3 { stop-color: var(--mm-p3); }
@@ -2039,24 +2067,8 @@ html.scroll-locked body {
   background: linear-gradient(var(--mm-bg-1), var(--mm-bg-2));
 }
 
-/* Miniatura con la figura del ejercicio: a 40 px el maniquí necesita más contraste que en la ficha. */
-.fig-thumb {
-  --mm-body: #a3a9b5;
-  --mm-muscle-1: #f4f5f8;
-  --mm-muscle-2: #d3d7df;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .fig-thumb {
-    --mm-body: #0b0c0f;
-    --mm-muscle-1: #737a88;
-    --mm-muscle-2: #555b67;
-  }
-}
-:root[data-theme="dark"] .fig-thumb {
-  --mm-body: #0b0c0f;
-  --mm-muscle-1: #737a88;
-  --mm-muscle-2: #555b67;
-}
+/* Miniatura con la figura del ejercicio: a 40 px el trazo se quedaría en nada si no fuese más grueso. */
+.fig-thumb .fig-part { stroke-width: 3.6; }
 
 .rest-done {
   border: 0;

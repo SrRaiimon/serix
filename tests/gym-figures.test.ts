@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { FIGURES, FLOOR } from '../src/lib/figures'
 import { fitViewBox, place, poseAt, thumbViewBox, trapBarCenter } from '../src/lib/figureEngine'
+import { armPath, headPaths, legPath, neckPath, spots, torsoEnds, torsoPath } from '../src/lib/figureShapes'
 
 const extras = (JSON.parse(readFileSync('scripts/catalog/extra_exercises.json', 'utf8')).exercises as
   { id: string; equipment: string; reference?: { catalogue: string } }[]).filter(e => e.reference?.catalogue === 'openGym')
@@ -169,4 +170,23 @@ test('Los músculos del catálogo coinciden con lo que trabaja cada ejercicio', 
   }
   for (const [id, muscle] of Object.entries(expected)) assert.equal(byId.get(id)?.muscle, muscle, id)
   assert.ok(byId.get('Barbell_Deadlift')!.secondaryMuscles.includes('spine'))
+})
+
+test('el dibujo del muñeco cubre todos los músculos del catálogo y sale bien en todas las figuras', () => {
+  const zero = [0, 0] as [number, number], top = [0, -60] as [number, number]
+  const drawable = (front: boolean) => new Set((['thigh', 'shin', 'upper', 'fore', 'torso', 'pelvis'] as const).flatMap((s) => spots(s, zero, top, front).map((x) => x.muscle)))
+  const catalog: { id: string; muscle: string; secondaryMuscles: string[] }[] = JSON.parse(readFileSync('public/exercises_es.json', 'utf8')).exercises
+  for (const front of [false, true]) {
+    const known = drawable(front)
+    for (const e of catalog) for (const m of [e.muscle, ...e.secondaryMuscles]) if (m !== 'neck') assert.ok(known.has(m), `${m} sin zona (${front ? 'frente' : 'perfil'})`)
+  }
+  for (const [id, figure] of Object.entries(FIGURES)) {
+    const front = figure.view === 'front'
+    for (const t of [0, 0.5, 1]) {
+      const j = place(figure, poseAt(figure, t))
+      const { pelvis, neck } = torsoEnds(j, front)
+      const paths = [legPath(j, front, false), legPath(j, front, true), armPath(j, front, false), armPath(j, front, true), torsoPath(pelvis, neck, front), neckPath(neck, j.head), headPaths(j.head, neck, front).head]
+      for (const d of paths) assert.ok(d.length > 0 && !d.includes('NaN'), `${id}: trazado roto en t=${t}`)
+    }
+  }
 })

@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.27',
+    items: [
+      ['Muñeco nuevo en los ejercicios: cuerpo con forma, pies y manos, y una cabeza que indica hacia dónde mira.', 'New figure in the exercises: a shaped body, feet and hands, and a head that shows where it is looking.'],
+      ['Cada músculo se marca en su sitio: cuádriceps delante y femoral detrás, bíceps y tríceps, pecho y espalda.', 'Each muscle is marked in its place: quads in front and hamstrings behind, biceps and triceps, chest and back.'],
+    ],
+  },
+  {
     version: '0.1.26',
     items: [
       ['Revisados los músculos de los 1081 ejercicios: en 126 cambia el principal o los secundarios para que coincidan con lo que trabaja cada uno.', 'Muscles reviewed for all 1081 exercises: 126 now have a corrected main or secondary muscle to match what they train.'],
