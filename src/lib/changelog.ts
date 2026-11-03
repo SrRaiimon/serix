@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.26',
+    items: [
+      ['Revisados los músculos de los 1081 ejercicios: en 126 cambia el principal o los secundarios para que coincidan con lo que trabaja cada uno.', 'Muscles reviewed for all 1081 exercises: 126 now have a corrected main or secondary muscle to match what they train.'],
+    ],
+  },
+  {
     version: '0.1.25',
     items: [
       ['Revisadas las figuras de los 1081 ejercicios: 86 corregidas para que coincidan con su descripción.', 'All 1081 exercise figures reviewed: 86 corrected to match their description.'],

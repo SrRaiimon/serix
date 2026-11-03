@@ -26,6 +26,8 @@ for e in base:
     if e['id'] in EXTRA.get('equipmentOverrides', {}):
         e['equipment'] = EXTRA['equipmentOverrides'][e['id']]
 ids = {e['id'] for e in base}
+OVERRIDES = EXTRA.get('muscleOverrides', {})
+assert set(OVERRIDES) <= ids | mine, 'Músculo de un id inexistente'
 clash = mine & ids
 assert not clash, f'Ya existen en el catálogo: {clash}'
 assert len(mine) == len(EXTRA['exercises']), 'Ids propios repetidos'
@@ -49,6 +51,13 @@ for x in EXTRA['exercises']:
     added.append({k: e[k] for k in ORDER if k in e})
 
 exercises = sorted(base + added, key=lambda e: e['id'])
+# Músculos revisados a mano contra lo que hace cada ejercicio; la zona del cuerpo se deduce del músculo.
+for e in exercises:
+    if e['id'] in OVERRIDES:
+        e.update(OVERRIDES[e['id']])
+        if e['category'] != 'cardio':
+            e['bodyPart'] = BODY[e['muscle']]
+    e['secondaryMuscles'] = [m for m in dict.fromkeys(e['secondaryMuscles']) if m != e['muscle']]
 full.update(exercises=exercises, count=len(exercises),
             source='Datos de ejercicios: Free Exercise DB y openGym (solo nombres y clasificación); textos y figuras propios de Serix')
 FULL.write_text(json.dumps(full, ensure_ascii=False, separators=(',', ':')))

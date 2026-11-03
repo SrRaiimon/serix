@@ -155,3 +155,18 @@ test('Cada figura lleva el material de su ejercicio y los pájaros no se dibujan
   for (const id of ['Lying_Rear_Delt_Raise', 'Dumbbell_Lying_Rear_Lateral_Raise']) assert.ok(FIGURES[id].props.some(p => p.type === 'bench'), id)
   assert.ok(FIGURES.GHD_Sit_Up.props.some(p => p.type === 'bench'))
 })
+
+test('Los músculos del catálogo coinciden con lo que trabaja cada ejercicio', () => {
+  const catalog = JSON.parse(readFileSync('public/exercises_es.json', 'utf8')).exercises as { id: string; muscle: string; secondaryMuscles: string[] }[]
+  const byId = new Map(catalog.map(e => [e.id, e]))
+  // El principal nunca se repite como secundario ni hay secundarios duplicados.
+  for (const e of catalog) {
+    assert.ok(!e.secondaryMuscles.includes(e.muscle), e.id)
+    assert.equal(new Set(e.secondaryMuscles).size, e.secondaryMuscles.length, e.id)
+  }
+  const expected: Record<string, string> = {
+    Barbell_Deadlift: 'glutes', Dumbbell_Suitcase_Carry: 'abs', Shoulder_Raise: 'traps', Split_Squats: 'quads', Upright_Barbell_Row: 'delts',
+  }
+  for (const [id, muscle] of Object.entries(expected)) assert.equal(byId.get(id)?.muscle, muscle, id)
+  assert.ok(byId.get('Barbell_Deadlift')!.secondaryMuscles.includes('spine'))
+})

@@ -6153,5 +6153,915 @@
   "Suspended_Row": "suspension",
   "Suspended_Split_Squat": "suspension",
   "Ring_Dips": "suspension"
+ },
+ "muscleOverrides": {
+  "Alternating_Renegade_Row": {
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats",
+    "abs"
+   ]
+  },
+  "Axle_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Back_Flyes_-_With_Bands": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Backward_Medicine_Ball_Throw": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "quads",
+    "spine"
+   ]
+  },
+  "Band_Assisted_Pull-Up": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back",
+    "abs",
+    "forearms"
+   ]
+  },
+  "Band_Reverse_Curl": {
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ]
+  },
+  "Band_Seated_Leg_Extension": {
+   "muscle": "quads",
+   "secondaryMuscles": []
+  },
+  "Band_Straight_Leg_Deadlift": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ]
+  },
+  "Barbell_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Barbell_Glute_Bridge": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ]
+  },
+  "Barbell_Hack_Squat": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "forearms"
+   ]
+  },
+  "Barbell_Hip_Thrust": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ]
+  },
+  "Battling_Ropes": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "abs",
+    "forearms",
+    "pectorals"
+   ]
+  },
+  "Bench_Press_-_Powerlifting": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Bench_Press_with_Chains": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Board_Press": {
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "pectorals",
+    "delts"
+   ]
+  },
+  "Box_Jump_Multiple_Response": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Box_Skip": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Cable_Deadlifts": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "forearms"
+   ]
+  },
+  "Cable_Hammer_Curls_-_Rope_Attachment": {
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ]
+  },
+  "Cable_Lateral_Lunge": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ]
+  },
+  "Cable_Rear_Delt_Fly": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Cable_Seated_Leg_Extension": {
+   "muscle": "quads",
+   "secondaryMuscles": []
+  },
+  "Carioca_Quick_Step": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "adductors",
+    "abductors",
+    "calves",
+    "glutes",
+    "hamstrings",
+    "abs"
+   ]
+  },
+  "Chair_Lower_Back_Stretch": {
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "lats",
+    "glutes"
+   ]
+  },
+  "Crossover_Reverse_Lunge": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "quads",
+    "hamstrings",
+    "abductors"
+   ]
+  },
+  "Deadlift_with_Bands": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Deadlift_with_Chains": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Deficit_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Depth_Jump_Leap": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Double_Leg_Butt_Kick": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Dumbbell_Floor_Press": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Dumbbell_Lateral_Lunge": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ]
+  },
+  "Dumbbell_Lying_Rear_Lateral_Raise": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Dumbbell_Raise": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps"
+   ]
+  },
+  "Dumbbell_Renegade_Row": {
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats",
+    "abs"
+   ]
+  },
+  "Dumbbell_Suitcase_Carry": {
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "forearms",
+    "traps",
+    "glutes"
+   ]
+  },
+  "Dumbbell_Sumo_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "forearms"
+   ]
+  },
+  "Fast_Skipping": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Floor_Press": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Floor_Press_with_Chains": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Front_Box_Jump": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Front_Cone_Hops_or_hurdle_hops": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Hammer_Curls": {
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ]
+  },
+  "Hip_Lift_with_Band": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ]
+  },
+  "Hurdle_Hops": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Incline_Bench_Pull": {
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats",
+    "delts"
+   ]
+  },
+  "Incline_Hammer_Curls": {
+   "muscle": "biceps",
+   "secondaryMuscles": [
+    "forearms"
+   ]
+  },
+  "Intermediate_Groin_Stretch": {
+   "muscle": "adductors",
+   "secondaryMuscles": [
+    "hamstrings"
+   ]
+  },
+  "Iron_Cross": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "pectorals"
+   ]
+  },
+  "Iron_Crosses_stretch": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "spine"
+   ]
+  },
+  "Kettlebell_Thruster": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "delts",
+    "triceps",
+    "glutes"
+   ]
+  },
+  "Knee_Circles": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Knee_Tuck_Jump": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Landmine_Cossack_Squat": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "adductors"
+   ]
+  },
+  "Lateral_Bound": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "abductors",
+    "adductors"
+   ]
+  },
+  "Lateral_Box_Jump": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "abductors",
+    "adductors"
+   ]
+  },
+  "Lateral_Cone_Hops": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "abductors",
+    "adductors"
+   ]
+  },
+  "Lever_Pendulum_Squat_Plate_Loaded": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ]
+  },
+  "Lever_Seated_Good_Morning": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ]
+  },
+  "Leverage_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine"
+   ]
+  },
+  "Leverage_High_Row": {
+   "muscle": "upper-back",
+   "secondaryMuscles": [
+    "biceps",
+    "lats"
+   ]
+  },
+  "Lower_Back_Curl": {
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "abs"
+   ]
+  },
+  "Lying_Crossover": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "spine"
+   ]
+  },
+  "Lying_Dumbbell_Tricep_Extension": {
+   "muscle": "triceps",
+   "secondaryMuscles": []
+  },
+  "Lying_Rear_Delt_Raise": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Mixed_Grip_Chin": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "upper-back"
+   ]
+  },
+  "Monster_Walk": {
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "glutes"
+   ]
+  },
+  "Mountain_Climbers": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "abs",
+    "delts",
+    "pectorals"
+   ]
+  },
+  "One_Arm_Chin-Up": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "upper-back"
+   ]
+  },
+  "One_Arm_Floor_Press": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "One_Half_Locust": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "spine",
+    "hamstrings"
+   ]
+  },
+  "One_Handed_Hang": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "forearms",
+    "biceps"
+   ]
+  },
+  "Overhead_Slam": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "abs",
+    "delts",
+    "triceps"
+   ]
+  },
+  "Overhead_Stretch": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "pectorals",
+    "triceps",
+    "abs"
+   ]
+  },
+  "Pelvic_Tilt_Into_Bridge": {
+   "muscle": "spine",
+   "secondaryMuscles": [
+    "glutes",
+    "abs"
+   ]
+  },
+  "Pin_Presses": {
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "pectorals",
+    "delts"
+   ]
+  },
+  "Power_Clean_from_Blocks": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "quads",
+    "delts",
+    "traps"
+   ]
+  },
+  "Prowler_Sprint": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Rear_Leg_Raises": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings"
+   ]
+  },
+  "Reverse_Band_Bench_Press": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Reverse_Band_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "spine",
+    "traps",
+    "upper-back",
+    "lats",
+    "forearms"
+   ]
+  },
+  "Reverse_Band_Sumo_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "traps",
+    "forearms"
+   ]
+  },
+  "Reverse_Flyes": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Reverse_Flyes_With_External_Rotation": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Reverse_Hyperextension": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "spine"
+   ]
+  },
+  "Reverse_Machine_Flyes": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Reverse_Triceps_Bench_Press": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Romanian_Deadlift": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ]
+  },
+  "Seated_Bent-Over_Rear_Delt_Raise": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Shoulder_Raise": {
+   "muscle": "traps",
+   "secondaryMuscles": [
+    "delts"
+   ]
+  },
+  "Side_Leg_Raises": {
+   "muscle": "abductors",
+   "secondaryMuscles": [
+    "adductors",
+    "glutes"
+   ]
+  },
+  "Side_Wrist_Pull": {
+   "muscle": "lats",
+   "secondaryMuscles": [
+    "abs",
+    "delts"
+   ]
+  },
+  "Sled_Reverse_Flye": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "upper-back",
+    "traps"
+   ]
+  },
+  "Smith_Bent_Knee_Good_Morning": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ]
+  },
+  "Smith_Hack_Squat": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+   ]
+  },
+  "Smith_Jm_Bench_Press": {
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "pectorals",
+    "delts"
+   ]
+  },
+  "Smith_Machine_Upright_Row": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "biceps"
+   ]
+  },
+  "Smith_Sumo_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "forearms"
+   ]
+  },
+  "Split_Squats": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Squat_with_Plate_Movers": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Standing_Dumbbell_Upright_Row": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "biceps"
+   ]
+  },
+  "Standing_Low-Pulley_One-Arm_Triceps_Extension": {
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "delts"
+   ]
+  },
+  "Standing_One-Arm_Dumbbell_Triceps_Extension": {
+   "muscle": "triceps",
+   "secondaryMuscles": [
+    "delts"
+   ]
+  },
+  "Stiff_Leg_Barbell_Good_Morning": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine"
+   ]
+  },
+  "Sumo_Deadlift": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "traps",
+    "forearms"
+   ]
+  },
+  "Sumo_Deadlift_with_Bands": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "traps",
+    "forearms"
+   ]
+  },
+  "Sumo_Deadlift_with_Chains": {
+   "muscle": "glutes",
+   "secondaryMuscles": [
+    "hamstrings",
+    "quads",
+    "adductors",
+    "spine",
+    "traps",
+    "forearms"
+   ]
+  },
+  "Supine_Chest_Throw": {
+   "muscle": "pectorals",
+   "secondaryMuscles": [
+    "triceps",
+    "delts"
+   ]
+  },
+  "Suspended_Split_Squat": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+   ]
+  },
+  "Trap_Bar_Deadlift": {
+   "muscle": "quads",
+   "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "spine",
+    "traps",
+    "forearms"
+   ]
+  },
+  "Trap_Bar_Farmers_Carry": {
+   "muscle": "forearms",
+   "secondaryMuscles": [
+    "traps",
+    "abs",
+    "glutes",
+    "hamstrings",
+    "quads"
+   ]
+  },
+  "Two-Arm_Kettlebell_Clean": {
+   "muscle": "hamstrings",
+   "secondaryMuscles": [
+    "glutes",
+    "spine",
+    "delts",
+    "traps",
+    "calves"
+   ]
+  },
+  "Upright_Barbell_Row": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "biceps"
+   ]
+  },
+  "Upright_Cable_Row": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "biceps"
+   ]
+  },
+  "Upright_Row_-_With_Bands": {
+   "muscle": "delts",
+   "secondaryMuscles": [
+    "traps",
+    "biceps"
+   ]
+  },
+  "Windmills": {
+   "muscle": "abs",
+   "secondaryMuscles": [
+    "spine",
+    "hamstrings",
+    "glutes"
+   ]
+  }
  }
 }
