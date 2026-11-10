@@ -25,6 +25,8 @@ const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DEBUG
   ...(linux ? ['--no-sandbox', '--disable-dev-shm-usage'] : []), '--window-size=390,844', '--lang=es-ES', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] })
 let chromeLog = ''
 chrome.stderr.on('data', (b) => { chromeLog = (chromeLog + b).slice(-2000) })
+let chromeExit = ''
+chrome.on('exit', (code, signal) => { chromeExit = `Chrome se cerró al arrancar (código ${code}${signal ? `, señal ${signal}` : ''})` })
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 let ws
@@ -34,12 +36,23 @@ let step = 'arrancar'
 let pageText = async () => ''
 
 async function main() {
-  // Conectar con la pestaña.
+  // Conectar con la pestaña. En los servidores de GitHub Chrome a veces tarda más de 20 s, o responde antes de
+  // tener abierta su pestaña: se espera en cada intento (antes, si ya respondía sin pestaña, los 100 intentos se
+  // agotaban al momento) hasta un minuto, y si a los 5 s sigue sin pestaña se le pide una.
   let target
-  for (let i = 0; i < 100 && !target; i++) {
-    try { target = (await (await fetch(`http://127.0.0.1:${DEBUG}/json/list`)).json()).find((x) => x.type === 'page') } catch { await wait(200) }
+  const start = Date.now()
+  let asked = false
+  while (!target && !chromeExit && Date.now() - start < 60_000) {
+    try {
+      target = (await (await fetch(`http://127.0.0.1:${DEBUG}/json/list`)).json()).find((x) => x.type === 'page')
+      if (!target && !asked && Date.now() - start > 5_000) {
+        asked = true
+        await fetch(`http://127.0.0.1:${DEBUG}/json/new?about:blank`, { method: 'PUT' }).catch(() => {})
+      }
+    } catch { /* aún no escucha */ }
+    if (!target) await wait(250)
   }
-  if (!target) throw new Error(`Chrome no ha arrancado (${CHROME})\n${chromeLog}`)
+  if (!target) throw new Error(`${chromeExit || `Chrome no ha arrancado en un minuto`} (${CHROME})\n${chromeLog}`)
   ws = new WebSocket(target.webSocketDebuggerUrl)
   await new Promise((r, j) => { ws.onopen = r; ws.onerror = j })
   let id = 0

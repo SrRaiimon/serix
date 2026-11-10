@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.31',
+    items: [
+      ['Pruebas automáticas más fiables al publicar: las versiones nuevas llegan sin esperas por fallos al arrancar el navegador de pruebas.', 'More reliable automated tests on release: new versions arrive without delays caused by the test browser failing to start.'],
+    ],
+  },
+  {
     version: '0.1.30',
     items: [
       ['Ninguna rodilla se dobla ya al revés: corregidas las zancadas, subidas al banco, escaladores y curls femorales tumbados.', 'No knee bends backwards anymore: lunges, step-ups, mountain climbers and lying leg curls are fixed.'],
