@@ -172,7 +172,9 @@ export function RoutinesScreen({ generate = false }: { generate?: boolean }) {
             }))
           } }]} />
       )}
-      {showGenerator && <GeneratorSheet onClose={() => { setShowGenerator(false); if (generate) navigate('routines') }} />}
+      {/* Cambiar la dirección también cierra la hoja (el navegador lo avisa como un Atrás): solo se vuelve a Rutinas si
+          seguías en el generador, para no pisar la pantalla a la que ibas. */}
+      {showGenerator && <GeneratorSheet onClose={() => { setShowGenerator(false); if (generate && location.hash === '#/routines/generate') navigate('routines') }} />}
       {show531 && <Program531Sheet onClose={() => setShow531(false)} />}
       {library && <LibrarySheet onClose={() => setLibrary(false)} on531={data.settings.simpleMode ? undefined : () => { setLibrary(false); setShow531(true) }} />}
       {editing && <RoutineEditor id={editing} onClose={closeEditor} />}

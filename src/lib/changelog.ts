@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.29',
+    items: [
+      ['Si cambiabas de pantalla con el generador de programas abierto, la app te devolvía a Rutinas; ya te lleva a donde ibas.', 'Switching screens with the program generator open sent you back to Routines; it now takes you where you were going.'],
+    ],
+  },
+  {
     version: '0.1.28',
     items: [
       ['Los ejercicios con máquina o material específico ya lo enseñan: bici, remo, escalera, cinta, comba, cadenas, trineo, torres de polea…', 'Exercises with machines or special gear now show them: bike, rower, stairs, treadmill, jump rope, chains, sled, cable towers…'],
