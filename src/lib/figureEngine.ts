@@ -35,8 +35,8 @@ function side(pose: Pose, hip: Pt): Joints {
     hip, hip2: hip, shoulder, shoulder2, head: step(neckBase, pose.head ?? pose.torso, L.neck + 12),
     knee, ankle, toe: step(ankle, pose.foot ?? 90, L.foot),
     knee2, ankle2, toe2: step(ankle2, pose.foot2 ?? pose.foot ?? 90, L.foot),
-    elbow, wrist: step(elbow, pose.fore, L.fore),
-    elbow2, wrist2: step(elbow2, pose.fore2 ?? pose.fore, L.fore),
+    elbow, wrist: step(elbow, pose.fore, L.fore * (pose.foreLen ?? 1)),
+    elbow2, wrist2: step(elbow2, pose.fore2 ?? pose.fore, L.fore * (pose.foreLen ?? 1)),
   }
 }
 
@@ -57,7 +57,7 @@ function front(pose: Pose, pelvis: Pt): Joints {
   return {
     hip, hip2, shoulder, shoulder2, head: step(mid, pose.head ?? pose.torso, L.neck + 12),
     knee, ankle, toe: step(ankle, 150, 12), knee2, ankle2, toe2: step(ankle2, -150, 12),
-    elbow, wrist: step(elbow, pose.fore, L.fore), elbow2, wrist2: step(elbow2, -(pose.fore2 ?? pose.fore), L.fore),
+    elbow, wrist: step(elbow, pose.fore, L.fore * (pose.foreLen ?? 1)), elbow2, wrist2: step(elbow2, -(pose.fore2 ?? pose.fore), L.fore),
   }
 }
 
@@ -93,7 +93,7 @@ function turned(j: Joints, [cx, cy]: Pt, degrees: number): Joints {
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
 
 /** Valor que se da por hecho si una postura no indica el campo (para poder interpolar). */
-const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90, spin: 0, bend: 0 }
+const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90, spin: 0, bend: 0, foreLen: 1 }
 
 const FALLBACK: Partial<Record<keyof Pose, keyof Pose>> = { thigh2: 'thigh', shin2: 'shin', upper2: 'upper', fore2: 'fore', foot2: 'foot', head: 'torso' }
 
@@ -103,7 +103,7 @@ const ANGLES = new Set<keyof Pose>(['torso', 'head', 'thigh', 'shin', 'thigh2', 
  * Postura intermedia. Los ángulos van por el camino corto (de 180 a -106 son 74° hacia atrás, no
  * 286° pasando por arriba), salvo los que la figura marca como barrido largo.
  */
-function blend(a: Pose, b: Pose, t: number, sweep: (keyof Pose)[] = []): Pose {
+function blend(a: Pose, b: Pose, t: number, sweep: (keyof Pose)[] = [], side = false): Pose {
   const out: Partial<Record<keyof Pose, number>> = {}
   for (const key of new Set([...Object.keys(a), ...Object.keys(b)]) as Set<keyof Pose>) {
     // Si una postura no indica el lado lejano (o la cabeza), vale lo mismo que el cercano (o el tronco).
@@ -117,6 +117,20 @@ function blend(a: Pose, b: Pose, t: number, sweep: (keyof Pose)[] = []): Pose {
       while (to - from < -180) to += 360
     }
     out[key] = mix(from, to, t)
+  }
+  // De perfil, la pierna se interpola por el ángulo de la rodilla y no por el de la espinilla: promediando ángulos
+  // absolutos, la rodilla pasaba un instante por una hiperextensión (se doblaba al revés) entre dos posturas buenas.
+  if (side) {
+    for (const [thigh, shin] of [['thigh', 'shin'], ['thigh2', 'shin2']] as const) {
+      if (sweep.includes(shin) || out[thigh] === undefined || out[shin] === undefined) continue
+      const ta = a[thigh] ?? (thigh === 'thigh2' ? a.thigh : undefined), sa = a[shin] ?? (shin === 'shin2' ? a.shin : undefined)
+      const tb = b[thigh] ?? (thigh === 'thigh2' ? b.thigh : undefined), sb = b[shin] ?? (shin === 'shin2' ? b.shin : undefined)
+      if (ta === undefined || sa === undefined || tb === undefined || sb === undefined) continue
+      const rel = (x: number) => ((((x + 180) % 360) + 360) % 360) - 180
+      const ra = rel(sa - ta), rb = rel(sb - tb)
+      // Solo si las dos posturas doblan la rodilla hacia el mismo lado (si no, se respeta lo que dibuja la figura).
+      if (ra >= -5 && rb >= -5) out[shin] = out[thigh]! + mix(ra, rb, t)
+    }
   }
   return out as Pose
 }
@@ -305,9 +319,9 @@ export function poseAt(figure: Figure, t: number): Pose {
     const stops = [figure.frames[0], ...figure.via, figure.frames[1]]
     const at = Math.min(0.9999, Math.max(0, t)) * (stops.length - 1)
     const i = Math.floor(at)
-    return t >= 1 ? stops[stops.length - 1] : withArc(figure, blend(stops[i], stops[i + 1], at - i, figure.sweep), t)
+    return t >= 1 ? stops[stops.length - 1] : withArc(figure, blend(stops[i], stops[i + 1], at - i, figure.sweep, figure.view === 'side'), t)
   }
-  const pose = withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep), t)
+  const pose = withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep, figure.view === 'side'), t)
   // Los apoyos se corrigen también en la postura final (en la inicial ya están en su sitio).
   return t <= 0 ? pose : planted(figure, pose, t)
 }
@@ -388,7 +402,7 @@ function planted(figure: Figure, pose: Pose, t: number): Pose {
       const target: Pt = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]
       const root = j[limb.root]
       const goal: Pt = point === limb.end ? target : [target[0] - (j[point][0] - j[limb.end][0]), target[1] - (j[point][1] - j[limb.end][1])]
-      const solved = twoBone(root, j[limb.mid], goal, dist(root, j[limb.mid]), dist(j[limb.mid], j[limb.end]))
+      const solved = twoBone(root, j[limb.mid], goal, dist(root, j[limb.mid]), dist(j[limb.mid], j[limb.end]), limb.tip && figure.view === 'side' && !figure.turn ? -1 : undefined)
       if (!solved) continue
       out[limb.a] = sign(limb) * angleOf(root, solved.mid)
       out[limb.b] = sign(limb) * angleOf(solved.mid, solved.end)
@@ -398,14 +412,15 @@ function planted(figure: Figure, pose: Pose, t: number): Pose {
 }
 
 /** Codo o rodilla para llegar de `root` a `target` con dos segmentos, doblando hacia el lado de `bend`. */
-function twoBone(root: Pt, bend: Pt, target: Pt, l1: number, l2: number): { mid: Pt; end: Pt } | undefined {
+function twoBone(root: Pt, bend: Pt, target: Pt, l1: number, l2: number, forceSide?: number): { mid: Pt; end: Pt } | undefined {
   if (l1 < 1 || l2 < 1) return undefined
   const dx = target[0] - root[0], dy = target[1] - root[1]
   const d = Math.min(l1 + l2 - 0.01, Math.max(Math.abs(l1 - l2) + 0.01, Math.hypot(dx, dy)))
   const base = Math.atan2(dy, dx)
   const a = Math.acos(Math.min(1, Math.max(-1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d))))
   // El mismo lado que la postura sin corregir (para que la rodilla no se doble al revés).
-  const side = Math.sign(dx * (bend[1] - root[1]) - dy * (bend[0] - root[0])) || 1
+  // De perfil, la rodilla siempre hacia delante (forceSide): una postura intermedia ya doblada al revés no la arrastra.
+  const side = forceSide ?? (Math.sign(dx * (bend[1] - root[1]) - dy * (bend[0] - root[0])) || 1)
   const ang = base + side * a
   return { mid: [root[0] + l1 * Math.cos(ang), root[1] + l1 * Math.sin(ang)], end: [root[0] + d * Math.cos(base), root[1] + d * Math.sin(base)] }
 }

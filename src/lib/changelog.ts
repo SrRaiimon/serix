@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.30',
+    items: [
+      ['Ninguna rodilla se dobla ya al revés: corregidas las zancadas, subidas al banco, escaladores y curls femorales tumbados.', 'No knee bends backwards anymore: lunges, step-ups, mountain climbers and lying leg curls are fixed.'],
+      ['Más ejercicios con su máquina o su gesto real: contractor de pecho, elíptica, encogimientos en máquina, rotaciones de hombro y paso carioca.', 'More exercises show their real machine or movement: pec deck, elliptical, machine shrugs, shoulder rotations and carioca.'],
+    ],
+  },
+  {
     version: '0.1.29',
     items: [
       ['Si cambiabas de pantalla con el generador de programas abierto, la app te devolvía a Rutinas; ya te lleva a donde ibas.', 'Switching screens with the program generator open sent you back to Routines; it now takes you where you were going.'],
