@@ -39,6 +39,7 @@ const GROWTH_TOLERANCE = 1.2
 
 // Aproximaciones conocidas y aceptadas (con el motivo): se avisan pero no hacen fallar la compilación.
 const KNOWN = {
+  'Round_The_World_Shoulder_Stretch': 'los brazos suben por encima de la cabeza a propósito, de delante a atrás',
   'Kettlebell_Turkish_Get-Up_Lunge_style': 'el brazo de apoyo roza el suelo a mitad del incorporarse (con dos posturas no se puede dibujar el apoyo paso a paso)',
 }
 
@@ -68,7 +69,7 @@ for (const [f, id] of seen) {
   }
   worstFloor = Math.max(worstFloor, floor.by)
   worstGrowth = Math.max(worstGrowth, grow.by)
-  if (floor.by > FLOOR_TOLERANCE) errors.push(`${id}: ${floor.joint} atraviesa el suelo ${floor.by.toFixed(1)} px (t=${floor.t.toFixed(2)})`)
+  if (!f.above && floor.by > FLOOR_TOLERANCE) errors.push(`${id}: ${floor.joint} atraviesa el suelo ${floor.by.toFixed(1)} px (t=${floor.t.toFixed(2)})`)
   if (grow.by > GROWTH_TOLERANCE) errors.push(`${id}: la figura crece un ${Math.round((grow.by - 1) * 100)} % a mitad de movimiento (t=${grow.t.toFixed(2)}): ¿un miembro da la vuelta?`)
 }
 const known = errors.filter((e) => KNOWN[e.split(':')[0]])

@@ -131,8 +131,8 @@ test('La tarjeta de la figura va de vertical a 4:3 y la miniatura es cuadrada y 
 
 test('Cada figura lleva el material de su ejercicio y los pájaros no se dibujan de pie y erguidos', () => {
   const NEEDS: Record<string, string[]> = {
-    dumbbell: ['dumbbell'], kettlebell: ['kettlebell'], cable: ['cable', 'grip'], band: ['band'], suspension: ['strap'],
-    smith: ['smith'], landmine: ['landmine'], 'trap-bar': ['trapBar'], barbell: ['plate', 'barFront', 'bar'], 'ez-bar': ['plate', 'barFront'],
+    dumbbell: ['dumbbell'], kettlebell: ['kettlebell'], cable: ['cable', 'grip', 'barFront'], band: ['band'], suspension: ['strap'],
+    smith: ['smith'], landmine: ['landmine'], 'trap-bar': ['trapBar'], barbell: ['plate', 'barFront', 'bar', 'landmine'], 'ez-bar': ['plate', 'barFront'],
   }
   const BORROWED: Record<string, string[]> = {
     bodyweight: ['dumbbell', 'kettlebell', 'plate', 'barFront', 'cable', 'band', 'strap', 'landmine', 'smith', 'trapBar'],
@@ -153,7 +153,7 @@ test('Cada figura lleva el material de su ejercicio y los pájaros no se dibujan
   }
   assert.deepEqual(wrong, [])
   for (const id of ['Reverse_Flyes', 'Seated_Bent-Over_Rear_Delt_Raise']) assert.ok(FIGURES[id].frames.every(p => p.torsoLen! < 1), id)
-  for (const id of ['Lying_Rear_Delt_Raise', 'Dumbbell_Lying_Rear_Lateral_Raise']) assert.ok(FIGURES[id].props.some(p => p.type === 'bench'), id)
+  for (const id of ['Lying_Rear_Delt_Raise', 'Dumbbell_Lying_Rear_Lateral_Raise']) assert.ok(FIGURES[id].props.some(p => p.type === 'bench' || p.type === 'benchTop'), id)
   assert.ok(FIGURES.GHD_Sit_Up.props.some(p => p.type === 'bench'))
 })
 
@@ -174,7 +174,8 @@ test('Los músculos del catálogo coinciden con lo que trabaja cada ejercicio', 
 
 test('el dibujo del muñeco cubre todos los músculos del catálogo y sale bien en todas las figuras', () => {
   const zero = [0, 0] as [number, number], top = [0, -60] as [number, number]
-  const drawable = (front: boolean) => new Set((['thigh', 'shin', 'upper', 'fore', 'torso', 'pelvis'] as const).flatMap((s) => spots(s, zero, top, front).map((x) => x.muscle)))
+  // De frente solo se pintan los músculos que se ven; los de atrás, con la figura vista de espaldas.
+  const drawable = (front: boolean) => new Set((['thigh', 'shin', 'upper', 'fore', 'torso', 'pelvis'] as const).flatMap((s) => [...spots(s, zero, top, front), ...(front ? spots(s, zero, top, true, false, true) : [])].map((x) => x.muscle)))
   const catalog: { id: string; muscle: string; secondaryMuscles: string[] }[] = JSON.parse(readFileSync('public/exercises_es.json', 'utf8')).exercises
   for (const front of [false, true]) {
     const known = drawable(front)

@@ -93,7 +93,7 @@ function turned(j: Joints, [cx, cy]: Pt, degrees: number): Joints {
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
 
 /** Valor que se da por hecho si una postura no indica el campo (para poder interpolar). */
-const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90 }
+const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90, spin: 0, bend: 0 }
 
 const FALLBACK: Partial<Record<keyof Pose, keyof Pose>> = { thigh2: 'thigh', shin2: 'shin', upper2: 'upper', fore2: 'fore', foot2: 'foot', head: 'torso' }
 
@@ -123,7 +123,12 @@ function blend(a: Pose, b: Pose, t: number, sweep: (keyof Pose)[] = []): Pose {
 
 /** Punto de referencia de un objeto (y su ángulo) para una postura dada. */
 export function propAnchor(prop: Prop, j: Joints, pose: Pose): { x: number; y: number; angle: number } {
-  const origin: Pt = prop.at ? j[prop.at] : prop.point ?? [0, 0]
+  let origin: Pt = prop.at ? j[prop.at] : prop.point ?? [0, 0]
+  // Con la muñeca flexionada, lo que se lleva en la mano va con ella.
+  if (pose.bend && (prop.at === 'wrist' || prop.at === 'wrist2')) {
+    const [ex, ey] = prop.at === 'wrist' ? j.elbow : j.elbow2
+    origin = step(origin, (Math.atan2(origin[0] - ex, -(origin[1] - ey)) * 180) / Math.PI + pose.bend, 8)
+  }
   const angle = (prop.angle ?? 0) + (prop.rel === 'torso' ? pose.torso : 0)
   const [x, y] = prop.offset ? step(origin, angle, prop.offset) : origin
   return { x, y, angle }
@@ -141,6 +146,51 @@ export function barFrontEnds(j: Joints): { x0: number; x1: number; y: number } {
 export function trapBarCenter(j: Joints): number {
   return j.hip[0] === j.hip2[0] ? j.wrist[0] - 25 : (j.wrist[0] + j.wrist2[0]) / 2
 }
+
+/**
+ * Pivote de una palanca o una landmine: una barra rígida no cambia de longitud, así que se busca el punto
+ * a la misma distancia de la mano al principio y al final, lo más cerca posible del que indica la figura.
+ * La landmine se queda en su altura (va anclada al suelo).
+ */
+const pivotCache = new WeakMap<Prop, Pt>()
+export function rigidPivot(figure: Figure, prop: Prop): Pt {
+  const cached = pivotCache.get(prop)
+  if (cached) return cached
+  const [a, b] = figure.frames.map((pose) => { const a = propAnchor(prop, place(figure, pose), pose); return [a.x, a.y] as Pt })
+  const p = prop.point!
+  const [mx, my] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+  const [dx, dy] = [b[0] - a[0], b[1] - a[1]]
+  const len2 = dx * dx + dy * dy
+  let out: Pt = p
+  if (len2 > 1) {
+    // La barra mide lo que mide: si la cuenta sale demasiado lejos, se queda en el punto de la figura.
+    if (prop.type === 'landmine' && Math.abs(dx) > 4) {
+      const x = mx + (dy * (my - p[1])) / dx
+      out = Math.hypot(x - mx, p[1] - my) < 190 ? [x, p[1]] : p
+    }
+    else {
+      // Punto del bisector más cercano al indicado.
+      const k = ((p[0] - mx) * -dy + (p[1] - my) * dx) / len2
+      out = [mx - dy * k, my + dx * k]
+    }
+  }
+  pivotCache.set(prop, out)
+  return out
+}
+
+/** Dónde queda la torre de una polea: al lado de la polea, por fuera del cuerpo. */
+export function cableTower(prop: Prop, j: Joints): { x: number; top: number } {
+  const [px, py] = prop.point!
+  return { x: px + (px >= j.hip[0] ? 14 : -14), top: Math.min(py - 6, 96) }
+}
+
+/** Torre de peso de una máquina: detrás de todo lo que ocupa el cuerpo en la postura inicial. */
+export function machineTower(j: Joints): { x: number; top: number } {
+  return { x: Math.min(...Object.values(j).map((p) => p[0])) - 26, top: 84 }
+}
+
+/** Centro de la biela de una bicicleta: entre los dos tobillos, porque los pies dan la vuelta en ella. */
+export const crankCenter = (j: Joints): Pt => [(j.ankle[0] + j.ankle2[0]) / 2 + 7, (j.ankle[1] + j.ankle2[1]) / 2 + 3]
 
 /** Centro de la sombra en el suelo. */
 export function shadowX(figure: Figure, j: Joints): number {
@@ -185,30 +235,54 @@ export function fitViewBox(figure: Figure): string {
     const pose = poseAt(figure, t)
     const j = place(figure, pose)
     for (const [key, p] of Object.entries(j)) add(p[0], p[1], key === 'head' ? 13 : 10)
-    const sx = shadowX(figure, j)
-    add(sx - (figure.shadow ?? 62), FLOOR + 9); add(sx + (figure.shadow ?? 62), FLOOR + 9)
+    if (figure.machine) { const tower = machineTower(place(figure, figure.frames[0])); add(tower.x - 15, tower.top); add(tower.x + 15, FLOOR) }
+    if (!figure.above) {
+      const sx = shadowX(figure, j)
+      add(sx - (figure.shadow ?? 62), FLOOR + 9); add(sx + (figure.shadow ?? 62), FLOOR + 9)
+    }
     for (const prop of figure.props) {
       const { x, y } = propAnchor(prop, j, pose)
       switch (prop.type) {
-        case 'plate': add(x, y, prop.size ?? 32); break
+        case 'plate': add(x, y, prop.size ?? 27); break
         case 'dumbbell': add(x, y, 18); break
         case 'kettlebell': add(x, prop.up ? y - 11 : y + 13, 12); break
         case 'pad': add(x, y, prop.size ?? 8); break
         case 'ball': add(x, y, prop.size ?? 10); break
         case 'platform': add(x, y, 34); break
         case 'grip': add(x, y, 18); break
-        case 'smith': add(prop.span![0] - 15, prop.y!); add(prop.span![1] + 15, FLOOR); add(x, y, 18); break
-        case 'trapBar': add(trapBarCenter(j), y, 56); break
-        case 'landmine': case 'lever': add(prop.point![0], prop.point![1], 8); add(x, y, 16); break
-        case 'strap':
-        case 'cable': add(prop.point![0], prop.point![1], 6); add(x, y); break
-        case 'band': { const [ax, ay] = prop.to ? j[prop.to] : prop.point!; add(ax, ay); add(x, y); break }
-        case 'barFront': { const e = barFrontEnds(j); add(e.x0, e.y - 24); add(e.x1, e.y + 24); break }
+        case 'smith':
+          if (figure.view === 'side') { add(x, prop.y!); add(x, FLOOR); add(x, y, 16); break }
+          add(prop.span![0] - 15, prop.y!); add(prop.span![1] + 15, FLOOR); add(x, y, 18); break
+        case 'trapBar': if (figure.view === 'front') add(trapBarCenter(j), y, 56); else add(x, y, 26); break
+        case 'tire':
+        case 'landmine': case 'lever': { const [px, py] = rigidPivot(figure, prop); add(px, py, 8); add(x, y, 16); break }
+        case 'strap': add(prop.point![0], prop.point![1], 6); add(x, y); break
+        case 'cable': {
+          add(prop.point![0], prop.point![1], 6); add(x, y)
+          if (!prop.bare) { const tower = cableTower(prop, j); add(tower.x - 15, tower.top); add(tower.x + 15, FLOOR) }
+          break
+        }
+        case 'band': { const [ax, ay] = prop.to ? j[prop.to] : prop.point!; add(ax, ay, prop.to ? 0 : 5); add(x, y); if (!prop.to && ay < FLOOR - 14) add(ax, FLOOR); break }
+        case 'barFront': { if (figure.above) { add(j.wrist[0], j.wrist[1], 44); add(j.wrist2[0], j.wrist2[1], 44); break } const e = barFrontEnds(j); add(e.x0, e.y - 24); add(e.x1, e.y + 24); if (prop.bare) add((e.x0 + e.x1) / 2, -30); break }
         case 'bench': case 'box': case 'bar': case 'seat':
           add(prop.span![0], prop.y! - 6); add(prop.span![1], FLOOR)
           if (prop.back) { add(prop.back[0], prop.back[1]); add(prop.back[0] + 10, prop.back[1] + prop.back[2]) }
           break
         case 'rest': add(x, y, 8); break
+        case 'bike': { const [cx, cy] = crankCenter(j); add(cx + 62, FLOOR - 34, 34); add(cx - 40, FLOOR); add(prop.point![0], prop.point![1], 10); add(cx, cy, 24); break }
+        case 'rower': add(prop.point![0], prop.point![1], 26); add(prop.span![0], FLOOR); add(prop.span![1], FLOOR); break
+        case 'stairs': add(prop.span![0], FLOOR); add(prop.span![1], FLOOR - (prop.size ?? 32) * 2); break
+        case 'treadmill': add(prop.span![0], FLOOR); add(prop.span![1], 96); break
+        case 'rope': add(j.wrist[0], FLOOR - 200); add((j.wrist[0] + j.wrist2[0]) / 2, FLOOR); break
+        case 'sled': add(prop.span![0], prop.y! - 22); add(prop.span![1], FLOOR); break
+        case 'yoke': add(x - 34, y - 14); add(x + 34, FLOOR); break
+        case 'rickshaw': add(x - 66, y - 6); add(x + 40, FLOOR); break
+        case 'farmer': add(x, y, 26); break
+        case 'stack': add(prop.point![0] - 20, prop.point![1]); add(prop.point![0] + 20, FLOOR); break
+        case 'log': add(x, y, prop.size ?? 21); break
+        case 'chains': add(x, FLOOR); break
+        case 'benchTop': add(prop.span![0], prop.y! - 18); add(prop.span![1], prop.y! + 18); break
+        case 'scott': add(x, y, 22); break
       }
     }
   }
@@ -226,6 +300,13 @@ export function fitViewBox(figure: Figure): string {
 
 /** Postura de la animación en el instante t (0 = inicial, 1 = final). */
 export function poseAt(figure: Figure, t: number): Pose {
+  if (figure.via) {
+    // Por tramos entre las posturas clave. Los apoyos los fijan las propias posturas, no el corrector.
+    const stops = [figure.frames[0], ...figure.via, figure.frames[1]]
+    const at = Math.min(0.9999, Math.max(0, t)) * (stops.length - 1)
+    const i = Math.floor(at)
+    return t >= 1 ? stops[stops.length - 1] : withArc(figure, blend(stops[i], stops[i + 1], at - i, figure.sweep), t)
+  }
   const pose = withArc(figure, blend(figure.frames[0], figure.frames[1], t, figure.sweep), t)
   // Los apoyos se corrigen también en la postura final (en la inicial ya están en su sitio).
   return t <= 0 ? pose : planted(figure, pose, t)
@@ -266,6 +347,7 @@ const fixCache = new WeakMap<Figure, Fix[]>()
 export function plantedPoints(figure: Figure): Fix[] {
   const cached = fixCache.get(figure)
   if (cached) return cached
+  if (figure.via) { fixCache.set(figure, []); return [] }
   const [j0, j1] = [place(figure, figure.frames[0]), place(figure, figure.frames[1])]
   const floor = (p: Pt) => FLOOR - p[1] < ON_FLOOR
   const fixes: Fix[] = []
@@ -274,6 +356,7 @@ export function plantedPoints(figure: Figure): Fix[] {
       const isLeg = !!limb.tip
       if (isLeg && !limb.far && figure.view === 'side' && !figure.anchor) continue
       const points = (isLeg ? [limb.tip!, limb.end] : [limb.end]) as (keyof Joints)[]
+      if (!isLeg && figure.straight) { fixes.push({ limb, point: limb.end, from: j0[limb.end], to: j1[limb.end], moved: false }); continue }
       const still = points.find((k) => dist(j0[k], j1[k]) < SAME_SPOT)
       if (still) { fixes.push({ limb, point: still, from: j0[still], to: j1[still], moved: false }); continue }
       // Solo en las figuras que lo piden (zancadas, sentadilla búlgara): en otras la pierna de atrás es la

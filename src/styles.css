@@ -2037,6 +2037,9 @@ html.scroll-locked body {
 .fig-part { stroke: var(--fig-line); stroke-width: 2.2; stroke-linejoin: round; paint-order: stroke; }
 .fig-part-far { stroke: var(--fig-line-far); }
 .fig-hair { fill: var(--fig-hair); }
+.fig-wood { fill: #b98a5a; }
+.fig-tire { stroke: var(--fig-dark-2); stroke-width: 22; stroke-linecap: round; }
+.fig-wood-ring { fill: none; stroke: #8a6239; stroke-width: 1.6; }
 .fig-stop-b1 { stop-color: var(--fig-b1); }
 .fig-stop-b2 { stop-color: var(--fig-b2); }
 .fig-stop-bf1 { stop-color: var(--fig-bf1); }
@@ -2068,7 +2071,7 @@ html.scroll-locked body {
 }
 
 /* Miniatura con la figura del ejercicio: a 40 px el trazo se quedaría en nada si no fuese más grueso. */
-.fig-thumb .fig-part { stroke-width: 3.6; }
+.fig-thumb .fig-part { stroke-width: 3.8; }
 
 .rest-done {
   border: 0;

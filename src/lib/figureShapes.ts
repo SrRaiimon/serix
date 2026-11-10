@@ -91,33 +91,50 @@ const SIDE_SPOTS: Record<Segment | 'pelvis', Record<string, Spot[]>> = {
   upper: { biceps: [[0.14, 0.9, 0.08, 0.86]], triceps: [[0.1, 0.92, -0.86, -0.08]], delts: [[-0.1, 0.44, -0.9, 0.9]] },
   fore: { forearms: [[0.02, 0.84, -0.78, 0.78]] },
   torso: {
-    pectorals: [[0.58, 0.96, -0.92, -0.08]], abs: [[0.1, 0.56, -0.88, -0.1]], lats: [[0.36, 0.86, 0.08, 0.88]],
+    pectorals: [[0.64, 1, -0.98, -0.16]], abs: [[0.1, 0.56, -0.88, -0.1]], lats: [[0.36, 0.86, 0.08, 0.88]],
     'upper-back': [[0.66, 1.02, 0.08, 0.9]], traps: [[0.84, 1.08, 0.1, 0.95]], spine: [[0.08, 0.62, 0.22, 0.86]],
   },
   pelvis: { glutes: [[-0.14, 0.22, 0.02, 1.02]] },
 }
 const FRONT_SPOTS: Record<Segment | 'pelvis', Record<string, Spot[]>> = {
   // De frente, el lado positivo del muslo cercano es el de fuera; en el lejano se refleja (ver `spots`).
-  thigh: { quads: [FULL_LIMB], hamstrings: [FULL_LIMB], adductors: [[0.04, 0.72, -0.86, -0.1]], abductors: [[-0.04, 0.54, 0.14, 0.92]] },
-  shin: { calves: [[0.02, 0.8, -0.8, 0.8]] },
-  upper: { biceps: [FULL_LIMB], triceps: [FULL_LIMB], delts: [[-0.12, 0.42, -0.92, 0.92]] },
+  thigh: { quads: [FULL_LIMB], adductors: [[0.04, 0.72, -0.86, -0.1]], abductors: [[-0.04, 0.54, 0.14, 0.92]] },
+  shin: {},
+  upper: { biceps: [FULL_LIMB], delts: [[-0.12, 0.42, -0.92, 0.92]] },
   fore: { forearms: [[0.02, 0.84, -0.78, 0.78]] },
   torso: {
     pectorals: [[0.6, 0.94, 0.05, 0.74], [0.6, 0.94, -0.74, -0.05]], abs: [[0.1, 0.56, -0.44, 0.44]],
-    lats: [[0.38, 0.84, 0.5, 0.97], [0.38, 0.84, -0.97, -0.5]], 'upper-back': [[0.6, 0.98, -0.84, 0.84]],
-    traps: [[0.88, 1.1, -0.72, 0.72]], spine: [[0.08, 0.58, -0.26, 0.26]],
+    lats: [[0.38, 0.84, 0.62, 0.98], [0.38, 0.84, -0.98, -0.62]], traps: [[0.96, 1.12, -0.72, 0.72]],
   },
-  pelvis: { glutes: [[-0.12, 0.2, 0.05, 0.92], [-0.12, 0.2, -0.92, -0.05]] },
+  pelvis: {},
 }
+
+// De espaldas: lo que no se ve de frente. El muñeco de frente es simétrico, así que solo cambian las zonas y el pelo.
+const BACK_SPOTS: Record<Segment | 'pelvis', Record<string, Spot[]>> = {
+  thigh: { hamstrings: [FULL_LIMB], adductors: FRONT_SPOTS.thigh.adductors, abductors: FRONT_SPOTS.thigh.abductors },
+  shin: { calves: [[0.02, 0.72, -0.84, 0.84]] },
+  upper: { triceps: [FULL_LIMB], delts: FRONT_SPOTS.upper.delts },
+  fore: FRONT_SPOTS.fore,
+  torso: {
+    lats: [[0.34, 0.8, 0.12, 0.96], [0.34, 0.8, -0.96, -0.12]], 'upper-back': [[0.62, 0.96, 0.08, 0.84], [0.62, 0.96, -0.84, -0.08]],
+    traps: [[0.7, 1.1, -0.6, 0.6]], spine: [[0.06, 0.6, 0.06, 0.34], [0.06, 0.6, -0.34, -0.06]],
+  },
+  pelvis: { glutes: [[-0.2, 0.16, 0.05, 0.92], [-0.2, 0.16, -0.92, -0.05]] },
+}
+
+// Músculos del ejercicio que obligan a mirar la figura de frente por la espalda.
+const REAR = new Set(['upper-back', 'lats', 'spine', 'glutes', 'hamstrings', 'triceps', 'calves'])
+/** Si una figura de frente debe verse de espaldas: cuando su músculo principal no se vería de frente. */
+export const seenFromBehind = (muscle: string | undefined) => !!muscle && REAR.has(muscle)
 
 export interface MuscleSpot { muscle: string; d: string }
 
 /** Vientres musculares de un segmento (`far`: lado lejano, algo más estrecho). */
-export function spots(segment: Segment | 'pelvis', a: Pt, b: Pt, front: boolean, far = false): MuscleSpot[] {
+export function spots(segment: Segment | 'pelvis', a: Pt, b: Pt, front: boolean, far = false, behind = false): MuscleSpot[] {
   const rows = (front ? FRONT : SIDE)[segment === 'pelvis' ? 'torso' : segment]
   const scale = far && !front ? 0.92 : 1
   const out: MuscleSpot[] = []
-  for (const [muscle, list] of Object.entries((front ? FRONT_SPOTS : SIDE_SPOTS)[segment])) {
+  for (const [muscle, list] of Object.entries((behind ? BACK_SPOTS : front ? FRONT_SPOTS : SIDE_SPOTS)[segment])) {
     for (const [t0, t1, u0, u1] of list) {
       const spot: Spot = far && front ? [t0, t1, -u1, -u0] : [t0, t1, u0, u1]
       out.push({ muscle, d: belly(a, b, rows, spot, scale) })
@@ -149,12 +166,19 @@ export function legPath(j: Joints, front: boolean, far: boolean): string {
   ].join('')
 }
 
-export function armPath(j: Joints, front: boolean, far: boolean): string {
+/** Punta de la mano: en línea con el antebrazo o girada lo que indique la flexión de la muñeca. */
+function bent(elbow: Pt, wrist: Pt, degrees: number): Pt {
+  if (!degrees) return extend(elbow, wrist, 9)
+  const a = Math.atan2(wrist[1] - elbow[1], wrist[0] - elbow[0]) + (degrees * Math.PI) / 180
+  return [wrist[0] + 9 * Math.cos(a), wrist[1] + 9 * Math.sin(a)]
+}
+
+export function armPath(j: Joints, front: boolean, far: boolean, bend = 0): string {
   const [shoulder, elbow, wrist] = far ? [j.shoulder2, j.elbow2, j.wrist2] : [j.shoulder, j.elbow, j.wrist]
   const scale = far && !front ? 0.92 : 1
   return [
     circle(shoulder, 7.5), tube(shoulder, elbow, SIDE.upper, scale), circle(elbow, 4.8), tube(elbow, wrist, SIDE.fore, scale),
-    tube(wrist, extend(elbow, wrist, 9), HAND),
+    tube(wrist, bent(elbow, wrist, bend), HAND),
   ].join('')
 }
 
@@ -175,9 +199,10 @@ const HEAD_FRONT: Pt[] = [[-10.5, 2], [-9.5, 9], [0, 13.5], [9.5, 9], [10.5, 2],
 const HAIR_FRONT: Pt[] = [[-11, 1], [-10, 9.5], [0, 14.2], [10, 9.5], [11, 1], [8.8, 5], [0, 7.5], [-8.8, 5]]
 
 /** Cabeza y pelo: el perfil deja ver hacia dónde mira, también boca abajo o tumbado. */
-export function headPaths(head: Pt, neck: Pt, front: boolean): { head: string; hair: string } {
+export function headPaths(head: Pt, neck: Pt, front: boolean, behind = false): { head: string; hair: string } {
   const { d } = axes(neck, head)
   const forward: Pt = [-d[1], d[0]]
   const place = (pts: Pt[]) => smooth(pts.map(([a, u]): Pt => [head[0] + forward[0] * a + d[0] * u, head[1] + forward[1] * a + d[1] * u]))
+  if (behind) return { head: place(HEAD_FRONT), hair: place(HEAD_FRONT) }
   return front ? { head: place(HEAD_FRONT), hair: place(HAIR_FRONT) } : { head: place(HEAD_SIDE), hair: place(HAIR_SIDE) }
 }

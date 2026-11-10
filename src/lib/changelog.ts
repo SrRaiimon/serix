@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.28',
+    items: [
+      ['Los ejercicios con máquina o material específico ya lo enseñan: bici, remo, escalera, cinta, comba, cadenas, trineo, torres de polea…', 'Exercises with machines or special gear now show them: bike, rower, stairs, treadmill, jump rope, chains, sled, cable towers…'],
+      ['Las cargadas y arrancadas pasan por todas sus fases, las barras quedan sobre el pie y los press suben en línea recta.', 'Cleans and snatches go through all their phases, bars stay over the foot and presses move in a straight line.'],
+      ['Los músculos de la espalda se ven de espaldas y las miniaturas de la lista distinguen mejor cada ejercicio.', 'Back muscles are shown from behind and the list thumbnails tell each exercise apart better.'],
+    ],
+  },
+  {
     version: '0.1.27',
     items: [
       ['Muñeco nuevo en los ejercicios: cuerpo con forma, pies y manos, y una cabeza que indica hacia dónde mira.', 'New figure in the exercises: a shaped body, feet and hands, and a head that shows where it is looking.'],
