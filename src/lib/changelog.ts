@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.39',
+    items: [
+      ['La tarjeta de un récord muestra mejoras de menos de 1 kg (antes «+0 kg»), el número de récords de los logros coincide con el del resumen y «Lo que te hace rendir mejor» cuenta bien los días de descanso.', 'The record card shows improvements under 1 kg (it used to say "+0 kg"), the record count in achievements matches the summary, and "What makes you perform better" counts rest days correctly.'],
+    ],
+  },
+  {
     version: '0.1.38',
     items: [
       ['El descanso ya no pita ni avisa dos veces al volver a la app, y el temporizador de intervalos mantiene la pantalla encendida aunque vayas un momento a la música.', 'The rest timer no longer beeps or announces twice when you return to the app, and the interval timer keeps the screen on even if you briefly switch to your music.'],

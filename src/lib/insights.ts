@@ -52,8 +52,13 @@ export function insights(sessions: Session[]): Insight[] {
     const diff = mean(sorted[0].xs) / mean(sorted[sorted.length - 1].xs) - 1
     if (diff >= 0.03) out.push({ kind: 'time', diff, best: sorted[0].k, worst: sorted[sorted.length - 1].k })
   }
-  // Días de descanso antes del entreno: 1 o 2 frente a 3 o más.
-  const gaps = scored.slice(1).map((x, i) => ({ gap: (x.s.start - scored[i].s.start) / DAY, score: x.score }))
+  // Días de descanso antes del entreno: 1 o 2 frente a 3 o más. Desde el entreno anterior, sea cual sea: antes, desde
+  // el anterior con puntuación, y un día de cardio o de ejercicios nuevos en medio contaba como descanso.
+  const starts = sessions.filter((s) => s.end).map((s) => s.start).sort((a, b) => a - b)
+  const gaps = scored.flatMap((x) => {
+    const before = starts.filter((t) => t < x.s.start).at(-1)
+    return before === undefined ? [] : [{ gap: (x.s.start - before) / DAY, score: x.score }]
+  })
   const short = gaps.filter((g) => g.gap < 2.5).map((g) => g.score)
   const long = gaps.filter((g) => g.gap >= 2.5 && g.gap < 10).map((g) => g.score)
   if (short.length >= MIN && long.length >= MIN) {

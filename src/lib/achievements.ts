@@ -149,7 +149,9 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
         if (bodyWeight && DEADLIFT.has(e.exerciseId) && x.weight >= 2 * bodyWeight) unlock('deadlift-double', s)
       }
       // Récord: mejora del mejor 1RM estimado del ejercicio (la primera vez no cuenta).
+      // Como los récords del resumen (newRecords): sin carga no hay marca, y el primer entreno con peso no es récord.
       const top = Math.max(...sets.map((x) => e1rm(x.weight, x.reps)))
+      if (!top) continue
       const prev = best.get(e.exerciseId)
       if (prev !== undefined && top > prev + 0.01) recordCount++
       if (prev === undefined || top > prev) best.set(e.exerciseId, top)

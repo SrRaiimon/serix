@@ -94,10 +94,13 @@ export function e1rmSlope(points: { date: number; e1rm: number }[], now = Date.n
 
 export function goalStatus(goal: LiftGoal, sessions: Session[], now = Date.now()): GoalStatus {
   const points = exerciseHistory(goal.exerciseId, sessions)
-  const current = records(sessions).find((r) => r.exerciseId === goal.exerciseId)?.e1rm ?? 0
+  const record = records(sessions).find((r) => r.exerciseId === goal.exerciseId)
+  const current = record?.e1rm ?? 0
   const reached = points.find((p) => p.date >= goal.createdAt - DAY && p.e1rm >= goal.kg - 0.01)
   const progress = goal.kg > goal.from ? Math.min(1, Math.max(0, (current - goal.from) / (goal.kg - goal.from))) : current >= goal.kg ? 1 : 0
-  if (reached || current >= goal.kg) return { current, progress: 1, doneAt: reached?.date ?? now }
+  // Sin una sesión desde que se puso (se editó un entreno anterior), la fecha de la marca: con «now», «¡Conseguida el…!»
+  // decía siempre hoy.
+  if (reached || current >= goal.kg) return { current, progress: 1, doneAt: reached?.date ?? record?.date ?? now }
   const slope = e1rmSlope(points, now)
   const eta = slope && slope > 0.005 ? now + ((goal.kg - current) / slope) * DAY : undefined
   return { current, progress, eta, ...(goal.by ? { onTrack: eta !== undefined && eta <= goal.by } : {}) }

@@ -183,7 +183,9 @@ export async function shareImage(file: File, title: string): Promise<'shared' | 
 export function recordCardSVG({ record, unit, previous, setText }: { record: PersonalRecord; unit: Unit; previous?: number; setText: string }): string {
   const H = POST_H
   const date = new Date(record.date).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' })
-  const gain = previous && record.e1rm > previous ? `+${int(fromKg(record.e1rm - previous, unit))} ${unit}` : undefined
+  // Con menos de 1 kg de mejora, «+0 kg» parecía que no había mejorado: un decimal.
+  const up = previous && record.e1rm > previous ? fromKg(record.e1rm - previous, unit) : 0
+  const gain = up > 0 ? `+${up < 10 ? Math.max(0.1, up).toLocaleString(locale(), { maximumFractionDigits: 1 }) : int(up)} ${unit}` : undefined
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   ${cardChrome(W, H, date)}
   <text x="60" y="300" font-size="34" font-weight="700" letter-spacing="3" fill="${C.accent}">${esc(t('NUEVO RÉCORD', 'NEW RECORD'))}</text>
