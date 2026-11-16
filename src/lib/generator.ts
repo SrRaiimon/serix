@@ -908,11 +908,23 @@ export function generate(c: GeneratorConfig, catalog: Catalog, variation = 0): G
   templates.forEach((template, index) => {
     const list: [SlotName, number][] = template.slots.slice(0, n)
     if (c.goal === 'fatLoss' && !list.some(([s]) => s === 'conditioning')) list.push(['conditioning', index])
-    // Un accesorio no repite el del día anterior si hay otro (salía la extensión en polea dos días seguidos).
+    // Ningún ejercicio repite el del día anterior si hay otro: salía la extensión en polea dos días seguidos, y fuera
+    // del gimnasio los escaladores, las zancadas o las dominadas negativas casi todos los días (870 veces en el barrido).
+    // En básicos y acondicionamiento, solo si el otro es de la lista preferida del mismo hueco: lo que sale del resto
+    // del catálogo o de un hueco sustituto (una elevación de piernas por un femoral) es peor que repetir.
     const yesterday = (picked[index - 1] ?? []).map((p) => p.ex.exercise.id)
     picked.push(buildPicked(list, { minutes: c.minutes, fill: c.level },
-      (name, variant, chosen, used) => ((slots[name].kind === 'accessory' || slots[name].kind === 'core') && choose(template, name, variant, chosen, new Set([...used, ...yesterday])))
-        || choose(template, name, variant, chosen, used),
+      (name, variant, chosen, used) => {
+        const usual = choose(template, name, variant, chosen, used)
+        const other = choose(template, name, variant, chosen, new Set([...used, ...yesterday]))
+        const loose = slots[name].kind === 'accessory' || slots[name].kind === 'core'
+        // En el acondicionamiento, un salto que cuenta como serie de pierna solo si a ese músculo le queda sitio hoy: si
+        // no, se descartaba y el día se quedaba sin el bloque de motor que promete «Perder grasa».
+        const room = (e: Exercise) => ['cardio', 'plyometrics'].includes(e.category)
+          || chosen.filter((x) => x.exercise.muscle === e.muscle && !['cardio', 'plyometrics'].includes(x.exercise.category)).reduce((n, x) => n + x.sets, 0) <= MAX_SETS_PER_SESSION - 2
+        const fitsDay = slots[name].kind !== 'conditioning' || (!!other && room(other.exercise))
+        return other && fitsDay && (loose || !usual || (other.slot === usual.slot && other.slot.preferred.includes(other.exercise.id))) ? other : usual
+      },
       (found, _name, done) => schemeFor(found, done),
       undefined,
       template.slots.slice(n).filter(([s]) => s !== 'conditioning')))

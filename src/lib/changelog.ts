@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.35',
+    items: [
+      ['Los programas generados repiten mucho menos el mismo ejercicio en días seguidos, sobre todo en casa: escaladores, zancadas y dominadas se alternan con otros.', 'Generated programs repeat the same exercise on back-to-back days far less, especially at home: mountain climbers, lunges and pull-ups alternate with others.'],
+    ],
+  },
+  {
     version: '0.1.34',
     items: [
       ['El resumen del programa propuesto ya no corta los minutos por sesión en pantallas estrechas.', 'The proposed program summary no longer cuts off the minutes per session on narrow screens.'],

@@ -87,6 +87,17 @@ test('barrido: en el gimnasio, el mismo ejercicio de aislamiento no se repite en
   })))
 })
 
+test('barrido: el mismo ejercicio en días seguidos solo cuando no hay otro igual de bueno', () => {
+  // Antes, 870 repeticiones en las 1500 combinaciones (escaladores, zancadas, dominadas negativas casi a diario fuera
+  // del gimnasio). Lo que queda es material sin alternativa en el mismo hueco: negativas del principiante con barra,
+  // gemelo a una pierna sin material, flexiones… El tope deja margen y avisa si vuelve a crecer.
+  const repeats = all.flatMap(({ p, tag }) => p.days.slice(1).flatMap((d, i) => {
+    const prev = new Set(p.days[i].exercises.map((x) => x.exercise.id))
+    return d.exercises.filter((x) => prev.has(x.exercise.id)).map((x) => `${tag} ${d.name}: ${x.exercise.id}`)
+  }))
+  fails(repeats, 300)
+})
+
 test('barrido: hipertrofia con 3 días o más y 45 minutos o más lleva bíceps y tríceps directos, con cualquier material', () => {
   // Con bandas, intermedio, 3 días de 45 minutos salía sin un solo curl ni extensión, aunque ya hay curl con banda.
   // Excepción conocida: con bandas, 3 días de 45 minutos en intermedio y avanzado llevan curl, pero el tríceps solo de
