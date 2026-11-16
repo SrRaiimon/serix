@@ -5,6 +5,10 @@ import { getData } from './store'
 
 export const voiceSupported = () => typeof window !== 'undefined' && 'speechSynthesis' in window
 
+// Chrome carga la lista de voces en segundo plano y la primera vez devuelve una vacía: el primer aviso salía
+// con la voz por defecto (en ordenador, una «Google …» que se genera en un servidor). Pedirla ya la carga.
+if (voiceSupported()) speechSynthesis.getVoices()
+
 /** Dice el texto si los avisos por voz están activados (corta lo que estuviera diciendo). */
 export function speak(text: string, force = false) {
   if (!voiceSupported() || (!force && !getData().settings.voice)) return

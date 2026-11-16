@@ -183,6 +183,11 @@ export function testBeep() {
 
 function finish() {
   const endAt = state.endAt
+  // Una sola vez por descanso: al volver a la app lo cierra visibilitychange y el setTimeout atrasado llegaba
+  // después (doble pitido, doble vibración y «Descanso terminado» dos veces).
+  if (!endAt) return
+  clearTimeout(finishTimeout)
+  clearTimeout(voiceTimeout)
   // ¿Sonó ya el pitido programado? Si el audio estuvo suspendido, su reloj se paró y no sonó.
   const played = scheduled && audio?.state === 'running' && audio.currentTime >= scheduled.at - 0.05
   if (!played) {

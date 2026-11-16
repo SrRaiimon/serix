@@ -121,10 +121,16 @@ function IntervalRun({ config, segments, onClose }: { config: IntervalConfig; se
   const lastSecond = useRef(-1)
   const finished = useRef(false)
 
-  // Pantalla encendida mientras dure.
+  // Pantalla encendida mientras dure. El sistema suelta el bloqueo al salir de la app (p. ej. a la música):
+  // se vuelve a pedir al volver, si no a mitad de un Tabata se apagaba la pantalla.
   useEffect(() => {
     void keepScreenOn(true)
-    return () => void keepScreenOn(false)
+    const onVisible = () => document.visibilityState === 'visible' && void keepScreenOn(true)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      void keepScreenOn(false)
+    }
   }, [])
 
   // Avisos: al cambiar de tramo (tono, vibración y voz), en los 3 últimos segundos y al terminar.

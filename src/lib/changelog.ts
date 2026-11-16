@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.38',
+    items: [
+      ['El descanso ya no pita ni avisa dos veces al volver a la app, y el temporizador de intervalos mantiene la pantalla encendida aunque vayas un momento a la música.', 'The rest timer no longer beeps or announces twice when you return to the app, and the interval timer keeps the screen on even if you briefly switch to your music.'],
+    ],
+  },
+  {
     version: '0.1.37',
     items: [
       ['Retos con amigos: abrir un enlace antiguo de un amigo ya no sustituye su resumen más reciente, y un objetivo como «50.000» kg ya no se lee como 50.', 'Friend challenges: opening an old link from a friend no longer replaces their newer summary, and a goal like "50.000" kg is no longer read as 50.'],

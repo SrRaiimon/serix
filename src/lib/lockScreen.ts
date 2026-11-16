@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { t } from './i18n'
+import { locale, t } from './i18n'
 
 // Aviso del descanso con el móvil bloqueado (Android).
 //
@@ -60,7 +60,7 @@ export function showRestOnLockScreen(endAt: number, total: number, controls: Loc
     player ??= Object.assign(new Audio(playerUrl), { loop: true, volume: 1 })
     void player.play().catch(() => {})
     const session = navigator.mediaSession
-    const end = new Date(endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const end = new Date(endAt).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     session.metadata = new MediaMetadata({
       title: t(`Descanso · termina a las ${end}`, `Rest · ends at ${end}`),
       artist: 'Serix',
