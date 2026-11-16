@@ -50,7 +50,8 @@ export function ProgramPreview({ program }: { program: GeneratedProgram }) {
         { value: program.days.length, label: t('días', 'days') },
         { value: span((x) => x.exercises), label: t('ejercicios / día', 'exercises / day') },
         { value: span((x) => x.sets), label: t('series / día', 'sets / day') },
-        { value: `${span((x) => x.minutes)} min`, label: t('por sesión', 'per session') },
+        // La unidad va en la etiqueta: «56–59 min» no cabe en media fila a 375 px y se cortaba.
+        { value: span((x) => x.minutes), label: t('min / sesión', 'min / session') },
       ]} />
       {program.days.map((d, i) => (
         <div key={d.name} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

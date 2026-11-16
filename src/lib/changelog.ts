@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.34',
+    items: [
+      ['El resumen del programa propuesto ya no corta los minutos por sesión en pantallas estrechas.', 'The proposed program summary no longer cuts off the minutes per session on narrow screens.'],
+    ],
+  },
+  {
     version: '0.1.33',
     items: [
       ['Los puentes de glúteo suben la cadera hasta arriba, el giro ruso se ve echado atrás y la zancada con pase lleva la pesa por debajo de la pierna.', 'Glute bridges now raise the hips all the way, the Russian twist shows the lean back, and the pass-through lunge takes the weight under the leg.'],
