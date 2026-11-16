@@ -109,6 +109,14 @@ test('barrido: hipertrofia con 3 días o más y 45 minutos o más lleva bíceps 
   }))
 })
 
+test('barrido: hipertrofia con 2 días y 45 minutos o más lleva algún curl o extensión directos', () => {
+  // Antes, ninguno de los 18 programas de 2 días y 45 minutos (gimnasio incluido). Excepción conocida: con bandas,
+  // la misma que a 3 días (a 12-20 no cabe otro ejercicio). Sin material, el bíceps va con las dominadas.
+  const known = new Set(['hypertrophy/intermediate/bands/2d/45', 'hypertrophy/advanced/bands/2d/45'])
+  fails(all.filter(({ c, tag }) => c.goal === 'hypertrophy' && c.days === 2 && c.minutes >= 45 && !known.has(tag))
+    .filter(({ p }) => !p.days.some((d) => d.exercises.some((x) => ['biceps', 'triceps'].includes(x.exercise.muscle)))).map(({ tag }) => tag))
+})
+
 test('barrido: con banda, a 12-20 también los aislamientos; con el material «Bandas», todo el día salvo las excepciones dichas', () => {
   // Excepciones: dominadas (a 6-10), negativas y nórdico (a 3-6) y las flexiones y remos fáciles de principiante.
   const exempt = /pull-?up|chin-?up|negative|glute.?ham|^(Pushups|Push-Up_Wide|Decline_Push-Up|Push-Ups_-_Close_Triceps_Position|Inverted_Row)$/i

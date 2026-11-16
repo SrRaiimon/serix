@@ -725,11 +725,11 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
       if (!fits(days[d], c.minutes) || v.slice(0, N).some((x, g) => x > ranges[g][1])) days[d].splice(days[d].indexOf(p), 1)
     }
   }
-  // Hipertrofia con 3 días o más y 45 minutos o más: al menos un ejercicio directo de bíceps y otro de tríceps a la
-  // semana. Con 45 minutos, el cuerpo completo no llegaba al hueco de brazos y el tríceps solo iba de rebote con los
+  // Hipertrofia con 45 minutos o más: al menos un ejercicio directo de bíceps y otro de tríceps a la semana (con 2
+  // días también: con 45 minutos salía sin brazo directo con cualquier material, gimnasio incluido). Con 45 minutos, el cuerpo completo no llegaba al hueco de brazos y el tríceps solo iba de rebote con los
   // press (con bandas, intermedio, ni un curl). Va al día con más tiempo libre; si no cabe, otro ejercicio (no el
   // primero del día) cede una o dos series, hasta 2.
-  if (c.goal === 'hypertrophy' && c.days >= 3 && c.minutes >= 45) {
+  if (c.goal === 'hypertrophy' && c.days >= 2 && c.minutes >= 45) {
     for (const [muscle, slot] of [['biceps', 'biceps'], ['triceps', 'triceps']] as const) {
       if (days.some((day) => day.some((p) => p.ex.exercise.muscle === muscle))) continue
       // El cambio vale si la semana no queda peor en conjunto (badness) más allá de TIE.directArm: con 45 minutos y todo

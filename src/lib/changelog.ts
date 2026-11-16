@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.36',
+    items: [
+      ['Los programas de hipertrofia de 2 días ya incluyen un curl o una extensión de tríceps, también con 45 minutos.', '2-day hypertrophy programs now include a curl or a triceps extension, even with 45 minutes.'],
+    ],
+  },
+  {
     version: '0.1.35',
     items: [
       ['Los programas generados repiten mucho menos el mismo ejercicio en días seguidos, sobre todo en casa: escaladores, zancadas y dominadas se alternan con otros.', 'Generated programs repeat the same exercise on back-to-back days far less, especially at home: mountain climbers, lunges and pull-ups alternate with others.'],
