@@ -48,7 +48,7 @@ export function pastChampions(mine: FriendSnapshot, friends: FriendSnapshot[], n
   const thisWeek = startOfWeek(now).getTime()
   const people = [{ s: mine, me: true }, ...friends.map((s) => ({ s, me: false }))].map(({ s, me }) => {
     const aligned = alignWeeks(s, now)
-    const shift = Math.round((thisWeek - startOfWeek(s.at).getTime()) / (7 * 86400000))
+    const shift = Math.max(0, Math.round((thisWeek - startOfWeek(s.at).getTime()) / (7 * 86400000)))
     // Semanas completas en su resumen: las anteriores a la semana en que lo hizo.
     return { name: s.name, me, weeks: aligned.map((w, i) => (i < WEEKS - 1 - shift ? w : undefined)) }
   })

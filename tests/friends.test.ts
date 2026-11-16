@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { alignWeeks, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
+import { alignWeeks, keepNewest, newerSnapshot, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
 import { toBase64Url } from '../src/lib/share'
 import { defaultSettings, type AppData } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
@@ -173,4 +173,19 @@ test('récords recientes: solo mejoras de los últimos 30 días frente a lo ante
   ]
   const s = mySnapshot(data, hist, now)
   assert.deepEqual(s.prs?.map((r) => [r.exerciseId, r.weight, r.reps]), [[B, 110, 6]])
+})
+
+test('un enlace viejo no sustituye al resumen más reciente del mismo amigo', () => {
+  const snap = (at: number, total: number) => cleanSnapshot({ name: 'Ana', at, week: {}, month: {}, streak: 0, total, lifts: {} })!
+  const today = snap(Date.UTC(2026, 10, 16), 30), lastWeek = snap(Date.UTC(2026, 10, 9), 27)
+  assert.deepEqual(keepNewest([today], lastWeek), [today])
+  assert.equal(newerSnapshot([today], lastWeek), today)
+  assert.deepEqual(keepNewest([lastWeek], { ...today, name: 'ana ' }), [{ ...today, name: 'ana ' }])
+  assert.equal(newerSnapshot([lastWeek], today), undefined)
+})
+
+test('un resumen con fecha de la semana que viene cuenta como de esta (reloj adelantado)', () => {
+  const now = new Date(2026, 10, 15, 22).getTime() // domingo por la noche
+  const ahead = cleanSnapshot({ name: 'Ana', at: now + 3 * 3600000, week: {}, month: {}, streak: 0, total: 0, lifts: {}, weeks: [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]] })!
+  assert.deepEqual(alignWeeks(ahead, now).map((w) => w?.[0]), [1, 2, 3, 4, 5, 6, 7, 8])
 })

@@ -4,7 +4,7 @@ import { QrSheet } from '../components/Qr'
 import { ActionSheet, Card, Chip, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { addDays, int, relative, shortDay, startOfWeek, toKg, tons, weight, type Unit } from '../lib/format'
 import {
-  alignWeeks, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
+  alignWeeks, keepNewest, newerSnapshot, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
   mySnapshot, newChallenge, trophyCounts, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
 } from '../lib/friends'
 import { plural, t } from '../lib/i18n'
@@ -180,7 +180,7 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
         <div key={c.id} className="challenge invite">
           <span className="small"><strong>{c.by}</strong> {t('te reta:', 'challenges you:')} {challengeTitle(c, unit, exercise)}</span>
           <span className="tiny muted">{challengeWhen(c)}</span>
-          <button className="btn primary" onClick={() => update((d) => { d.challenges.push(c) })}><UserPlus size={18} /> {t('Unirme', 'Join')}</button>
+          <button className="btn primary" onClick={() => update((d) => { if (!d.challenges.some((x) => x.id === c.id)) d.challenges.push(c) })}><UserPlus size={18} /> {t('Unirme', 'Join')}</button>
         </div>
       ))}
       {live.map((c) => <ChallengeCard key={c.id} c={c} data={data} myValue={challengeProgress(c, sessions, challengeFood(data))} onMenu={() => setMenu(c)} />)}
@@ -220,7 +220,8 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
   const [picking, setPicking] = useState(false)
   const [days, setDays] = useState(30)
   const [target, setTarget] = useState('')
-  const goal = Number(target.replace(',', '.'))
+  // Todos los objetivos son enteros: «50.000» kg son cincuenta mil (antes se leía 50).
+  const goal = Number(target)
   const valid = metric !== 'reps' || !!ex
   const draft = (): Challenge => newChallenge({
     metric, by: data.settings.name.trim() || t('Sin nombre', 'No name'),
@@ -276,7 +277,7 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
             <span className="small muted" style={{ display: 'block' }}>{t('Sin objetivo, gana quien más sume', 'Without a goal, the highest total wins')}</span>
           </span>
           <input className="field" style={{ width: 110, textAlign: 'right' }} inputMode="numeric" placeholder={placeholder} value={target}
-            onChange={(e) => setTarget(e.target.value.replace(/[^\d.,]/g, ''))} aria-label={t('Objetivo', 'Goal')} />
+            maxLength={9} onChange={(e) => setTarget(e.target.value.replace(/\D/g, ''))} aria-label={t('Objetivo', 'Goal')} />
           {metric === 'volume' && <span className="muted">{unit}</span>}
         </label>
       </div>
@@ -625,10 +626,14 @@ export function FriendImportScreen({ code }: { code: string }) {
   const [friend, setFriend] = useState<FriendSnapshot | null>()
   useEffect(() => { void decodeSnapshot(code).then((f) => setFriend(f ?? null)) }, [code])
   const known = friend && data.friends.some((f) => friendKey(f.name) === friendKey(friend.name))
+  const newer = friend ? newerSnapshot(data.friends, friend) : undefined
+  // ¿Tu propio enlace (para probarlo o reenviado)? Con tu nombre te verías dos veces en la liga. Solo un
+  // aviso: un amigo puede llamarse igual que tú.
+  const own = !!friend && !known && friendKey(friend.name) === friendKey(mine.name)
   const invites = friend ? invitations([friend], data.challenges) : []
 
   const saveFriend = (d: AppData, f: FriendSnapshot) => {
-    d.friends = [...d.friends.filter((x) => friendKey(x.name) !== friendKey(f.name)), f]
+    d.friends = keepNewest(d.friends, f)
   }
   const done = () => navigate(data.settings.onboarded ? 'profile' : 'home', ...(data.settings.onboarded ? ['friends'] : []))
   const save = () => {
@@ -674,7 +679,17 @@ export function FriendImportScreen({ code }: { code: string }) {
                 {(friend.trophies || mine.trophies) && <><span className="small">{t('Trofeos de retos', 'Challenge trophies')}</span><span className="bold">{trophyText(friend.trophies) || '—'}</span><span className="bold">{trophyText(mine.trophies) || '—'}</span></>}
               </div>
             </Card>
-            <button className="btn primary block" onClick={save}><UserPlus size={19} /> {known ? t(`Actualizar a ${friend.name}`, `Update ${friend.name}`) : t(`Añadir a ${friend.name} a mis retos`, `Add ${friend.name} to my challenges`)}</button>
+            {own && <p className="small muted" style={{ margin: 0 }}>{t('Lleva tu mismo nombre: si es tu propio resumen, no hace falta añadirlo; mándaselo a tus amigos.', 'It has your same name: if it is your own summary, there is no need to add it; send it to your friends.')}</p>}
+            {newer ? (
+              <>
+                <p className="small muted" style={{ margin: 0 }}>
+                  {t(`Ya tienes un resumen más reciente de ${friend.name} (${relative(newer.at).toLowerCase()}): este no lo sustituye.`, `You already have a newer summary from ${friend.name} (${relative(newer.at).toLowerCase()}): this one does not replace it.`)}
+                </p>
+                <button className="btn secondary block" onClick={done}>{t('Ir a mis retos', 'Go to my challenges')}</button>
+              </>
+            ) : (
+              <button className="btn primary block" onClick={save}><UserPlus size={19} /> {known ? t(`Actualizar a ${friend.name}`, `Update ${friend.name}`) : t(`Añadir a ${friend.name} a mis retos`, `Add ${friend.name} to my challenges`)}</button>
+            )}
             <ShareMine mine={mine} />
           </>
         )}

@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.37',
+    items: [
+      ['Retos con amigos: abrir un enlace antiguo de un amigo ya no sustituye su resumen más reciente, y un objetivo como «50.000» kg ya no se lee como 50.', 'Friend challenges: opening an old link from a friend no longer replaces their newer summary, and a goal like "50.000" kg is no longer read as 50.'],
+    ],
+  },
+  {
     version: '0.1.36',
     items: [
       ['Los programas de hipertrofia de 2 días ya incluyen un curl o una extensión de tríceps, también con 45 minutos.', '2-day hypertrophy programs now include a curl or a triceps extension, even with 45 minutes.'],

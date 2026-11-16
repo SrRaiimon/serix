@@ -445,6 +445,18 @@ export const friendLink = (code: string) => `${location.origin}${location.pathna
 /** Un amigo se identifica por su nombre: un resumen nuevo sustituye al anterior. */
 export const friendKey = nameKey
 
+/** El resumen que ya tienes de ese amigo, si es más reciente que `f` (abrir un enlace viejo del chat). */
+export const newerSnapshot = (list: FriendSnapshot[], f: FriendSnapshot) =>
+  list.find((x) => friendKey(x.name) === friendKey(f.name) && x.at > f.at)
+
+/**
+ * Lista de amigos con `f` guardado en lugar del anterior; si ya tenías uno más reciente, sin cambios: antes,
+ * abrir el enlace de la semana pasada deshacía el de hoy (y su progreso en los retos bajaba).
+ */
+export function keepNewest(list: FriendSnapshot[], f: FriendSnapshot): FriendSnapshot[] {
+  return newerSnapshot(list, f) ? list : [...list.filter((x) => friendKey(x.name) !== friendKey(f.name)), f]
+}
+
 /** ¿El resumen es de la semana actual? Si no, sus cifras de «esta semana» ya no sirven para comparar. */
 export const sameWeek = (at: number, now = Date.now()) => startOfWeek(at).getTime() === startOfWeek(now).getTime()
 export const sameMonth = (at: number, now = Date.now()) => {
@@ -465,7 +477,8 @@ export { shareReminderDue } from './friendReminder'
 export function alignWeeks(f: FriendSnapshot, now = Date.now()): ([number, number] | undefined)[] {
   const mine = startOfWeek(now).getTime()
   const theirs = startOfWeek(f.at).getTime()
-  const shift = Math.round((mine - theirs) / (7 * DAY))
+  // Un resumen con fecha de la semana que viene (reloj adelantado en su móvil) cuenta como de esta.
+  const shift = Math.max(0, Math.round((mine - theirs) / (7 * DAY)))
   const weeks = f.weeks ?? []
   return Array.from({ length: WEEKS }, (_, i) => {
     const j = weeks.length - 1 - (WEEKS - 1 - i - shift)
