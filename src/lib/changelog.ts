@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.33',
+    items: [
+      ['Los puentes de glúteo suben la cadera hasta arriba, el giro ruso se ve echado atrás y la zancada con pase lleva la pesa por debajo de la pierna.', 'Glute bridges now raise the hips all the way, the Russian twist shows the lean back, and the pass-through lunge takes the weight under the leg.'],
+    ],
+  },
+  {
     version: '0.1.32',
     items: [
       ['Revisados los dibujos de los 100 ejercicios que más salen en los programas: cada uno con su material y su gesto, no el de otro parecido.', 'Reviewed the drawings of the 100 exercises that come up most in programs: each one with its own equipment and movement, not a similar one\'s.'],

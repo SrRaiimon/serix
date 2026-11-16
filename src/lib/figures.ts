@@ -4951,6 +4951,28 @@ solo('Alternating_Floor_Press', (f) => ({
 // Dominada escapular: colgado con los hombros pegados a las orejas, y los hombros bajan con los brazos estirados.
 solo('Scapular_Pull-Up', (f) => ({ ...f, frames: [{ ...f.frames[0], shrug: 10 }, { ...f.frames[1], lift: 12, shrug: -10 }] }))
 
+// Puentes: arriba la cadera sube hasta casi alinear hombros, cadera y rodillas (antes apenas se despegaba).
+// Ángulos calculados para que el pie siga apoyado en el mismo sitio (muslo 53 y pierna 49 de largo).
+rework('Butt_Lift_Bridge', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], torso: -130, head: -115, thigh: 95.3, shin: 151.8 }] }))
+solo('Single_Leg_Glute_Bridge', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], torso: -130, head: -115, thigh2: 95.3, shin2: 151.8, thigh: 52, shin: 52, foot: 52 }] }))
+solo('Suspension_Hip_Bridge', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], torso: -130, head: -115, thigh: 104, shin: 112 }] }))
+// Zancada con pase: la kettlebell va por detrás de la pierna de delante, así se lee que pasa por debajo del muslo.
+solo('Lunge_Pass_Through', (f) => ({ ...f, props: [{ type: 'kettlebell', at: 'wrist', front: false }] }))
+// Giro ruso: de frente, que es como se ve el giro de una cadera a la otra; el tronco más corto se lee echado atrás
+// (de perfil solo se veía subir y bajar el balón, y con el tronco largo parecía en cuclillas).
+solo('Russian_Twist', (f) => {
+  const frames = f.frames.map((q) => ({ ...q, torsoLen: 0.68, head: (q.head ?? 0) * 2 })) as [Pose, Pose]
+  // A mitad de giro, las dos manos juntas delante del ombligo (al promediar, una mano se metía en el suelo).
+  return { ...f, frames, via: [{ ...frames[0], head: 0, upper: 145, fore: -95, upper2: 145, fore2: -95 }] }
+})
+
+// Curl femoral sentado: las manos agarran las asas del asiento.
+solo('Seated_Leg_Curl', (f) => ({ ...f, props: [...f.props, { type: 'grip', at: 'wrist', front: true }] }))
+// Curl nórdico: el rodillo sobre los talones, más grande y legible.
+for (const id of ['Natural_Glute_Ham_Raise', 'Floor_Glute-Ham_Raise']) {
+  rework(id, (f) => ({ ...f, props: f.props.map((p) => (p.type === 'pad' ? { ...p, size: 11 } : p)) }))
+}
+
 // Una sola vez cada pieza de material idéntica: algunas figuras compartidas recibían la misma palanca dos veces.
 const deduped = new Map<Figure, Figure>()
 for (const [id, f] of Object.entries(FIGURES)) {

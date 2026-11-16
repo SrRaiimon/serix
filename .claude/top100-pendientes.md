@@ -1,6 +1,6 @@
 # Top 100: fallos de las figuras (evaluación 2026-11-16, sobre 0.1.31)
 
-Notas: usuario 7,2 · directora de arte 7,2 · entrenador 7,6 (78/18/4) · biomecánica 7,6 · media 7,4 → 8,2 (2.ª pasada) → 8,5 (3.ª: 8,2 · 8,0 · 8,9 · 8,9)
+Notas: usuario 7,2 · directora de arte 7,2 · entrenador 7,6 (78/18/4) · biomecánica 7,6 · media 7,4 → 8,2 (2.ª pasada) → 8,5 (3.ª: 8,2 · 8,0 · 8,9 · 8,9) → 8,75 (4.ª: 8,5 · 8,3 · 9,0 · 9,2)
 
 ## Alta
 - 84 Suspender_Calf_Raise: postura de fallout; de pie de cara al anclaje, vertical, solo tobillo.
