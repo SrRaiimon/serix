@@ -200,7 +200,7 @@ function Main() {
   if (route[0] === 'food-import' && route[1]) return <main className="app"><Suspense fallback={null}><FoodImportScreen code={route[1]} /></Suspense></main>
   if (route[0] === 'friend' && route[1]) return <main className="app"><Suspense fallback={null}><FriendImportScreen code={route[1]} /></Suspense></main>
   // Galería de figuras para revisarlas durante el desarrollo (no existe en la versión publicada).
-  if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery /></Suspense>
+  if (import.meta.env.DEV && route[0] === 'dev-figuras') return <Suspense fallback={null}><FigureGallery only={route[1]?.split(',')} /></Suspense>
   // Pasar datos desde otro móvil también se puede hacer antes del cuestionario inicial.
   if (route[0] === 'transfer') return <main className="app"><Suspense fallback={null}><TransferScreen mode={route[1]} /></Suspense></main>
   // La privacidad se puede leer antes de dar ningún dato (enlace desde la bienvenida).

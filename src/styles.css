@@ -2062,7 +2062,7 @@ html.scroll-locked body {
 .fig-gear-stroke { fill: none; stroke: var(--fig-dark-1); stroke-width: 4; stroke-linecap: round; }
 .fig-shadow { fill: var(--mm-shadow); }
 .fig-cable { stroke: var(--fig-dark-2); stroke-width: 1.6; }
-.fig-band { stroke: #2fb56a; stroke-width: 3; stroke-linecap: round; }
+.fig-band { stroke: #2fb56a; stroke-width: 3.6; stroke-linecap: round; }
 .fig-platform { stroke: var(--fig-dark-2); stroke-width: 7; stroke-linecap: round; }
 .fig-rest { stroke: var(--fig-metal-2); stroke-width: 12; stroke-linecap: round; }
 

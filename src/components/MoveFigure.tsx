@@ -40,7 +40,15 @@ function PropShape({ prop, j, pose, ids, figure }: { prop: Prop; j: Joints; pose
         </g>
       )
     case 'dumbbell': {
-      if (prop.end) return <g><circle cx={x} cy={y} r={9.5} fill={dark} /><circle cx={x} cy={y} r={3.5} fill={metal} /></g>
+      // De punta, en perspectiva: la cabeza del fondo asoma detrás de la de delante unida por el mango, para que no parezca un disco.
+      if (prop.end) return (
+        <g>
+          <circle cx={x + 7} cy={y - 6} r={8} fill="var(--fig-dark-2)" />
+          <line x1={x} y1={y} x2={x + 7} y2={y - 6} stroke={dark} strokeWidth={5} strokeLinecap="round" />
+          <circle cx={x} cy={y} r={9} fill={dark} />
+          <circle cx={x} cy={y} r={3.2} fill={metal} />
+        </g>
+      )
       // De perfil, el eje de la mancuerna va en perpendicular al antebrazo, como en la mano.
       const elbow = prop.at === 'wrist' ? j.elbow : prop.at === 'wrist2' ? j.elbow2 : undefined
       const turn = elbow && figure.view === 'side' ? (Math.atan2(y - elbow[1], x - elbow[0]) * 180) / Math.PI + 90 : 0
@@ -107,9 +115,43 @@ function PropShape({ prop, j, pose, ids, figure }: { prop: Prop; j: Joints; pose
     case 'strap': {
       // Cintas y empuñaduras propias: el anclaje queda fijo y el extremo sigue a la articulación.
       const [ax, ay] = prop.point!
+      // Colgadas de arriba (TRX): un soporte en el techo para que no acaben en el aire.
       return <g><line x1={ax} y1={ay} x2={x} y2={y} stroke="var(--fig-dark-2)" strokeWidth={4} />
+        {ay < 60 && <rect x={ax - 12} y={ay - 9} width={24} height={5} rx={2} fill={dark} />}
         <circle cx={ax} cy={ay} r={5} fill={metal} />
         <rect x={x - 7} y={y - 3} width={14} height={6} rx={2} fill={metal} /></g>
+    }
+    case 'rail': {
+      // Guía fija por la que corre el carro de la prensa, con su pata hasta el suelo.
+      const [ax, ay] = prop.point!
+      const [bx, by] = step([ax, ay], prop.angle ?? 0, prop.offset ?? 80)
+      const [mx, my] = [(ax + bx) / 2, (ay + by) / 2]
+      return (
+        <g stroke="var(--fig-dark-2)" strokeLinecap="round">
+          <line x1={mx} y1={my} x2={mx} y2={FLOOR} strokeWidth={5} />
+          <line x1={ax} y1={ay} x2={bx} y2={by} strokeWidth={6} />
+        </g>
+      )
+    }
+    case 'backpack':
+      // Mochila colgada del asa: cuerpo redondeado, bolsillo delante y el asa en la mano.
+      return (
+        <g>
+          <path d={`M${x - 5},${y + 4} Q${x},${y - 4} ${x + 5},${y + 4}`} className="fig-gear-stroke" />
+          <rect x={x - 13} y={y + 4} width={26} height={30} rx={8} fill={dark} />
+          <rect x={x - 9} y={y + 18} width={18} height={12} rx={4} fill={metal} />
+        </g>
+      )
+    case 'door': {
+      // Canto de una puerta cerrada, con el pomo donde se ata la toalla.
+      const [x0, x1] = prop.span!
+      const [kx, ky] = prop.point!
+      return (
+        <g>
+          <rect x={x0} y={prop.y} width={x1 - x0} height={FLOOR - prop.y!} rx={2} fill={metal} />
+          <circle cx={kx} cy={ky} r={4.5} fill={dark} />
+        </g>
+      )
     }
     case 'benchTop': {
       const [x0, x1] = prop.span!
@@ -272,6 +314,17 @@ function PropShape({ prop, j, pose, ids, figure }: { prop: Prop; j: Joints; pose
       )
     }
     case 'yoke':
+      // En máquina (bare): solo la hombrera y el brazo que va hacia atrás, a la torre del peso.
+      if (prop.bare) {
+        // El brazo llega hasta la columna de la torre y baja por ella hasta su remate.
+        const tower = machineTower(place(figure, figure.frames[0]))
+        return (
+        <g>
+          <path d={`M${x},${y + 2} H${tower.x} V${Math.max(tower.top, y + 2)}`} fill="none" stroke="var(--fig-dark-2)" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+          <rect x={x - 15} y={y - 6} width={30} height={13} rx={6} fill={dark} />
+        </g>
+        )
+      }
       // Yugo: travesaño sobre los hombros, dos postes y peso abajo.
       return (
         <g>
@@ -606,21 +659,24 @@ export function MoveFigure({ exercise }: { exercise: Muscles & { id: string; nam
 }
 
 /** Galería de todas las figuras (solo en desarrollo, para revisarlas de un vistazo). */
-export function FigureGallery() {
+export function FigureGallery({ only }: { only?: string[] }) {
   const catalog = useCatalog()
   const muscles = (id: string) => catalog.get(id)
   const ids = useId().replace(/:/g, '')
   const seen = new Set<Figure>()
-  const unique = Object.entries(FIGURES).filter(([, f]) => (seen.has(f) ? false : (seen.add(f), true)))
+  // Con una lista de ids (para revisar un grupo concreto) se dibujan esos, en ese orden y sin juntar los repetidos.
+  const unique = only
+    ? only.filter((id) => FIGURES[id]).map((id) => [id, FIGURES[id]] as const)
+    : Object.entries(FIGURES).filter(([, f]) => (seen.has(f) ? false : (seen.add(f), true)))
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8, padding: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${only ? 340 : 260}px, 1fr))`, gap: 8, padding: 8 }}>
       <svg width="0" height="0" style={{ position: 'absolute' }}><FigureDefs id={ids} /></svg>
-      {unique.map(([key, figure]) => (
-        <div key={key} className="move-figure" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: 4 }}>
-          {figure.frames.map((pose, i) => (
+      {unique.map(([key, figure], n) => (
+        <div key={key} data-fig={key} className="move-figure" style={{ display: 'grid', gridTemplateColumns: only ? '1fr 1fr 1fr' : '1fr 1fr', padding: 4 }}>
+          {(only ? [0, 0.5, 1].map((t) => poseAt(figure, t)) : figure.frames).map((pose, i) => (
             <svg key={i} viewBox={fitViewBox(figure)}><Scene figure={figure} pose={pose} ids={ids} muscles={muscles(key)} /></svg>
           ))}
-          <div style={{ gridColumn: '1 / -1', fontSize: 11, color: 'var(--mm-text)', padding: '0 6px' }}>{key}</div>
+          <div style={{ gridColumn: '1 / -1', fontSize: 11, color: 'var(--mm-text)', padding: '0 6px' }}>{only ? `${n + 1}. ` : ''}{key} · {figure.view}</div>
         </div>
       ))}
     </div>

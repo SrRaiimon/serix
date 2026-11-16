@@ -37,7 +37,7 @@ export interface Pose {
 }
 
 export interface Prop {
-  type: 'plate' | 'dumbbell' | 'kettlebell' | 'bench' | 'box' | 'bar' | 'cable' | 'band' | 'pad' | 'seat' | 'platform' | 'grip' | 'rest' | 'barFront' | 'ball' | 'strap' | 'landmine' | 'smith' | 'trapBar' | 'lever' | 'bike' | 'rower' | 'stairs' | 'treadmill' | 'rope' | 'chains' | 'sled' | 'yoke' | 'rickshaw' | 'farmer' | 'stack' | 'log' | 'scott' | 'tire' | 'benchTop'
+  type: 'plate' | 'dumbbell' | 'kettlebell' | 'bench' | 'box' | 'bar' | 'cable' | 'band' | 'pad' | 'seat' | 'platform' | 'grip' | 'rest' | 'barFront' | 'ball' | 'strap' | 'landmine' | 'smith' | 'trapBar' | 'lever' | 'bike' | 'rower' | 'stairs' | 'treadmill' | 'rope' | 'chains' | 'sled' | 'yoke' | 'rickshaw' | 'farmer' | 'stack' | 'log' | 'scott' | 'tire' | 'benchTop' | 'backpack' | 'door' | 'rail'
   at?: JointName
   to?: JointName
   point?: [number, number]
@@ -4782,7 +4782,7 @@ rework('Mountain_Climbers', (f) => {
   const c = { ...f.frames[1], torso: 84, head: 86 }
   const plank = { ...a, thigh: -104, shin: -104, thigh2: -104, shin2: -104, foot: 150, foot2: 150 }
   // Al pasar por debajo del cuerpo, la pierna va con la rodilla doblada y el pie alto, sin rozar el suelo.
-  const pass = (near: boolean) => ({ ...plank, ...(near ? { thigh: 172, shin: -62, foot: -40 } : { thigh2: 172, shin2: -62, foot2: -40 }) })
+  const pass = (near: boolean) => ({ ...plank, ...(near ? { thigh: 150, shin: -70, foot: -40 } : { thigh2: 150, shin2: -70, foot2: -40 }) })
   return { ...f, loop: true, frames: [a, a], via: [pass(true), plank, pass(false), c, pass(false), plank, pass(true)], period: 2400 }
 })
 rework('Kettlebell_Reverse_Lunge', (f) => ({ ...f, frames: f.frames.map((q) => ({ ...q, upper: 150, fore: 15 })) as [Pose, Pose] }))
@@ -4796,6 +4796,160 @@ for (const id of ['Backward_Drag', 'Battling_Ropes', 'Bear_Crawl_Sled_Drags', 'B
 for (const id of ['Ab_Crunch_Machine', 'Seated_Calf_Raise', 'Butterfly', 'Dip_Machine', 'Leg_Extensions', 'Lever_Back_Extension', 'Lever_Front_Pulldown', 'Lever_Kneeling_Leg_Curl', 'Lever_Lateral_Raise', 'Lever_Overhead_Triceps_Extension', 'Lever_Seated_Good_Morning', 'Lever_Seated_Twist', 'Lever_Side_Hip_Abduction', 'Lever_Side_Hip_Adduction', 'Lever_Sitting_Toe_Raise', 'Lever_Standing_Hip_Extension', 'Lever_Standing_Leg_Raise', 'Leverage_Chest_Press', 'Machine_Bench_Press', 'Leverage_Decline_Chest_Press', 'Leverage_Incline_Chest_Press', 'Leverage_Shoulder_Press', 'Machine_Shoulder_Military_Press', 'Lying_Leg_Curls', 'Machine_Bicep_Curl', 'Machine_Preacher_Curls', 'Machine_Triceps_Extension', 'Reverse_Machine_Flyes', 'Seated_Leg_Curl', 'Single-Leg_Leg_Extension', 'Standing_Calf_Raises', 'Standing_Leg_Curl', 'Thigh_Abductor', 'Thigh_Adductor', 'Lever_Pullover']) {
   solo(id, (f) => ({ ...f, machine: true }))
 }
+
+// Los 100 más usados (evaluación sobre 0.1.31): cada uno con su gesto y su material, no el de un pariente.
+// Elevación de gemelos en suspensión: de cara al anclaje y casi vertical; las cintas solo dan equilibrio.
+solo('Suspender_Calf_Raise', (f) => ({
+  ...f, props: [{ type: 'strap', at: 'wrist', point: [250, -20] }, { type: 'strap', at: 'wrist2', point: [250, -20] }],
+  frames: [
+    { torso: -4, head: 0, thigh: 178, shin: 180, foot: 90, upper: 70, fore: 65, upper2: 72, fore2: 67 },
+    { torso: -4, head: 0, thigh: 178, shin: 180, foot: 145, upper: 70, fore: 65, upper2: 72, fore2: 67 },
+  ],
+}))
+// Remo con toalla: de pie, pies junto a la puerta y echado atrás, tirando de la toalla atada al pomo.
+solo('Towel_Door_Row', (f) => ({
+  ...f, anchor: { joint: 'ankle', at: [200, 217] }, straight: false, via: undefined,
+  props: [{ type: 'door', span: [228, 240], y: 10, point: [228, 112] }, { type: 'strap', at: 'wrist', point: [228, 112] }],
+  frames: [
+    { torso: -30, head: -24, thigh: 150, shin: 150, foot: 60, upper: 62, fore: 62 },
+    { torso: -16, head: -12, thigh: 164, shin: 164, foot: 74, upper: 200, fore: 70 },
+  ],
+}))
+// Extensión de tríceps por encima de la cabeza: empieza con los brazos arriba y la mancuerna baja por detrás de la nuca.
+solo('Standing_Dumbbell_Triceps_Extension', (f) => ({
+  ...f, frames: [{ ...f.frames[1], upper: -2, fore: 0 }, { ...f.frames[0], upper: -24, fore: -165 }],
+}))
+// Zancada con pase: abajo, la kettlebell pasa por debajo del muslo de delante de una mano a la otra.
+solo('Lunge_Pass_Through', (f) => ({
+  ...f, props: [{ type: 'kettlebell', at: 'wrist', front: true }],
+  frames: [
+    { ...f.frames[0], upper: 180, fore: 180, upper2: 180, fore2: 180 },
+    { ...f.frames[1], torso: 28, head: 20, upper: 172, fore: 186, upper2: 182, fore2: 178 },
+  ],
+}))
+// Press de hombros con banda: la banda va por delante del cuerpo (por detrás quedaba tapada al subir).
+solo('Shoulder_Press_-_With_Bands', (f) => ({ ...f, props: f.props.map((p) => (p.type === 'band' ? { ...p, front: true } : p)) }))
+// Mochila: el material que da nombre al ejercicio.
+solo('Backpack_Curl', (f) => ({ ...f, props: [{ type: 'backpack', at: 'wrist', front: true }] }))
+solo('Backpack_Squat', (f) => ({
+  ...f, props: [{ type: 'backpack', at: 'wrist', front: true }],
+  frames: [{ ...f.frames[0], upper: 172, fore: 40 }, { ...f.frames[1], torso: 22, head: 14, shin: 210, upper: 160, fore: 40 }],
+}))
+// Gemelos sobre un escalón: el talón baja por debajo del borde y sube de puntillas.
+const CALF_STEP: Partial<Figure> = { anchor: { joint: 'toe', at: [150, 204] } }
+solo('Single_Leg_Calf_Raise', (f) => ({
+  ...f, ...CALF_STEP, props: [{ type: 'box', span: [140, 198], y: 207 }, { type: 'box', span: [212, 222], y: 40 }],
+  frames: [
+    { ...f.frames[0], foot: 65, thigh2: 176, shin2: -120, foot2: -150, upper: 120, fore: 80 },
+    { ...f.frames[1], foot: 135, foot2: -150, thigh2: 176, shin2: -120, upper: 120, fore: 80 },
+  ],
+}))
+solo('Standing_Dumbbell_Calf_Raise', (f) => ({
+  ...f, ...CALF_STEP, props: [{ type: 'box', span: [140, 198], y: 207 }, ...f.props],
+  frames: [{ ...f.frames[0], foot: 65, foot2: 65 }, { ...f.frames[1], foot: 135, foot2: 135 }],
+}))
+// Gemelos en máquina: las hombreras sobre los hombros, unidas a la torre.
+solo('Standing_Calf_Raises', (f) => ({ ...f, props: [...f.props, { type: 'yoke', at: 'head', angle: 180, offset: 24, bare: true }] }))
+// Sentadilla hack: el carro con el respaldo y las hombreras, la plataforma inclinada bajo los pies y la torre detrás.
+solo('Hack_Squat', (f) => ({
+  ...f, machine: true,
+  props: [...f.props, { type: 'yoke', at: 'head', angle: 180, offset: 24, bare: true }, { type: 'platform', at: 'ankle', angle: 160 }],
+  // Reclinado sobre el carro, como en la máquina.
+  frames: [{ ...f.frames[0], torso: -18, head: -12 }, { ...f.frames[1], torso: -16, head: -10 }],
+}))
+// Hip thrust: las manos sujetan la barra sobre la cadera.
+solo('Barbell_Hip_Thrust', (f) => ({
+  ...f, frames: [{ ...f.frames[0], upper: 115, fore: 150 }, { ...f.frames[1], upper: 75, fore: 105 }],
+}))
+// Negativa: empieza arriba, con la barbilla sobre la barra, y baja.
+solo('Negative_Pull-Up', (f) => ({ ...f, frames: [f.frames[1], f.frames[0]] }))
+// Escapular: los hombros bajan claramente lejos de las orejas con los brazos estirados.
+solo('Scapular_Pull-Up', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], lift: 15, upper: 8, fore: 4 }] }))
+// Flexión en el pino: empieza arriba con los brazos estirados, contra una pared de verdad.
+solo('Handstand_Push-Ups', (f) => ({ ...f, props: [{ type: 'box', span: [141, 178], y: -40 }], frames: [f.frames[1], f.frames[0]] }))
+// Cruce con bandas: ancladas detrás a la altura del pecho y las manos se juntan delante del pecho.
+solo('Cross_Over_-_With_Bands', (f) => ({
+  ...f, props: [{ type: 'band', at: 'wrist', point: [236, 74], front: true }, { type: 'band', at: 'wrist2', point: [24, 74], front: true }],
+  frames: [{ ...f.frames[0], upper: 80, fore: 90 }, { ...f.frames[1], upper: 125, fore: -100 }],
+}))
+// Dos kettlebells: la segunda en la otra mano.
+solo('Front_Squats_With_Two_Kettlebells', (f) => ({
+  ...f, props: [{ type: 'kettlebell', at: 'wrist', front: true }, { type: 'kettlebell', at: 'wrist2' }],
+  frames: [{ ...f.frames[0], upper2: f.frames[0].upper - 16, fore2: f.frames[0].fore + 10 }, { ...f.frames[1], torso: 22, head: 14, shin: 210, upper2: f.frames[1].upper - 16, fore2: f.frames[1].fore + 10 }],
+}))
+solo('Two-Arm_Kettlebell_Row', (f) => ({ ...f, props: [...f.props, { type: 'kettlebell', at: 'wrist2' }] }))
+// Goblet: con la carga delante, el tronco va más erguido y la rodilla más adelantada.
+rework('Goblet_Squat', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], torso: 22, head: 14, shin: 210 }] }))
+// Remos inclinados: arriba el antebrazo queda vertical y la carga llega a la cadera, no al pecho.
+for (const id of ['Bent_Over_Two-Dumbbell_Row', 'Bent_Over_Barbell_Row', 'Two-Arm_Kettlebell_Row']) {
+  rework(id, (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], upper: -115, fore: 178, shrug: -3 }] }))
+}
+// Remo con dos mancuernas: rodillas a unos 20-25°, no medio en sentadilla.
+rework('Bent_Over_Two-Dumbbell_Row', (f) => ({ ...f, frames: f.frames.map((q) => ({ ...q, thigh: 158, shin: 182 })) as [Pose, Pose] }))
+// Peso muerto: la salida con la cadera por encima de las rodillas y los hombros sobre la barra.
+rework('Barbell_Deadlift', (f) => ({ ...f, frames: [{ ...f.frames[0], torso: 57, head: 68, thigh: 127, shin: 200 }, f.frames[1]] }))
+solo('Stiff-Legged_Dumbbell_Deadlift', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], thigh: 166, shin: 178 }] }))
+// Fondos en banco: codo a 90° y el hombro sin pasarse de extensión.
+solo('Bench_Dips', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], upper: -120, fore: 175 }] }))
+// Sentadilla con salto: empieza de pie, baja a media sentadilla y salta.
+rework('Freehand_Jump_Squat', (f) => ({
+  ...f, frames: [{ ...STAND, upper: 175, fore: 175 }, f.frames[1]],
+  via: [{ ...f.frames[0], torso: 32, thigh: 115, shin: 200, upper: -150, fore: -160 }],
+}))
+// Prensa: el final sin bloquear las rodillas.
+// Prensa: abajo las rodillas llegan cerca del pecho (antes apenas se movía) y el carro va sobre su guía.
+rework('Leg_Press', (f) => ({
+  ...f, props: [{ type: 'rail', point: [160, 170], angle: 58, offset: 88 }, ...f.props],
+  frames: [{ ...f.frames[0], thigh: 3, shin: 113 }, { ...f.frames[1], thigh: 51, shin: 66 }],
+}))
+// Curl femoral en suspensión: la cadera arriba todo el rato.
+solo('Suspension_Leg_Curl', (f) => ({ ...f, frames: [{ ...f.frames[0], torso: -110, head: -100, thigh: 70, shin: 70 }, f.frames[1]] }))
+
+// Curl femoral tumbado: las manos en las asas del borde delantero, no colgando bajo el banco.
+solo('Lying_Leg_Curls', (f) => ({ ...f, frames: [{ ...f.frames[0], upper: 150, fore: 100 }, { ...f.frames[1], upper: 150, fore: 100 }] }))
+// Curl nórdico: los tobillos bajo un rodillo fijo con su soporte, no una bola suelta.
+for (const id of ['Natural_Glute_Ham_Raise', 'Floor_Glute-Ham_Raise']) {
+  rework(id, (f) => ({ ...f, props: [{ type: 'bar', span: [30, 66], y: 203 }, ...f.props] }))
+}
+// Bandas que pasan por delante del cuerpo: por detrás quedaban tapadas.
+for (const id of ['Band_Good_Morning', 'Squats_-_With_Bands']) {
+  solo(id, (f) => ({ ...f, props: f.props.map((p) => (p.type === 'band' ? { ...p, front: true } : p)) }))
+}
+// Pistol: los brazos estirados al frente como contrapeso.
+solo('Pistol_Squat', (f) => ({ ...f, frames: [{ ...f.frames[0], upper: 90, fore: 90 }, { ...f.frames[1], upper: 82, fore: 82 }] }))
+// Remo sentado: el tronco apenas se mueve (un poco adelantado al estirar, vertical al tirar).
+for (const id of ['Seated_Cable_Rows', 'Band_Row']) {
+  rework(id, (f) => ({ ...f, frames: [{ ...f.frames[0], torso: 10, head: 14 }, { ...f.frames[1], torso: 0, head: 4 }] }))
+}
+// Crunch: solo despega los hombros, sin llegar a sentarse.
+rework('Crunches', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], torso: -66, head: -50 }] }))
+// Extensión con banda: la banda sale por detrás de la silla, no la cruza por delante.
+solo('Band_Seated_Leg_Extension', (f) => ({ ...f, props: [{ ...f.props[1], front: false }, f.props[0]] }))
+
+// Press tumbados con mancuernas: de perfil la mancuerna se ve de punta, no de canto.
+for (const id of ['Dumbbell_Bench_Press', 'Incline_Dumbbell_Press']) {
+  rework(id, (f) => ({ ...f, props: f.props.map((p) => (p.type === 'dumbbell' ? { ...p, end: true } : p)) }))
+}
+
+// Variantes que de perfil salían idénticas: cada una enseña lo que la distingue.
+// Dominada: vista por detrás con el agarre abierto (se ven los dorsales y la anchura de las manos); la supina queda de perfil.
+solo('Pullups', (f) => ({
+  ...f, view: 'front', anchor: { joint: 'wrist', at: [196, -62] }, props: [{ type: 'bar', span: [30, 262], y: -64 }],
+  frames: [
+    { torso: 0, head: 0, thigh: 182, shin: 178, foot: 90, upper: 28, fore: 22 },
+    { torso: 0, head: 0, thigh: 182, shin: 178, foot: 90, upper: 122, fore: 8 },
+  ],
+}))
+// Zancada atrás: empieza de pie y el pie de delante se queda quieto mientras el otro da el paso atrás.
+const FEET_TOGETHER = { torso: 2, thigh: 180, shin: 180, thigh2: 180, shin2: 180, foot: 90, foot2: 90 }
+solo('Bodyweight_Reverse_Lunge', (f) => ({ ...f, pinBack: false, frames: [{ ...f.frames[0], ...FEET_TOGETHER, upper: 200, fore: 60 }, { ...f.frames[1], upper: 200, fore: 60 }] }))
+// Press en el suelo alterno: una kettlebell en cada mano; mientras una sube, la otra baja.
+solo('Alternating_Floor_Press', (f) => ({
+  ...f, props: [...f.props, { type: 'kettlebell', at: 'wrist2', up: true }],
+  frames: [{ ...f.frames[0], upper2: 118, fore2: 0 }, { ...f.frames[1], upper2: 2, fore2: 0 }],
+}))
+// Dominada escapular: colgado con los hombros pegados a las orejas, y los hombros bajan con los brazos estirados.
+solo('Scapular_Pull-Up', (f) => ({ ...f, frames: [{ ...f.frames[0], shrug: 10 }, { ...f.frames[1], lift: 12, shrug: -10 }] }))
 
 // Una sola vez cada pieza de material idéntica: algunas figuras compartidas recibían la misma palanca dos veces.
 const deduped = new Map<Figure, Figure>()

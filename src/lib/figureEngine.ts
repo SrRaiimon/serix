@@ -297,6 +297,7 @@ export function fitViewBox(figure: Figure): string {
         case 'chains': add(x, FLOOR); break
         case 'benchTop': add(prop.span![0], prop.y! - 18); add(prop.span![1], prop.y! + 18); break
         case 'scott': add(x, y, 22); break
+        case 'rail': { const [ax, ay] = prop.point!; const [bx, by] = step([ax, ay], prop.angle ?? 0, prop.offset ?? 80); add(ax, ay, 4); add(bx, by, 4); add((ax + bx) / 2, FLOOR); break }
       }
     }
   }

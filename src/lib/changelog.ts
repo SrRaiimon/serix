@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.32',
+    items: [
+      ['Revisados los dibujos de los 100 ejercicios que más salen en los programas: cada uno con su material y su gesto, no el de otro parecido.', 'Reviewed the drawings of the 100 exercises that come up most in programs: each one with its own equipment and movement, not a similar one\'s.'],
+      ['Ahora se ven la puerta y la toalla del remo en casa, la mochila, el escalón de los gemelos y las máquinas hack y de gemelos.', 'You can now see the door and towel for the home row, the backpack, the calf-raise step and the hack squat and calf machines.'],
+      ['La dominada se ve por detrás con el agarre abierto, la prensa recorre su guía hasta abajo, y la zancada atrás y el press alterno se distinguen de sus parecidos.', 'The pull-up is shown from behind with a wide grip, the leg press runs down its full track, and the reverse lunge and alternating press look different from their lookalikes.'],
+      ['Posturas más correctas en peso muerto, remos, fondos en banco, prensa y sentadillas con carga delante, y cada ejercicio empieza donde dice su explicación.', 'More accurate positions in deadlifts, rows, bench dips, leg press and front-loaded squats, and each exercise starts where its instructions say.'],
+    ],
+  },
+  {
     version: '0.1.31',
     items: [
       ['Pruebas automáticas más fiables al publicar: las versiones nuevas llegan sin esperas por fallos al arrancar el navegador de pruebas.', 'More reliable automated tests on release: new versions arrive without delays caused by the test browser failing to start.'],
