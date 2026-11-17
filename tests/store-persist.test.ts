@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { DATA_VERSION, flush, forgetDB, getData, loadData, mergeData, migrateData, replaceData, storageProblem, update } from '../src/lib/store'
+import { DATA_VERSION, flush, forgetDB, getData, loadData, mergeData, migrateData, refreshFromDisk, replaceData, storageProblem, update } from '../src/lib/store'
 import { fakeIndexedDB, session } from './helpers'
 import { parseBackup } from '../src/lib/backup'
 
@@ -138,3 +138,25 @@ test('varias pestañas: un duplicado que ya traía una lista no se arrastra al j
   const withFields = { ...base, friends: [{ name: 'José', code: 'abc' }, { name: 'jose', week: 3 }] as never[] }
   assert.deepEqual(mergeData(base, withFields, base).friends, [{ name: 'jose', code: 'abc', week: 3 }])
 })
+
+test('varias pestañas: el aviso de otra pestaña a mitad de un guardado no borra lo de esta', serial(async () => {
+  const stored = fakeIndexedDB()
+  stored.set('data', { version: 1, sessions: [], routines: [], settings: { name: 'Ana' } })
+  forgetDB()
+  await loadData()
+  // Otra pestaña guarda un entreno y avisa justo cuando esta empieza a guardar una medida.
+  const other = session(2, [])
+  stored.set('data', { version: 1, sessions: [other], routines: [], settings: { name: 'Ana' } })
+  stored.set('rev', 5)
+  update((d) => { d.measurements.push({ id: 'm2', date: 1, weight: 80 }) })
+  const saving = flush()
+  await refreshFromDisk()
+  await saving
+  // Antes, la relectura ponía los datos de la otra pestaña (sin la medida) a mitad del guardado y, al juntar
+  // después, la medida contaba como borrada aquí: desaparecía de la pantalla y del siguiente guardado.
+  await flush()
+  const saved = stored.get('data') as { sessions: { id: string }[]; measurements: { id: string }[] }
+  assert.deepEqual(getData().measurements.map((m) => m.id), ['m2'])
+  assert.deepEqual(saved.measurements.map((m) => m.id), ['m2'])
+  assert.deepEqual(saved.sessions.map((s) => s.id), [other.id])
+}))

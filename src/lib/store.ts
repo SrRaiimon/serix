@@ -533,12 +533,24 @@ const channel = typeof BroadcastChannel === 'undefined' ? undefined : new Broadc
 ;(channel as { unref?: () => void } | undefined)?.unref?.()
 /** Hay cambios en memoria aún sin escribir. */
 let dirty = false
+/**
+ * Guardados en marcha y cuántos han empezado. Mientras se guarda no se relee: la relectura ponía los datos de la
+ * otra pestaña (sin lo de esta, que aún se estaba escribiendo) y, al juntar al terminar, lo de esta contaba como
+ * borrado aquí y se perdía. El guardado ya junta lo de la otra pestaña; al terminar se relee por si llegó algo más.
+ */
+let saving = 0
+let saves = 0
+let refreshAfterSave = false
 
 /** Vuelve a leer lo guardado (otra pestaña escribió, o la app vuelve a primer plano), si no hay cambios propios. */
 export async function refreshFromDisk(): Promise<void> {
+  if (saving) { refreshAfterSave = true; return }
   if (dirty || !writable()) return
+  const started = saves
   try {
     const { data, rev } = await readData()
+    // Un guardado empezó mientras se leía: lo leído puede ser anterior a él.
+    if (saves !== started) { refreshAfterSave = true; return }
     if (rev === knownRev || dirty) return
     const migrated = data === undefined ? undefined : migrateData(data)
     if (!migrated || migrated === 'newer') return
@@ -555,6 +567,8 @@ channel?.addEventListener('message', () => void refreshFromDisk())
 async function save(data: AppData): Promise<void> {
   if (!writable()) return
   dirty = false
+  saving++
+  saves++
   try {
     const merged = await writeData(data)
     if (merged) {
@@ -570,6 +584,12 @@ async function save(data: AppData): Promise<void> {
     dirty = true
     if (e instanceof NewerData) setProblem({ kind: 'newer' })
     else setProblem({ kind: 'writeError', detail: e instanceof Error ? e.name : String(e) })
+  } finally {
+    saving--
+    if (!saving && refreshAfterSave) {
+      refreshAfterSave = false
+      void refreshFromDisk()
+    }
   }
 }
 

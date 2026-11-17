@@ -9,6 +9,12 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.40',
+    items: [
+      ['Con Serix abierta en dos sitios a la vez (la app instalada y el navegador), un cambio hecho en uno justo mientras el otro guardaba ya no se pierde.', 'With Serix open in two places at once (the installed app and the browser), a change made in one right while the other was saving is no longer lost.'],
+    ],
+  },
+  {
     version: '0.1.39',
     items: [
       ['La tarjeta de un récord muestra mejoras de menos de 1 kg (antes «+0 kg»), el número de récords de los logros coincide con el del resumen y «Lo que te hace rendir mejor» cuenta bien los días de descanso.', 'The record card shows improvements under 1 kg (it used to say "+0 kg"), the record count in achievements matches the summary, and "What makes you perform better" counts rest days correctly.'],
