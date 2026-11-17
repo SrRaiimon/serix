@@ -41,13 +41,17 @@ function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: (
     let stream: MediaStream | undefined
     let alive = true
     setError(undefined)
-    navigator.mediaDevices?.getUserMedia({ video: { facingMode: facing, width: { ideal: 1440 }, height: { ideal: 1920 } }, audio: false })
+    // Sin acceso a la cámara (navegador sin soporte o página no segura), `?.` cortaba toda la cadena, también el
+    // .catch: la vista se quedaba en negro y sin aviso.
+    const open = navigator.mediaDevices?.getUserMedia?.({ video: { facingMode: facing, width: { ideal: 1440 }, height: { ideal: 1920 } }, audio: false })
+      ?? Promise.reject(new Error('camera'))
+    open
       .then((s) => {
         if (!alive) return s.getTracks().forEach((x) => x.stop())
         stream = s
         if (video.current) { video.current.srcObject = s; void video.current.play() }
       })
-      .catch(() => setError(t('No se pudo abrir la cámara. Revisa el permiso de cámara para Serix en los ajustes del móvil, o usa «Añadir» para elegir una foto.', 'The camera could not be opened. Check the camera permission for Serix in your phone settings, or use "Add" to pick a photo.')))
+      .catch(() => alive && setError(t('No se pudo abrir la cámara. Revisa el permiso de cámara para Serix en los ajustes del móvil, o usa «Añadir» para elegir una foto.', 'The camera could not be opened. Check the camera permission for Serix in your phone settings, or use "Add" to pick a photo.')))
     return () => { alive = false; stream?.getTracks().forEach((x) => x.stop()) }
   }, [facing])
   useEffect(() => {
@@ -62,7 +66,8 @@ function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: (
       // Con la cámara de delante se ve como en un espejo: la foto se guarda igual que se veía.
       if (facing === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1) }
       ctx.drawImage(v, 0, 0)
-      canvas.toBlob((b) => { if (b) onShot(new File([b], `serix-${Date.now()}.jpg`, { type: 'image/jpeg' })) }, 'image/jpeg', 0.92)
+      // Si no sale la imagen, se puede volver a intentar (antes el botón quedaba desactivado).
+      canvas.toBlob((b) => { if (b) onShot(new File([b], `serix-${Date.now()}.jpg`, { type: 'image/jpeg' })); else setCount(undefined) }, 'image/jpeg', 0.92)
       return
     }
     const id = setTimeout(() => setCount(count - 1), 1000)

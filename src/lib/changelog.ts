@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.41',
+    items: [
+      ['Corregir un entreno ya terminado no borra las molestias que apuntaste en un ejercicio sin series.', 'Editing a finished workout no longer deletes the discomfort you logged on an exercise without sets.'],
+      ['La foto con guía avisa si el navegador no da acceso a la cámara (antes se quedaba en negro) y deja repetir si la foto falla.', 'The guided photo tells you if the browser gives no camera access (it used to stay black) and lets you retry if the shot fails.'],
+      ['El programa 5/3/1 no se crea con un 1RM imposible (más de 1000 kg).', 'The 5/3/1 program is not created with an impossible 1RM (over 1000 kg).'],
+    ],
+  },
+  {
     version: '0.1.40',
     items: [
       ['Con Serix abierta en dos sitios a la vez (la app instalada y el navegador), un cambio hecho en uno justo mientras el otro guardaba ya no se pierde.', 'With Serix open in two places at once (the installed app and the browser), a change made in one right while the other was saving is no longer lost.'],

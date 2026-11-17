@@ -8,7 +8,7 @@ import { buildLibraryProgram, equipmentInfo, equipmentProfiles, generate, goals,
 import { navigate } from '../lib/router'
 import { finishedSessions, updateSettings, useData } from '../lib/store'
 import { records } from '../lib/stats'
-import { defaultTracking, PROGRAM_TARGET_SECONDS, targetText } from '../lib/tracking'
+import { defaultTracking, PROGRAM_TARGET_SECONDS, SET_LIMITS, targetText } from '../lib/tracking'
 import { programDayMinutes, ProgramPreview, PullupBarRow } from '../components/Program'
 import { saveProgram } from '../lib/programs'
 import { t } from '../lib/i18n'
@@ -194,7 +194,8 @@ export function Program531Sheet({ onClose }: { onClose: () => void }) {
     return [l.id, e ? editable(Math.round(fromKg(e, unit))) : '']
   })))
   const oneRms = LIFTS_531.map((l) => toKg(parseDecimal(values[l.id] ?? '') ?? 0, unit))
-  const ready = oneRms.every((v) => v > 0)
+  // Con el mismo tope que una serie: «1000000» creaba un programa con pesos imposibles.
+  const ready = oneRms.every((v) => v > 0 && v <= SET_LIMITS.kg)
 
   const create = () => {
     const ex = (id: string) => catalog.get(id)!

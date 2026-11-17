@@ -48,6 +48,21 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Entreno | lib/workout.ts, screens/Workout*.tsx, screens/Routines.tsx (editor) | 0.1.15 |
 | Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.15 |
 
+## Revisiones fuera del panel (Claude, 0.1.37-0.1.41)
+
+Zona entera leída y arreglado lo encontrado, con test que falla antes del arreglo. No sustituye a serix-code: la
+tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya visto.
+- 0.1.37 Amigos y retos: enlace viejo pisaba el resumen nuevo; objetivo «50.000» leído como 50; aviso de tu propio
+  enlace; semanas con reloj adelantado; unirse dos veces.
+- 0.1.38 Temporizadores y PWA: descanso terminado dos veces al volver (doble pitido y voz); intervalos sin pantalla
+  encendida al volver; voces cargadas antes; hora de la pantalla bloqueada en el idioma de la app.
+- 0.1.39 Estadísticas, metas y logros: «+0 kg» en la tarjeta de récord; récords de logros ≠ resumen; descansos de
+  «Lo que te hace rendir mejor» desde el entreno anterior de cualquier tipo; meta conseguida con la fecha de la marca.
+- 0.1.40 Guardado y varias pestañas: relectura a mitad de un guardado perdía lo de esta pestaña.
+- 0.1.41 Pantallas de edición: corregir un entreno borraba las molestias de ejercicios sin series; cámara guiada sin
+  aviso si no hay cámara y sin poder repetir. Programas: 1RM del 5/3/1 sin tope. Sin fallos: importar y exportar
+  (CSV, zip, QR), progresión y autorregulación, workout.ts (las pantallas Workout*.tsx no se leyeron línea a línea).
+
 ## Pendientes tras 0.1.15 (0.1.13-0.1.15: caracol con letra grande, 10 fallos de un informe externo y la auditoría).
 ## Crítica de diseño: 32/40; detector limpio; Lighthouse 98-99/100/100/100; axe 0; foco tapado 0 (Tab y ⇧Tab).
 ## Nuevo de la crítica: `.group-head` (styles.css:1735) sin wrap: a 375 px la cabecera de superserie en tres columnas.

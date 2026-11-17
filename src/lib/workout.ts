@@ -4,7 +4,7 @@ import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
 import { lastSets, setUnits, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
-import { defaultTracking, trackingOf, type Tracking } from './tracking'
+import { defaultTracking, isSetFilled, trackingOf, type Tracking } from './tracking'
 import { activeSession, expectedMinutes, finishedSessions, getData, lastPerformed, routineMinutes, routineSets, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
@@ -438,6 +438,17 @@ export function finishSession(id: string) {
   if (saved && typeof location !== 'undefined' && location.hash.startsWith('#/timer')) location.hash = '/home'
   setUI({ open: false, summaryId: saved ? id : undefined })
   if (saved) navigator.vibrate?.(80)
+}
+
+/**
+ * Ejercicios de un entreno corregido a mano (SessionEdit): solo las series con datos, y fuera los ejercicios que se
+ * quedan sin ninguna, salvo los que guardan una molestia (finishSession también los conserva): antes, corregir un
+ * peso del entreno borraba las molestias apuntadas en un ejercicio sin series.
+ */
+export function editedExercises(exercises: SessionExercise[]): SessionExercise[] {
+  return exercises
+    .map((e) => ({ ...e, sets: e.sets.filter((x) => isSetFilled(x, trackingOf(e))) }))
+    .filter((e) => e.sets.length > 0 || e.discomfort)
 }
 
 export function discardSession(id: string) {

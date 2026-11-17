@@ -7,7 +7,8 @@ import { editable, fromKg, parseDecimal, toKg, uid } from '../lib/format'
 import { t } from '../lib/i18n'
 import { navigate } from '../lib/router'
 import { update, useData, withUndo, type Session, type SetEntry } from '../lib/store'
-import { defaultTracking, isSetFilled, SET_LIMITS, trackingOf } from '../lib/tracking'
+import { defaultTracking, SET_LIMITS, trackingOf } from '../lib/tracking'
+import { editedExercises } from '../lib/workout'
 import { ExercisePicker } from './Exercises'
 
 // Corregir un entrenamiento ya terminado (pesos, repeticiones, series, ejercicios, fecha y hora) o apuntar
@@ -38,16 +39,14 @@ export function SessionEditSheet({ session, isNew = false, onClose }: { session:
 
   const start = new Date(`${date}T${clock || '00:00'}:00`).getTime()
   const mins = parseDecimal(minutes)
-  // Solo cuentan las series con datos; un ejercicio sin series se quita.
-  const cleaned = draft.exercises
-    .map((e) => ({ ...e, sets: e.sets.filter((x) => isSetFilled(x, trackingOf(e))) }))
-    .filter((e) => e.sets.length > 0)
+  // Solo cuentan las series con datos; un ejercicio sin series se quita (salvo si guarda una molestia).
+  const cleaned = editedExercises(draft.exercises)
   const problem = !Number.isFinite(start) ? t('Revisa la fecha y la hora.', 'Check the date and time.')
     : start > Date.now() ? t('La fecha no puede ser futura.', 'The date cannot be in the future.')
       // 01/01/1900 se guardaba y descolocaba el historial y las gráficas.
       : start < Date.UTC(2000, 0, 1) ? t('Revisa el año de la fecha.', 'Check the year of the date.')
       : mins === null || mins < 1 || mins > 600 ? t('La duración tiene que estar entre 1 y 600 minutos.', 'Duration must be between 1 and 600 minutes.')
-        : !cleaned.length ? t('Añade al menos un ejercicio con una serie.', 'Add at least one exercise with a set.') : undefined
+        : !cleaned.some((e) => e.sets.length) ? t('Añade al menos un ejercicio con una serie.', 'Add at least one exercise with a set.') : undefined
 
   const save = () => {
     if (problem) return
