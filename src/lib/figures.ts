@@ -30,6 +30,8 @@ export interface Pose {
   shinLen?: number
   /** Escorzo del antebrazo cercano (rotaciones de hombro: apunta al que mira). */
   foreLen?: number
+  /** Escorzo de los dos brazos enteros (apuntan al que mira: brazos estirados hacia arriba vistos desde arriba). */
+  armLen?: number
   /** Flexión de la muñeca (grados respecto al antebrazo): la mano y lo que lleva giran solas. */
   bend?: number
   /** Giro de la comba (grados): se interpola como un ángulo más, pero solo lo usa el dibujo. */
@@ -4389,9 +4391,15 @@ const fromAbove = (f: Figure, load: Prop[], start: [number, number], end: [numbe
   frames: [{ ...flat, upper: start[0], fore: start[1] }, { ...flat, upper: end[0], fore: end[1] }],
 })
 const bells: Prop[] = [{ type: 'dumbbell', at: 'wrist', front: true }, { type: 'dumbbell', at: 'wrist2', front: true }]
-for (const id of ['Dumbbell_Flyes', 'Decline_Dumbbell_Flyes', 'Incline_Dumbbell_Flyes', 'One-Arm_Flat_Bench_Dumbbell_Flye']) solo(id, (f) => fromAbove(f, bells, [150, -60], [92, 100]))
+// Aperturas: empiezan con los brazos estirados hacia arriba sobre el pecho, que desde arriba se ven cortos (en escorzo),
+// y se abren hacia los lados alargándose (antes el brazo se doblaba sobre la cara para llevar la mano al pecho).
+const flyFromAbove = (f: Figure, load: Prop[]): Figure => {
+  const g = fromAbove(f, load, [180, 180], [92, 100])
+  return { ...g, frames: [{ ...g.frames[0], armLen: 0.25 }, g.frames[1]] }
+}
+for (const id of ['Dumbbell_Flyes', 'Decline_Dumbbell_Flyes', 'Incline_Dumbbell_Flyes', 'One-Arm_Flat_Bench_Dumbbell_Flye']) solo(id, (f) => flyFromAbove(f, bells))
 for (const id of ['Flat_Bench_Cable_Flyes', 'Cable_Decline_Fly', 'Incline_Cable_Flye']) {
-  solo(id, (f) => fromAbove(f, [{ type: 'cable', at: 'wrist', point: [110, 8], bare: true }, { type: 'cable', at: 'wrist2', point: [110, 232], bare: true }], [150, -60], [92, 100]))
+  solo(id, (f) => flyFromAbove(f, [{ type: 'cable', at: 'wrist', point: [110, 8], bare: true }, { type: 'cable', at: 'wrist2', point: [110, 232], bare: true }]))
 }
 
 // Ejercicios con varias fases: cada una es una postura clave.
@@ -4851,11 +4859,30 @@ solo('Standing_Dumbbell_Calf_Raise', (f) => ({
 // Gemelos en máquina: las hombreras sobre los hombros, unidas a la torre.
 solo('Standing_Calf_Raises', (f) => ({ ...f, props: [...f.props, { type: 'yoke', at: 'head', angle: 180, offset: 24, bare: true }] }))
 // Sentadilla hack: el carro con el respaldo y las hombreras, la plataforma inclinada bajo los pies y la torre detrás.
+// La espalda va pegada al carro, así que la cadera baja en línea recta paralela al tronco (-18°), por el raíl: antes
+// bajaba hacia atrás, cruzando el respaldo. Arriba la pierna casi estirada y el pie adelantado sobre la plataforma;
+// abajo el muslo casi paralelo y la rodilla por delante del pie (ángulos calculados con el tobillo fijo, muslo 53 y
+// pierna 49). Sin torre: la hack es de discos y el raíl ya la hace leer como máquina.
 solo('Hack_Squat', (f) => ({
-  ...f, machine: true,
-  props: [...f.props, { type: 'yoke', at: 'head', angle: 180, offset: 24, bare: true }, { type: 'platform', at: 'ankle', angle: 160 }],
-  // Reclinado sobre el carro, como en la máquina.
-  frames: [{ ...f.frames[0], torso: -18, head: -12 }, { ...f.frames[1], torso: -16, head: -10 }],
+  ...f, machine: false,
+  props: [{ type: 'rail', point: [86, 205], angle: -18, offset: 175 }, ...f.props, { type: 'yoke', at: 'head', angle: 180, offset: 24, bare: true }, { type: 'platform', at: 'ankle', angle: 160 }],
+  // El pie (70°) va paralelo a la plataforma inclinada, apoyado en ella.
+  frames: [
+    { ...f.frames[0], torso: -18, head: -12, thigh: 149, shin: 172, foot: 70 },
+    { ...f.frames[1], torso: -18, head: -12, thigh: 98, shin: 226, foot: 70 },
+  ],
+}))
+// Con los pies juntos es la misma máquina y el mismo recorrido (de perfil no se ve la anchura de la postura).
+solo('Narrow_Stance_Hack_Squats', () => FIGURES.Hack_Squat)
+// Remo invertido: arriba el esternón toca la barra y la cabeza pasa por encima (antes la cara chocaba con la barra:
+// con los talones tan lejos, el cuerpo no llegaba a meterse debajo). Talones más cerca; abajo, brazos estirados casi
+// perpendiculares al cuerpo. Ángulos calculados con el cuerpo recto (166 del tobillo al hombro) y brazo 34 + 31.
+solo('Inverted_Row', (f) => ({
+  ...f, anchor: { joint: 'ankle', at: [167, 217] },
+  frames: [
+    { torso: -60.5, head: -53, thigh: 119.5, shin: 119.5, foot: 28, upper: 47, fore: 47 },
+    { torso: -41.8, head: -34, thigh: 138.2, shin: 138.2, foot: 46, upper: 146.3, fore: -9.9 },
+  ],
 }))
 // Hip thrust: las manos sujetan la barra sobre la cadera.
 solo('Barbell_Hip_Thrust', (f) => ({
@@ -4886,8 +4913,12 @@ for (const id of ['Bent_Over_Two-Dumbbell_Row', 'Bent_Over_Barbell_Row', 'Two-Ar
 }
 // Remo con dos mancuernas: rodillas a unos 20-25°, no medio en sentadilla.
 rework('Bent_Over_Two-Dumbbell_Row', (f) => ({ ...f, frames: f.frames.map((q) => ({ ...q, thigh: 158, shin: 182 })) as [Pose, Pose] }))
-// Peso muerto: la salida con la cadera por encima de las rodillas y los hombros sobre la barra.
-rework('Barbell_Deadlift', (f) => ({ ...f, frames: [{ ...f.frames[0], torso: 57, head: 68, thigh: 127, shin: 200 }, f.frames[1]] }))
+// Peso muerto: la salida con la cadera por encima de las rodillas y los hombros sobre la barra. Disco de radio 22: el de
+// 27 tapaba muslos y rodillas.
+const SMALL_PLATE = (f: Figure): Figure => ({ ...f, props: f.props.map((p) => (p.type === 'plate' && !p.size ? { ...p, size: 22 } : p)) })
+rework('Barbell_Deadlift', (f) => ({ ...SMALL_PLATE(f), frames: [{ ...f.frames[0], torso: 57, head: 68, thigh: 127, shin: 200 }, f.frames[1]] }))
+// Lo mismo en los otros de barra colgando de perfil, donde el disco tapaba el cuerpo entero.
+for (const id of ['Romanian_Deadlift', 'Stiff-Legged_Barbell_Deadlift', 'Bent_Over_Barbell_Row']) rework(id, SMALL_PLATE)
 solo('Stiff-Legged_Dumbbell_Deadlift', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], thigh: 166, shin: 178 }] }))
 // Fondos en banco: codo a 90° y el hombro sin pasarse de extensión.
 solo('Bench_Dips', (f) => ({ ...f, frames: [f.frames[0], { ...f.frames[1], upper: -120, fore: 175 }] }))
@@ -4943,6 +4974,7 @@ solo('Pullups', (f) => ({
 // Zancada atrás: empieza de pie y el pie de delante se queda quieto mientras el otro da el paso atrás.
 const FEET_TOGETHER = { torso: 2, thigh: 180, shin: 180, thigh2: 180, shin2: 180, foot: 90, foot2: 90 }
 solo('Bodyweight_Reverse_Lunge', (f) => ({ ...f, pinBack: false, frames: [{ ...f.frames[0], ...FEET_TOGETHER, upper: 200, fore: 60 }, { ...f.frames[1], upper: 200, fore: 60 }] }))
+solo('Dumbbell_Rear_Lunge', (f) => ({ ...f, pinBack: false, frames: [{ ...f.frames[0], ...FEET_TOGETHER }, f.frames[1]] }))
 // Press en el suelo alterno: una kettlebell en cada mano; mientras una sube, la otra baja.
 solo('Alternating_Floor_Press', (f) => ({
   ...f, props: [...f.props, { type: 'kettlebell', at: 'wrist2', up: true }],

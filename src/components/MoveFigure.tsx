@@ -316,6 +316,19 @@ function PropShape({ prop, j, pose, ids, figure }: { prop: Prop; j: Joints; pose
     case 'yoke':
       // En máquina (bare): solo la hombrera y el brazo que va hacia atrás, a la torre del peso.
       if (prop.bare) {
+        // Con raíl (sentadilla hack), la hombrera va en el carro: el brazo llega hasta el raíl a su misma altura.
+        const rail = figure.props.find((p) => p.type === 'rail')
+        if (rail) {
+          const [ax, ay] = rail.point!
+          const a = ((rail.angle ?? 0) * Math.PI) / 180
+          const rx = ax + ((ay - y) / Math.cos(a)) * Math.sin(a)
+          return (
+            <g>
+              <line x1={x} y1={y + 2} x2={rx} y2={y + 2} stroke="var(--fig-dark-2)" strokeWidth={5} strokeLinecap="round" />
+              <rect x={x - 15} y={y - 6} width={30} height={13} rx={6} fill={dark} />
+            </g>
+          )
+        }
         // El brazo llega hasta la columna de la torre y baja por ella hasta su remate.
         const tower = machineTower(place(figure, figure.frames[0]))
         return (

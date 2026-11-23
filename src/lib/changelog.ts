@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.42',
+    items: [
+      ['La sentadilla hack se dibuja con su máquina: la espalda baja pegada al respaldo por el raíl y los pies apoyan en la plataforma inclinada.', 'The hack squat is drawn with its machine: the back slides down the pad along the rail and the feet rest on the angled platform.'],
+      ['En el remo invertido el pecho llega a la barra (antes la cara chocaba con ella) y las aperturas empiezan con los brazos estirados sobre el pecho.', 'In the inverted row the chest reaches the bar (the face used to hit it) and flyes start with the arms straight above the chest.'],
+      ['Los discos del peso muerto, el rumano y el remo con barra ya no tapan las piernas, y la zancada atrás con mancuernas empieza de pie.', 'Plates in the deadlift, Romanian deadlift and barbell row no longer hide the legs, and the dumbbell reverse lunge starts standing.'],
+    ],
+  },
+  {
     version: '0.1.41',
     items: [
       ['Corregir un entreno ya terminado no borra las molestias que apuntaste en un ejercicio sin series.', 'Editing a finished workout no longer deletes the discomfort you logged on an exercise without sets.'],

@@ -20,6 +20,10 @@ export function step([x, y]: Pt, angle: number, length: number): Pt {
 const torsoLen = (pose: Pose) => L.torso * (pose.torsoLen ?? 1)
 const thighLen = (pose: Pose) => L.thigh * (pose.thighLen ?? 1)
 const shinLen = (pose: Pose) => L.shin * (pose.shinLen ?? 1)
+const upperLen = (pose: Pose) => L.upper * (pose.armLen ?? 1)
+/** Antebrazo cercano (con su escorzo propio) y lejano. */
+const foreLen = (pose: Pose) => L.fore * (pose.foreLen ?? 1) * (pose.armLen ?? 1)
+const foreLen2 = (pose: Pose) => L.fore * (pose.armLen ?? 1)
 
 function side(pose: Pose, hip: Pt): Joints {
   const neckBase = step(hip, pose.torso, torsoLen(pose))
@@ -29,14 +33,14 @@ function side(pose: Pose, hip: Pt): Joints {
   const ankle = step(knee, pose.shin, shinLen(pose))
   const knee2 = step(hip, pose.thigh2 ?? pose.thigh, thighLen(pose))
   const ankle2 = step(knee2, pose.shin2 ?? pose.shin, shinLen(pose))
-  const elbow = step(shoulder, pose.upper, L.upper)
-  const elbow2 = step(shoulder2, pose.upper2 ?? pose.upper, L.upper)
+  const elbow = step(shoulder, pose.upper, upperLen(pose))
+  const elbow2 = step(shoulder2, pose.upper2 ?? pose.upper, upperLen(pose))
   return {
     hip, hip2: hip, shoulder, shoulder2, head: step(neckBase, pose.head ?? pose.torso, L.neck + 12),
     knee, ankle, toe: step(ankle, pose.foot ?? 90, L.foot),
     knee2, ankle2, toe2: step(ankle2, pose.foot2 ?? pose.foot ?? 90, L.foot),
-    elbow, wrist: step(elbow, pose.fore, L.fore * (pose.foreLen ?? 1)),
-    elbow2, wrist2: step(elbow2, pose.fore2 ?? pose.fore, L.fore * (pose.foreLen ?? 1)),
+    elbow, wrist: step(elbow, pose.fore, foreLen(pose)),
+    elbow2, wrist2: step(elbow2, pose.fore2 ?? pose.fore, foreLen(pose)),
   }
 }
 
@@ -52,12 +56,12 @@ function front(pose: Pose, pelvis: Pt): Joints {
   const ankle = step(knee, pose.shin, shinLen(pose))
   const knee2 = step(hip2, -(pose.thigh2 ?? pose.thigh), thighLen(pose))
   const ankle2 = step(knee2, -(pose.shin2 ?? pose.shin), shinLen(pose))
-  const elbow = step(shoulder, pose.upper, L.upper)
-  const elbow2 = step(shoulder2, -(pose.upper2 ?? pose.upper), L.upper)
+  const elbow = step(shoulder, pose.upper, upperLen(pose))
+  const elbow2 = step(shoulder2, -(pose.upper2 ?? pose.upper), upperLen(pose))
   return {
     hip, hip2, shoulder, shoulder2, head: step(mid, pose.head ?? pose.torso, L.neck + 12),
     knee, ankle, toe: step(ankle, 150, 12), knee2, ankle2, toe2: step(ankle2, -150, 12),
-    elbow, wrist: step(elbow, pose.fore, L.fore * (pose.foreLen ?? 1)), elbow2, wrist2: step(elbow2, -(pose.fore2 ?? pose.fore), L.fore),
+    elbow, wrist: step(elbow, pose.fore, foreLen(pose)), elbow2, wrist2: step(elbow2, -(pose.fore2 ?? pose.fore), foreLen2(pose)),
   }
 }
 
@@ -93,7 +97,7 @@ function turned(j: Joints, [cx, cy]: Pt, degrees: number): Joints {
 const mix = (a: number, b: number, t: number) => a + (b - a) * t
 
 /** Valor que se da por hecho si una postura no indica el campo (para poder interpolar). */
-const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90, spin: 0, bend: 0, foreLen: 1 }
+const POSE_DEFAULTS: Partial<Record<keyof Pose, number>> = { lift: 0, shift: 0, shrug: 0, thighLen: 1, torsoLen: 1, shinLen: 1, foot: 90, spin: 0, bend: 0, foreLen: 1, armLen: 1 }
 
 const FALLBACK: Partial<Record<keyof Pose, keyof Pose>> = { thigh2: 'thigh', shin2: 'shin', upper2: 'upper', fore2: 'fore', foot2: 'foot', head: 'torso' }
 

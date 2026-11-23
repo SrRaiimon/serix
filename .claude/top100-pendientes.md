@@ -2,6 +2,17 @@
 
 Notas: usuario 7,2 · directora de arte 7,2 · entrenador 7,6 (78/18/4) · biomecánica 7,6 · media 7,4 → 8,2 (2.ª pasada) → 8,5 (3.ª: 8,2 · 8,0 · 8,9 · 8,9) → 8,75 (4.ª: 8,5 · 8,3 · 9,0 · 9,2)
 
+**Estado 2026-11-23 (sobre 0.1.41):** Alta y Media revisadas en `#/dev-figuras`. Casi todas ya estaban corregidas
+(bloque «Los 100 más usados» de `figures.ts`). Rehechas ahora: Hack_Squat (cadera paralela al raíl, pies en la
+plataforma, raíl en vez de torre; la estrecha comparte figura), Inverted_Row (el esternón llega a la barra),
+disco de radio 22 en peso muerto, rumano, piernas rígidas y remo con barra, y aperturas desde arriba (mancuerna y
+polea) empezando con los brazos en escorzo (`armLen`, nuevo en el motor). Sin hacer: la silla de Negative_Pull-Up,
+la palanca del rodillo de Lying_Leg_Curls y la escala de Dead_Bug/tumbadas.
+Baja: Dumbbell_Rear_Lunge empieza de pie, como la de peso corporal. Probado y descartado: flexiones abiertas y
+cerradas de frente (sin piernas no se leen como flexión: parecen en cuclillas o sentado) y zancadas adelante
+empezando de pie (con `pinBack` la pierna de atrás desaparece al final). Sin identificar (falta la tabla de números):
+75 = 65, 86 = 4, 39 alternancia, 76/69 manos en asas, 43 orientación mancuerna.
+
 ## Alta
 - 84 Suspender_Calf_Raise: postura de fallout; de pie de cara al anclaje, vertical, solo tobillo.
 - 99 Towel_Door_Row: es el remo invertido; puerta + toalla en el pomo, pies junto a la puerta, cuerpo a 60-70°.
