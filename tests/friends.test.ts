@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { alignWeeks, keepNewest, newerSnapshot, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
+import { alignWeeks, keepNewest, liveChallenges, saveFriend, newerSnapshot, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
 import { toBase64Url } from '../src/lib/share'
 import { defaultSettings, type AppData } from '../src/lib/store'
 import { exercise, session, set } from './helpers'
@@ -188,4 +188,27 @@ test('un resumen con fecha de la semana que viene cuenta como de esta (reloj ade
   const now = new Date(2026, 10, 15, 22).getTime() // domingo por la noche
   const ahead = cleanSnapshot({ name: 'Ana', at: now + 3 * 3600000, week: {}, month: {}, streak: 0, total: 0, lifts: {}, weeks: [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0]] })!
   assert.deepEqual(alignWeeks(ahead, now).map((w) => w?.[0]), [1, 2, 3, 4, 5, 6, 7, 8])
+})
+
+test('retos que se comparten: el nuevo entra aunque haya 10 terminados hace poco', () => {
+  // Diez terminados en los últimos días (dentro de las dos semanas de gracia) y uno que empieza hoy.
+  const done = Array.from({ length: 10 }, (_, i) => ({ id: `fin${i}`, by: 'Ana', start: now - 30 * DAY_MS, end: now - (i + 1) * DAY_MS, metric: 'sessions' as const }))
+  const fresh = newChallenge({ metric: 'sessions', by: 'Ana' }, 30, now)
+  const live = liveChallenges([...done, fresh], now)
+  assert.equal(live.length, 10)
+  assert.ok(live.some((c) => c.id === fresh.id))
+  // Sobra el terminado más antiguo, y siguen ordenados por fecha de fin.
+  assert.ok(!live.some((c) => c.id === 'fin9'))
+  assert.deepEqual(live.map((c) => c.end), [...live.map((c) => c.end)].sort((a, b) => a - b))
+})
+
+test('guardar un resumen nuevo de un amigo asienta antes los retos terminados', () => {
+  // Reto terminado hace tres semanas que nunca se asentó (no se abrió Retos); el resumen nuevo de Luis ya no lo trae.
+  const c = { id: 'tarde1', by: 'Ana', start: now - 40 * DAY_MS, end: now - 21 * DAY_MS, metric: 'sessions' as const }
+  const luis = { ...mySnapshot(data, sessions, now - 22 * DAY_MS), name: 'Luis', challenges: [{ challenge: c, value: 5 }] }
+  const d: AppData = structuredClone({ ...data, friends: [luis], challenges: [c] })
+  saveFriend(d, { ...luis, at: now, challenges: [] }, now)
+  assert.deepEqual(d.challenges[0].final?.map((r) => r.name), ['Luis', 'Ana'])
+  assert.equal(d.friends.length, 1)
+  assert.equal(d.friends[0].at, now)
 })

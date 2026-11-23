@@ -136,7 +136,11 @@ export function OnboardingScreen() {
   const [picking, setPicking] = useState<number[]>()
   useEffect(() => setDayLimit(undefined), [step])
   // Tras guardar el programa, una pregunta más: si quiere llevar también la comida.
-  const [foodStep, setFoodStep] = useState(false)
+  // «Guardar programa» guarda las rutinas antes del paso de comidas, y el cuestionario no se da por hecho hasta
+  // salir de ese paso. Si la app se cerró ahí, al volver ya hay un programa guardado: se retoma en las comidas en
+  // vez de empezar de cero (repetirlo creaba un segundo programa, «… (2)»). Solo el cuestionario guarda rutinas
+  // antes de terminarlo: importar y las copias ya lo dan por hecho.
+  const [foodStep, setFoodStep] = useState(() => getData().routines.some((r) => r.programName))
   const [goalsOpen, setGoalsOpen] = useState(false)
   // Al pasar a la vista previa o al paso de comidas, el foco va a su título (como entre preguntas).
   useEffect(() => { if (program || foodStep) document.querySelector<HTMLElement>('.onb-screen-title')?.focus({ preventScroll: true }) }, [!!program, foodStep])

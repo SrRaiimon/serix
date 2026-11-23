@@ -12,7 +12,7 @@ import { compareWithLast, newRecords, records, sessionDuration, type ExerciseCha
 import { finishedSessions, update, useData, withUndo, type Session } from '../lib/store'
 import { groupSlots } from '../lib/groups'
 import { setShortText, setText, trackingOf } from '../lib/tracking'
-import { deloadSummary, repeatSession, saveAsRoutine } from '../lib/workout'
+import { deloadSummary, joinsRoutine, repeatSession, saveAsRoutine } from '../lib/workout'
 import { SessionEditSheet } from './SessionEdit'
 import { plural, t } from '../lib/i18n'
 import { NewAchievements } from '../components/Achievements'
@@ -362,8 +362,8 @@ function SaveRoutineSheet({ session, onClose, onSaved }: { session: Session; onC
   const { routines, sessions } = useData()
   const [name, setName] = useState(session.name)
   const taken = routines.some((r) => r.name.trim().toLowerCase() === name.trim().toLowerCase())
-  // Los entrenos anteriores con el mismo nombre pasan a la rutina (saveAsRoutine): se dice cuántos.
-  const earlier = sessions.filter((s) => s.id !== session.id && !s.routineId && s.end !== undefined && s.name === session.name).length
+  // Los entrenos anteriores iguales pasan a la rutina (saveAsRoutine, con la misma regla): se dice cuántos.
+  const earlier = sessions.filter((s) => joinsRoutine(s, session)).length
   const save = () => {
     if (!name.trim()) return
     saveAsRoutine(session, name)

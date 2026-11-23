@@ -33,6 +33,27 @@ test('guardar como rutina: con el nombre elegido, y los entrenos anteriores con 
   assert.equal(compareWithLast(saved, d.sessions)?.previous.id, old.id)
 })
 
+test('guardar como rutina: no se lleva los entrenos libres ni los que tienen otros ejercicios', () => {
+  // Con el nombre por defecto, los de pecho y espalda no tienen nada que ver con la pierna que se guarda.
+  const chest = session(-9, [exercise('Barbell_Bench_Press_-_Medium_Grip', [set(60, 8)])], { name: 'Entrenamiento libre' })
+  const back = session(-8, [exercise('Pullups', [set(0, 8)])], { name: 'Free workout' })
+  // Mismo nombre que el que se guarda, pero otros ejercicios.
+  const otherDay = session(-6, [exercise('Barbell_Deadlift', [set(120, 5)])], { name: 'Pierna' })
+  const sameDay = session(-4, [exercise('Barbell_Squat', [set(100, 5)])], { name: 'Pierna' })
+  const free = session(-2, [exercise('Barbell_Squat', [set(100, 5)])], { name: 'Entrenamiento libre' })
+  const now = session(0, [exercise('Barbell_Squat', [set(105, 5)])], { name: 'Entrenamiento libre' })
+  reset([chest, back, otherDay, sameDay, free, now])
+  saveAsRoutine(now, 'Pierna')
+  const id = getData().routines[0].id
+  // Solo el propio entreno: el libre con la misma sentadilla tampoco, porque el nombre por defecto no dice nada.
+  assert.deepEqual(getData().sessions.map((s) => s.routineId), [undefined, undefined, undefined, undefined, undefined, id])
+  // Guardando «Pierna» (nombre propio), sí pasa el anterior con los mismos ejercicios y no el de peso muerto.
+  reset([otherDay, sameDay, { ...now, name: 'Pierna' }])
+  saveAsRoutine(getData().sessions[2], 'Pierna')
+  const id2 = getData().routines[0].id
+  assert.deepEqual(getData().sessions.map((s) => s.routineId), [undefined, id2, id2])
+})
+
 test('repetir o guardar un entreno de descarga: las series de antes de recortar, no las de la descarga', () => {
   const deload = { ...exercise('Barbell_Squat', [set(90, 5), set(90, 5), set(90, 5)]), deload: true }
   // Sin rutina: la cuenta de deloadSets al revés (3 → 5).

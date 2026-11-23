@@ -17,7 +17,17 @@ export const countsForVolume = (exerciseId: string, category?: string) =>
  * secundario) contaba 1,5 series de espalda, y el programa salía con 22 donde había 14.
  */
 export function groupShares(muscle: string, secondary: readonly string[]): number[] {
-  return MAIN_GROUPS.map(([, muscles]) => (muscles.includes(muscle) ? 1 : secondary.some((m) => muscles.includes(m)) ? 0.5 : 0))
+  const second = ownSecondary(muscle, secondary)
+  return MAIN_GROUPS.map(([, muscles]) => (muscles.includes(muscle) ? 1 : second.some((m) => muscles.includes(m)) ? 0.5 : 0))
+}
+
+/**
+ * Los secundarios que cuentan. En un remo o un jalón, el hombro secundario es el deltoides posterior, que tira:
+ * contado como hombro y como empuje, los programas salían con el hombro «lleno» sin un solo ejercicio de hombro (y
+ * el ajuste quitaba la elevación lateral) y con empuje de sobra en semanas sin ningún press.
+ */
+function ownSecondary(muscle: string, secondary: readonly string[]): readonly string[] {
+  return PULL_MUSCLES.includes(muscle) ? secondary.filter((m) => m !== 'delts') : secondary
 }
 
 /**
@@ -47,8 +57,12 @@ export function groupRange(goal: TrainingGoal, level: TrainingLevel | undefined,
 export const PUSH_MUSCLES = ['pectorals', 'delts', 'triceps']
 export const PULL_MUSCLES = ['lats', 'upper-back', 'biceps', 'traps']
 
-/** Lo que vale una serie para [empuje, tirón]: 1 el músculo principal y 0,5 cada secundario (como Equilibrio). */
+/**
+ * Lo que vale una serie para [empuje, tirón]: 1 el músculo principal y 0,5 cada secundario (como Equilibrio), sin el
+ * deltoides posterior de los tirones (ownSecondary).
+ */
 export function pushPullShares(muscle: string, secondary: readonly string[]): [push: number, pull: number] {
-  const share = (list: string[]) => (list.includes(muscle) ? 1 : 0) + secondary.filter((m) => m !== muscle && list.includes(m)).length * 0.5
+  const second = ownSecondary(muscle, secondary)
+  const share = (list: string[]) => (list.includes(muscle) ? 1 : 0) + second.filter((m) => m !== muscle && list.includes(m)).length * 0.5
   return [share(PUSH_MUSCLES), share(PULL_MUSCLES)]
 }

@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { applyTip, coachTips, forgottenGroups, hideTip, plannedGroupSets } from '../src/lib/coach'
-import { groupShares } from '../src/lib/volume'
+import { groupShares, pushPullShares } from '../src/lib/volume'
+import { MAIN_GROUPS } from '../src/lib/labels'
 import { weightGoalStatus } from '../src/lib/goals'
 import { defaultSettings, type AppData, type Routine, type Settings } from '../src/lib/store'
 import { DAY, exercise, session, set, T0 } from './helpers'
@@ -37,6 +38,16 @@ test('volumen: un remo cuenta una serie de espalda, no una y media (dorsal de se
   const planned = plannedGroupSets([routine('a', [ex('Bent_Over_Barbell_Row', 'upper-back', 4)])], 1, catalog)
   assert.equal(planned[1], 4)
   assert.deepEqual(groupShares('upper-back', ['lats', 'biceps']).slice(0, 4), [0, 1, 0, 0.5])
+})
+
+test('volumen: el hombro de un remo o un jalón es deltoides posterior, ni hombro ni empuje', () => {
+  // Antes contaba 0,5 de hombro y 0,5 de empuje: semanas con el hombro «lleno» y sin un solo ejercicio de hombro.
+  const SHOULDERS = MAIN_GROUPS.findIndex(([, m]) => m.includes('delts'))
+  assert.equal(groupShares('upper-back', ['delts', 'biceps'])[SHOULDERS], 0)
+  assert.deepEqual(pushPullShares('lats', ['delts', 'biceps']), [0, 1.5])
+  // En un press, el hombro secundario sí cuenta.
+  assert.equal(groupShares('pectorals', ['delts', 'triceps'])[SHOULDERS], 0.5)
+  assert.deepEqual(pushPullShares('pectorals', ['delts', 'triceps']), [2, 0])
 })
 
 test('entrenador: propone cambiar el ejercicio atascado y lo cambia en la rutina', () => {

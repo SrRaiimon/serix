@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.43',
+    items: [
+      ['Los programas llevan un press de verdad cada semana y en casi todos los días de cuerpo completo, y más ejercicios de hombro: los remos ya no cuentan como trabajo de hombro.', 'Programs include a real press every week and on almost every full-body day, and more shoulder exercises: rows no longer count as shoulder work.'],
+      ['Si cierras la app justo después de guardar tu programa, al volver sigues donde lo dejaste en vez de empezar el cuestionario otra vez (se creaba un segundo programa).', 'If you close the app right after saving your program, you pick up where you left off instead of starting the questionnaire again (it created a second program).'],
+      ['Guardar un entreno como rutina ya no se lleva tus entrenamientos libres anteriores, solo los que tienen el mismo nombre y los mismos ejercicios.', 'Saving a workout as a routine no longer takes your earlier free workouts with it, only those with the same name and the same exercises.'],
+      ['Retos: el reto nuevo siempre se comparte, aunque tengas muchos terminados; la clasificación final se guarda aunque no abras la pantalla, y para compartir se pide tu nombre.', 'Challenges: the new challenge is always shared, even if you have many finished ones; the final ranking is saved even if you do not open the screen, and your name is asked before sharing.'],
+      ['El círculo para marcar una serie y otros controles se ven mejor, y el borde de selección con el teclado ya no queda cortado.', 'The circle to mark a set and other controls are easier to see, and the keyboard focus outline is no longer cut off.'],
+    ],
+  },
+  {
     version: '0.1.42',
     items: [
       ['La sentadilla hack se dibuja con su máquina: la espalda baja pegada al respaldo por el raíl y los pies apoyan en la plataforma inclinada.', 'The hack squat is drawn with its machine: the back slides down the pad along the rail and the feet rest on the angled platform.'],

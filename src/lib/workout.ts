@@ -459,11 +459,24 @@ export function discardSession(id: string) {
   setUI({ open: false })
 }
 
-/** Crea una rutina a partir de lo que se hizo en un entrenamiento. */
+/** Nombres que pone la app a un entreno libre, en los dos idiomas: no dicen qué se hizo. */
+const DEFAULT_NAMES = new Set(['Entrenamiento libre', 'Free workout'])
+
 /**
- * Guarda un entreno como rutina con el nombre elegido. Los entrenos anteriores sin rutina y con el mismo nombre pasan
- * a ser de la rutina nueva: así «Frente a la última vez» sigue comparando con ellos (antes, al guardarla, la
- * comparación desaparecía) y ninguno vuelve a ofrecer «Guardar como rutina» (salían rutinas repetidas).
+ * Si un entreno anterior es el mismo que `session` y pasa a su rutina al guardarla: sin rutina, terminado, con el
+ * mismo nombre y los mismos ejercicios. Con el nombre por defecto nunca: «Entrenamiento libre» lo comparten entrenos
+ * que no tienen nada que ver, y guardar uno como «Pierna» se llevaba a la rutina los de pecho o espalda, sin deshacer.
+ */
+export function joinsRoutine(s: Session, session: Session): boolean {
+  if (s.id === session.id || s.routineId || s.end === undefined || s.name !== session.name || DEFAULT_NAMES.has(s.name)) return false
+  const ids = (x: Session) => [...new Set(x.exercises.map((e) => e.exerciseId))].sort().join('|')
+  return ids(s) === ids(session)
+}
+
+/**
+ * Guarda un entreno como rutina con el nombre elegido. Los entrenos anteriores iguales (joinsRoutine) pasan a ser de
+ * la rutina nueva: así «Frente a la última vez» sigue comparando con ellos (antes, al guardarla, la comparación
+ * desaparecía) y ninguno vuelve a ofrecer «Guardar como rutina» (salían rutinas repetidas).
  */
 export function saveAsRoutine(session: Session, name = session.name) {
   const routineId = uid()
@@ -490,7 +503,7 @@ export function saveAsRoutine(session: Session, name = session.name) {
         }
       }),
     })
-    for (const s of d.sessions) if (s.id === session.id || (!s.routineId && s.end !== undefined && s.name === session.name)) s.routineId = routineId
+    for (const s of d.sessions) if (s.id === session.id || joinsRoutine(s, session)) s.routineId = routineId
   })
 }
 

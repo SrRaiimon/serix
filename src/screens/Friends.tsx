@@ -1,16 +1,16 @@
 import { BellRing, ChartColumn, Flag, Medal, MessageCircle, Plus, QrCode as QrIcon, Share2, Trophy, UserMinus, UserPlus, Users } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { QrSheet } from '../components/Qr'
 import { ActionSheet, Card, Chip, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { addDays, int, relative, shortDay, startOfWeek, toKg, tons, weight, type Unit } from '../lib/format'
 import {
-  alignWeeks, keepNewest, newerSnapshot, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
+  alignWeeks, saveFriend, newerSnapshot, challengeProgress, challengeFood, challengeResult, copiedToast, MEDAL_EMOJI, settleChallenges, trophyText, requestUpdate, shareMine, challengeStatus, decodeSnapshot, encodeSnapshot, friendKey, friendLink, invitations, isStale, latestBodyWeight, liveChallenges,
   mySnapshot, newChallenge, trophyCounts, sameMonth, sameWeek, standings, WEEKS, type Challenge, type ChallengeMetric, type FriendSnapshot, type FriendStats,
 } from '../lib/friends'
 import { plural, t } from '../lib/i18n'
 import { MAIN_GROUPS } from '../lib/labels'
 import { back, navigate } from '../lib/router'
-import { finishedSessions, update, updateSettings, useData, withUndo, type AppData } from '../lib/store'
+import { finishedSessions, getData, update, updateSettings, useData, withUndo, type AppData } from '../lib/store'
 import { ExercisePicker } from './Exercises'
 import { crowns, pastChampions, weeklyLeague } from '../lib/league'
 
@@ -73,25 +73,42 @@ function challengeWhen(c: Challenge, now = Date.now()): string {
 
 // MARK: Pantalla principal
 
+/**
+ * Tu nombre, si aún no lo tienes, antes de compartir. Sin él todos salían como «Sin nombre»: dos amigos sin nombre
+ * se pisaban (el segundo enlace sustituía al primero) y a quien tampoco lo tenía le salía «es tu propio enlace».
+ * Devuelve el nombre que se usará (el escrito, aún sin guardar) para habilitar el botón de compartir.
+ */
+function useNameRow(): [string, ReactNode] {
+  const data = useData()
+  const [name, setName] = useState(data.settings.name)
+  const saved = data.settings.name.trim()
+  const row = saved ? null : (
+    <label className="list-row" style={{ padding: 0 }}>
+      <span className="grow small">{t('¿Cómo te verán tus amigos?', 'How will your friends see you?')}</span>
+      <input className="field" style={{ width: 140 }} placeholder={t('Tu nombre', 'Your name')} value={name}
+        maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
+    </label>
+  )
+  return [saved || name.trim(), row]
+}
+
+/** Guarda el nombre escrito antes de compartir (el clic puede llegar sin que el campo pierda el foco). */
+const keepName = (name: string) => { if (name && getData().settings.name.trim() !== name) updateSettings({ name }) }
+
 /** Tu resumen: compartir por el menú del sistema o QR, y qué se comparte. */
 function ShareMine({ mine }: { mine: FriendSnapshot }) {
   const data = useData()
   const [toast, showToast] = useToast()
   const [qr, setQr] = useState<string>()
-  const [name, setName] = useState(data.settings.name)
+  const [name, nameRow] = useNameRow()
   const share = async () => {
+    keepName(name)
     if ((await shareMine()) === 'copied') showToast(copiedToast())
   }
   const hasWeight = latestBodyWeight(data) !== undefined
   return (
     <Card title={t('Tu resumen', 'Your summary')} icon={Share2}>
-      {!data.settings.name.trim() && (
-        <label className="list-row" style={{ padding: 0 }}>
-          <span className="grow small">{t('¿Cómo te verán tus amigos?', 'How will your friends see you?')}</span>
-          <input className="field" style={{ width: 140 }} placeholder={t('Tu nombre', 'Your name')} value={name}
-            maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
-        </label>
-      )}
+      {nameRow}
       <span className="small muted">
         {t('Se comparte tu nombre, tus entrenamientos, volumen y series (esta semana, este mes y las 8 últimas semanas), series por grupo muscular, tus récords recientes, tu racha, tu mejor 1RM estimado en los básicos y tu progreso en los retos. Nada más.',
           'Your name, workouts, volume and sets (this week, this month and the last 8 weeks), sets per muscle group, your recent records, your streak, your best estimated 1RM on the main lifts and your challenge progress are shared. Nothing else.')}
@@ -106,8 +123,8 @@ function ShareMine({ mine }: { mine: FriendSnapshot }) {
         </label>
       )}
       <div className="row" style={{ gap: 8 }}>
-        <button className="btn primary grow" onClick={() => void share()}><Share2 size={18} /> {t('Compartir', 'Share')}</button>
-        <button className="btn secondary" onClick={() => void encodeSnapshot(mine).then((c) => setQr(friendLink(c)))}><QrIcon size={18} /> QR</button>
+        <button className="btn primary grow" disabled={!name} onClick={() => void share()}><Share2 size={18} /> {t('Compartir', 'Share')}</button>
+        <button className="btn secondary" disabled={!name} onClick={() => { keepName(name); void encodeSnapshot({ ...mine, name }).then((c) => setQr(friendLink(c))) }}><QrIcon size={18} /> QR</button>
       </div>
       {qr && <QrSheet title={t('Tu resumen para amigos', 'Your summary for friends')} url={qr}
         hint={t('Que tu amigo lo escanee con la cámara: se abrirá Serix con tu resumen para compararos.', 'Have your friend scan it with the camera: Serix will open with your summary to compare.')} onClose={() => setQr(undefined)} onShare={() => void share()} />}
@@ -166,6 +183,8 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
   const live = liveChallenges(data.challenges)
   const invites = invitations(data.friends, data.challenges)
   const invite = async (c: Challenge) => {
+    // Sin nombre se compartiría como «Sin nombre» y se pisaría con otros (useNameRow): primero el nombre.
+    if (!data.settings.name.trim()) return showToast(t('Pon tu nombre en «Tu resumen» para invitar.', 'Add your name in "Your summary" to invite.'))
     const result = await shareMine(t(`Te reto en Serix: ${challengeTitle(c, unit, exercise)} (${challengeWhen(c)}). Abre el enlace y únete:`,
       `I challenge you on Serix: ${challengeTitle(c, unit, exercise)} (${challengeWhen(c)}). Open the link and join:`))
     if (result === 'copied') showToast(copiedToast())
@@ -222,15 +241,17 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
   const [target, setTarget] = useState('')
   // Todos los objetivos son enteros: «50.000» kg son cincuenta mil (antes se leía 50).
   const goal = Number(target)
-  const valid = metric !== 'reps' || !!ex
+  const [name, nameRow] = useNameRow()
+  const valid = (metric !== 'reps' || !!ex) && !!name
   const draft = (): Challenge => newChallenge({
-    metric, by: data.settings.name.trim() || t('Sin nombre', 'No name'),
+    metric, by: name,
     ...(goal > 0 ? { target: Math.round(metric === 'volume' ? toKg(goal, unit) : goal) } : {}),
     ...(metric === 'sets' && group >= 0 ? { group } : {}),
     ...(metric === 'reps' && ex ? { exerciseId: ex.id, exerciseName: ex.name } : {}),
   }, days)
 
   const create = async () => {
+    keepName(name)
     const c = draft()
     update((d) => { d.challenges.push(c) })
     const result = await shareMine(t(`Te reto en Serix: ${challengeTitle(c, unit, exercise)} (${challengeWhen(c)}). Abre el enlace y únete:`,
@@ -244,6 +265,7 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
     <Sheet title={t('Nuevo reto', 'New challenge')} onClose={onClose}
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={<button className="btn primary block" disabled={!valid} onClick={() => void create()}><Share2 size={18} /> {t('Crear e invitar', 'Create and invite')}</button>}>
+      {nameRow}
       <div className="chip-row">
         {METRIC_OPTIONS.map((o) => <Chip key={o.value} label={o.label()} active={metric === o.value} onClick={() => setMetric(o.value)} />)}
       </div>
@@ -632,9 +654,6 @@ export function FriendImportScreen({ code }: { code: string }) {
   const own = !!friend && !known && friendKey(friend.name) === friendKey(mine.name)
   const invites = friend ? invitations([friend], data.challenges) : []
 
-  const saveFriend = (d: AppData, f: FriendSnapshot) => {
-    d.friends = keepNewest(d.friends, f)
-  }
   const done = () => navigate(data.settings.onboarded ? 'profile' : 'home', ...(data.settings.onboarded ? ['friends'] : []))
   const save = () => {
     if (!friend) return

@@ -4,7 +4,7 @@ import { isIsolation } from './isolation'
 import { MAIN_GROUPS } from './labels'
 import { defaultTracking, exerciseSeconds, PROGRAM_TARGET_SECONDS } from './tracking'
 import type { Progression } from './store'
-import { ABS_GROUP, countsForVolume, groupRange, groupShares, pushPullShares } from './volume'
+import { ABS_GROUP, countsForVolume, groupRange, groupShares, PUSH_MUSCLES, pushPullShares } from './volume'
 import { fullBodyA, fullBodyB, fullBodyC, legsA, legsB, lowerA, lowerB, pullA, pullB, pushA, pushB, slots, strengthLowerB, strengthUpperB, T, upperA, upperB, type Kind, type Slot, type SlotName, type Template } from './generatorSlots'
 
 export type TrainingGoal = 'hypertrophy' | 'strength' | 'fatLoss' | 'general'
@@ -478,8 +478,12 @@ const TIE = {
   transfer: 0.002,
   /** Por minuto del día: a igualdad, se quita del más largo. */
   perMinute: 1e-3,
-  /** Lo que se acepta empeorar la semana (en series fuera de rango) por tener bíceps y tríceps directos en hipertrofia. */
-  directArm: 2,
+  /**
+   * Lo que se acepta empeorar la semana (en series fuera de rango) por tener bíceps y tríceps directos en hipertrofia.
+   * 3 desde que el hombro de los remos no cuenta (volume.ts): con 2, cuerpo completo de 3 días y 45 minutos se quedaba
+   * sin tríceps para dejarle sitio a un segundo press de hombro.
+   */
+  directArm: 3,
   /** Por serie del ejercicio: a igualdad, se sube al que menos tiene y se baja al que más. */
   perSet: 1e-3,
 } as const
@@ -493,6 +497,9 @@ const PUSH_GROUPS = new Set(MAIN_GROUPS.flatMap(([, muscles], g) => (muscles.inc
 /** Huecos con los que se puede añadir un ejercicio para un grupo (orden de MAIN_GROUPS) que no llega. */
 /** Huecos de empuje, del más general al más concreto: los que pone un día de cuerpo completo que se ha quedado sin press. */
 const PUSH_SLOTS: SlotName[] = ['chestPress', 'inclinePress', 'shoulderPress']
+/** Empuje sin press, para un día de cuerpo completo cuando el pecho o el hombro de la semana ya van llenos. Con Array.of:
+ * un literal de dos textos con mayúscula lo toma scripts/i18n/extract.mjs por una pareja [es, en]. */
+const LIGHT_PUSH_SLOTS = Array.of<SlotName>('lateralRaise', 'triceps')
 const GROUP_SLOTS = ['chestFly inclinePress', 'horizontalPull verticalPull', 'lateralRaise rearDelt', 'biceps hammer', 'triceps',
   'legExtension lunge', 'legCurl', 'glute', 'core'].map((x) => x.split(' ') as SlotName[])
 /** Grupos de pierna: lo que se añade para ellos va a un día que ya tenga pierna (y lo de torso, a uno de torso). */
@@ -763,13 +770,25 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
   // y salían días de bisagra, dominada, zancada y curl (y con 2 días de 30 minutos, semanas sin un solo press). Un press
   // del propio día a 2 series, tras el primero; si no cabe, otros ceden series (hasta 2) y, si aun así no, ocupa el
   // sitio de un accesorio que no sea de tirón.
-  const pushes = (p: Picked) => countsForVolume(p.ex.exercise.id, p.ex.exercise.category) && shares(p)[N] > 0
+  // Un press de verdad: compuesto y con el pecho, el hombro o el tríceps de principal. La elevación lateral o una
+  // extensión de tríceps también empujan, pero con ellas salían días de cuerpo completo sin ningún press (el primer
+  // programa que ve un principiante: rumano, jalón, elevación lateral, zancada, tríceps y crunch).
+  const pushes = (p: Picked) => countsForVolume(p.ex.exercise.id, p.ex.exercise.category) && !isIsolation(p.ex.exercise.id)
+    && PUSH_MUSCLES.includes(p.ex.exercise.muscle)
   days.forEach((day, d) => {
-    if (!fullBody[d] || day.some(pushes)) return
-    for (const slot of PUSH_SLOTS) {
-      // Puede repetir un press de otro día (sin material no hay tantos y ya estaban todos usados).
-      const p = add(d, slot, true)
-      if (!p || !pushes(p)) continue
+    // Con el pecho o el hombro ya en su máximo (6 días de cuerpo completo: cada día abre con un press y no pueden
+    // ceder series), otro press lo pasaba de largo (19 series de pecho para 15): basta un empuje de hombro o tríceps.
+    const v = totals()
+    const full = [...PUSH_GROUPS].some((g) => v[g] + 2 > ranges[g][1])
+    const anyPush = (p: Picked) => countsForVolume(p.ex.exercise.id, p.ex.exercise.category) && shares(p)[N] > 0
+    const wanted = full ? anyPush : pushes
+    if (!fullBody[d] || day.some(wanted)) return
+    const slots = full ? LIGHT_PUSH_SLOTS : PUSH_SLOTS
+    // Primero uno que no esté ya en la semana; si no hay, puede repetir un press de otro día (sin material no hay
+    // tantos y ya estaban todos usados). Repitiendo de entrada salía el mismo press en días seguidos.
+    for (const [slot, repeat] of [...slots.map((s) => [s, false] as const), ...slots.map((s) => [s, true] as const)]) {
+      const p = add(d, slot, repeat)
+      if (!p || !wanted(p)) continue
       // Sin alargar el día más de lo que ya estaba (algunos ya pasaban un poco del tiempo).
       const room = Math.max(c.minutes + TIME_SLACK, minutesOf(day))
       const ok = () => fits(day, room)
@@ -791,10 +810,11 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
       const alone = (q: Picked) => !days.some((other) => other.some((x) => x !== q && x.ex.exercise.muscle === q.ex.exercise.muscle))
       const victim = [...day].reverse().find((q) => q !== p && day.indexOf(q) > 1 && q.kind === 'accessory' && mainGroup(q) !== BACK_GROUP && !alone(q))
       if (victim) {
-        // Un press descansa más que un curl: hasta 2 minutos más que el día que había.
+        // Dentro del tiempo: antes se dejaban 2 minutos más (un press descansa más que un curl) y, ahora que también
+        // entra en días con elevación lateral o extensión de tríceps, salían días de 49 minutos en 45.
         const at = day.indexOf(victim)
         day.splice(at, 1)
-        if (fits(day, room + 2)) return
+        if (fits(day, room)) return
         day.splice(at, 0, victim)
       }
       day.splice(day.indexOf(p), 1)
@@ -804,6 +824,17 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
   // otros press de la semana (no el primero de su día ni por debajo de su mínimo).
   for (let k = 0; k < 20 && pushExcess(totals()) > 0; k++) {
     const q = days.flatMap((day) => day.filter((x, i) => i > 0 && x.kind !== 'conditioning' && PUSH_GROUPS.has(mainGroup(x)) && x.ex.sets > floor(x)))
+      .sort((a, b) => b.ex.sets - a.ex.sets)[0]
+    if (!q) break
+    q.ex.sets--
+  }
+  // Ni pasa del máximo de pecho u hombro: con 6 días de cuerpo completo salían 19 series de pecho para 15. Ceden los
+  // demás press de ese grupo (el añadido, a 2, ya está por debajo de su mínimo y no baja).
+  for (let k = 0; k < 20; k++) {
+    const v = totals()
+    const g = [...PUSH_GROUPS].find((x) => v[x] > ranges[x][1])
+    if (g === undefined) break
+    const q = days.flatMap((day) => day.filter((x, i) => i > 0 && x.kind !== 'conditioning' && mainGroup(x) === g && x.ex.sets > floor(x)))
       .sort((a, b) => b.ex.sets - a.ex.sets)[0]
     if (!q) break
     q.ex.sets--

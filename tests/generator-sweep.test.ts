@@ -4,7 +4,8 @@ import { test } from 'node:test'
 import { Catalog, type RawExercise } from '../src/lib/catalog'
 import { dayMinutes, equipmentProfiles, generate, levels, type GeneratedProgram, type GeneratorConfig } from '../src/lib/generator'
 import { MAIN_GROUPS } from '../src/lib/labels'
-import { ABS_GROUP, countsForVolume, groupRange, groupShares, pushPullShares } from '../src/lib/volume'
+import { ABS_GROUP, countsForVolume, groupRange, groupShares, PUSH_MUSCLES, pushPullShares } from '../src/lib/volume'
+import { isIsolation } from '../src/lib/isolation'
 
 // Todas las combinaciones del cuestionario (1500): los tests de reglas con unas pocas dejaban pasar casos (un grupo a
 // máx + 6 con kettlebell, empuje 16,5/9 con bandas a 2 días). Cada regla, con su tolerancia y sus excepciones dichas.
@@ -85,6 +86,13 @@ test('barrido: en el gimnasio, el mismo ejercicio de aislamiento no se repite en
     const prev = new Set(p.days[i].exercises.map((x) => x.exercise.id))
     return d.exercises.filter((x) => prev.has(x.exercise.id) && x.exercise.category !== 'cardio' && x.exercise.category !== 'plyometrics' && countsForVolume(x.exercise.id, x.exercise.category) && !/squat|deadlift|press|row|pull/i.test(x.exercise.id)).map((x) => `${tag} ${d.name}: ${x.exercise.id}`)
   })))
+})
+
+test('barrido: ninguna semana sin un press compuesto (pecho, hombro o tríceps)', () => {
+  // Con la elevación lateral o el tríceps como «empuje», y el hombro de los remos sumando, salían 8 semanas sin ningún
+  // press (fuerza, principiante, 2 días de 30 minutos: sentadilla y remo un día, rumano y jalón el otro).
+  const press = (x: GeneratedProgram['days'][number]['exercises'][number]) => !isIsolation(x.exercise.id) && PUSH_MUSCLES.includes(x.exercise.muscle)
+  fails(all.filter(({ p }) => !p.days.some((d) => d.exercises.some(press))).map(({ tag }) => tag), 0)
 })
 
 test('barrido: el mismo ejercicio en días seguidos solo cuando no hay otro igual de bueno', () => {

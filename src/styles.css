@@ -148,6 +148,18 @@ html:has(.active-bar) { scroll-padding-bottom: calc(160px + var(--safe-bottom));
   outline-offset: -2px;
   border-radius: 6px;
 }
+/* Con el anillo por dentro, un poco de aire a los lados para que no toque las letras («¡», la «G»); el margen
+   negativo deja el texto donde estaba. */
+:is(h1, h2)[tabindex="-1"] {
+  padding-inline: 4px;
+  margin-inline: -4px;
+}
+/* Filas de lista y herramientas de Inicio: sus contenedores recortan (overflow: hidden) y el anillo por fuera se
+   perdía; por dentro se ve entero. */
+.list .list-row:focus-visible,
+.home-tool:focus-visible {
+  outline-offset: -2px;
+}
 
 button,
 input,
@@ -1324,7 +1336,8 @@ a.list-row:active {
   margin: -5px;
   display: grid;
   place-items: center;
-  color: var(--text-3);
+  /* Es el control principal del entreno: el círculo sin marcar necesita 3:1 (WCAG 1.4.11); con --text-3 era 2:1. */
+  color: var(--text-2);
 }
 
 .set-check.done {
@@ -1654,7 +1667,8 @@ a.list-row:active {
   place-items: center;
   font-size: 12px;
   font-weight: 700;
-  border: 2px solid var(--text-3);
+  /* Borde del círculo sin marcar a 3:1 como mínimo (WCAG 1.4.11): con --text-3 quedaba en 2:1. */
+  border: 2px solid var(--text-2);
 }
 
 .pick-circle.active {
@@ -2818,7 +2832,7 @@ a.list-row { color: var(--text); text-decoration: none; }
 .coach-icon { flex-shrink: 0; margin-top: 2px; color: var(--accent-text); }
 /* Siempre en su propia línea, debajo del texto (corto, a veces quedaba pegado al final de la frase). */
 .coach-action { display: flex; width: fit-content; margin-top: 8px; max-width: 100%; text-align: left; white-space: normal; }
-.coach-hide { width: 30px; height: 30px; flex-shrink: 0; color: var(--text-3); }
+.coach-hide { width: 30px; height: 30px; flex-shrink: 0; color: var(--text-2); }
 
 /* MARK: WOD del día (screens/Wod.tsx) */
 .wod-hero { gap: 12px; }

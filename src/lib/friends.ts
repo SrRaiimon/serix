@@ -231,9 +231,16 @@ export const MEDAL_EMOJI: Record<Medal, string> = { gold: '🥇', silver: '🥈'
 export const trophyText = (t: Trophies | undefined) =>
   t ? [['🥇', t[0]], ['🥈', t[1]], ['🥉', t[2]], ['🎯', t[3]]].filter(([, n]) => n).map(([e, n]) => `${e}${n}`).join(' ') : ''
 
-/** Retos que aún se comparten: en curso, por empezar o terminados hace poco. */
-export const liveChallenges = (list: Challenge[], now = Date.now()) =>
-  list.filter((c) => c.end + CHALLENGE_GRACE > now).sort((a, b) => a.end - b.end).slice(0, MAX_CHALLENGES)
+/**
+ * Retos que aún se comparten: en curso, por empezar o terminados hace poco. Si son más de MAX_CHALLENGES, sobran
+ * primero los terminados, los más antiguos antes: al cortar solo por fecha de fin, con 10 terminados en las últimas
+ * dos semanas el reto recién creado (el que acaba más tarde) se quedaba fuera de la tarjeta y del enlace.
+ */
+export function liveChallenges(list: Challenge[], now = Date.now()): Challenge[] {
+  const open = list.filter((c) => c.end > now).sort((a, b) => a.end - b.end)
+  const done = list.filter((c) => c.end <= now && c.end + CHALLENGE_GRACE > now).sort((a, b) => b.end - a.end)
+  return [...open, ...done].slice(0, MAX_CHALLENGES).sort((a, b) => a.end - b.end)
+}
 
 // MARK: Comparativas
 
@@ -455,6 +462,17 @@ export const newerSnapshot = (list: FriendSnapshot[], f: FriendSnapshot) =>
  */
 export function keepNewest(list: FriendSnapshot[], f: FriendSnapshot): FriendSnapshot[] {
   return newerSnapshot(list, f) ? list : [...list.filter((x) => friendKey(x.name) !== friendKey(f.name)), f]
+}
+
+/**
+ * Guarda el resumen de un amigo (dentro de update). Antes asienta la clasificación de los retos terminados con el
+ * resumen que había: el nuevo ya no trae un reto acabado hace más de dos semanas, y si no se había abierto Retos
+ * (donde se asentaba) el amigo desaparecía de la clasificación y te quedabas «en solitario» y sin medalla.
+ */
+export function saveFriend(d: AppData, f: FriendSnapshot, now = Date.now()) {
+  const settled = settleChallenges(d, finishedSessions(d), now)
+  if (settled) d.challenges = settled
+  d.friends = keepNewest(d.friends, f)
 }
 
 /** ¿El resumen es de la semana actual? Si no, sus cifras de «esta semana» ya no sirven para comparar. */
