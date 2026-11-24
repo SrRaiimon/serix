@@ -69,10 +69,10 @@ export function RecoveryCard({ sessions }: { sessions: Session[] }) {
             <span className="recovery-bar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(summary.ready * 100)} aria-label={`${summary.groups.map((g) => g.label).join(', ')}: ${t(`Recuperándose · ~${range} h`, `Recovering · ~${range} h`)}`}>
               <span style={{ width: `${Math.round(summary.ready * 100)}%` }} />
             </span>
-            <span className="recovery-status small">{t(`Recuperándose · ~${range} h`, `Recovering · ~${range} h`)}</span>
+            <span className="recovery-status small">~{range} h</span>
           </div>
         )}
-        {summary && <span className="small muted">{summary.groups.map((g) => g.label).join(', ')}</span>}
+        {summary && <span className="small muted">{t('Recuperándose', 'Recovering')}: {summary.groups.map((g) => g.label).join(', ')}</span>}
       </div>
       <span className="small muted">
         {t('Estimación orientativa según el volumen del último entrenamiento de cada grupo (de 48 a 96 h). Escucha a tu cuerpo: el descanso, el sueño y la intensidad también cuentan.',

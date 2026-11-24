@@ -8,7 +8,7 @@ import { defaultTracking, isSetFilled, trackingOf, type Tracking } from './track
 import { activeSession, expectedMinutes, finishedSessions, getData, lastPerformed, routineMinutes, routineSets, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
-import { equipmentOf, plan } from './progression'
+import { equipmentOf, lowerWeight, plan, usedWeights } from './progression'
 import { BARBELL_EQUIPMENT, plannedWarmup } from './warmup'
 import { BARS } from './plates'
 import { blockWeek } from './block'
@@ -165,9 +165,10 @@ export const deloadSets = (n: number) => (n <= 1 ? n : Math.max(2, Math.round(n 
  * 10 % menos de peso, sin drop sets ni series al fallo. Las ya hechas no se tocan. En las máquinas
  * asistidas el peso es la ayuda: se sube un 10 % (bajarla hacía la descarga más dura).
  */
-export function applyDeload(e: SessionExercise, unit: Unit): void {
+export function applyDeload(e: SessionExercise, unit: Unit, history: Session[] = finishedSessions(getData())): void {
   const step = increment(unit)
   const round = (kg: number) => toKg(Math.round(fromKg(kg, unit) / step) * step, unit)
+  const used = usedWeights(e.exerciseId, history)
   const pending = e.sets.filter((s) => !s.done && !s.warmup && s.kind !== 'drop')
   // Por lados se cuentan parejas (izquierda y su derecha): con entradas sueltas, 4 series daban L, R, L, R, L.
   const units = pending.filter((s) => s.side !== 'R').length
@@ -178,7 +179,8 @@ export function applyDeload(e: SessionExercise, unit: Unit): void {
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
   for (const s of e.sets) {
     if (!keep.has(s.id)) continue
-    if (s.weight > 0) s.weight = round(s.weight * (e.assisted ? 1.1 : 0.9))
+    // Con peso: un 10 % menos a un peso que existe (mancuernas, poleas…), como la bajada por estancamiento. Asistidas: la ayuda sube.
+    if (s.weight > 0) s.weight = e.assisted ? round(s.weight * 1.1) : lowerWeight(e.exerciseId, s.weight, unit, used)
     delete s.kind
   }
   e.deload = true
@@ -279,7 +281,7 @@ export function routineFacts(d: AppData, r: Routine): { sets: number; minutes: n
 
 /** En la semana de descarga del bloque, los ejercicios de peso empiezan ya con la descarga. */
 function blockDeload(d: AppData, e: SessionExercise, source: { tracking?: Tracking; progression?: Progression }): SessionExercise {
-  if (deloadWeek(d) && deloads(source) && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit)
+  if (deloadWeek(d) && deloads(source) && e.auto?.kind !== 'wave' && !e.deload) applyDeload(e, d.settings.unit, finishedSessions(d))
   return e
 }
 

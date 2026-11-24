@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.53',
+    items: [
+      ['La descarga baja a pesos que existen (la mancuerna de 24 kg a 22, no a 22,5) y también baja con pesos pequeños (un curl de 12,5 kg ya no se queda igual); las descargas ya no cuentan como historial para deducir tu juego de mancuernas.', 'The deload goes down to weights that exist (the 24 kg dumbbell to 22, not 22.5) and also goes down with small weights (a 12.5 kg curl no longer stays the same); deloads no longer count as history when working out your dumbbell set.'],
+      ['Bajar el peso en poleas y máquinas de aislamiento va de 0,5 en 0,5 kg (10 kg a 9, no a 7,5), como al subir.', 'Lowering the weight on isolation cables and machines goes in 0.5 kg steps (10 kg to 9, not 7.5), like when going up.'],
+      ['Recuperación muscular: la fila resumen de grupos recuperándose vuelve a enseñar su barra y pone el tramo de horas («~37–43 h») y los nombres debajo.', 'Muscle recovery: the summary row of groups that are recovering shows its bar again, with the range of hours («~37–43 h») and the names below.'],
+    ],
+  },
+  {
     version: '0.1.52',
     items: [
       ['La progresión lineal también baja el peso tras tres sesiones sin completar (antes, con 5 o 12,5 kg decía «↓ −0 kg» y no bajaba), y la bajada va siempre a pesos que existen: mancuernas de 2,5 en 2,5 kg (20 → 17,5), de 1 en 1 por debajo de 10 kg y barras de 2,5 kg.', 'Linear progression also lowers the weight after three sessions without completing (before, at 5 or 12.5 kg it said «↓ −0 kg» and did not go down), and the drop always lands on weights that exist: dumbbells in 2.5 kg steps (20 → 17.5), 1 kg steps under 10 kg and 2.5 kg bars.'],

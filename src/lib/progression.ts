@@ -98,15 +98,17 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
     }
     return lower
   }
-  // Barra, poleas y discos: a la unidad de la barra (2,5 kg / 5 lb), también en aislamiento (con 0,5 kg saldrían pesos que no hay).
-  const step = increment(unit)
+  // Barra y discos: a la unidad de la barra (2,5 kg / 5 lb), también en aislamiento (un curl con barra a 0,5 kg no existe).
+  // Poleas y máquinas en aislamiento: pasos finos (0,5 kg / 1 lb), como al subir; si no, 10 kg bajaba a 7,5 (−25 %).
+  const barLoaded = equipment === 'barbell' || equipment === 'e-z curl bar' || /barbell|(^|_)ez/i.test(exerciseId)
+  const step = exerciseId && isIsolation(exerciseId) && !barLoaded ? (unit === 'kg' ? 0.5 : 1) : increment(unit)
   const rounded = toKg(Math.round(fromKg(target, unit) / step) * step, unit)
   return rounded < weight - 0.01 ? Math.max(0, rounded) : Math.max(0, toKg(fromKg(weight, unit) - step, unit))
 }
 
-/** Pesos de trabajo ya usados en el ejercicio (sin calentamiento ni drop sets: no dicen qué juego de mancuernas tienes). */
-const usedWeights = (exerciseId: string, history: Session[]) =>
-  history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
+/** Pesos de trabajo ya usados en el ejercicio (sin calentamiento, drop sets ni descargas: no dicen qué juego de mancuernas tienes). */
+export const usedWeights = (exerciseId: string, history: Session[]) =>
+  history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === exerciseId && !e.deload).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
 
 /** Sesiones seguidas (de la más reciente hacia atrás) en las que no se completó el objetivo con este peso. */
 function failedStreak(ex: PlanInput, history: Session[], weight: number): number {

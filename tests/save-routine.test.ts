@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { defaultSettings, getData, replaceData, undo, type Session } from '../src/lib/store'
-import { plannedSets, saveAsRoutine } from '../src/lib/workout'
+import { applyDeload, plannedSets, saveAsRoutine } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
 import { backupJson, restoreData } from '../src/lib/protect'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
@@ -124,4 +124,22 @@ test('platos tuyos: el mismo alimento dos veces va en una fila con la suma, y lo
   assert.equal(mine.items[0].g, 75)
   const fixed = { ...mine, items: [{ ...mine.items[0], role: 'x' as const, min: 125, max: 125, g: 125, step: 10 }] }
   assert.equal(fitDish(fixed, { kcal: 500, p: 30 })[0].grams, 125)
+})
+
+test('descarga: baja a pesos que existen y no cuenta como historial de mancuernas', () => {
+  // Curl de barra de 12,5 y 5 kg: antes se quedaban igual (redondeo a 2,5); una mancuerna de 24, a 22,5 (no existe).
+  const curl = exercise('Barbell_Curl', [set(12.5, 10, { done: false }), set(12.5, 10, { done: false })])
+  applyDeload(curl, 'kg', [])
+  assert.deepEqual(curl.sets.map((s) => s.weight), [10, 10])
+  const small = exercise('Barbell_Curl', [set(5, 10, { done: false })])
+  applyDeload(small, 'kg', [])
+  assert.equal(small.sets[0].weight, 2.5)
+  const db = exercise('Dumbbell_Curl', [set(24, 10, { done: false }), set(24, 10, { done: false }), set(24, 10, { done: false })])
+  applyDeload(db, 'kg', [])
+  assert.equal(db.sets[0].weight, 22)
+  // Una descarga anterior con 22,5 no dice que tengas la serie de 2,5 kg: 20 baja a 18, no a 17,5.
+  const earlier = session(-7, [{ ...exercise('Dumbbell_Curl', [set(22.5, 10)]), deload: true }])
+  const again = exercise('Dumbbell_Curl', [set(20, 10, { done: false })])
+  applyDeload(again, 'kg', [earlier])
+  assert.equal(again.sets[0].weight, 18)
 })

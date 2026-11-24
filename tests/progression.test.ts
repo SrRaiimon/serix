@@ -118,6 +118,12 @@ test('la bajada de la doble progresión siempre baja, también con pesos pequeñ
   assert.equal(lowerWeight('Hammer_Curls', 8, 'kg'), 7)
 })
 
+test('bajar en aislamiento: barra de 2,5 en 2,5 kg; polea y máquina de 0,5 en 0,5 (no −25 %)', () => {
+  assert.equal(lowerWeight('Triceps_Pushdown', 10, 'kg'), 9)
+  assert.equal(lowerWeight('Triceps_Pushdown', 5, 'kg'), 4.5)
+  assert.equal(lowerWeight('Barbell_Curl', 12.5, 'kg'), 10)
+})
+
 test('lineal: la bajada también baja con pesos pequeños y no muestra «−0 kg»', () => {
   const curl = { exerciseId: 'Barbell_Curl', muscle: 'biceps', sets: 3, repsMin: 8, repsMax: 8, progression: 'linear' as const }
   const fail = (day: number, w: number) => session(day, [exercise('Barbell_Curl', [set(w, 8), set(w, 6), set(w, 5)], { muscle: 'biceps' })])
