@@ -805,9 +805,10 @@ a.list-row:active {
   box-sizing: content-box;
   border: 7px solid transparent;
   margin: -7px;
-  background-clip: padding-box;
   border-radius: 999px;
   background: var(--fill);
+  /* Después de `background`: la abreviatura lo restablece a border-box y el borde transparente se pintaba (píldora de 65×45). */
+  background-clip: padding-box;
   position: relative;
   transition: background 0.2s;
   flex-shrink: 0;
@@ -828,6 +829,7 @@ a.list-row:active {
 
 .toggle:checked {
   background: var(--green);
+  background-clip: padding-box;
 }
 
 .toggle:checked::after {
@@ -2483,6 +2485,8 @@ html.scroll-locked body {
 .stat-band.three strong { font-size: 26px; }
 .stat-band strong { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-stretch: 104%; line-height: 1.05; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stat-band span { font-size: 12.5px; color: var(--text-2); }
+/* La unidad pequeña junto a la cifra: «~28 min» en 26 px no cabía en un tercio de la fila y salía «~28 …». */
+.stat-band strong small { font-size: 0.55em; font-weight: 600; letter-spacing: 0; }
 .best-lifts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .best-lifts button { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 10px 0 0; border-top: 2px solid var(--ink); }
 .best-lifts strong { white-space: nowrap; font-family: var(--font-display); font-size: 28px; font-weight: 800; font-stretch: 104%; line-height: 1; }
@@ -2656,7 +2660,8 @@ textarea { resize: none; }
 .after-bars.unsure .food-bar > div { opacity: 0.7; }
 .list-row.suspect { background: color-mix(in srgb, var(--amber-text) 8%, var(--card)); }
 .list-row.suspect input { color: var(--amber-text); font-weight: 700; }
-.list-row input:focus-visible { border-radius: 8px; outline-offset: 4px; }
+.list-row input:not(.toggle):focus-visible { border-radius: 8px; outline-offset: 4px; }
+.list-row .toggle:focus-visible { outline-offset: 0; }
 .food-health.doubt .btn { display: flex; }
 .doubt-line { display: flex; align-items: center; gap: 4px; margin-top: 2px; color: var(--amber-text); font-weight: 600; }
 .doubt-line svg { flex-shrink: 0; }

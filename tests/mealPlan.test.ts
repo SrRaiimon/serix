@@ -156,6 +156,32 @@ test('días de entreno: +10 % al entrenar y lo justo menos al descansar para que
   assert.equal(dayGoalOptions({ ...data, settings: { weeklyGoal: 4, nutritionTrainingSplit: false } }).training, undefined)
 })
 
+test('compensación: nunca por debajo del suelo (1200 / 1500 kcal) y no al ganar músculo', () => {
+  const ate = (kcal: number): FoodEntry => ({ id: 'x', day: '2026-03-01', meal: 'lunch', name: 'x', grams: 100, per100: { kcal, p: 0, c: 0, f: 0 }, at: 0 })
+  // Mujer con objetivo de 1200: pasarse ayer no lo baja a 1020 (antes recortaba el 15 %).
+  const woman = { ...computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 55, activity: 1.2, aim: 'lose' }), kcal: 1200 }
+  const day = goalsForDay(woman, [ate(1500)], '2026-03-02', { carryOver: true })
+  assert.equal(day.kcal, 1200)
+  assert.equal(day.carried, 0)
+  // Con algo de margen sobre el suelo, solo recorta hasta él.
+  const roomy = goalsForDay({ ...woman, kcal: 1300 }, [ate(1600)], '2026-03-02', { carryOver: true })
+  assert.equal(roomy.kcal, 1200)
+  assert.equal(roomy.carried, 100)
+  // Ganar músculo: no se compensa (anularía el superávit).
+  assert.equal(goalsForDay({ ...goals, kcal: 3000, aim: 'gain' }, [ate(3400)], '2026-03-02', { carryOver: true }).carried, 0)
+})
+
+test('ajuste según el peso: no propone bajar por debajo del suelo', () => {
+  const now = new Date(2026, 2, 22, 9).getTime()
+  const day = 86400000
+  const flat = [0, 4, 8, 12, 16, 20].map((d) => ({ date: now - (20 - d) * day, weight: 60 }))
+  const woman = { ...computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 60, activity: 1.2, aim: 'lose' }), kcal: 1200 }
+  // En el suelo, sin bajar peso: no se propone otro −150 (1200 → 1050).
+  assert.equal(weightAdvice(flat, woman, [], now), undefined)
+  // Con margen, sí.
+  assert.equal(weightAdvice(flat, { ...woman, kcal: 1800 }, [], now)!.change, -150)
+})
+
 test('ajuste según el peso: propone ±150 kcal si la tendencia de 3 semanas no va al ritmo del objetivo', () => {
   const now = new Date(2026, 2, 22, 9).getTime()
   const day = 86400000

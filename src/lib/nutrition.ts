@@ -264,12 +264,15 @@ function baseForDay(goals: NutritionGoals, day: string, opts: DayGoalOptions): N
  */
 export function goalsForDay(goals: NutritionGoals, entries: FoodEntry[], day: string, opts: DayGoalOptions): NutritionGoals & { carried: number; training?: boolean; shift: number } {
   const base = baseForDay(goals, day, opts)
-  if (!opts.carryOver || goals.proteinOnly) return { ...base, carried: 0 }
+  // Quien quiere ganar músculo no recorta tras un día de más: anularía el superávit.
+  if (!opts.carryOver || goals.proteinOnly || goals.aim === 'gain') return { ...base, carried: 0 }
   const prev = shiftDay(day, -1)
   const eaten = entries.filter((e) => e.day === prev)
   if (!eaten.length) return { ...base, carried: 0 }
   const over = dayTotals(eaten).kcal - baseForDay(goals, prev, opts).kcal
-  const carried = over > 0 ? Math.min(Math.round(over / 10) * 10, Math.round((goals.kcal * CARRY_OVER_MAX) / 10) * 10) : 0
+  // Sin bajar del suelo del día (1200 / 1500 kcal): recortar por debajo es justo lo que el suelo del objetivo evita.
+  const room = Math.max(0, base.kcal - dayFloor(goals))
+  const carried = over > 0 ? Math.min(Math.round(over / 10) * 10, Math.round((goals.kcal * CARRY_OVER_MAX) / 10) * 10, room) : 0
   if (!carried) return { ...base, carried: 0 }
   return { ...base, kcal: base.kcal - carried, carbs: Math.max(0, Math.round(base.carbs - carried / 4)), carried }
 }
@@ -431,6 +434,8 @@ export function weightAdvice(weights: { date: number; weight?: number }[], goals
   const [min, max] = WEIGHT_RATE[goals.aim]
   const change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0
   if (!change) return undefined
+  // Bajar más no es una opción por debajo del suelo ni del metabolismo en reposo: antes cada «sí» sumaba otros −150 (1200 → 1050 → 900).
+  if (change < 0 && goals.kcal + change < Math.max(goals.sex ? MIN_KCAL[goals.sex] : 0, bmrOf(goals) ?? 0)) return undefined
   // ¿Comes lo que marca el objetivo? Solo con 7 días apuntados o más.
   const fromDay = dayKey(from), today = dayKey(now)
   const byDay = new Map<string, FoodEntry[]>()

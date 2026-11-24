@@ -295,7 +295,7 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
           { value: duration.sets, label: duration.deload ? t('Series · descarga', 'Sets · deload') : t('Series', 'Sets') },
-          { value: `~${duration.minutes} min`, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración aprox.', 'Approx. time') },
+          { value: <>~{duration.minutes}<small> min</small></>, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración', 'Time') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Objetivo', 'Target')}</span>}</div>

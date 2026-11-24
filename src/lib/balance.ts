@@ -78,7 +78,7 @@ export function muscleBalance(sessions: Session[], now = Date.now(), secondaryOf
 
 /** Qué añadir para compensar. */
 export function balanceTip(p: BalancePair): string {
-  if (p.short === undefined) return t('Bien equilibrado.', 'Well balanced.')
+  if (p.short === undefined) return t('La proporción entre los dos es normal.', 'The ratio between the two is normal.')
   if (p.id === 'pushPull') {
     return p.short === 1
       ? t('Haces bastante más empuje que tirón: añade remos, dominadas o jalones (y algo de face pull) hasta igualarlos.', 'You do a lot more pushing than pulling: add rows, pull-ups or pulldowns (and some face pulls) until they even out.')

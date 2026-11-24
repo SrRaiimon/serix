@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.48',
+    items: [
+      ['Los interruptores vuelven a verse del tamaño de siempre (en la versión anterior se pintaban más grandes), y con el teclado no cambian de forma.', 'The switches look their usual size again (in the previous version they were drawn larger), and keep their shape when focused with the keyboard.'],
+      ['Comida: pasarte un día ya no te baja al día siguiente por debajo de 1.200 o 1.500 kcal, ni se compensa si quieres ganar músculo, y el ajuste según el peso no propone bajar por debajo de ese mínimo.', 'Food: going over one day no longer drops the next day below 1,200 or 1,500 kcal, it is not compensated if you want to gain muscle, and the weight-based adjustment does not suggest going below that minimum.'],
+      ['En el detalle de una rutina, la duración ya no sale cortada («~28 …»), y el equilibrio muscular dice «La proporción entre los dos es normal» en vez de «Bien equilibrado».', 'In a routine\'s detail, the duration is no longer cut off («~28 …»), and the muscle balance says «The ratio between the two is normal» instead of «Well balanced».'],
+    ],
+  },
+  {
     version: '0.1.47',
     items: [
       ['La cámara guiada recuerda la postura que elegiste (Perfil o Espalda) al guardar la foto, en vez de ponerla siempre como «Frente».', 'The guided camera remembers the pose you chose (Side or Back) when saving the photo, instead of always setting it to «Front».'],

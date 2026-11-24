@@ -31,6 +31,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.44 | 9,6 | 9,4 | 9,7 | 9,8 | 9,6 (9,625) |
 | 0.1.45 | 9,6 | 9,5 | 9,7 | 9,8 | 9,7 (9,65) |
 | 0.1.46 | 9,6 | 9,5 | 9,7 | 9,7 | 9,6 (9,625) |
+| 0.1.47 | 9,6 | 9,4 | 9,6 | 9,6 | 9,6 (9,55) |
 
 ## Rotación de zonas (serix-code)
 
@@ -46,7 +47,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | 0.1.44 |
 | Guardado y varias pestañas | lib/store.ts (migraciones, mergeData, deshacer), lib/customExercises.ts | 0.1.45 |
 | Pantallas de edición | screens/SessionEdit.tsx, screens/Profile.tsx (medidas), screens/Photos.tsx, lib/photos.ts | 0.1.46 |
-| Generador y programas | lib/generator.ts, lib/generatorSlots.ts, lib/balance.ts, screens/RoutinesPrograms.tsx | 0.1.9 |
+| Generador y programas | lib/generator.ts, lib/generatorSlots.ts, lib/balance.ts, screens/RoutinesPrograms.tsx | 0.1.47 |
 | Importar y exportar | lib/importCsv.ts, lib/exportCsv.ts, lib/share.ts, lib/foodShare.ts, lib/transfer.ts, lib/zip.ts | 0.1.15 |
 | Copia de seguridad | lib/backup.ts, lib/protect.ts | 0.1.15 |
 | Progresión y autorregulación | lib/progression.ts, lib/autoreg.ts, lib/warmup.ts, lib/plates.ts, lib/bodyweight.ts | 0.1.15 |
@@ -68,54 +69,66 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
   aviso si no hay cámara y sin poder repetir. Programas: 1RM del 5/3/1 sin tope. Sin fallos: importar y exportar
   (CSV, zip, QR), progresión y autorregulación, workout.ts (las pantallas Workout*.tsx no se leyeron línea a línea).
 
-## Pendientes tras 0.1.46 (ux sin repetir bienvenida ni subpantallas de Perfil; perf midió con Lighthouse y axe)
+## Pendientes tras 0.1.47 (ux no vio el fallo de los interruptores que midieron code, perf y yo: su «mismo óvalo» no vale)
+
+### URGENTE (fallo de la 0.1.47, confirmado con getComputedStyle: backgroundClip border-box, píldora de 65×45 en vez de 51×31)
+- `.toggle` (styles.css:799-815): `background-clip: padding-box` va antes de `background: var(--fill)` y la abreviatura lo restablece;
+  `.toggle:checked { background: var(--green) }` igual. Poner `background-clip: padding-box` después de `background` (o usar
+  `background-color`) y comprobarlo con captura a escala completa en claro y oscuro.
+- `.list-row input:focus-visible { border-radius: 8px }` (styles.css:~2659) deforma el interruptor mientras tiene foco: usar
+  `input:not(.toggle)`.
 
 ### serix-ux (9,6)
-- Inicio el día de entreno: siguen apiladas tres tarjetas (recuperación, «Tu semana pasada» con «Entendido» y «Tu entrenador»
-  con «Cambia Dominadas») antes de «Esta semana»; una sola prioridad.
-- Mapa en oscuro: tonos 1-3 y 4-9 casi iguales (solo se distingue 10+).
-- Progreso › Músculos repite 8 veces «Recuperándose · ~48 h»: una línea resumen. Resumen: «114 kg» de dominadas parece un peso
-  de barra (poner «máx. estimado»); detalle del entreno: «+10 kg × 8» sin el peso corporal.
-- Sin verificar: bienvenida con «Tu plan» y vista previa seguidas; detalle de rutina «Aún sin estrenar» + «Igual que antes»;
-  calentamiento como texto y «¿Cómo estás hoy?»; «@8», «77,5…» cortado, título de rutina cortado, aviso de bíceps, logros
-  en pasado, «sesión»/«semana», figuras (disco del remo, lumbar de la hack).
+- Progreso › Músculos: «Recuperándose · ~48 h» repetido 8 veces (una línea resumen y el detalle plegado); «Equilibrio muscular»
+  dice «Bien equilibrado» con cuádriceps 9 e isquios 4,5 (2:1) mientras más arriba marca los isquios «por debajo».
+- Mapa en oscuro: tonos 1-3 y 4-9 casi iguales.
+- Rutinas › detalle de Torso A: «Aún sin estrenar» con objetivos «Igual que antes»; la tercera cifra de la cabecera cortada
+  («~28 …», «Duración aprox.» partida) y dice 28 min cuando los entrenos reales duran 50.
+- Inicio el día de entreno: «Tu semana pasada» + «Entendido» siguen quitando espacio; las cifras grandes de «Tus mejores
+  marcas» sin «estimado» (el texto de debajo sí lo explica); «+10 kg × 8» sin peso corporal en el detalle del entreno.
+- Bienvenida: pasos 1 y 2 dicen «Al elegir, pasas a la siguiente pregunta» y además hay botón «Continuar»; en «Tu plan» el
+  botón «Crear mi programa» fijo tapa parte de «Material» y «Nombre» al hacer scroll. «Tu plan» y «Vista previa»: bien.
+- Sin recorrer: «@8», «77,5…» cortado, aviso de bíceps, logros en pasado, «sesión»/«semana», figuras (disco del remo, lumbar de la hack).
 
-### serix-code (9,5)
-- Diff 0.1.46 (baja): `recoveryHint` (Home.tsx:49-51) no mira `active` y oculta la copia aunque no haya aviso; quien entrena
-  4+ días casi nunca ve el recordatorio de copia, sin tope de espera; regla de «cansado» duplicada en NextCard (:206) y
-  recoveryHint (:49): sacarla a una función.
-- Zona Pantallas de edición — media: Photos.tsx:325/~245 la postura de la cámara guiada (Perfil/Espalda) se pierde, AddSheet
-  abre siempre en «Frente» (arreglo de una línea); photos.ts:~185 importPhotos deduplica por fecha|pose y descarta la segunda
-  foto del mismo día y postura (pérdida silenciosa).
-- Baja: importación a medias por cuota sin reload() y aviso engañoso «No es un archivo de fotos de Serix»; AddSheet.save dice
-  «No se ha podido leer la imagen» ante cualquier error (cuota); fechas sin validar rango al importar; Viewer lanza
-  deletePhoto/updatePhoto con void; SessionEdit.save resucita un entreno borrado en otra pestaña y `end` puede quedar en el
-  futuro; medidas sin editar y dos del mismo día; `lastPhotoAt` viaja en la copia y engaña en otro móvil. Falta cobertura de
-  tests de fotos.
-- De antes (baja): zona Guardado y varias pestañas (flush con knownRev desfasado ~385, mergeRecord por valores enteros ~265,
-  runMigrations copia superficial ~410, migrateData sin saneado ~430, mergeList sin clave, aviso de deshacer que se pierde);
-  compareWithLast con «Free workout» frente a «Entrenamiento libre»; repRecords, exerciseHistory con drop sets, periodStats
-  O(m·n), embeddedFont sin reintento, navigator.share, moreSets repetido, meta bajo el 1RM, logro de récords duplicado;
-  addRest(-15), pwa.ts register sin catch, rollingAverage O(n²), weighDue con pesada futura, SW segundo aviso, speechSynthesis
-  en iOS, foodStep, plannedSets/deloadSets(2), retos y liga; One-Arm_Flat_Bench_Dumbbell_Flye; tests de armLen y
-  TIE.directArm; partir generator.ts y figures.ts; setUnits.
+### serix-code (9,4)
+- Diff 0.1.47: fotos — `importPhotos` usa la caché `photos ?? []`: si se importa antes de cargar la galería se duplican; sin tests
+  de la lógica de repetidas ni de la postura inicial de la cámara.
+- Baja (diff 0.1.46): `recoveryHint` (Home.tsx) no mira `active`; regla de «cansado» duplicada en NextCard y recoveryHint; sin tope de
+  espera para el aviso de copia.
+- Fotos: importación a medias por cuota sin `reload()` (usar finally) y aviso engañoso «No es un archivo de fotos de Serix»;
+  AddSheet.save con mensaje único; Viewer con `void`; SessionEdit.save resucita un entreno borrado y `end` en el futuro; medidas sin
+  editar; `lastPhotoAt` en la copia.
+- Zona Generador y programas (leída entera, sin fallos altos ni medios; barrido de 11.400 programas sin casos malos), baja:
+  generator.ts 1111 líneas (partirlo en elección, tiempo y equilibrio semanal); `choose` repetido por hueco (932-958); constantes
+  TIE afinadas a mano (463-489); `catalog.get(id)!` en RoutinesPrograms.tsx:201; GeneratorSheet guarda la configuración al
+  pulsar «Generar» (:80).
+- De antes (baja): zona Guardado y varias pestañas (flush con knownRev desfasado, mergeRecord por valores enteros, runMigrations
+  copia superficial, migrateData sin saneado, mergeList sin clave, aviso de deshacer); compareWithLast con «Free workout» frente a
+  «Entrenamiento libre»; repRecords, exerciseHistory con drop sets, periodStats O(m·n), embeddedFont, navigator.share, moreSets,
+  meta bajo el 1RM, logro de récords duplicado; addRest(-15), pwa.ts register sin catch, rollingAverage O(n²), weighDue con
+  pesada futura, SW segundo aviso, speechSynthesis en iOS, foodStep, plannedSets/deloadSets(2), retos y liga;
+  One-Arm_Flat_Bench_Dumbbell_Flye; tests de armLen y TIE.directArm; partir figures.ts; setUnits.
 
-### serix-coach (9,7)
-- Principiante sin material: los 200 programas llevan Bodyweight_Bulgarian_Split_Squat (200), Single_Leg_Deadlift (283) o
-  Negative_Pull-Up (165). Filtrar Single_Leg_Deadlift de HARD_START rompió el test de empuje/tirón de
-  fatLoss/beginner/bodyweight/3d/45 y la búlgara la usa a propósito el programa «HIIT en casa» (tests/library-balance.test.ts):
-  ajustar el relleno a la vez.
-- Abdomen < 4 series en fatLoss/general ≥45 min: 322 de 1440; sin elevación lateral 88 de 150 programas de hipertrofia en
-  gimnasio y 56 de 600 de gimnasio sin hombro; RDL a 2 series primero en 10 de 240 días B de principiante; asistidas sin
-  sugerencia de bajar la ayuda (sin verificar); Mountain_Climbers y Freehand_Jump_Squat con muscle=quads.
-- Recuperación (stats.recoveryHours, RECOVERING 0,6): bien; mejora posible con factor por grupo (brazos, hombros, gemelos
-  tardan menos) y la frecuencia de las últimas semanas.
+### serix-coach (9,6)
+- **Nutrición (zona revisada por primera vez):**
+  1. `goalsForDay` (nutrition.ts:265-275) resta `carried` (hasta el 15 %) sin volver a aplicar `dayFloor`: mujer de 55 kg a 1200 kcal que
+     se pasa el día antes → 1020; mujer de 60 kg a 1460 en día de descanso → 1130. Arreglo: `Math.max(base.kcal - carried,
+     dayFloor(goals))` y no compensar con objetivo de ganar músculo.
+  2. `adjustGoals`/`weightAdvice` (nutrition.ts:237-239, 418-437; Food.tsx:585): −150 kcal cada vez que no pierdes peso, sin suelo ni
+     BMR (1200 → 1050 → 900); tendencia de solo 21 días, banda ±0,3 %/semana: exigir 2 evaluaciones seguidas.
+  3. `restDayKcal` (:237): en perder grasa con «calorías gastadas», los descansos quedan 100-150 kcal por debajo de lo coherente.
+  4. progression.ts:196-199: doble progresión sin descarga tras estancamiento (hold indefinido): aviso a 3-4 sesiones o −5-10 %.
+  5. 5/3/1: ciclo por cada 4 sesiones, no por semana de calendario; sin ajuste con muchas más repeticiones de las mínimas en el AMRAP.
+  Bien: computeGoals en siete casos (proteína 1,8-2,2 g/kg, grasa 25 % con mínimo 0,8 g/kg, déficit 20 %, superávit 10 %).
+- Generador (sin cambios, 3600 programas): principiante sin material con Bulgarian_Split_Squat (200), Single_Leg_Deadlift (283),
+  Negative_Pull-Up (165); abdomen < 4 series en 322 de 1440; sin elevación lateral 88 de 150 de hipertrofia en gimnasio y 56 de
+  600 de gimnasio sin hombro; RDL a 2 series en 10 de 240 días B; asistidas sin sugerencia de bajar la ayuda (sin verificar);
+  Mountain_Climbers y Freehand_Jump_Squat con muscle=quads. Filtrar Single_Leg_Deadlift rompió el test de empuje/tirón de
+  fatLoss/beginner/bodyweight/3d/45 y la búlgara la usa «HIIT en casa» (tests/library-balance.test.ts): ajustar el relleno a la vez.
 - Su barrido (scratchpad/m3/m.ts) debería pasar a tests/generator-sweep.test.ts con umbrales máximos.
 
-### serix-perf-a11y (9,7)
-- Lighthouse móvil 99-100 (LCP 2,0 s); axe 0 violaciones en las pantallas, también Progreso › Músculos con datos.
-- **Borde de `.recovery-bar` (styles.css:2298, `var(--text-3)`) a 2,00:1 en claro y 2,69:1 en oscuro: 1.4.11 pide 3:1.** Usar
-  `var(--text-2)` o un borde de mayor opacidad.
-- Zonas táctiles: buscador de Ejercicios 243×25 sin zona ampliada; `.toggle` 51×31 (zona 27×27, fila de 81 px); input «Tu
-  nombre» de Amigos 140×43.
+### serix-perf-a11y (9,6)
+- Lighthouse móvil 99-100 (LCP 1,8-2,0 s); axe 0 violaciones en 15 pantallas, claro y oscuro; borde de .recovery-bar a 7,6:1
+  (resuelto); buscador de Ejercicios y «Tu nombre» de Amigos a 44 px (resueltos).
+- Los dos fallos de los interruptores de arriba (tamaño visual y foco deformado).
 - Precarga de nutrition en la bienvenida (LCP < 1,8 s).
