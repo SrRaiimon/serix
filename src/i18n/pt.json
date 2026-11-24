@@ -8,7 +8,7 @@
 "Comida: el ajuste según tu peso propone la parte que cabe sobre tu mínimo de calorías (antes todo o nada), y un día de entreno con cambio mínimo dice «sin cambio».": "Alimentação: o ajuste segundo o teu peso propõe a parte que cabe acima do teu mínimo de calorias (antes, tudo ou nada), e um dia de treino com mudança mínima diz «sem alteração».",
 "Día de entreno: sin cambio sobre tus {0} kcal": "Dia de treino: sem alteração sobre os teus {0} kcal",
 "{0} grupos": "{0} grupos",
-"{0} series se han omitido por tener valores imposibles (más de 2.000 kg, 1.000 repeticiones o 24 h).": "{0} séries foram ignoradas por terem valores impossíveis (mais de 2000 kg, 1000 repetições ou 24 h).",
+"{0} series se han omitido por tener valores imposibles (más de 2.000 kg, 1.000 repeticiones, 1.000 km o 24 h).": "{0} séries foram ignoradas por terem valores impossíveis (mais de 2000 kg, 1000 repetições, 1000 km ou 24 h).",
 "Bate {0} récords personales.": "Bate {0} recordes pessoais.",
 "Completa {0} entrenamientos.": "Completa {0} treinos.",
 "Levanta {0} toneladas en total (peso × repeticiones).": "Levanta {0} toneladas no total (peso × repetições).",
@@ -2423,5 +2423,8 @@
 "los últimos 7 días": "os últimos 7 dias",
 "Músculos en {0}": "Músculos em {0}",
 "No has entrenado en {0}.": "Não treinaste em {0}.",
-"Sin trabajar en {0}: {1}.": "Sem trabalhar em {0}: {1}."
+"Sin trabajar en {0}: {1}.": "Sem trabalhar em {0}: {1}.",
+"Repetir o guardar como rutina un entreno con descarga recuerda las series que tenía antes de recortar (antes salían 6 o 7 según la cuenta al revés).": "Repetir ou guardar como rotina um treino com descarga lembra-se das séries de antes do corte (antes saíam 6 ou 7 conforme a conta inversa).",
+"Si falta una pantalla y no hay conexión, la app ya no se recarga en cada navegación (como mucho una vez por minuto); el aviso de series omitidas al importar de Strong o Hevy incluye el tope de 1.000 km.": "Se faltar um ecrã e não houver ligação, a app já não recarrega em cada navegação (no máximo uma vez por minuto); o aviso das séries ignoradas ao importar do Strong ou Hevy inclui o limite de 1000 km.",
+"Retos: al terminarlos se guarda la clasificación con tus datos del momento (un reto unido desde otra pestaña no se pierde) y tu resumen se recalcula al cambiar de día con la pantalla abierta.": "Desafios: ao terminarem, a classificação guarda-se com os teus dados do momento (um desafio juntado a partir de outro separador não se perde) e o teu resumo recalcula-se ao mudar de dia com o ecrã aberto."
 }

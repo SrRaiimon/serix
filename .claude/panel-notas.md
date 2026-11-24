@@ -169,3 +169,11 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
 - **Músculos:** el mapa tiene selector 7 días / 4 semanas.
 - **Descanso:** sincronía entre pestañas (evento `storage`); service worker conserva las dos versiones anteriores.
 - No se toca (nada que arreglar o refactor sin cambio de comportamiento): `restDayKcal` (no se encontró un defecto concreto: resta el gasto medio con suelo en el BMR), chunk de entrada (es React DOM), partir ficheros grandes (generator.ts, figures.ts, nutrition.ts, Food.tsx, friends.ts, Friends.tsx).
+
+## Hecho en la 0.1.60 (verificado en el navegador a 375 px, oscuro y claro)
+- `plannedBeforeDeload` (series previstas guardadas al aplicar la descarga; adiós a la cuenta al revés ambigua), `vite:preloadError` como mucho una vez por minuto, aviso de CSV con el tope de km, efecto de Retos con datos del momento de escribir, `useMine` con el día en las dependencias.
+- Tests de comportamiento: `RecoveryCard` renderizado a HTML (`tests/dom-stub.ts`), `plannedSets`. El test de `restoreData` en Profile/Transfer sigue siendo de lectura de código (las pantallas no se montan en los tests).
+- Probado y descartado (se queda como está): pecho a 7,5 de 8 en «perder grasa» 4 d/45 min (para subirlo hace falta tirón y el empuje/tirón ya está al límite; subirlo rompe el barrido), ruido de coma flotante (no se ve en pantalla), saltos grandes de pesos raros (3,5 kg, 4 kg kettlebell): no existen en gimnasios.
+- Siguen: partir ficheros grandes, chunk de entrada (React), `restDayKcal`.
+- Partidos en la 0.1.60 sin cambiar comportamiento (478 tests, build y e2e iguales): `nutrition.ts` (1029 → 784; los productos escaneados y las etiquetas, en `nutritionScan.ts`, reexportado), `Food.tsx` (817 → 529; tarjetas y hojas en `FoodCards.tsx`), `Friends.tsx` (740 → 472; retos en `FriendsChallenges.tsx`). Quedan `generator.ts` (1137, acoplado), `friends.ts` (539) y `figures.ts` (5028, datos).
+- Verificado en el navegador: sincronía del descanso entre dos pestañas (adopta y para), Comidas y Retos con los componentes movidos.

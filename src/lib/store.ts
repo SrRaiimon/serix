@@ -98,6 +98,8 @@ export interface SessionExercise {
   deload?: boolean
   /** Las series pendientes como estaban antes de la descarga, para poder quitarla (undoDeload). */
   beforeDeload?: SetEntry[]
+  /** Series previstas antes de la descarga (para repetir o guardar el entreno sin quedarse con las recortadas). */
+  plannedBeforeDeload?: number
   /** Lo que hizo la progresión automática al preparar el ejercicio (para explicarlo en pantalla). */
   auto?: AutoProgress
   /** Máquina asistida: el peso apuntado es la ayuda (resta), así que no cuenta como peso levantado. */

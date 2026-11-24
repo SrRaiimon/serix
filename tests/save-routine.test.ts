@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { defaultSettings, getData, replaceData, undo, type Session } from '../src/lib/store'
-import { applyDeload, plannedSets, saveAsRoutine } from '../src/lib/workout'
+import { applyDeload, plannedSets, saveAsRoutine, undoDeload } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
 import { backupJson, backupNotice, backupOverdue, restoreData } from '../src/lib/protect'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
@@ -174,4 +174,17 @@ test('aviso de copia en Inicio: no el día de entreno, y solo cede ante la recup
   // Nunca guardada: sale aunque te estés recuperando.
   assert.equal(backupNotice(d, 5, { ...calm, recoveryHint: true }, now), true)
   assert.equal(backupNotice(d, 5, { recoveryHint: true, trainedToday: true }, now), false)
+})
+
+test('descarga: las series previstas se guardan al aplicarla (6 y 7 ya no dan lo mismo) y se quitan al deshacerla', () => {
+  for (const n of [4, 6, 7]) {
+    const e = exercise('Barbell_Squat', Array.from({ length: n }, () => set(100, 5, { done: false })))
+    applyDeload(e, 'kg', [])
+    assert.ok(e.sets.length < n)
+    assert.equal(plannedSets(e), n, `${n} series`)
+  }
+  const e = exercise('Barbell_Squat', [set(100, 5, { done: false }), set(100, 5, { done: false }), set(100, 5, { done: false })])
+  applyDeload(e, 'kg', [])
+  undoDeload(e)
+  assert.equal(e.plannedBeforeDeload, undefined)
 })

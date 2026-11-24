@@ -67,6 +67,12 @@ export function registerServiceWorker() {
   window.addEventListener('vite:preloadError', (event) => {
     event.preventDefault()
     if (reloading) return
+    // Sin red (o con el chunk de verdad ausente) recargar no arregla nada y se recargaría en cada navegación: como mucho una vez por minuto.
+    try {
+      const last = Number(sessionStorage.getItem('serix-preload-reload') ?? 0)
+      if (Date.now() - last < 60000) return
+      sessionStorage.setItem('serix-preload-reload', String(Date.now()))
+    } catch { /* sin sessionStorage: se recarga como antes */ }
     reloading = true
     void flush().finally(() => location.reload())
   })

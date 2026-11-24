@@ -3,3 +3,5 @@
 const g = globalThis as { document?: unknown; window?: unknown; navigator?: { vibrate?: unknown } }
 g.document ??= { addEventListener: () => {}, visibilityState: 'visible' }
 g.window ??= { addEventListener: () => {}, matchMedia: () => ({ matches: false }) }
+// Los componentes (router, pantallas) leen la URL al cargarse.
+;(globalThis as { location?: unknown }).location ??= { hash: '', href: 'http://localhost/', origin: 'http://localhost', pathname: '/', search: '' }

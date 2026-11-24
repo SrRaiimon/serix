@@ -119,6 +119,7 @@ function sessionExercise(v: unknown): SessionExercise | undefined {
     groupId: typeof v.groupId === 'string' ? v.groupId.slice(0, 50) : undefined,
     deload: v.deload === true ? true : undefined,
     beforeDeload: Array.isArray(v.beforeDeload) ? list(v.beforeDeload, setEntry, 100) : undefined,
+    plannedBeforeDeload: optNum(v.plannedBeforeDeload, 1, 100),
     auto: autoProgress(v.auto),
     assisted: v.assisted === true ? true : undefined,
     unilateral: v.unilateral === true ? true : undefined,

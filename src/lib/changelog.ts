@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.60',
+    items: [
+      ['Repetir o guardar como rutina un entreno con descarga recuerda las series que tenía antes de recortar (antes salían 6 o 7 según la cuenta al revés).', 'Repeating or saving a workout with a deload as a routine remembers the sets it had before cutting (before it came out as 6 or 7 depending on the reverse count).'],
+      ['Si falta una pantalla y no hay conexión, la app ya no se recarga en cada navegación (como mucho una vez por minuto); el aviso de series omitidas al importar de Strong o Hevy incluye el tope de 1.000 km.', 'If a screen is missing and there is no connection, the app no longer reloads on every navigation (at most once a minute); the notice of skipped sets when importing from Strong or Hevy includes the 1,000 km limit.'],
+      ['Retos: al terminarlos se guarda la clasificación con tus datos del momento (un reto unido desde otra pestaña no se pierde) y tu resumen se recalcula al cambiar de día con la pantalla abierta.', 'Challenges: when they finish the standings are saved with your data at that moment (a challenge joined from another tab is not lost) and your summary is recalculated when the day changes with the screen open.'],
+    ],
+  },
+  {
     version: '0.1.59',
     items: [
       ['Descanso con la app abierta en dos pestañas: parar o cambiar el tiempo en una lo refleja la otra, y tras un despliegue se conservan las dos versiones anteriores sin conexión (un entreno largo ya no pierde pantallas).', 'Rest with the app open in two tabs: stopping or changing the time in one is reflected in the other, and after a deploy the two previous versions are kept offline (a long workout no longer loses screens).'],

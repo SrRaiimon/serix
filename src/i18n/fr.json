@@ -8,7 +8,7 @@
 "Comida: el ajuste según tu peso propone la parte que cabe sobre tu mínimo de calorías (antes todo o nada), y un día de entreno con cambio mínimo dice «sin cambio».": "Nutrition : l'ajustement selon ton poids propose la part qui rentre au-dessus de ton minimum de calories (avant, tout ou rien), et un jour d'entraînement à changement minime indique « sans changement ».",
 "Día de entreno: sin cambio sobre tus {0} kcal": "Jour d'entraînement : sans changement sur tes {0} kcal",
 "{0} grupos": "{0} groupes",
-"{0} series se han omitido por tener valores imposibles (más de 2.000 kg, 1.000 repeticiones o 24 h).": "{0} séries ont été ignorées car leurs valeurs sont impossibles (plus de 2 000 kg, 1 000 répétitions ou 24 h).",
+"{0} series se han omitido por tener valores imposibles (más de 2.000 kg, 1.000 repeticiones, 1.000 km o 24 h).": "{0} séries ont été ignorées car leurs valeurs sont impossibles (plus de 2 000 kg, 1 000 répétitions, 1 000 km ou 24 h).",
 "Bate {0} récords personales.": "Bats {0} records personnels.",
 "Completa {0} entrenamientos.": "Termine {0} séances.",
 "Levanta {0} toneladas en total (peso × repeticiones).": "Soulève {0} tonnes au total (poids × répétitions).",
@@ -2423,5 +2423,8 @@
 "los últimos 7 días": "les 7 derniers jours",
 "Músculos en {0}": "Muscles sur {0}",
 "No has entrenado en {0}.": "Tu ne t'es pas entraîné sur {0}.",
-"Sin trabajar en {0}: {1}.": "Non travaillés sur {0} : {1}."
+"Sin trabajar en {0}: {1}.": "Non travaillés sur {0} : {1}.",
+"Repetir o guardar como rutina un entreno con descarga recuerda las series que tenía antes de recortar (antes salían 6 o 7 según la cuenta al revés).": "Répéter ou enregistrer comme routine une séance avec décharge mémorise les séries d'avant la coupe (avant, cela donnait 6 ou 7 selon le calcul inverse).",
+"Si falta una pantalla y no hay conexión, la app ya no se recarga en cada navegación (como mucho una vez por minuto); el aviso de series omitidas al importar de Strong o Hevy incluye el tope de 1.000 km.": "Si un écran manque et qu'il n'y a pas de connexion, l'app ne se recharge plus à chaque navigation (au plus une fois par minute) ; l'avis des séries ignorées à l'import de Strong ou Hevy inclut la limite de 1 000 km.",
+"Retos: al terminarlos se guarda la clasificación con tus datos del momento (un reto unido desde otra pestaña no se pierde) y tu resumen se recalcula al cambiar de día con la pantalla abierta.": "Défis : à leur fin, le classement est enregistré avec tes données du moment (un défi rejoint depuis un autre onglet n'est pas perdu) et ton résumé se recalcule au changement de jour avec l'écran ouvert."
 }

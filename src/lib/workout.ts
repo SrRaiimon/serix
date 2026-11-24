@@ -173,6 +173,7 @@ export function applyDeload(e: SessionExercise, unit: Unit, history: Session[] =
   const keepUnits = deloadSets(units)
   let pair = -1
   const keep = new Set(pending.filter((s) => (s.side !== 'R' ? ++pair : pair) < keepUnits).map((s) => s.id))
+  e.plannedBeforeDeload = setUnits(e.sets.filter((x) => !x.warmup && x.kind !== 'drop')).length
   e.beforeDeload = e.sets.filter((s) => !s.done && !s.warmup).map((s) => ({ ...s }))
   e.sets = e.sets.filter((s) => s.done || s.warmup || keep.has(s.id))
   for (const s of e.sets) {
@@ -202,6 +203,7 @@ export function undoDeload(e: SessionExercise): void {
   const before = e.beforeDeload
   delete e.deload
   delete e.beforeDeload
+  delete e.plannedBeforeDeload
   if (!before) return
   // Si después se pasó a «por lados» (o al revés), las series ya no son las mismas: se quita solo la marca.
   if (before.some((s) => s.side) !== e.sets.some((s) => s.side)) return
@@ -340,7 +342,8 @@ export function plannedSets(e: SessionExercise, routine?: Routine): number {
   const done = setUnits(e.sets.filter((x) => !x.warmup && x.kind !== 'drop')).length
   if (!e.deload) return Math.max(1, done)
   const own = routine?.exercises.find((x) => x.exerciseId === e.exerciseId)
-  return Math.max(1, own?.sets ?? (done <= 1 ? done : Math.round(done / 0.6)))
+  // Lo guardado al aplicar la descarga manda; sin eso, la rutina; y como último recurso la cuenta de deloadSets al revés (ambigua: 6 y 7 dan lo mismo).
+  return Math.max(1, e.plannedBeforeDeload ?? own?.sets ?? (done <= 1 ? done : Math.round(done / 0.6)))
 }
 
 export function repeatSession(past: Session) {
