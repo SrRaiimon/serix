@@ -482,6 +482,13 @@ export interface NutritionGoals {
 }
 
 /** Suma (o resta) calorías al objetivo, en hidratos, y lo apunta como ajuste. */
+/** El ajuste según el peso que puede aplicarse sin dejar el objetivo por debajo del suelo ni del metabolismo en reposo (los positivos pasan). */
+export function clampAdjust(goals: NutritionGoals, adjust: number): number {
+  if (adjust >= 0) return adjust
+  const lowest = Math.max(goals.sex ? MIN_KCAL[goals.sex] : 0, bmrOf(goals) ?? 0)
+  return Math.min(0, Math.max(adjust, lowest - goals.kcal))
+}
+
 export function adjustGoals(goals: NutritionGoals, change: number): NutritionGoals {
   const adjust = (goals.adjust ?? 0) + change
   return { ...goals, kcal: goals.kcal + change, carbs: Math.max(0, Math.round(goals.carbs + change / 4)), ...(adjust ? { adjust } : { adjust: undefined }) }
@@ -510,7 +517,7 @@ export function maintenanceKcal(g: Pick<NutritionGoals, 'sex' | 'age' | 'heightC
 }
 
 /** Lo mínimo de un día (también los de descanso): el suelo, sin pasar del objetivo. Sin tus datos, nada. */
-const dayFloor = (g: Pick<NutritionGoals, 'kcal' | 'sex'>) => (g.sex ? Math.min(MIN_KCAL[g.sex], g.kcal) : 0)
+export const dayFloor = (g: Pick<NutritionGoals, 'kcal' | 'sex'>) => (g.sex ? Math.min(MIN_KCAL[g.sex], g.kcal) : 0)
 
 /** Factor de actividad (gasto del día respecto al metabolismo en reposo). */
 export const SEDENTARY = 1.2

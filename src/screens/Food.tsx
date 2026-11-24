@@ -356,7 +356,10 @@ function DaySummary({ totals, entries, goals, base, day, canMark }: { totals: Pe
           <span className="day-kind small">
             {/* Respecto a qué: el objetivo de un día normal (el que pusiste), no solo «−200». */}
             <span className="muted">{goals.training
-              ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal sobre tus ${int(base.kcal)}`, `Training day: +${int(goals.shift ?? 0)} kcal over your ${int(base.kcal)}`)
+              // Con «Lo que gastas», un entreno corto puede quedar por debajo de tu gasto medio: «+-200» no tenía sentido.
+              ? (goals.shift ?? 0) >= 0
+                ? t(`Día de entreno: +${int(goals.shift ?? 0)} kcal sobre tus ${int(base.kcal)}`, `Training day: +${int(goals.shift ?? 0)} kcal over your ${int(base.kcal)}`)
+                : t(`Día de entreno: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Training day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)
               : day === dayKey()
                 ? (weekDone(data)
                   ? t(`Hoy, día de descanso: −${int(-(goals.shift ?? 0))} kcal de tus ${int(base.kcal)}`, `Today, rest day: −${int(-(goals.shift ?? 0))} kcal from your ${int(base.kcal)}`)

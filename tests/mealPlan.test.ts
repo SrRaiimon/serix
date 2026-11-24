@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { parseBackup } from '../src/lib/backup'
 import { dueMeals, mealByTime, requestAdd, takePendingAdd } from '../src/lib/foodReminders'
 import { buildDishes, fitDish, makePlan, mealTargets, pickDish, rateDish, rateRemoved, usualFoods } from '../src/lib/mealPlan'
-import { adjustGoals, computeGoals, dayFiber, recipeValues, waterGoal, dayGoalOptions, dayKey, dayStatus, dayTotals, dayText, goalsForDay, lastWeek, MEALS, trainingShift, weekdayOf, weeklyIntake, weekTemplate, weightAdvice, type BasicFood, type FoodEntry, type MealKey } from '../src/lib/nutrition'
+import { adjustGoals, clampAdjust, computeGoals, dayFiber, recipeValues, waterGoal, dayGoalOptions, dayKey, dayStatus, dayTotals, dayText, goalsForDay, lastWeek, MEALS, trainingShift, weekdayOf, weeklyIntake, weekTemplate, weightAdvice, type BasicFood, type FoodEntry, type MealKey } from '../src/lib/nutrition'
 
 const { foods } = JSON.parse(readFileSync('public/foods.json', 'utf8')) as { foods: BasicFood[] }
 const goals = computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'keep' })
@@ -169,6 +169,15 @@ test('compensación: nunca por debajo del suelo (1200 / 1500 kcal) y no al ganar
   assert.equal(roomy.carried, 100)
   // Ganar músculo: no se compensa (anularía el superávit).
   assert.equal(goalsForDay({ ...goals, kcal: 3000, aim: 'gain' }, [ate(3400)], '2026-03-02', { carryOver: true }).carried, 0)
+})
+
+test('el ajuste según el peso guardado no deja el objetivo por debajo del suelo ni del metabolismo en reposo', () => {
+  const woman = { ...computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 52, activity: 1.2, aim: 'lose' }), kcal: 1210 }
+  // −150 sobre 1210 daría 1060: se recorta a lo que cabe sobre el suelo (1210 − 1210 = nada, el metabolismo manda).
+  assert.ok(woman.kcal + clampAdjust(woman, -150) >= 1200)
+  // Los positivos pasan tal cual, y con margen el −150 entero.
+  assert.equal(clampAdjust(woman, 150), 150)
+  assert.equal(clampAdjust({ ...woman, kcal: 2000 }, -150), -150)
 })
 
 test('ajuste según el peso: no propone bajar por debajo del suelo', () => {

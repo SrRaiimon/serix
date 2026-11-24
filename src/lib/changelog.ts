@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.49',
+    items: [
+      ['En el detalle de una rutina, la duración ya no sale cortada: la cifra va sola y la unidad en la etiqueta («Minutos»).', 'In a routine\'s detail, the duration is no longer cut off: the number stands alone and the unit goes in the label («Minutes»).'],
+      ['Comida: «Más calorías los días de entreno» enseña lo que se aplica de verdad con el mínimo de calorías, y un entreno corto ya no sale como «+-200 kcal».', 'Food: «More calories on training days» shows what is really applied with the minimum calories, and a short workout no longer shows as «+-200 kcal».'],
+      ['El ajuste según tu peso se descarta si cambias de objetivo y no baja de tu mínimo de calorías al recalcular, y «Compensar al día siguiente» explica sus límites.', 'The weight-based adjustment is dropped if you change your goal and does not go below your minimum calories when recalculating, and «Make up for it the next day» explains its limits.'],
+      ['El anillo de foco del interruptor rodea justo la píldora, sin hueco.', 'The focus ring of the switch hugs the pill, with no gap.'],
+    ],
+  },
+  {
     version: '0.1.48',
     items: [
       ['Los interruptores vuelven a verse del tamaño de siempre (en la versión anterior se pintaban más grandes), y con el teclado no cambian de forma.', 'The switches look their usual size again (in the previous version they were drawn larger), and keep their shape when focused with the keyboard.'],

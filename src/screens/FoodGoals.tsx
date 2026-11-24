@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { Segmented, Sheet } from '../components/ui'
 import { editable, fromKg, int, parseDecimal, startOfDay, uid } from '../lib/format'
 import { t } from '../lib/i18n'
-import { ACTIVITY, adjustGoals, AIMS, CARRY_OVER_MAX, computeGoals, maintenanceKcal, proteinReference, trainingShift, defaultProteinPerKg, PROTEIN_PER_KG, activeMeals, type Aim, type Sex } from '../lib/nutrition'
+import { ACTIVITY, adjustGoals, AIMS, CARRY_OVER_MAX, clampAdjust, computeGoals, dayFloor, maintenanceKcal, proteinReference, trainingShift, defaultProteinPerKg, PROTEIN_PER_KG, activeMeals, type Aim, type Sex } from '../lib/nutrition'
 import { update, updateSettings, useData } from '../lib/store'
 import { fillBodyweights } from '../lib/bodyweight'
 import { reminderTime } from '../lib/foodReminders'
@@ -47,7 +47,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   })()
   // El ajuste según el peso se mantiene al recalcular (se puede quitar).
   const [keepAdjust, setKeepAdjust] = useState(true)
-  const adjust = saved?.adjust && keepAdjust ? saved.adjust : 0
+  // Solo con el mismo objetivo (un −150 de perder grasa no se arrastra a ganar músculo) y sin bajar del suelo.
+  const adjust = saved?.adjust && keepAdjust && saved.aim === aim && computed ? clampAdjust(computed, saved.adjust) : 0
   const result = manual ? ownGoals : computed && adjust ? adjustGoals(computed, adjust) : computed
   // La proteína por kilo que sale de verdad (con su tope) y si no hay déficit posible al perder grasa.
   const reference = ready ? proteinReference(w!, h!) : 0
@@ -175,13 +176,16 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
           <span className="grow">
             <span className="bold" style={{ display: 'block' }}>{t('Compensar al día siguiente', 'Make up for it the next day')}</span>
             <span className="small muted">{t(`Si un día te pasas de calorías, al siguiente se resta lo que te pasaste (como mucho un ${CARRY_OVER_MAX * 100} % del objetivo, para no comer demasiado poco).`, `If you go over your calories one day, the excess comes off the next day (at most ${CARRY_OVER_MAX * 100}% of the goal, so you don't eat too little).`)}</span>
+            <span className="small muted" style={{ display: 'block' }}>{t('Con «Ganar músculo» no se compensa, y nunca por debajo de 1.200 kcal (mujeres) o 1.500 (hombres).', 'With «Gain muscle» it is not made up, and never below 1,200 kcal (women) or 1,500 (men).')}</span>
           </span>
           <input type="checkbox" className="toggle" checked={carry} onChange={(e) => setCarry(e.target.checked)} />
         </label>
       )}
       {!proteinOnly && (() => {
         const perWeek = data.settings.weeklyGoal
-        const { up, down } = trainingShift(result?.kcal ?? saved?.kcal ?? 2500, perWeek)
+        const base = result ?? saved
+        // Con el suelo (1200 / 1500 kcal), el día de descanso no puede bajar tanto: se enseña lo que se aplica de verdad.
+        const { up, down } = trainingShift(base?.kcal ?? 2500, perWeek, base ? Math.max(0, base.kcal - dayFloor(base)) : Infinity)
         return (
           <>
           <label className="list-row card-row">

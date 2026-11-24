@@ -295,7 +295,8 @@ export function RoutineDetailScreen({ id }: { id: string }) {
         <StatBand items={[
           { value: routine.exercises.length, label: t('Ejercicios', 'Exercises') },
           { value: duration.sets, label: duration.deload ? t('Series · descarga', 'Sets · deload') : t('Series', 'Sets') },
-          { value: <>~{duration.minutes}<small> min</small></>, label: duration.measured ? t('Tu duración', 'Your time') : t('Duración', 'Time') },
+          // La unidad va en la etiqueta: «~62 min» con la cifra a 26 px no cabe en un tercio de la fila a 375 px y salía «~62 …».
+          { value: `~${duration.minutes}`, label: duration.measured ? t('Min · tu media', 'Min · your avg') : t('Minutos', 'Minutes') },
         ]} />
         {routine.notes && <p className="small muted" style={{ margin: 0 }}>{routine.notes}</p>}
         <div className="list-header"><span className="grow">{t('Ejercicios', 'Exercises')}</span>{routine.exercises.length > 0 && <span>{t('Objetivo', 'Target')}</span>}</div>
