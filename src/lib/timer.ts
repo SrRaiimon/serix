@@ -315,6 +315,10 @@ try {
     nextLabel = saved.next
     restSetId = saved.setId
     set({ endAt: saved.endAt, total: saved.total })
+    // Tras recargar no hay contexto de audio ni gesto que lo active: sin esto el pitido del final no sonaba hasta
+    // tocar la pantalla. Se crea ya y se desbloquea con el primer toque.
+    prepareAudio()
+    for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, unlockAudio, { once: true, capture: true })
     schedule()
   } else if (saved) localStorage.removeItem(SAVED)
 } catch { /* sin almacenamiento o dato roto: no hay descanso que recuperar */ }

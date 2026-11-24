@@ -83,11 +83,15 @@ function useNameRow(): [string, ReactNode] {
   const [name, setName] = useState(data.settings.name)
   const saved = data.settings.name.trim()
   const row = saved ? null : (
-    <label className="list-row" style={{ padding: 0 }}>
-      <span className="grow small">{t('¿Cómo te verán tus amigos?', 'How will your friends see you?')}</span>
-      <input className="field" style={{ width: 140 }} placeholder={t('Tu nombre', 'Your name')} value={name}
-        maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
-    </label>
+    <>
+      <label className="list-row" style={{ padding: 0 }}>
+        <span className="grow small">{t('¿Cómo te verán tus amigos?', 'How will your friends see you?')}</span>
+        <input className="field name-field" style={{ width: 140 }} placeholder={t('Tu nombre', 'Your name')} value={name}
+          maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => updateSettings({ name: name.trim() })} />
+      </label>
+      {/* Sin esta línea, los botones de abajo se quedaban grises sin decir por qué. */}
+      {!name.trim() && <p className="muted small" style={{ margin: 0 }}>{t('Escribe tu nombre para poder compartir y crear retos.', 'Enter your name to share and create challenges.')}</p>}
+    </>
   )
   return [saved || name.trim(), row]
 }

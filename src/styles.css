@@ -1329,6 +1329,12 @@ a.list-row:active {
   opacity: 0.75;
 }
 
+/* El color en línea del campo no llega al marcador: el del navegador quedaba a 4,0:1 en oscuro. */
+.name-field::placeholder {
+  color: var(--text-2);
+  opacity: 1;
+}
+
 .set-check {
   /* 44 px para tocarlo bien con las manos sudadas; el margen negativo mantiene la fila igual. */
   width: 44px;

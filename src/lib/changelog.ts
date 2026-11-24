@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.44',
+    items: [
+      ['En Amigos y retos, si falta tu nombre se explica junto a los botones de compartir en vez de dejarlos en gris sin motivo.', 'In Friends and challenges, if your name is missing it is explained next to the share buttons instead of leaving them greyed out with no reason.'],
+      ['Si recargas la app durante un descanso, el pitido del final suena igualmente.', 'If you reload the app during a rest, the beep at the end still sounds.'],
+      ['El marcador «Tu nombre» se lee mejor en el tema oscuro.', 'The «Your name» placeholder is easier to read in the dark theme.'],
+      ['Guardar como rutina tampoco arrastra los entrenos libres cuando la app está en francés o portugués.', 'Saving as a routine no longer takes free workouts with it when the app is in French or Portuguese.'],
+    ],
+  },
+  {
     version: '0.1.43',
     items: [
       ['Los programas llevan un press de verdad cada semana y en casi todos los días de cuerpo completo, y más ejercicios de hombro: los remos ya no cuentan como trabajo de hombro.', 'Programs include a real press every week and on almost every full-body day, and more shoulder exercises: rows no longer count as shoulder work.'],

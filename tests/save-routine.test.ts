@@ -54,6 +54,18 @@ test('guardar como rutina: no se lleva los entrenos libres ni los que tienen otr
   assert.deepEqual(getData().sessions.map((s) => s.routineId), [undefined, id2, id2])
 })
 
+test('guardar como rutina: el nombre por defecto en francés y portugués tampoco arrastra entrenos', () => {
+  // El entreno libre se guarda con el nombre del idioma de ese momento.
+  for (const name of ['Entraînement libre', 'Treino livre']) {
+    const before = session(-3, [exercise('Barbell_Squat', [set(100, 5)])], { name })
+    const now = session(0, [exercise('Barbell_Squat', [set(105, 5)])], { name })
+    reset([before, now])
+    saveAsRoutine(now, 'Pierna')
+    const id = getData().routines[0].id
+    assert.deepEqual(getData().sessions.map((s) => s.routineId), [undefined, id], name)
+  }
+})
+
 test('repetir o guardar un entreno de descarga: las series de antes de recortar, no las de la descarga', () => {
   const deload = { ...exercise('Barbell_Squat', [set(90, 5), set(90, 5), set(90, 5)]), deload: true }
   // Sin rutina: la cuenta de deloadSets al revés (3 → 5).

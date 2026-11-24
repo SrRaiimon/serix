@@ -79,7 +79,7 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       <div className="list">
         <label className="list-row">
           <span>{t('Nombre', 'Name')}</span>
-          <input className="grow" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Tu nombre', 'Your name')} maxLength={40} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} onBlur={() => updateSettings({ name: settings.name.trim() })} />
+          <input className="grow name-field" style={{ textAlign: 'right', color: 'var(--text-2)', minHeight: 44 }} placeholder={t('Tu nombre', 'Your name')} maxLength={40} value={settings.name} onChange={(e) => updateSettings({ name: e.target.value })} onBlur={() => updateSettings({ name: settings.name.trim() })} />
         </label>
         <div className="list-row">
           <span className="grow">{t('Unidad de peso', 'Weight unit')}</span>

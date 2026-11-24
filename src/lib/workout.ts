@@ -459,8 +459,8 @@ export function discardSession(id: string) {
   setUI({ open: false })
 }
 
-/** Nombres que pone la app a un entreno libre, en los dos idiomas: no dicen qué se hizo. */
-const DEFAULT_NAMES = new Set(['Entrenamiento libre', 'Free workout'])
+/** Nombres que pone la app a un entreno libre, en los cuatro idiomas (se guarda el del idioma de ese momento): no dicen qué se hizo. */
+const DEFAULT_NAMES = new Set(['Entrenamiento libre', 'Free workout', 'Entraînement libre', 'Treino livre'])
 
 /**
  * Si un entreno anterior es el mismo que `session` y pasa a su rutina al guardarla: sin rutina, terminado, con el
