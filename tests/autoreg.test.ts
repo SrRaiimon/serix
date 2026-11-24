@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { lastPain, loadSuggestion, targetRpe, weeklyCalfSets, weeklyGroupSets } from '../src/lib/autoreg'
+import { rememberEquipment } from '../src/lib/progression'
 import { weeklyRange } from '../src/lib/volume'
 import { DAY, exercise, session, set, T0 } from './helpers'
 
@@ -80,5 +81,11 @@ test('gemelos por semana: principales a 1 y secundarios a media, fuera de los gr
 
 test('autorregulación: con una barra ligera no propone un escalón mucho mayor que el ajuste (−4 % de 20 kg no es −12,5 %)', () => {
   const e = exercise('Barbell_Curl', [set(20, 8, { rpe: 9 }), set(20, 8, { done: false })])
+  assert.equal(loadSuggestion(e, 8, kg), undefined)
+})
+
+test('autorregulación: con la barra vacía de un básico no propone bajar más (20 kg es lo mínimo)', () => {
+  rememberEquipment([{ id: 'Barbell_Bench_Press_-_Medium_Grip', equipment: 'barbell' }])
+  const e = exercise('Barbell_Bench_Press_-_Medium_Grip', [set(20, 8, { rpe: 10 }), set(20, 8, { done: false })])
   assert.equal(loadSuggestion(e, 8, kg), undefined)
 })

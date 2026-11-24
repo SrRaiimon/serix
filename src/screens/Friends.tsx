@@ -1,5 +1,5 @@
 import { BellRing, ChartColumn, Flag, Medal, MessageCircle, Plus, QrCode as QrIcon, Share2, Trophy, UserMinus, UserPlus, Users } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { QrSheet } from '../components/Qr'
 import { ActionSheet, Card, Chip, Empty, NavBar, Progress, Segmented, Sheet, useCatalog, useToast } from '../components/ui'
 import { addDays, int, relative, shortDay, startOfWeek, toKg, tons, weight, type Unit } from '../lib/format'
@@ -185,7 +185,7 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
   const [toast, showToast] = useToast()
   const [menu, setMenu] = useState<Challenge>()
   const live = liveChallenges(data.challenges)
-  const invites = invitations(data.friends, data.challenges)
+  const invites = invitations(data.friends, data.challenges, Date.now(), data.settings.leftChallenges)
   const invite = async (c: Challenge) => {
     // Sin nombre se compartiría como «Sin nombre» y se pisaría con otros (useNameRow): primero el nombre.
     if (!data.settings.name.trim()) return showToast(t('Pon tu nombre en «Tu resumen» para invitar.', 'Add your name in "Your summary" to invite.'))
@@ -213,7 +213,7 @@ function Challenges({ data, onNew }: { data: AppData; onNew: () => void }) {
           ...(challengeStatus(menu) !== 'finished' ? [{ label: t('Invitar a amigos', 'Invite friends'), onSelect: () => void invite(menu) }] : []),
           {
             label: t('Salir del reto', 'Leave challenge'), destructive: true,
-            onSelect: () => withUndo(t('Has salido del reto', 'You left the challenge'), () => update((d) => { d.challenges = d.challenges.filter((x) => x.id !== menu.id) })),
+            onSelect: () => withUndo(t('Has salido del reto', 'You left the challenge'), () => update((d) => { d.challenges = d.challenges.filter((x) => x.id !== menu.id); d.settings.leftChallenges = [...(d.settings.leftChallenges ?? []).filter((x) => x !== menu.id), menu.id].slice(-50) })),
           },
         ]} />
       )}
@@ -254,7 +254,11 @@ function NewChallengeSheet({ onClose }: { onClose: () => void }) {
     ...(metric === 'reps' && ex ? { exerciseId: ex.id, exerciseName: ex.name } : {}),
   }, days)
 
+  const creating = useRef(false)
   const create = async () => {
+    // Dos toques antes de que se abra el menú de compartir creaban dos retos.
+    if (creating.current) return
+    creating.current = true
     keepName(name)
     const c = draft()
     update((d) => { d.challenges.push(c) })
@@ -551,7 +555,12 @@ export function FriendDetailScreen({ id }: { id: string }) {
   const ask = () => void requestUpdate(friend.name).then((r) => r === 'copied' && showToast(copiedToast()))
   const remove = () => {
     back()
-    withUndo(t(`Quitado: ${friend.name}`, `Removed: ${friend.name}`), () => update((d) => { d.friends = d.friends.filter((f) => friendKey(f.name) !== id) }))
+    withUndo(t(`Quitado: ${friend.name}`, `Removed: ${friend.name}`), () => update((d) => {
+      // Antes de quitarlo, se asienta la clasificación de los retos terminados: si no, su resultado y tu medalla lo pierden.
+      const settled = settleChallenges(d, finishedSessions(d))
+      if (settled) d.challenges = settled
+      d.friends = d.friends.filter((f) => friendKey(f.name) !== id)
+    }))
   }
 
   return (
@@ -656,7 +665,7 @@ export function FriendImportScreen({ code }: { code: string }) {
   // ¿Tu propio enlace (para probarlo o reenviado)? Con tu nombre te verías dos veces en la liga. Solo un
   // aviso: un amigo puede llamarse igual que tú.
   const own = !!friend && !known && friendKey(friend.name) === friendKey(mine.name)
-  const invites = friend ? invitations([friend], data.challenges) : []
+  const invites = friend ? invitations([friend], data.challenges, Date.now(), data.settings.leftChallenges) : []
 
   const done = () => navigate(data.settings.onboarded ? 'profile' : 'home', ...(data.settings.onboarded ? ['friends'] : []))
   const save = () => {
@@ -669,6 +678,8 @@ export function FriendImportScreen({ code }: { code: string }) {
     update((d) => {
       saveFriend(d, friend)
       if (!d.challenges.some((x) => x.id === c.id)) d.challenges.push(c)
+      // Si te unes a uno que habías dejado, vuelve a contar.
+      if (d.settings.leftChallenges) d.settings.leftChallenges = d.settings.leftChallenges.filter((x) => x !== c.id)
     })
   }
 

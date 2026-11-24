@@ -222,6 +222,8 @@ export interface Settings {
   friendShareAt?: number
   friendReminderOff?: boolean
   friendReminderSnooze?: number
+  /** Retos de los que has salido (los últimos 50): si no, el amigo que los sigue compartiendo te los vuelve a ofrecer. */
+  leftChallenges?: string[]
   /** Cómo se hace cada ejercicio (por identificador): asistido o por lados. Se recuerda para la próxima vez. */
   exerciseModes?: Record<string, ExerciseMode>
   /** Modo sencillo: oculta RPE, tipos de serie y opciones avanzadas. */

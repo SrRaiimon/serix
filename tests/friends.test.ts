@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { deflateRawSync } from 'node:zlib'
 import { alignWeeks, keepNewest, liveChallenges, saveFriend, newerSnapshot, challengeProgress, challengeResult, challengeStatus, cleanChallenge, cleanSnapshot, settleChallenges, trophyCounts, trophyText, decodeSnapshot, encodeSnapshot, friendKey, invitations, mySnapshot, newChallenge, sameWeek, shareReminderDue, standings, WEEKS } from '../src/lib/friends'
 import { toBase64Url } from '../src/lib/share'
 import { defaultSettings, type AppData } from '../src/lib/store'
@@ -211,4 +212,21 @@ test('guardar un resumen nuevo de un amigo asienta antes los retos terminados', 
   assert.deepEqual(d.challenges[0].final?.map((r) => r.name), ['Luis', 'Ana'])
   assert.equal(d.friends.length, 1)
   assert.equal(d.friends[0].at, now)
+})
+
+test('enlace de amigo: una bomba de compresión no se descomprime (y no tumba la pestaña)', async () => {
+  const bomb = 'z' + deflateRawSync(Buffer.alloc(3_000_000, 0x20)).toString('base64url')
+  assert.equal(await decodeSnapshot(bomb), undefined)
+})
+
+test('retos: los que dejaste no vuelven como invitación, y la clasificación final de un enlace no entra', () => {
+  const now = Date.UTC(2026, 2, 10)
+  const mk = (id: string) => ({ id, metric: 'sessions' as const, start: now - 86400000, end: now + 5 * 86400000, by: 'Ana' })
+  const friend = { name: 'Ana', at: now, challenges: [{ challenge: mk('abcd1'), value: 1 }, { challenge: mk('efgh2'), value: 2 }] } as never
+  assert.deepEqual(invitations([friend], [], now).map((c) => c.id).sort(), ['abcd1', 'efgh2'])
+  assert.deepEqual(invitations([friend], [], now, ['abcd1']).map((c) => c.id), ['efgh2'])
+  // Un enlace con «final» y «me» (trofeo inventado): se descarta al leer el resumen.
+  const forged = cleanSnapshot({ name: 'Mal', at: now, week: { sessions: 1, volume: 1, sets: 1, minutes: 1 }, month: { sessions: 1, volume: 1, sets: 1, minutes: 1 },
+    challenges: [{ challenge: { ...mk('zzzz9'), final: [{ name: 'Yo', value: 99, me: true }] }, value: 1 }] })
+  assert.equal(forged?.challenges?.[0].challenge.final, undefined)
 })

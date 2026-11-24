@@ -15,7 +15,7 @@ export async function encodeFood(food: MyFood): Promise<string> {
 /** El alimento del enlace, ya revisado (como al importar una copia); error si el código no vale. */
 export async function decodeFood(code: string): Promise<MyFood> {
   const raw = fromBase64Url(code.slice(1))
-  const bytes = code[0] === 'f' ? await transform(raw, new DecompressionStream('deflate-raw')) : code[0] === 'g' ? raw : undefined
+  const bytes = code[0] === 'f' ? await transform(raw, new DecompressionStream('deflate-raw'), 256 * 1024) : code[0] === 'g' ? raw : undefined
   if (!bytes) throw new Error('code')
   const json = JSON.parse(new TextDecoder().decode(bytes)) as { f?: unknown }
   const food = cleanMyFood({ ...(json.f as object), id: 'x' })

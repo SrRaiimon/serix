@@ -106,7 +106,7 @@ export function loadSuggestion(e: SessionExercise, target: number, unit: Unit): 
   if (e.assisted) to = pct > 0 ? raiseAssist(last.weight, unit) : lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
   else if (pct < 0) to = lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
   else to = last.weight + progressionStep(e.muscle, unit, e.exerciseId, last.weight)
-  if (Math.abs(to - last.weight) > last.weight * Math.min(0.15, Math.max(0.08, Math.abs(pct) * 2))) return undefined
+  if (Math.abs(to - last.weight) > last.weight * Math.min(0.15, Math.max(0.08, Math.abs(pct) * 1.75))) return undefined
   if (Math.abs(to - last.weight) < 0.01 || to <= 0) return undefined
   return { setId: last.id, rpe: last.rpe, target, from: last.weight, to, apply: pending.map((s) => s.id) }
 }

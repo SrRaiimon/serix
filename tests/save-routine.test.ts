@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import { defaultSettings, getData, replaceData, undo, type Session } from '../src/lib/store'
 import { applyDeload, plannedSets, saveAsRoutine } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
-import { backupJson, backupOverdue, restoreData } from '../src/lib/protect'
+import { backupJson, backupNotice, backupOverdue, restoreData } from '../src/lib/protect'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
 import { parseNutritionLabel, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 import { exercise, fakeIndexedDB, session, set } from './helpers'
@@ -160,4 +160,18 @@ test('copia atrasada: nunca o con el doble del plazo, ya no cede el sitio a otro
   assert.equal(backupOverdue(d, now), true)
   assert.equal(backupOverdue({ ...d, settings: { ...d.settings, lastBackupAt: now - 40 * 86400000 } }, now), false)
   assert.equal(backupOverdue({ ...d, settings: { ...d.settings, lastBackupAt: now - 70 * 86400000 } }, now), true)
+})
+
+test('aviso de copia en Inicio: no el día de entreno, y solo cede ante la recuperación si no va muy atrasada', () => {
+  reset([])
+  const d = getData()
+  const now = Date.now()
+  const recent = { ...d, settings: { ...d.settings, lastBackupAt: now - 40 * 86400000 } }
+  const calm = { recoveryHint: false, trainedToday: false }
+  assert.equal(backupNotice(recent, 5, calm, now), true)
+  assert.equal(backupNotice(recent, 5, { ...calm, trainedToday: true }, now), false)
+  assert.equal(backupNotice(recent, 5, { ...calm, recoveryHint: true }, now), false)
+  // Nunca guardada: sale aunque te estés recuperando.
+  assert.equal(backupNotice(d, 5, { ...calm, recoveryHint: true }, now), true)
+  assert.equal(backupNotice(d, 5, { recoveryHint: true, trainedToday: true }, now), false)
 })

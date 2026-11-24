@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.56',
+    items: [
+      ['Retos: «Salir del reto» ya no vuelve a ofrecértelo mientras un amigo lo siga compartiendo, dos toques en «Crear e invitar» ya no crean dos retos, y quitar a un amigo guarda antes la clasificación de los retos terminados.', 'Challenges: «Leave challenge» no longer offers it back to you while a friend keeps sharing it, two taps on «Create and invite» no longer create two challenges, and removing a friend saves the standings of finished challenges first.'],
+      ['Enlaces de amigos y de alimentos más seguros: un enlace pequeño que se descomprime a gigas se rechaza, y la clasificación final de un reto que viaja en un enlace se ignora (no se pueden inventar trofeos).', 'Friend and food links are safer: a small link that decompresses to gigabytes is rejected, and the final standings of a challenge carried in a link are ignored (trophies cannot be made up).'],
+      ['Con la barra vacía (20 kg / 45 lb) en un básico, la bajada de peso y las sugerencias por esfuerzo no proponen menos de ahí, y las sugerencias no bajan más de lo que pide el esfuerzo.', 'With the empty bar (20 kg / 45 lb) on a main lift, lowering the weight and effort-based suggestions do not go below it, and suggestions no longer drop more than the effort asks.'],
+      ['El aviso «Guarda una copia» de Inicio se decide en un solo sitio, con test; «Modo foco» ya está bien traducido al francés.', 'The «Back up your data» notice on Home is decided in one place, with a test; «Focus mode» is now properly translated into French.'],
+    ],
+  },
+  {
     version: '0.1.55',
     items: [
       ['Modo foco: un solo encabezado principal y su propia región para lectores de pantalla; los campos de edad, altura y peso del objetivo llegan a 44 px y ya no enseñan «0 años / 0 cm» como si fueran valores.', 'Focus mode: a single main heading and its own region for screen readers; the age, height and weight fields of the goal reach 44 px and no longer show «0 yrs / 0 cm» as if they were values.'],

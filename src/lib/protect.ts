@@ -68,6 +68,14 @@ export function backupDue(d: AppData, finishedSessions: number, now = Date.now()
   return !d.settings.lastBackupAt || now - d.settings.lastBackupAt > BACKUP_EVERY_DAYS * DAY
 }
 
+/**
+ * ¿Sale el aviso de copia en Inicio? Hace falta que toque, no el día que entrenas, y no cede el sitio al aviso de
+ * recuperación salvo que vaya muy atrasada.
+ */
+export function backupNotice(d: AppData, finishedSessions: number, ctx: { recoveryHint: boolean; trainedToday: boolean }, now = Date.now()): boolean {
+  return backupDue(d, finishedSessions, now) && !ctx.trainedToday && (!ctx.recoveryHint || backupOverdue(d, now))
+}
+
 /** Copia muy atrasada (nunca, o hace el doble del plazo): ya no cede el sitio a otros avisos, o quien siempre se está recuperando no la vería jamás. */
 export function backupOverdue(d: AppData, now = Date.now()): boolean {
   return !d.settings.lastBackupAt || now - d.settings.lastBackupAt > 2 * BACKUP_EVERY_DAYS * DAY

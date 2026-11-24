@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
+import { deflateRawSync } from 'node:zlib'
 import { parseBackup } from '../src/lib/backup'
+import { decodeFood } from '../src/lib/foodShare'
 import { buildDishes, makePlan, planMeals } from '../src/lib/mealPlan'
 import { cleanFoodName, invalidFoodCalories, parseOffProduct, recipeValues, setMealSettings, type BasicFood } from '../src/lib/nutrition'
 
@@ -58,4 +60,8 @@ test('alimento propio: nombre sin espacios exteriores y con un máximo de 80 car
   assert.equal(cleanFoodName('  Mi batido  '), 'Mi batido')
   assert.equal(cleanFoodName('x'.repeat(360)), 'x'.repeat(80))
   assert.equal(cleanFoodName('   '), '')
+})
+
+test('enlace de alimento: una bomba de compresión se rechaza', async () => {
+  await assert.rejects(decodeFood('f' + deflateRawSync(Buffer.alloc(3_000_000, 0x20)).toString('base64url')), /demasiado grandes|too large/)
 })

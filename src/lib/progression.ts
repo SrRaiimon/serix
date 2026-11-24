@@ -131,6 +131,8 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
     }
     return lower
   }
+  // La barra olímpica vacía (20 kg / 45 lb) es lo mínimo que se monta: en un básico con barra no se baja de ahí (20 → 17,5 no existe).
+  if (equipment === 'barbell' && exerciseId && !isIsolation(exerciseId) && weight > 0 && fromKg(weight, unit) <= (unit === 'kg' ? 20 : 45) + 0.01) return weight
   // Barra y discos: a la unidad de la barra (2,5 kg / 5 lb), también en aislamiento (un curl con barra a 0,5 kg no existe).
   // Poleas y máquinas en aislamiento: pasos finos (0,5 kg / 1 lb), como al subir; si no, 10 kg bajaba a 7,5 (−25 %).
   const step = exerciseId && isIsolation(exerciseId) && !barLoaded(exerciseId, equipment) ? (unit === 'kg' ? 0.5 : 1) : increment(unit)

@@ -233,6 +233,7 @@ function settings(v: unknown): Settings {
     friendShareAt: optNum(s.friendShareAt, EPOCH_MIN, EPOCH_MAX),
     friendReminderOff: s.friendReminderOff === true ? true : undefined,
     friendReminderSnooze: optNum(s.friendReminderSnooze, EPOCH_MIN, EPOCH_MAX + 365 * DAY),
+    leftChallenges: list(s.leftChallenges, (x) => (typeof x === 'string' && /^[a-z0-9]{4,16}$/.test(x) ? x : undefined), 50),
     catalogVersion: optNum(s.catalogVersion, 1, 99),
     lastBackupAt: optNum(s.lastBackupAt, EPOCH_MIN, EPOCH_MAX),
     backupSnoozeUntil: optNum(s.backupSnoozeUntil, EPOCH_MIN, EPOCH_MAX + 365 * DAY),

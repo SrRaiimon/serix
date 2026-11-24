@@ -14,7 +14,7 @@ import { navigate } from '../lib/router'
 import { sessionVolume, streakWeeks } from '../lib/stats'
 import { activeSession, finishedSessions, update, updateSettings, useData, type Routine, type Session } from '../lib/store'
 import { nextRoutine, openWorkout, routineFacts, startEmpty, startRoutine } from '../lib/workout'
-import { backupDue, backupOverdue, exportBackup, snoozeBackup } from '../lib/protect'
+import { backupNotice, exportBackup, snoozeBackup } from '../lib/protect'
 import { muscleSummary } from '../lib/labels'
 import { RECOVERING, useRecovery } from '../components/Recovery'
 import { BlockStatus } from '../components/Block'
@@ -52,7 +52,7 @@ export function HomeScreen() {
     && recovery.some((g) => g.ready < RECOVERING && g.muscles.some((m) => next.exercises.some((e) => e.muscle === m)))
   const notice = ([
     ['risk', !!risk],
-    ['backup', backupDue(data, sessions.length) && (!recoveryHint || backupOverdue(data)) && !trainedTodayHome], // el día que entrenas la copia espera al siguiente
+    ['backup', backupNotice(data, sessions.length, { recoveryHint, trainedToday: trainedTodayHome })], // el día que entrenas la copia espera al siguiente
     ['news', newsDue(data.settings.seenVersion)],
     ['recap', recapDue],
     ['weigh', weighDue(data)],

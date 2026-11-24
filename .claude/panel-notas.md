@@ -39,6 +39,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.52 | 9,6 | 9,6 | 9,6 | 9,6 | 9,6 (9,6) |
 | 0.1.53 | 9,6 | 9,6 | 9,3 | — (se detuvo; sin relanzar) | — |
 | 0.1.54 | 9,6 | 9,5 | 9,2 | 9,6 | 9,5 (9,475) |
+| 0.1.55 | 9,6 | 9,3 | 9,4 | 9,8 | 9,5 (9,525) |
 
 ## Rotación de zonas (serix-code)
 
@@ -49,7 +50,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Zona | Archivos | Revisada a fondo |
 |---|---|---|
 | Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | 0.1.48 |
-| Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | 0.1.42 |
+| Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | 0.1.55 |
 | Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | 0.1.54 |
 | Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | 0.1.44 |
 | Guardado y varias pestañas | lib/store.ts (migraciones, mergeData, deshacer), lib/customExercises.ts | 0.1.45 |
@@ -132,3 +133,26 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
 
 ### serix-perf-a11y (9,6)
 - Lighthouse móvil 99-100 (FCP 0,9-1,0 s, LCP 1,8-1,9 s, TBT 0-10 ms, CLS 0-0,003); axe 0 violaciones en todas las pantallas y hojas, claro y oscuro; solo el entreno en modo foco da 1 `region`. Abiertos: chunk de entrada de ~312 kB (Home dentro), recorte de texto en el e2e.
+
+## Pendientes tras 0.1.55 (global 9,5; perf 9,8, ux 9,6, coach 9,4, code 9,3)
+
+### Fallos míos de la 0.1.55
+- **«Modo foco» sin traducir en fr y pt** (code): las dos entradas nuevas son copia del español (`missing.mjs` no lo ve porque la clave tiene valor). fr «Mode focus», pt «Modo foco» ya vale; revisar también otros textos nuevos de la 0.1.52-0.1.55 que sean copia del español.
+- Tests: el de la copia atrasada no cubre la condición inline de Home; la aserción de subida de la kettlebell en lb ya pasaba con el código viejo.
+
+### serix-code (9,3): zona Amigos y retos leída entera
+- **Media, descompresión sin tope** en `friends.ts:442` (`decodeSnapshot`) y `foodShare.ts:18`: un enlace de 389 KB (300 MB de espacios) se descomprime entero (1,1 s, 1,3 GB). Pasar `maxBytes` (~64 KB) y mensaje «demasiado grande», con test.
+- Media-baja: «Salir del reto» no sale de verdad (`invitations` solo excluye ids que ya tienes; vuelve como «X te reta»); guardar los retos dejados. Baja-media: `create` sin guarda de «ocupado» (dos retos con dos toques).
+- Baja: quitar un amigo no asienta antes los retos terminados (`remove` no pasa por `saveFriend`); `cleanChallenge` admite `final` con `me:true` (trofeos falsos, `join` lo guarda tal cual); `FriendImportScreen` sin cancelación; `useMine` desfasado de un día a otro; efecto de `FriendsScreen` sustituye `d.challenges` con datos viejos entre pestañas. Partir `friends.ts` (534) y `Friends.tsx` (722).
+- Siguen: `autoreg.ts:106` `used=[]`, test de `restoreData` con regex, `lowerWeight` por debajo de la barra vacía, `plates.ts`, `bodyweight.ts`, `plannedSets`, TM/tempo sin tope, sustituir ejercicio, «Bajar un 10 %» en asistidas, `dropped`, temporizadores bajos.
+
+### serix-coach (9,4)
+- Generador mejor (perder grasa 4d/45: cuádriceps 11,5, isquios 12, empuje 26, tirón 22,5; mancuernas en casa 5d/60: bíceps 17, tríceps 16,5; principiante en gimnasio con brazos). Siguen: `homeLegs` por nivel (búlgara y peso muerto a una pierna a principiantes), `Floor_Glute-Ham_Raise` 3×3-6 en intermedio con mancuernas, segundo `homePull`, pecho 7,5 en perder grasa 4d/45 con `Freehand_Jump_Squat` tras el press en Torso B, asistidas sin progresión de ayuda reducida, ventanas de `weightAdvice` que se solapan, `restDayKcal`.
+- **Suelo de la barra:** `lowerWeight` y `loadSuggestion` bajan 20 kg a 17,5 y 45 lb a 40 (no se monta); kettlebell desde 48 kg sube a 50,5 y desde 60 a 62,5; `loadSuggestion` admite −14 % con RPE 10 (tope relativo flojo) y no propone subir con mancuernas ligeras.
+
+### serix-ux (9,6)
+- «Tu entrenador» el día de entreno sigue saliendo bajo «Hoy ya has entrenado»; mapa de Músculos a 7 días frente a 4 semanas; racha 27/26 entre Inicio y Logros; «4 mar – 4 mar» al importar de Strong; calculadora de discos ambigua; «Calorías y peso» sin comidas; «+10 kcal sobre tus 1210» sin ver; con el foco abierto el texto de Inicio sigue en el DOM (el h1 de Inicio va `aria-hidden`).
+
+### serix-perf-a11y (9,8)
+- Lighthouse 99-100 (LCP 1,9-2,0 s), axe 0 en todo, incluido el modo foco (sin `region`). Abiertos: toggles a 41×41 efectivos (65×45 con `::after` recortado), chunk de entrada de ~312 kB, entreno en curso probado solo en claro.
+- Hecho en la 0.1.56: «Modo foco» en francés, tope de descompresión en amigos y comida, retos dejados (`settings.leftChallenges`), guarda de doble toque, asentar retos al quitar amigo, `final` ignorado en enlaces, suelo de barra vacía, `backupNotice` con test. Siguen: generador, chunk de entrada, mapa de Músculos 7 d/4 sem, «Tu entrenador» el día de entreno, toggles 41×41, `used=[]` en autoreg.

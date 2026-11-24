@@ -155,8 +155,8 @@ export function standings(c: Challenge, myName: string, myValue: number, friends
 }
 
 /** Retos de los amigos a los que aún no te has unido (y que no han terminado). */
-export function invitations(friends: FriendSnapshot[], joined: Challenge[], now = Date.now()): Challenge[] {
-  const known = new Set(joined.map((c) => c.id))
+export function invitations(friends: FriendSnapshot[], joined: Challenge[], now = Date.now(), left: string[] = []): Challenge[] {
+  const known = new Set([...joined.map((c) => c.id), ...left])
   const found = new Map<string, Challenge>()
   for (const f of friends) for (const e of f.challenges ?? []) {
     if (!known.has(e.challenge.id) && challengeStatus(e.challenge, now) !== 'finished') found.set(e.challenge.id, e.challenge)
@@ -424,8 +424,10 @@ export function cleanSnapshot(v: unknown): FriendSnapshot | undefined {
   if (bodyWeight && bodyWeight >= 25 && bodyWeight <= 400) snapshot.bodyWeight = bodyWeight
   if (Array.isArray(o.challenges)) {
     snapshot.challenges = o.challenges.slice(0, MAX_CHALLENGES).filter(isObj).flatMap((e) => {
-      const challenge = cleanChallenge(e.challenge)
-      return challenge ? [{ challenge, value: int(e.value, 1e8) }] : []
+      const cleaned = cleanChallenge(e.challenge)
+      // La clasificación final es solo de este móvil: la de un enlace sería un trofeo inventado.
+      const { final: _final, ...challenge } = cleaned ?? ({} as Challenge)
+      return cleaned ? [{ challenge, value: int(e.value, 1e8) }] : []
     })
   }
   if (Array.isArray(o.trophies)) {
@@ -435,11 +437,14 @@ export function cleanSnapshot(v: unknown): FriendSnapshot | undefined {
   return snapshot
 }
 
+/** Lo que puede ocupar un resumen descomprimido: un enlace pequeño no debe poder abrirse a gigas (se corta y el enlace no vale). */
+const MAX_SNAPSHOT_BYTES = 256 * 1024
+
 /** Lee un resumen recibido, con todos los valores acotados (o `undefined` si el enlace no vale). */
 export async function decodeSnapshot(code: string): Promise<FriendSnapshot | undefined> {
   try {
     let bytes = fromBase64Url(code.slice(1))
-    if (code[0] === 'z') bytes = await transform(bytes, new DecompressionStream('deflate-raw'))
+    if (code[0] === 'z') bytes = await transform(bytes, new DecompressionStream('deflate-raw'), MAX_SNAPSHOT_BYTES)
     else if (code[0] !== 'j') return undefined
     return cleanSnapshot(JSON.parse(new TextDecoder().decode(bytes)))
   } catch {

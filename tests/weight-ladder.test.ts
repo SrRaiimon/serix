@@ -42,13 +42,13 @@ test('mancuernas en lb: de 5 en 5, arriba y abajo', () => {
 test('barra: subir y bajar a saltos de 2,5 kg / 5 lb, también en aislamiento (curl)', () => {
   use()
   for (const id of ['Barbell_Curl', 'Barbell_Bench_Press_-_Medium_Grip']) {
-    for (const w of KG.filter((x) => x >= 10 && multiple(x, 2.5))) {
+    for (const w of KG.filter((x) => x >= (id === 'Barbell_Curl' ? 10 : 22) && multiple(x, 2.5))) {
       const up = w + progressionStep(id === 'Barbell_Curl' ? 'biceps' : 'pectorals', 'kg', id, w)
       const down = lowerWeight(id, w, 'kg')
       assert.ok(up > w && multiple(up, 2.5), `${id} ${w} sube a ${up}`)
       assert.ok(down < w && multiple(down, 2.5), `${id} ${w} baja a ${down}`)
     }
-    for (const lb of LB.filter((x) => x >= 25)) {
+    for (const lb of LB.filter((x) => x >= (id === 'Barbell_Curl' ? 25 : 50))) {
       const w = toKg(lb, 'lb')
       const up = fromKg(w + progressionStep(id === 'Barbell_Curl' ? 'biceps' : 'pectorals', 'lb', id, w), 'lb')
       const down = fromKg(lowerWeight(id, w, 'lb'), 'lb')
@@ -92,4 +92,13 @@ test('kettlebell en lb con una pesa guardada en kg: 16 kg es la de 35 lb, no «3
   const w = 16
   assert.ok(close(fromKg(lowerWeight('Goblet_Squat', w, 'lb'), 'lb'), 26))
   assert.ok(close(fromKg(w + progressionStep('quads', 'lb', 'Goblet_Squat', w), 'lb'), 44))
+})
+
+test('barra vacía: un básico con barra no baja de 20 kg / 45 lb (el curl, sí, hay barras ligeras)', () => {
+  use()
+  const bench = 'Barbell_Bench_Press_-_Medium_Grip'
+  assert.equal(lowerWeight(bench, 20, 'kg'), 20)
+  assert.equal(lowerWeight(bench, toKg(45, 'lb'), 'lb'), toKg(45, 'lb'))
+  assert.equal(lowerWeight(bench, 22.5, 'kg'), 20)
+  assert.equal(lowerWeight('Barbell_Curl', 20, 'kg'), 17.5)
 })
