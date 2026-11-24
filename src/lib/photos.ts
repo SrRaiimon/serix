@@ -180,14 +180,22 @@ export async function importPhotos(file: Blob): Promise<number> {
   if (!indexEntry) throw new Error('index')
   const raw = JSON.parse(new TextDecoder().decode(indexEntry.data)) as { app?: string; photos?: unknown[] }
   if (raw.app !== 'serix' || !Array.isArray(raw.photos)) throw new Error('index')
-  const existing = new Set((photos ?? []).map((p) => `${p.date}|${p.pose}`))
+  // Cuántas hay ya de cada fecha y postura: dos fotos del mismo día y postura son legítimas (repetir una toma), así que el zip
+  // aporta las que sobren sobre las que ya tienes (antes se descartaba la segunda como «repetida»).
+  const existing = new Map<string, number>()
+  for (const p of photos ?? []) existing.set(`${p.date}|${p.pose}`, (existing.get(`${p.date}|${p.pose}`) ?? 0) + 1)
+  const seen = new Map<string, number>()
   let added = 0
   for (const item of raw.photos.slice(0, 2000)) {
     const e = item as Partial<IndexEntry>
     const data = entries.find((x) => x.name === e.file)?.data
     const date = e.date, pose = POSES.find((p) => p === e.pose)
-    if (!data || typeof date !== 'number' || !Number.isFinite(date) || !pose) continue
-    if (existing.has(`${date}|${pose}`)) continue
+    // Entre 2000 y 2100: un índice dañado con una fecha absurda rompía el orden de la galería.
+    if (!data || typeof date !== 'number' || !Number.isFinite(date) || date < 946684800000 || date > 4102444800000 || !pose) continue
+    const key = `${date}|${pose}`
+    const nth = (seen.get(key) ?? 0) + 1
+    seen.set(key, nth)
+    if (nth <= (existing.get(key) ?? 0)) continue
     // Se vuelve a reducir: así una imagen manipulada no entra tal cual y se rehace la miniatura. Una dañada se salta
     // (antes cortaba la importación a medias con «No es un archivo de fotos» y sin enseñar las ya añadidas).
     let image: Blob, thumb: Blob
@@ -198,7 +206,6 @@ export async function importPhotos(file: Blob): Promise<number> {
       continue
     }
     await run('readwrite', (s) => s.put({ id: newId(), date, pose, image, thumb } satisfies Photo))
-    existing.add(`${date}|${pose}`)
     added++
   }
   await reload()

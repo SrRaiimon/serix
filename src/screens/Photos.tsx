@@ -29,7 +29,7 @@ function useObjectUrl(blob?: Blob): string | undefined {
  * ponerte igual (misma distancia y postura) y que la comparación sea real. Con cuenta atrás de 3 s para
  * que te dé tiempo a colocarte. La foto no sale del móvil.
  */
-function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: () => void; onShot: (file: File) => void }) {
+function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: () => void; onShot: (file: File, pose: Pose) => void }) {
   useScrollLock()
   const video = useRef<HTMLVideoElement>(null)
   const [pose, setPose] = useState<Pose>(photos[0]?.pose ?? 'front')
@@ -67,7 +67,7 @@ function GuidedCamera({ photos, onClose, onShot }: { photos: Photo[]; onClose: (
       if (facing === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1) }
       ctx.drawImage(v, 0, 0)
       // Si no sale la imagen, se puede volver a intentar (antes el botón quedaba desactivado).
-      canvas.toBlob((b) => { if (b) onShot(new File([b], `serix-${Date.now()}.jpg`, { type: 'image/jpeg' })); else setCount(undefined) }, 'image/jpeg', 0.92)
+      canvas.toBlob((b) => { if (b) onShot(new File([b], `serix-${Date.now()}.jpg`, { type: 'image/jpeg' }), pose); else setCount(undefined) }, 'image/jpeg', 0.92)
       return
     }
     const id = setTimeout(() => setCount(count - 1), 1000)
@@ -205,11 +205,12 @@ const toInputDate = (ms: number) => {
 }
 
 /** Nueva foto: elegir (cámara o galería), fecha y postura. */
-function AddSheet({ file, onClose }: { file: File; onClose: () => void }) {
+function AddSheet({ file, initialPose, onClose }: { file: File; initialPose?: Pose; onClose: () => void }) {
   const preview = useObjectUrl(file)
   // La fecha de la foto si el archivo la trae; si no, hoy.
   const [date, setDate] = useState(toInputDate(file.lastModified && file.lastModified < Date.now() ? file.lastModified : Date.now()))
-  const [pose, setPose] = useState<Pose>('front')
+  // La postura elegida en la cámara guiada (si no, «Frente»): antes se perdía y la foto de perfil se guardaba como de frente.
+  const [pose, setPose] = useState<Pose>(initialPose ?? 'front')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
   const save = async () => {
@@ -245,6 +246,7 @@ export function PhotosScreen() {
   const photos = usePhotos()
   const [filter, setFilter] = useState<Pose | 'all'>('all')
   const [file, setFile] = useState<File>()
+  const [shotPose, setShotPose] = useState<Pose>()
   const [open, setOpen] = useState<Photo>()
   const [confirmAll, setConfirmAll] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -315,10 +317,10 @@ export function PhotosScreen() {
           <button className="btn plain" onClick={() => zipInput.current?.click()}><Upload size={18} /> {t('Importar fotos (.zip)', 'Import photos (.zip)')}</button>
         )}
       </div>
-      <input ref={picker} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setFile(f) }} />
+      <input ref={picker} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { setShotPose(undefined); setFile(f) } }} />
       <input ref={zipInput} type="file" accept=".zip,application/zip" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void importZip(f) }} />
-      {file && <AddSheet file={file} onClose={() => setFile(undefined)} />}
-      {guided && <GuidedCamera photos={photos ?? []} onClose={() => setGuided(false)} onShot={(f) => { setGuided(false); setFile(f) }} />}
+      {file && <AddSheet file={file} initialPose={shotPose} onClose={() => { setFile(undefined); setShotPose(undefined) }} />}
+      {guided && <GuidedCamera photos={photos ?? []} onClose={() => setGuided(false)} onShot={(f, p) => { setGuided(false); setShotPose(p); setFile(f) }} />}
       {current && <Viewer photo={current} unit={unit} measurements={data.measurements} onClose={() => setOpen(undefined)} />}
       {confirmAll && (
         <ActionSheet title={t('¿Borrar todas las fotos?', 'Delete all photos?')} message={t('Se borran de este móvil y no se puede deshacer. Si quieres conservarlas, expórtalas antes.', 'They are deleted from this phone and this cannot be undone. Export them first if you want to keep them.')}

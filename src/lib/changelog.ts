@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.47',
+    items: [
+      ['La cámara guiada recuerda la postura que elegiste (Perfil o Espalda) al guardar la foto, en vez de ponerla siempre como «Frente».', 'The guided camera remembers the pose you chose (Side or Back) when saving the photo, instead of always setting it to «Front».'],
+      ['Al importar fotos (.zip) ya no se pierde la segunda foto del mismo día y postura, y se ignoran las de fecha imposible.', 'When importing photos (.zip), the second photo of the same day and pose is no longer lost, and photos with an impossible date are ignored.'],
+      ['Más fácil de tocar: el buscador de Ejercicios, los interruptores y el campo del nombre en Amigos, y las barras de recuperación se ven mejor.', 'Easier to tap: the Exercises search, the switches and the name field in Friends, and the recovery bars are easier to see.'],
+    ],
+  },
+  {
     version: '0.1.46',
     items: [
       ['Progreso › Recuperación muscular pone arriba los grupos más cerca de estar listos, y las barras se ven mejor en oscuro.', 'In Progress › Muscle recovery, the groups closest to being ready come first, and the bars are easier to see in dark mode.'],
