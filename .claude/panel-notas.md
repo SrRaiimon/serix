@@ -35,6 +35,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.48 | 9,7 | 9,5 | 9,7 | 9,5 | 9,6 (9,6) |
 | 0.1.49 | 9,7 | 9,5 | 9,7 | 9,6 | 9,6 (9,625) |
 | 0.1.50 | 9,6 | 9,5 | 9,8 | 9,6 | 9,6 (9,625) |
+| 0.1.51 | 9,6 | 9,6 | 9,8 | 9,6 | 9,7 (9,65) |
 
 ## Rotación de zonas (serix-code)
 
@@ -53,7 +54,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Generador y programas | lib/generator.ts, lib/generatorSlots.ts, lib/balance.ts, screens/RoutinesPrograms.tsx | 0.1.47 |
 | Importar y exportar | lib/importCsv.ts, lib/exportCsv.ts, lib/share.ts, lib/foodShare.ts, lib/transfer.ts, lib/zip.ts | 0.1.49 |
 | Copia de seguridad | lib/backup.ts, lib/protect.ts | 0.1.50 |
-| Progresión y autorregulación | lib/progression.ts, lib/autoreg.ts, lib/warmup.ts, lib/plates.ts, lib/bodyweight.ts | 0.1.15 |
+| Progresión y autorregulación | lib/progression.ts, lib/autoreg.ts, lib/warmup.ts, lib/plates.ts, lib/bodyweight.ts | 0.1.51 |
 | Entreno | lib/workout.ts, screens/Workout*.tsx, screens/Routines.tsx (editor) | 0.1.15 |
 | Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.15 |
 
@@ -72,60 +73,62 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
   aviso si no hay cámara y sin poder repetir. Programas: 1RM del 5/3/1 sin tope. Sin fallos: importar y exportar
   (CSV, zip, QR), progresión y autorregulación, workout.ts (las pantallas Workout*.tsx no se leyeron línea a línea).
 
-## Pendientes tras 0.1.50 (la descarga en doble progresión funciona en pantalla, pero con huecos de redondeo)
+## Pendientes tras 0.1.51 (el evaluador de rendimiento se detuvo una vez y se relanzó; su informe aprovecha salidas parciales del anterior)
 
-### Fallos míos de la 0.1.50 (progression.ts ~218-222, `stalledDouble`)
-- **Con pesos pequeños nunca baja:** `round(weight * 0.9)` al paso de 2,5 kg deja `lower == weight` y `if (lower < weight)` lo descarta (curl de 12,5 kg:
-  11,25 → 12,5; de 10 kg: 9 → 10): «hold» para siempre, justo en el aislamiento ligero. Redondear hacia abajo y bajar como mínimo un escalón (`weight − increment`).
-- **Mancuernas con el paso de la barra:** 24 kg → 22,5 (no existe en series de 2 kg); `dumbbellStep` existe para subir, no para bajar.
-- Estancado con RPE ≤ 7 también baja (`easy` solo exime si todas llegan a repsMax−1); con RPE ≥ 9,5 conviene bajar antes de la 4.ª sesión.
-- Una sesión cortada (1 serie) cuenta como mala y pasar de 3 a 4 series oculta el estancamiento: contar solo sesiones con `main.length >= count` o comparar repeticiones medias por serie.
-- Una sesión mala por enfermedad cuenta igual; peso corporal, asistidas y tiempo no tienen regla de estancamiento (workout.ts:100 solo llama a `plan` con weight_reps sin assisted).
-- `importCsv.ts:~187`: los topes saltan filas válidas en silencio («Jump Rope» de 1500 repeticiones, press de piernas de 11.000 lb en lb); contar las filas
-  saltadas y decirlo en el resumen del import («N series omitidas por valores imposibles»), subir `MAX_REPS`; confirmar con un CSV real si Strong exporta la distancia en
-  metros (21000): se descartaría toda la carrera.
-- `importCsv.ts:431`: `assisted` se marca para todo el ejercicio (un «Pull Up» con −10 y +10: la serie de +10 kg de lastre pasa a ser 10 kg de ayuda) y `/assist/i` marca cualquier
-  nombre con «assist»: decidir por la mayoría de las series o solo por el nombre.
-- `FoodGoals.tsx:~134`: con `computed` indefinido (peso borrado) `fitted` vale 0 y sale «ya estás en tu mínimo»: añadir `computed &&`. Sin test del texto de FoodGoals.
-- `share.ts` `decode`: sin tope de rutinas ni de ejercicios por rutina, y `repsMin > repsMax` no se corrige.
+### Fallos míos de la 0.1.51 (progression.ts, lowerWeight y rama lineal; Recovery.tsx; tests)
+- **Rama lineal `down` sin bajar** (`const lower = Math.max(0, round(weight * 0.9, unit))`): lineal 5 kg → 5, 12,5 → 12,5, mancuerna de 24 → 22,5; marca «down» sin bajar,
+  `TodayTarget` pone «↓ −0 kg» y `stallShown` oculta la oferta de descarga porque `auto.kind === 'down'`: el usuario se queda sin ayuda. Usar `lowerWeight` también en lineal,
+  con la comprobación `lower < weight` y test.
+- **`lowerWeight` con pesos que no existen:** mancuernas con la serie de 2,5 kg (`used = [12.5, 15]`): 20 → 18 (17,5) y 30 → 28 (27,5) porque `w % 2 === 0` va antes de
+  `dumbbellSeries(used)` (usar la misma condición que `dumbbellStep`); mancuernas < 10 kg usan siempre paso 1 (2,5 → 1,5; 7,5 → 6,5: respetar `only25`); barra de aislamiento baja de 0,5 en 0,5 kg
+  (`Barbell_Curl` 12,5 → 11,5, 20 → 18, 5 → 4,5; un test mío lo fija en `tests/progression.test.ts`: 0,5 kg solo para polea y máquina, 2,5 kg para barra o EZ); mancuernas en libras caen en el
+  paso genérico de 5 lb (10 lb → 5 lb, −50 %); si el catálogo no está cargado `lowerWeight` cae al paso de barra (`rememberEquipment`).
+- **Resumen de recuperación** solo agrupa si todas las horas coinciden exactamente (con 47 h y 59 h, lo normal tras cuerpo completo, vuelven las 8 filas): agrupar por tramos o «~47–59 h»;
+  la barra del resumen usa `recovering[0].ready` (solo el valor mayor).
+- **Mi test de restaurar con deshacer no prueba el cambio:** pasa también con el código viejo (llama a `replaceData` suelto y `withUndo` ya existía; no prueba Profile.tsx ni Transfer.tsx).
+  Sin test: `exportBackup` con `lastBackupAt` dentro, `RecoveryCard`, `TodayTarget`, `stallShown`, `balanceTip`, `isAssisted` en pantalla y el aviso de series omitidas.
+- Menores: `trainedTodayHome` (Home.tsx:50) duplica `trainedToday` (:209): sacar una función; el aviso de `dropped` no menciona el tope de 1.000 km; `withUndo` frágil (cualquier `update` posterior
+  invalida la oferta; un `relabelExercises` tras cambiar de idioma la mata).
 
 ### serix-ux (9,6)
-- **Dos avisos del mismo estancamiento en el entreno:** «Tres sesiones sin mejorar…» y la banda «3 sesiones sin superar tu mejor marca» con «Opciones» (que propone una descarga que
-  la app ya aplicó): dejar solo uno. En Rutinas › detalle el mismo press muestra «55 kg × 6 · Igual que antes» cuando antes eran 60 kg; «Igual que antes» repetido en cada fila.
-- Importar CSV: el título del panel queda pegado a «Cancelar», sin centrar; las filas descartadas no se avisan.
-- Inicio › Tu entrenador: «Mucho volumen de pecho: unas 60 series a la semana» (63) frente a 7,5 de Progreso › Músculos (¿volumen planificado de la rutina de 72 series?; si es así,
-  decirlo).
-- Los de siempre, sin cambios: Progreso › Músculos con «Recuperándose · ~47 h» 8 veces y pantalla muy larga, mapa en oscuro con tonos 1-3 y 4-9 casi iguales, equilibrio «normal»
-  con cuádriceps 7,5 / isquios 4 (casi 2:1) y los isquios «por debajo» más arriba; Inicio el día de entreno con «Hoy ya has entrenado» + recuperación + «Empezar igualmente» +
-  «Tu semana pasada/Entendido»; título cortado en la cabecera del entreno («Día 1 · Cuerpo com…» con «0 de 54 series»); logros en pasado (también los pendientes);
-  «sesión»/«semana»/«entrenos» y «28 sem. de racha» frente a «Racha de 26 semanas»; «Día de entreno: +10 kcal sobre tus 1210» con el suelo en 1200; separador de miles.
-- Resueltos: «28 min» frente a 50 reales (ahora «~50 min · tu media»). Aviso de bíceps: no se encuentra, ya no se busca.
+- Importar de Strong: el título del panel sigue alineado a la izquierda, a unos 20 px de «Cancelar», sin centrar (mirar también otras hojas con botón a la izquierda).
+- Progreso › Músculos con ventanas distintas: título «4 semanas», nota «Media de las últimas 2 semanas» y equilibrio «4 semanas» (Bíceps 8,5 arriba frente a Empuje 4,5 abajo con poco
+  historial): una sola ventana o decirlo; «Gemelos» entrenados no aparecen en la lista de recuperación; «Por debajo:» enumera todos los grupos con 0 series.
+- Inicio el día de entreno: siguen «Hoy ya has entrenado» + «Empezar igualmente» + «Guarda una copia» + «Tu entrenador»; la copia podría esperar al día siguiente como el aviso de recuperación.
+- Separador de miles: «1000 toneladas» (logros) frente a «190,9 toneladas» (Inicio) y «2.000» en el aviso del CSV. Mapa en oscuro con tonos 1-3 y 4-9 casi iguales.
+- Sin verificar: la bajada automática de peso en pantalla (su dato no la provocaba) y «↓ −5 kg»; cifra de pecho de Inicio › Tu entrenador (60 series) frente a Progreso (7,5);
+  «+10 kcal sobre tus 1210» / «1200/1500 sin punto».
+- Resueltos esta vez: aviso duplicado del estancamiento, «Igual que antes», series omitidas del CSV, título del entreno entero, logros en presente, racha unificada, equilibrio con proporción.
 
-### serix-code (9,5)
-- Zona Copia de seguridad (leída entera, sin fallos altos) — media: `Profile.tsx:61-66` y `Transfer.tsx:170` restaurar una copia (archivo o QR) sustituye todos los datos sin
-  `withUndo` y sin guardar antes una copia de lo actual (si el archivo es viejo, se pierde lo posterior): `withUndo` o exportar antes. Media-baja: `protect.ts:19-32` serializa
-  antes de `updateSettings({lastBackupAt})`: el archivo lleva el `lastBackupAt` anterior y al restaurar la tarjeta «Guardar copia» vuelve a salir al instante.
-- Baja: `backup.ts:146` una sesión con `start` fuera de rango se recorta (1 → 2000-01-01; 4e12 → hoy + 1 año) en vez de descartarse; `EPOCH_MAX` (:64) se calcula una vez al cargar el
-  módulo; `trainingTime` acepta «99:99»; sin deduplicación de `id` en sesiones, rutinas ni comidas; la copia no incluye las fotos (almacén aparte) y la interfaz no lo avisa.
-- De antes (baja): sin sexo no hay suelo; `weightAdvice` todo o nada (mejor `Math.min(150, margen)`); texto de «Más calorías los días de entreno» con «Lo que gastas»; parseDate en
-  portugués («22 de dez. de 2025»), `num("1.234,5")`; transfer.ts sin tope de QR ni de descompresión; `catch` de share.ts; `restDayKcal`, `recoveryHint`, fotos (`importPhotos`
-  con la caché, importación a medias, AddSheet.save, Viewer con void), SessionEdit.save, `lastPhotoAt` en la copia, guardado y varias pestañas (flush, mergeRecord, runMigrations,
-  migrateData, mergeList, aviso de deshacer), Comidas (recordatorios, FoodScan, `dayText`, AmountSheet con 0 g, `key={n}`), compareWithLast con «Free workout», repRecords,
-  exerciseHistory, periodStats, embeddedFont, addRest(-15), pwa.ts register, rollingAverage, weighDue, SW, speechSynthesis, foodStep, plannedSets/deloadSets(2), retos y liga;
-  partir generator.ts (1111), figures.ts, nutrition.ts (1001) y Food.tsx (812); setUnits.
+### serix-code (9,6)
+- Zona Progresión y autorregulación (leída entera, sin fallos altos) — media-baja: `autoreg.ts:~85` `loadSuggestion` redondea al paso de la barra: mancuerna de 24 con RPE 10 → 22,5 (no existe en 2 kg)
+  y pesos ligeros de 10 y 12,5 kg no reciben ajuste (−8 % redondea al mismo peso): reutilizar `lowerWeight` y `progressionStep`.
+- Baja: `plates.ts` `loadBar` con barra más pesada que el objetivo (20 con barra de 45) devuelve 45 y `missing: 0` sin avisar, y voraz con discos no canónicos ([20, 15], lado de 30);
+  `warmup.ts`/`progressionStep` en libras con mancuernas y kettlebells sin escalón propio; `bodyweight.ts` `fillBodyweights` rellena sesiones antiguas con el peso del objetivo de Comidas
+  (`settings.nutrition.weightKg`) y lo deja guardado para siempre.
+- Abiertos: RPE ≥ 9,5 no baja antes; sesión mala por enfermedad cuenta igual; peso corporal, asistidas y tiempo sin regla de estancamiento; `MAX_REPS` (Jump Rope de 1500) sin subir y Strong
+  con distancia en metros sin confirmar con un CSV real; `FoodGoals.tsx:~134` con `computed &&`; `share.ts` `decode` sin topes de rutinas/ejercicios y `repsMin > repsMax`; baja de backup.ts
+  (sesión con fecha imposible recortada, EPOCH_MAX al cargar, trainingTime «99:99», ids duplicados, la copia sin fotos sin avisar), transfer.ts sin tope de QR ni de descompresión.
+- De antes (baja): sin sexo no hay suelo; `weightAdvice` sin 2 evaluaciones seguidas; texto de «Más calorías los días de entreno» con «Lo que gastas»; parseDate en portugués, `num("1.234,5")`;
+  `catch` de share.ts; `restDayKcal`, `recoveryHint`, fotos (`importPhotos` con la caché, importación a medias, AddSheet.save, Viewer con void), SessionEdit.save, `lastPhotoAt` en la copia,
+  guardado y varias pestañas (flush, mergeRecord, runMigrations, migrateData, mergeList, aviso de deshacer), Comidas (recordatorios, FoodScan, `dayText`, AmountSheet con 0 g, `key={n}`),
+  compareWithLast con «Free workout», repRecords, exerciseHistory, periodStats, embeddedFont, addRest(-15), pwa.ts register, rollingAverage, weighDue, SW, speechSynthesis, foodStep,
+  plannedSets/deloadSets(2), retos y liga; partir generator.ts (1111), figures.ts, nutrition.ts (1001) y Food.tsx (812); setUnits.
 
 ### serix-coach (9,8)
-- La descarga en doble progresión está bien planteada (repeticiones totales como criterio; no repite la bajada porque el historial se corta al cambiar el peso); 15 casos reproducidos.
-  Pendiente su redondeo (ver arriba): lo que más sube (~+0,05).
-- Nutrición abiertos: exigir 2 evaluaciones seguidas en `weightAdvice`; `restDayKcal` en perder grasa; 5/3/1 por semana de calendario y AMRAP; silencio en el límite del BMR; ocultar
-  «Más calorías los días de entreno» si `up < 60` (~+0,1 entre ellos).
-- Generador (3600 programas, idéntico): principiante sin material con Bulgarian_Split_Squat (200), Single_Leg_Deadlift (283), Negative_Pull-Up (165); abdomen < 4 series 322 de
-  1440; sin elevación lateral 88 de 150 de hipertrofia en gimnasio y 56 de 600 de gimnasio sin hombro; RDL a 2 series 10 de 240; asistidas sin sugerencia de bajar la ayuda;
-  Mountain_Climbers y Freehand_Jump_Squat como quads. Filtrar Single_Leg_Deadlift rompió el test de empuje/tirón de fatLoss/beginner/bodyweight/3d/45 y la búlgara la usa
-  «HIIT en casa» (tests/library-balance.test.ts): ajustar el relleno a la vez. Pasar su barrido (scratchpad/m6/m.ts) a tests con umbrales máximos.
+- Resuelto: la descarga en doble progresión (15 casos: press 60 → 55, sentadilla 100 → 90, mancuerna 24 → 22, curl 12,5 → 11,5 con barra y 10 con mancuerna, 10 → 9; RPE 10 baja y RPE 6 mantiene; 3 → 4
+  series mantiene; sesión cortada se salta; libras 135 → 120, 45 → 40, 225 → 205) y `weightAdvice` proporcional (1300 kcal con suelo 1209 → −90).
+- Generador (3600 programas, idéntico): Bulgarian_Split_Squat (200), Single_Leg_Deadlift (283), Negative_Pull-Up (165) en principiante sin material; abdomen < 4 series 322 de 1440; sin elevación
+  lateral 88 de 150 de hipertrofia en gimnasio y 56 de 600 de gimnasio sin hombro; RDL a 2 series 10 de 240; asistidas 58; `pressBn` sin material 24.
+  Propuesta concreta para el caso que rompió el test de empuje/tirón (fatLoss/beginner/bodyweight/3d/45): ranura `homeLegs` por nivel (`generatorSlots.ts:53`; principiante con
+  `['Bodyweight_Squat','Split_Squats','Wall_Sit', …]` y la búlgara y el peso muerto a una pierna solo desde intermedio), `homeLegsEasy` para los días de fuerza y dejar `homeLegs` solo para HIIT
+  (`library-balance:35`), un segundo `homePull` (Towel_Door_Row o Backpack_Row) en los días de cuerpo completo sin material; Negative_Pull-Up solo con barra de dominadas.
+- Nutrición abiertos: 2 evaluaciones seguidas en `weightAdvice`; `restDayKcal` en perder grasa; 5/3/1 por semana de calendario y AMRAP; silencio en el límite del BMR; ocultar «Más calorías los
+  días de entreno» si `up < 60`. Pasar el barrido (scratchpad/m7) a tests con umbrales máximos.
 
 ### serix-perf-a11y (9,6)
-- Lighthouse móvil 99-100 (LCP 1,8-2,0 s, TBT 30-50 ms); axe 0 violaciones en 15 pantallas por tema (ya con Amigos en oscuro y Perfil › Datos); aviso nuevo del ajuste y su botón
-  «Quitarlo» bien en es/fr, claro/oscuro (sin probar un ajuste negativo que sí cabe, con botón). Entrada 310.795 B (99.456 gzip); Inicio ~398 kB en bruto / ~134 kB gzip.
-- Menores: dos h1 en la hoja «Objetivo diario»; comprobación de recorte del texto de la banda en el e2e (ancho del texto frente a la celda a 375 px, es y fr); campos de edad,
-  altura y peso del objetivo a 80×25 dentro de una fila táctil; LCP < 1,5 s y TBT 0 ms para el 10 (partir o diferir el chunk de entrada).
+- Lighthouse móvil 99-100 (FCP 0,9 s, LCP 2,0 s, TBT 0 ms, CLS 0,001-0,003, SI 0,9 s); LCP de primera visita con 3G rápido simulado (150 ms, 1,6 Mbps, CPU x4) 1.896 / 1.852 / 1.844 ms; entrada
+  312.295 B (100.046 gzip), +1.500 B (+0,5 %) frente a la 0.1.50. axe 0 violaciones en 15 pantallas por tema, también Progreso › Músculos e Inicio con 0, 1 y 5 grupos recuperándose, con y sin el
+  resumen, y el entreno en curso. Cabecera del entreno: input de 343×44 (80 caracteres se cortan con puntos suspensivos dentro del input), «N de M series» a 6,78:1 claro y 8,26:1 oscuro.
+- Pendientes: partir o diferir el chunk de entrada (312 kB) para bajar el LCP a < 1,5 s; dos h1 en la hoja «Objetivo diario» (sin re-verificar); campos de edad, altura y peso del objetivo a
+  80×25 en una fila táctil; comprobación de recorte de texto de la banda en el e2e. No se midió el peso de Inicio (~398 kB / ~134 kB gzip en la 0.1.50).

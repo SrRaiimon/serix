@@ -2,9 +2,10 @@ import './browser-stubs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { defaultSettings, getData, replaceData, undo, withUndo, type Session } from '../src/lib/store'
+import { defaultSettings, getData, replaceData, undo, type Session } from '../src/lib/store'
 import { plannedSets, saveAsRoutine } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
+import { backupJson, restoreData } from '../src/lib/protect'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
 import { parseNutritionLabel, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 import { exercise, fakeIndexedDB, session, set } from './helpers'
@@ -74,14 +75,25 @@ test('comparar con el anterior: un entreno libre solo con otro de los mismos eje
   assert.equal(compareWithLast(now, [bench]), undefined)
 })
 
-test('restaurar una copia se puede deshacer', async () => {
+test('restaurar una copia (restoreData) se puede deshacer y adapta el catálogo', async () => {
   const mine = session(0, [exercise('Barbell_Squat', [set(100, 5)])], { name: 'Mío' })
   reset([mine])
   const other = { ...getData(), sessions: [session(-30, [exercise('Pullups', [set(0, 8)])], { name: 'Copia vieja' })] }
-  withUndo('Copia restaurada', () => { void replaceData(other) })
+  let adapted = 0
+  restoreData(other, 'Copia restaurada', () => { adapted++ })
   assert.deepEqual(getData().sessions.map((x) => x.name), ['Copia vieja'])
+  assert.equal(adapted, 1)
   assert.equal(undo(), true)
   assert.deepEqual(getData().sessions.map((x) => x.name), ['Mío'])
+})
+
+test('la copia lleva dentro su propia fecha y sin aplazar el aviso', () => {
+  reset([])
+  const stale = { ...getData(), settings: { ...getData().settings, lastBackupAt: 1, backupSnoozeUntil: 999 } }
+  const copy = JSON.parse(backupJson(stale, 12345))
+  assert.equal(copy.settings.lastBackupAt, 12345)
+  assert.equal(copy.settings.backupSnoozeUntil, undefined)
+  assert.equal(stale.settings.lastBackupAt, 1)
 })
 
 test('repetir o guardar un entreno de descarga: las series de antes de recortar, no las de la descarga', () => {

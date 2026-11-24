@@ -2,6 +2,8 @@ import { HeartPulse } from 'lucide-react'
 import { useMemo } from 'react'
 import { t } from '../lib/i18n'
 import { MAIN_GROUPS } from '../lib/labels'
+export { RECOVERING } from '../lib/recoverySummary'
+import { RECOVERING, splitRecovery } from '../lib/recoverySummary'
 import { muscleRecovery, type MuscleRecovery } from '../lib/stats'
 import type { Session } from '../lib/store'
 import { Card, useCatalog } from './ui'
@@ -16,9 +18,6 @@ export interface GroupRecovery {
   /** Horas que faltan para estar listo. */
   hoursLeft: number
 }
-
-/** Por debajo de esto se considera que el grupo todavía se está recuperando. */
-export const RECOVERING = 0.6
 
 export function useRecovery(sessions: Session[]): GroupRecovery[] {
   const catalog = useCatalog()
@@ -49,10 +48,9 @@ const tone = (g: GroupRecovery) => (g.ready >= 1 ? 'ready' : g.ready >= RECOVERI
 export function RecoveryCard({ sessions }: { sessions: Session[] }) {
   // Los más cerca de estar listos primero (con ocho de nueve «Recuperándose», todo salía en el orden fijo de los grupos).
   const groups = [...useRecovery(sessions)].sort((a, b) => b.ready - a.ready)
-  // Con tres o más grupos «recuperándose» a la vez con el mismo texto, una sola línea (ocho filas idénticas hacían la pantalla larga).
-  const recovering = groups.filter((g) => g.ready < RECOVERING)
-  const same = recovering.length >= 3 && recovering.every((g) => g.hoursLeft === recovering[0].hoursLeft)
-  const rows = same ? groups.filter((g) => g.ready >= RECOVERING) : groups
+  // Con tres o más grupos «recuperándose» a la vez, una sola línea con el tramo de horas (ocho filas casi idénticas hacían la pantalla larga).
+  const { rows, summary } = splitRecovery(groups)
+  const range = summary ? (summary.minHours === summary.maxHours ? `${summary.maxHours}` : `${summary.minHours}–${summary.maxHours}`) : ''
   return (
     <Card title={t('Recuperación muscular', 'Muscle recovery')} icon={HeartPulse}>
       <div className="recovery-list">
@@ -65,16 +63,16 @@ export function RecoveryCard({ sessions }: { sessions: Session[] }) {
             <span className="recovery-status small">{status(g)}</span>
           </div>
         ))}
-        {same && (
+        {summary && (
           <div className="recovery-row recovering">
-            <span className="recovery-name">{t(`${recovering.length} grupos`, `${recovering.length} groups`)}</span>
-            <span className="recovery-bar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(recovering[0].ready * 100)} aria-label={`${recovering.map((g) => g.label).join(', ')}: ${status(recovering[0])}`}>
-              <span style={{ width: `${Math.round(recovering[0].ready * 100)}%` }} />
+            <span className="recovery-name">{t(`${summary.groups.length} grupos`, `${summary.groups.length} groups`)}</span>
+            <span className="recovery-bar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(summary.ready * 100)} aria-label={`${summary.groups.map((g) => g.label).join(', ')}: ${t(`Recuperándose · ~${range} h`, `Recovering · ~${range} h`)}`}>
+              <span style={{ width: `${Math.round(summary.ready * 100)}%` }} />
             </span>
-            <span className="recovery-status small">{status(recovering[0])}</span>
+            <span className="recovery-status small">{t(`Recuperándose · ~${range} h`, `Recovering · ~${range} h`)}</span>
           </div>
         )}
-        {same && <span className="small muted">{recovering.map((g) => g.label).join(', ')}</span>}
+        {summary && <span className="small muted">{summary.groups.map((g) => g.label).join(', ')}</span>}
       </div>
       <span className="small muted">
         {t('Estimación orientativa según el volumen del último entrenamiento de cada grupo (de 48 a 96 h). Escucha a tu cuerpo: el descanso, el sueño y la intensidad también cuentan.',

@@ -2377,5 +2377,7 @@
 "último día": "dernier jour",
 "🐞 FALLO en Serix": "🐞 BUG dans Serix",
 "💡 IDEA para Serix": "💡 IDÉE pour Serix",
-"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 podium avec au moins un rival · 🎯 objectif atteint"
+"🥇🥈🥉 puesto con al menos un rival · 🎯 objetivo cumplido": "🥇🥈🥉 podium avec au moins un rival · 🎯 objectif atteint",
+"La progresión lineal también baja el peso tras tres sesiones sin completar (antes, con 5 o 12,5 kg decía «↓ −0 kg» y no bajaba), y la bajada va siempre a pesos que existen: mancuernas de 2,5 en 2,5 kg (20 → 17,5), de 1 en 1 por debajo de 10 kg y barras de 2,5 kg.": "La progression linéaire baisse aussi la charge après trois séances sans réussir (avant, à 5 ou 12,5 kg elle affichait « ↓ −0 kg » sans baisser), et la baisse tombe toujours sur des charges qui existent : haltères par pas de 2,5 kg (20 → 17,5), par pas de 1 kg sous 10 kg et barres de 2,5 kg.",
+"Recuperación muscular: con tres o más grupos recuperándose, una sola fila con el tramo de horas («~36–48 h»), aunque no coincidan exactamente.": "Récupération musculaire : avec trois groupes ou plus en récupération, une seule ligne avec la fourchette d'heures (« ~36–48 h »), même si elles ne coïncident pas exactement."
 }

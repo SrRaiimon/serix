@@ -16,13 +16,13 @@ import { NewsSheet } from '../components/News'
 import { navyBodyFat } from '../lib/bodyfat'
 import { rollingAverage, weeklyTrend } from '../lib/reminders'
 import { trainingCalendar } from '../lib/schedule'
-import { exportBackup, requestProtection, storageState, type StorageState } from '../lib/protect'
+import { exportBackup, requestProtection, restoreData, storageState, type StorageState } from '../lib/protect'
 import { restEndAt, startRest, testBeep } from '../lib/timer'
 import { lockScreenSupported, requestLockScreenPermission, startLockScreenTest, useLockScreenTest, type LockScreenTest } from '../lib/lockScreen'
 import { speak, voiceSupported } from '../lib/voice'
 import { isIOS } from '../lib/pwa'
 import { offlineStatus, prepareOffline, type OfflineProgress } from '../lib/offline'
-import { finishedSessions, flush, replaceData, resetData, storageProblem, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
+import { finishedSessions, flush, resetData, storageProblem, rpeOn, update, updateSettings, useData, withUndo, type Measurement } from '../lib/store'
 import { PlateInventory, PlatesView } from './Plates'
 
 const ImportCsvSheet = lazy(() => import('./ImportCsv').then((m) => ({ default: m.ImportCsvSheet })))
@@ -63,11 +63,8 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
       const parsed = parseBackup(await file.text())
       if (!confirm(t(`Se sustituirán tus datos actuales por la copia (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). ¿Continuar?`, `Your current data will be replaced by the backup (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). Continue?`))) return
       // Con deshacer: restaurar una copia vieja sustituía todo lo posterior sin vuelta atrás.
-      withUndo(t('Copia restaurada', 'Backup restored'), () => {
-        void replaceData(parsed)
-        // Las copias hechas con el catálogo anterior se adaptan al actual.
-        migrateCatalog(catalog)
-      })
+      // Las copias hechas con el catálogo anterior se adaptan al actual.
+      restoreData(parsed, t('Copia restaurada', 'Backup restored'), () => migrateCatalog(catalog))
       await flush()
       showToast(storageProblem() ? t('Copia cargada, pero no se ha podido guardar', 'Backup loaded, but it could not be saved') : t('Copia restaurada', 'Backup restored'))
     } catch (e) {

@@ -1,6 +1,6 @@
 import { dayKey } from './format'
 import { isStandalone } from './pwa'
-import { getData, updateSettings, type AppData } from './store'
+import { getData, replaceData, updateSettings, withUndo, type AppData } from './store'
 
 // Los datos solo viven en el dispositivo. Dos defensas: pedir al navegador que no los borre para
 // liberar espacio (almacenamiento persistente) y recordar de vez en cuando que se exporte una copia.
@@ -9,6 +9,21 @@ const DAY = 86400000
 /** Días sin copia a partir de los que se recuerda hacer una. */
 export const BACKUP_EVERY_DAYS = 30
 const SNOOZE_DAYS = 14
+
+/** El texto de la copia, con su propia fecha dentro (sin aplazar el aviso). */
+export const backupJson = (data: AppData, at: number) =>
+  JSON.stringify({ ...data, settings: { ...data.settings, lastBackupAt: at, backupSnoozeUntil: undefined } }, null, 1)
+
+/**
+ * Sustituye los datos por los de una copia o un envío, con deshacer (restaurar una copia vieja pisaba todo lo posterior sin
+ * vuelta atrás). `adapt` pasa las copias hechas con el catálogo anterior al actual.
+ */
+export function restoreData(data: AppData, label: string, adapt?: () => void) {
+  withUndo(label, () => {
+    void replaceData(data)
+    adapt?.()
+  })
+}
 
 /**
  * Guarda la copia de seguridad y apunta la fecha. En el móvil se abre el menú de compartir para dejarla
@@ -19,8 +34,7 @@ export async function exportBackup(): Promise<boolean> {
   // La fecha de la copia va DENTRO de la copia: serializaba antes de apuntarla y, al restaurar, el archivo traía la anterior y la
   // tarjeta «Guarda una copia» volvía a salir al instante.
   const at = Date.now()
-  const data = getData()
-  const blob = new Blob([JSON.stringify({ ...data, settings: { ...data.settings, lastBackupAt: at, backupSnoozeUntil: undefined } }, null, 1)], { type: 'application/json' })
+  const blob = new Blob([backupJson(getData(), at)], { type: 'application/json' })
   const file = new File([blob], name, { type: 'application/json' })
   if (navigator.canShare?.({ files: [file] })) {
     try {

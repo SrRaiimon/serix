@@ -101,14 +101,30 @@ test('doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos desde 
 test('la bajada de la doble progresión siempre baja, también con pesos pequeños y mancuernas', () => {
   rememberEquipment([{ id: 'Hammer_Curls', equipment: 'dumbbell' }])
   // Curl de barra de 12,5 y de 10 kg: antes 11,25 → 12,5 y 9 → 10 (no bajaban nunca).
-  assert.equal(lowerWeight('Barbell_Curl', 12.5, 'kg'), 11.5)
-  assert.equal(lowerWeight('Barbell_Curl', 10, 'kg'), 9)
+  assert.equal(lowerWeight('Barbell_Curl', 12.5, 'kg'), 10)
+  assert.equal(lowerWeight('Barbell_Curl', 10, 'kg'), 7.5)
+  assert.equal(lowerWeight('Barbell_Curl', 20, 'kg'), 17.5)
   // Press y sentadilla: un 10 % al paso de la barra, y como mínimo un escalón.
   assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 60, 'kg'), 55)
   assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 20, 'kg'), 17.5)
   assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 5, 'kg'), 2.5)
   // Mancuernas de 2 en 2 kg: 24 → 22 (no 22,5, que no existe).
   assert.equal(lowerWeight('Hammer_Curls', 24, 'kg'), 22)
+  // Mancuernas de 2,5 en 2,5 (las que ya usaste lo dicen): 20 → 17,5 y 30 → 27,5, no 18 ni 28.
+  assert.equal(lowerWeight('Hammer_Curls', 20, 'kg', [12.5, 15, 20]), 17.5)
+  assert.equal(lowerWeight('Hammer_Curls', 30, 'kg', [12.5, 30]), 27.5)
+  assert.equal(lowerWeight('Hammer_Curls', 20, 'kg', [12, 14, 20]), 18)
+  // Por debajo de 10 kg, de 1 en 1.
+  assert.equal(lowerWeight('Hammer_Curls', 8, 'kg'), 7)
+})
+
+test('lineal: la bajada también baja con pesos pequeños y no muestra «−0 kg»', () => {
+  const curl = { exerciseId: 'Barbell_Curl', muscle: 'biceps', sets: 3, repsMin: 8, repsMax: 8, progression: 'linear' as const }
+  const fail = (day: number, w: number) => session(day, [exercise('Barbell_Curl', [set(w, 8), set(w, 6), set(w, 5)], { muscle: 'biceps' })])
+  for (const [w, to] of [[5, 2.5], [12.5, 10], [20, 17.5]]) {
+    const p = plan(curl, [set(w, 8), set(w, 6), set(w, 5)], [fail(0, w), fail(3, w), fail(6, w)], 'kg')
+    assert.deepEqual(p?.auto, { kind: 'down', from: w, to, mode: 'linear' }, String(w))
+  }
 })
 
 test('doble: una sesión cortada no cuenta como estancamiento, y con RPE bajo se mantiene', () => {

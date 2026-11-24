@@ -81,7 +81,14 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
   const target = weight * 0.9
   const equipment = equipmentOf(exerciseId) ?? ''
   if (unit === 'kg' && (equipment === 'dumbbell' || equipment === 'kettlebell') && weight > 0) {
-    const step = (w: number) => (equipment === 'kettlebell' ? (w > 16 ? 4 : 2) : w <= 10 ? 1 : only25(w) ? 2.5 : w % 2 === 0 ? 2 : dumbbellSeries(used))
+    // Un escalón hacia abajo: el espejo de dumbbellStep (hasta 10 kg de 1 en 1; desde ahí, la serie de 2 o de 2,5 kg).
+    const step = (w: number) => {
+      if (equipment === 'kettlebell') return w > 16 ? 4 : 2
+      if (w <= 10) return w % 1 === 0 ? 1 : 2.5
+      if (only25(w)) return 2.5
+      if (w % 2 === 0 && w % 2.5 !== 0) return 2
+      return dumbbellSeries(used)
+    }
     // El más cercano al 10 % menos (24 → 22, no 20), siempre al menos un escalón por debajo.
     let lower = Math.max(0, weight - step(weight))
     while (lower > target && lower > 0) {
@@ -91,10 +98,15 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
     }
     return lower
   }
-  const step = exerciseId && isIsolation(exerciseId) ? (unit === 'kg' ? 0.5 : 1) : increment(unit)
+  // Barra, poleas y discos: a la unidad de la barra (2,5 kg / 5 lb), también en aislamiento (con 0,5 kg saldrían pesos que no hay).
+  const step = increment(unit)
   const rounded = toKg(Math.round(fromKg(target, unit) / step) * step, unit)
   return rounded < weight - 0.01 ? Math.max(0, rounded) : Math.max(0, toKg(fromKg(weight, unit) - step, unit))
 }
+
+/** Pesos de trabajo ya usados en el ejercicio (sin calentamiento ni drop sets: no dicen qué juego de mancuernas tienes). */
+const usedWeights = (exerciseId: string, history: Session[]) =>
+  history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
 
 /** Sesiones seguidas (de la más reciente hacia atrás) en las que no se completó el objetivo con este peso. */
 function failedStreak(ex: PlanInput, history: Session[], weight: number): number {
@@ -240,20 +252,20 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
   }
   // Lineal: tras 3 sesiones seguidas sin completar con el mismo peso, un 10 % menos para volver a subir.
   if (ex.progression === 'linear' && !completed && failedStreak(ex, history, weight) >= 3) {
-    const lower = Math.max(0, round(weight * 0.9, unit))
-    return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
+    const lower = lowerWeight(ex.exerciseId, weight, unit, usedWeights(ex.exerciseId, history))
+    if (lower > 0 && lower < weight) return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
   }
   // Doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos y de nuevo desde el mínimo del rango.
   // Con esfuerzo bajo (RPE 7 o menos en todas) no es un estancamiento: sobra fuerza, se mantiene.
   const sparing = allRated && Math.max(...rpes) <= 7
   if (ex.progression === 'double' && !completed && !easy && !sparing && stalledDouble(ex, history, weight)) {
-    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
+    const used = usedWeights(ex.exerciseId, history)
     const lower = lowerWeight(ex.exerciseId, weight, unit, used)
     if (lower > 0 && lower < weight) return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMin)), auto: { kind: 'down', from: weight, to: lower, mode: 'double' } }
   }
   if (completed || easy) {
     // Solo las series de trabajo: el calentamiento (redondeado a 2,5) y los drop sets no dicen qué juego tienes.
-    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
+    const used = usedWeights(ex.exerciseId, history)
     const next = weight + progressionStep(ex.muscle, unit, ex.exerciseId, weight, used)
     const reps = ex.progression === 'double' ? ex.repsMin : ex.repsMax
     return { sets: Array.from({ length: count }, () => blank(next, reps)), auto: { kind: 'up', from: weight, to: next, mode: ex.progression } }

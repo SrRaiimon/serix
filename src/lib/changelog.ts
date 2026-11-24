@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.52',
+    items: [
+      ['La progresión lineal también baja el peso tras tres sesiones sin completar (antes, con 5 o 12,5 kg decía «↓ −0 kg» y no bajaba), y la bajada va siempre a pesos que existen: mancuernas de 2,5 en 2,5 kg (20 → 17,5), de 1 en 1 por debajo de 10 kg y barras de 2,5 kg.', 'Linear progression also lowers the weight after three sessions without completing (before, at 5 or 12.5 kg it said «↓ −0 kg» and did not go down), and the drop always lands on weights that exist: dumbbells in 2.5 kg steps (20 → 17.5), 1 kg steps under 10 kg and 2.5 kg bars.'],
+      ['Recuperación muscular: con tres o más grupos recuperándose, una sola fila con el tramo de horas («~36–48 h»), aunque no coincidan exactamente.', 'Muscle recovery: with three or more groups recovering, one single row with the range of hours («~36–48 h»), even when they do not match exactly.'],
+    ],
+  },
+  {
     version: '0.1.51',
     items: [
       ['Doble progresión: la bajada por estancamiento elige un peso que existe (curl de 10 kg, mancuernas de 2 kg) y siempre baja; una sesión cortada o con esfuerzo bajo no cuenta como estancamiento.', 'Double progression: the drop for a plateau picks a weight that exists (10 kg curl, 2 kg dumbbells) and always goes down; a cut-short session or a low-effort one does not count as a plateau.'],
