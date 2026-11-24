@@ -540,7 +540,9 @@ function AutoNote({ auto, unit, repsMax }: { auto: AutoProgress; unit: Unit; rep
     ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
     : auto.kind === 'down'
-      ? t(`Tres veces sin completar con ${weight(auto.from, unit)}: hoy ${weight(auto.to, unit)} para coger impulso y volver a subir.`, `Three times without completing ${weight(auto.from, unit)}: today ${weight(auto.to, unit)} to build momentum and climb again.`)
+      ? auto.mode === 'double'
+        ? t(`Tres sesiones sin mejorar con ${weight(auto.from, unit)}: hoy ${weight(auto.to, unit)} para coger impulso y volver a subir.`, `Three sessions without improving at ${weight(auto.from, unit)}: today ${weight(auto.to, unit)} to build momentum and climb again.`)
+        : t(`Tres veces sin completar con ${weight(auto.from, unit)}: hoy ${weight(auto.to, unit)} para coger impulso y volver a subir.`, `Three times without completing ${weight(auto.from, unit)}: today ${weight(auto.to, unit)} to build momentum and climb again.`)
     : auto.kind === 'reps'
       ? (auto.harder
         ? t(`Ya haces ${auto.from} repeticiones en todas las series: prueba una variante más difícil o añade lastre.`, `You already do ${auto.from} reps on every set: try a harder variation or add weight.`)

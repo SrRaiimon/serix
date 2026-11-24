@@ -486,7 +486,8 @@ export interface NutritionGoals {
 export function clampAdjust(goals: NutritionGoals, adjust: number): number {
   if (adjust >= 0) return adjust
   const lowest = Math.max(goals.sex ? MIN_KCAL[goals.sex] : 0, bmrOf(goals) ?? 0)
-  return Math.min(0, Math.max(adjust, lowest - goals.kcal))
+  // A decenas hacia cero: sin decimales en el objetivo ni en los hidratos (−129,75 dejaba 1280,25 kcal).
+  return Math.ceil(Math.min(0, Math.max(adjust, lowest - goals.kcal)) / 10) * 10 || 0
 }
 
 export function adjustGoals(goals: NutritionGoals, change: number): NutritionGoals {

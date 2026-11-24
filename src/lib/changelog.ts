@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.50',
+    items: [
+      ['Si un ejercicio con doble progresión lleva tres sesiones sin mejorar con el mismo peso, la app te propone un 10 % menos y volver a empezar el rango, en vez de repetir siempre lo mismo.', 'If an exercise on double progression goes three sessions without improving at the same weight, the app suggests 10% less and restarting the range, instead of repeating the same thing forever.'],
+      ['Calcular objetivo: el aviso del ajuste según tu peso dice lo que se aplica de verdad (o que no cabe por tu mínimo de calorías), sin decimales.', 'Calculate goal: the weight-based adjustment notice says what is really applied (or that it does not fit your minimum calories), without decimals.'],
+      ['Importar un enlace de rutina o un CSV de Strong o Hevy es más seguro: se ignoran los datos imposibles (como 99.999.999.999 kg) y un enlace manipulado ya no puede dejar las rutinas rotas.', 'Importing a routine link or a Strong or Hevy CSV is safer: impossible data (like 99,999,999,999 kg) is ignored and a tampered link can no longer leave your routines broken.'],
+      ['Los ejercicios asistidos de Strong y Hevy se importan como ayuda, no como una carga de kilos.', 'Assisted exercises from Strong and Hevy are imported as assistance, not as a load in kilos.'],
+    ],
+  },
+  {
     version: '0.1.49',
     items: [
       ['En el detalle de una rutina, la duración ya no sale cortada: la cifra va sola y la unidad en la etiqueta («Minutos»).', 'In a routine\'s detail, the duration is no longer cut off: the number stands alone and the unit goes in the label («Minutes»).'],

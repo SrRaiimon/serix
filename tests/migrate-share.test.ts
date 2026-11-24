@@ -92,6 +92,17 @@ test('los enlaces ya compartidos siguen funcionando', async () => {
   }
 })
 
+test('un enlace manipulado no mete objetos ni valores raros en las rutinas', async () => {
+  const forge = (payload: unknown) => 'j' + Buffer.from(JSON.stringify(payload)).toString('base64url')
+  const plan = await decodePlan(forge({ v: 1, p: { a: 1 }, r: [{ n: 'x'.repeat(500), x: [['Barbell_Bench_Press', 3, 8, 12, 90, 'zzz', 0, 0]] }] }), catalog)
+  // El nombre del programa tiene que ser texto; el de la rutina, acotado; el seguimiento, uno de los tres.
+  assert.equal(plan.programName, undefined)
+  assert.equal(plan.routines[0].name.length, 80)
+  assert.equal(plan.routines[0].exercises[0].tracking, 'weight_reps')
+  const named = await decodePlan(forge({ v: 1, p: 'P'.repeat(200), r: [] }), catalog)
+  assert.equal(named.programName?.length, 80)
+})
+
 test('enlaces dañados o ajenos dan un mensaje claro', async () => {
   await assert.rejects(decodePlan('zAAAA', catalog), /incompleto o dañado/)
   await assert.rejects(decodePlan('x123', catalog), /no es de una rutina/)

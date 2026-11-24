@@ -72,6 +72,25 @@ test('Hevy: calentamiento, al fallo y superseries', () => {
   assert.equal(w.exercises[1].group, '0')
 })
 
+test('CSV: filas con valores imposibles se saltan, y las asistidas guardan la ayuda', () => {
+  const header = 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n'
+  const csv = header
+    + '2024-03-04 18:30:00,Dia,1h,Squat (Barbell),1,99999999999,5,0,0,,,\n'
+    + '2024-03-04 18:30:00,Dia,1h,Squat (Barbell),2,100,1000000000,0,0,,,\n'
+    + '2024-03-04 18:30:00,Dia,1h,Squat (Barbell),3,100,5,0,0,,,\n'
+    + '2024-03-04 18:30:00,Dia,1h,Pull Up (Assisted),1,-20,8,0,0,,,\n'
+  const { workouts } = parseWorkouts(csv, 'kg')
+  const [squat, assisted] = workouts[0].exercises
+  assert.equal(squat.sets.length, 1)
+  assert.equal(squat.sets[0].weight, 100)
+  // Strong apunta la ayuda en negativo: se conserva como 20 y el ejercicio queda como asistido (no como 30 kg de carga).
+  assert.equal(assisted.sets[0].weight, 20)
+  assert.equal(assisted.sets[0].assist, true)
+  const [session] = toSessions(workouts, new Map(), [])
+  assert.equal(session.exercises[1].assisted, true)
+  assert.equal(session.exercises[0].assisted, undefined)
+})
+
 test('archivo que no es de Strong ni de Hevy', () => {
   assert.throws(() => parseWorkouts('a,b\n1,2', 'kg'), /unknown-format/)
 })

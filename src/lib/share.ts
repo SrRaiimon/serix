@@ -130,16 +130,19 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
         exerciseId: id, name: exercise.name, muscle: exercise.muscle,
         sets: clampInt(sets, 1, 20, 3), repsMin: clampInt(repsMin, 1, 100, 8), repsMax: clampInt(repsMax, 1, 100, 12),
         rest: clampInt(rest, 0, 900, 90),
-        tracking: tracking ?? defaultTracking(exercise),
+        tracking: TRACKINGS.find((x) => x === tracking) ?? defaultTracking(exercise),
         ...(targetSeconds ? { targetSeconds: clampInt(targetSeconds, 5, 7200, 45) } : {}),
         ...(group ? { groupId: groupIds.get(group) ?? groupIds.set(group, uid()).get(group)! } : {}),
       }]
     })
     normalizeGroups(exercises)
-    return { name: String(r.n || t('Rutina', 'Routine')), exercises }
+    return { name: String(r.n || t('Rutina', 'Routine')).slice(0, 80), exercises }
   })
-  return { programName: payload.p, routines, skipped, customExercises: shared.filter((x) => needed.has(x.id)) }
+  // Un enlace manipulado podía traer un objeto como nombre y romper Rutinas en cada arranque (la carga normal no sanea).
+  return { programName: typeof payload.p === 'string' ? payload.p.slice(0, 80) : undefined, routines, skipped, customExercises: shared.filter((x) => needed.has(x.id)) }
 }
+
+const TRACKINGS = ['weight_reps', 'time', 'distance_time'] as const
 
 function clampInt(v: unknown, min: number, max: number, fallback: number): number {
   const n = Math.round(Number(v))

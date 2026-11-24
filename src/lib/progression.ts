@@ -87,6 +87,24 @@ function failedStreak(ex: PlanInput, history: Session[], weight: number): number
   return n
 }
 
+/**
+ * Doble progresión estancada: con el mismo peso, ninguna de las 3 últimas sesiones mejoró las repeticiones totales de las
+ * anteriores (hacen falta 4 sesiones con ese peso). `failedStreak` no vale: en doble, una repetición más dentro del rango
+ * también es no completar. Sin esto, el ejercicio repetía el mismo peso («hold») indefinidamente.
+ */
+function stalledDouble(ex: PlanInput, history: Session[], weight: number): boolean {
+  const totals: number[] = []
+  for (const s of [...history].sort((a, b) => b.start - a.start)) {
+    const e = s.exercises.find((x) => x.exerciseId === ex.exerciseId && !x.deload)
+    if (!e) continue
+    const main = workingSets(e).filter((x) => x.kind !== 'drop' && x.weight > 0)
+    if (!main.length) continue
+    if (Math.abs(Math.max(...main.map((x) => x.weight)) - weight) > 0.01) break
+    totals.push(main.reduce((n, x) => n + x.reps, 0))
+  }
+  return totals.length >= 4 && Math.max(...totals.slice(0, 3)) <= Math.max(...totals.slice(3))
+}
+
 /** Semanas del 5/3/1: [porcentaje del TM, repeticiones] por serie; la última de las 3 primeras es AMRAP. */
 export const WAVE: [number, number][][] = [
   [[0.65, 5], [0.75, 5], [0.85, 5]],
@@ -196,6 +214,11 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
   if (ex.progression === 'linear' && !completed && failedStreak(ex, history, weight) >= 3) {
     const lower = Math.max(0, round(weight * 0.9, unit))
     return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
+  }
+  // Doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos y de nuevo desde el mínimo del rango.
+  if (ex.progression === 'double' && !completed && !easy && stalledDouble(ex, history, weight)) {
+    const lower = Math.max(0, round(weight * 0.9, unit))
+    if (lower < weight) return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMin)), auto: { kind: 'down', from: weight, to: lower, mode: 'double' } }
   }
   if (completed || easy) {
     // Solo las series de trabajo: el calentamiento (redondeado a 2,5) y los drop sets no dicen qué juego tienes.

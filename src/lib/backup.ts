@@ -41,7 +41,7 @@ function autoProgress(v: unknown): AutoProgress | undefined {
     return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode } : undefined
   }
   if (v.kind === 'hold' && mode) return { kind: 'hold', mode, ...(v.reason === 'rpe' ? { reason: 'rpe' as const } : {}) }
-  if (v.kind === 'down' && mode === 'linear') {
+  if (v.kind === 'down' && mode) {
     const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
     return from !== undefined && to !== undefined ? { kind: 'down', from, to, mode } : undefined
   }

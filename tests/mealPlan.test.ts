@@ -178,6 +178,13 @@ test('el ajuste según el peso guardado no deja el objetivo por debajo del suelo
   // Los positivos pasan tal cual, y con margen el −150 entero.
   assert.equal(clampAdjust(woman, 150), 150)
   assert.equal(clampAdjust({ ...woman, kcal: 2000 }, -150), -150)
+  // Cuando manda el suelo (1200) y no el metabolismo en reposo (1089): 1300 − 100 = 1200.
+  const small = { ...computeGoals({ sex: 'f', age: 40, heightCm: 160, weightKg: 45, activity: 1.2, aim: 'lose' }), kcal: 1300 }
+  assert.equal(clampAdjust(small, -150), -100)
+  // Sin decimales: a decenas hacia cero (−129,75 daba 1280,25 kcal).
+  const mid = { ...computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 55, activity: 1.375, aim: 'lose' }), kcal: 1410 }
+  assert.equal(Math.abs(clampAdjust(mid, -150)) % 10, 0)
+  assert.ok(1410 + clampAdjust(mid, -150) >= 1280)
 })
 
 test('ajuste según el peso: no propone bajar por debajo del suelo', () => {

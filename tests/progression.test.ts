@@ -83,6 +83,21 @@ test('aislamiento: saltos pequeños (5 %, al menos 1 kg)', () => {
   assert.equal(progressionStep('quads', 'kg', 'Barbell_Squat', 100), 5)
 })
 
+test('doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos desde el mínimo; si mejora, se mantiene', () => {
+  const press = { exerciseId: 'press', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12, progression: 'double' as const }
+  const at = (day: number, reps: number[]) => session(day, [exercise('press', reps.map((r) => set(60, r)), { muscle: 'pectorals' })])
+  // 28, 28, 27, 28 repeticiones: ninguna de las 3 últimas supera la anterior → baja a 55 kg (un 10 % menos, redondeado al juego de discos) y vuelve a 8.
+  const stalled = [at(0, [10, 9, 9]), at(3, [10, 9, 9]), at(6, [10, 9, 8]), at(9, [10, 9, 9])]
+  const down = plan(press, [set(60, 10), set(60, 9), set(60, 9)], stalled, 'kg')
+  assert.deepEqual(down?.auto, { kind: 'down', from: 60, to: 55, mode: 'double' })
+  assert.ok(down?.sets.every((x) => x.reps === 8))
+  // Mejorando (8 → 9 → 10 por serie): se mantiene, no baja.
+  const improving = [at(0, [8, 8, 8]), at(3, [9, 8, 8]), at(6, [9, 9, 8]), at(9, [10, 9, 9])]
+  assert.equal(plan(press, [set(60, 10), set(60, 9), set(60, 9)], improving, 'kg')?.auto?.kind, 'hold')
+  // Con solo 3 sesiones con ese peso, aún no.
+  assert.equal(plan(press, [set(60, 10), set(60, 9), set(60, 9)], stalled.slice(1), 'kg')?.auto?.kind, 'hold')
+})
+
 test('lineal: tras 3 sesiones sin completar, un 10 % menos', () => {
   const squat = { exerciseId: 'squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'linear' as const }
   const fail = (day: number) => session(day, [exercise('squat', [set(100, 5), set(100, 4), set(100, 3)], { muscle: 'quads' })])

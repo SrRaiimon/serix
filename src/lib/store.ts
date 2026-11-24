@@ -123,7 +123,7 @@ export type AutoProgress =
   /** reason 'rpe': se completó, pero al límite (RPE 9,5-10), así que aún no se sube. */
   | { kind: 'hold'; mode: 'double' | 'linear'; reason?: 'rpe' }
   /** Tres sesiones seguidas sin completar el objetivo (lineal): se baja un 10 % para volver a subir. */
-  | { kind: 'down'; from: number; to: number; mode: 'linear' }
+  | { kind: 'down'; from: number; to: number; mode: 'linear' | 'double' }
   /** `reset`: este ciclo empieza con el TM un 10 % más bajo (algún AMRAP no llegó al mínimo). */
   | { kind: 'wave'; week: number; tm: number; reset?: true }
   | { kind: 'percent'; pct: number; max: number }

@@ -61,6 +61,8 @@ export interface ImportedSet {
   rpe?: number
   warmup: boolean
   kind?: SetKind
+  /** Peso negativo en el archivo (Strong lo usa en las máquinas asistidas): lo que se apunta es la ayuda. */
+  assist?: boolean
 }
 
 export interface ImportedExercise {
@@ -122,6 +124,9 @@ export function parseDate(text: string): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined
 }
 
+/** Lo que se acepta de una fila (lo de fuera es un dato roto, no un entreno). */
+const MAX_WEIGHT_KG = 2000, MAX_REPS = 1000, MAX_SECONDS = 86400, MAX_KM = 1000, MAX_NAME = 120
+
 /**
  * Convierte el CSV en entrenamientos. `unit` es la unidad del peso cuando el archivo no la indica
  * (Strong); las distancias en esa misma unidad se toman como km (kg) o millas (lb).
@@ -140,9 +145,9 @@ export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; wo
   for (const row of rows.slice(1)) {
     const isStrong = format === 'strong'
     const startText = isStrong ? get(row, 'Date') : get(row, 'start_time')
-    const name = (isStrong ? get(row, 'Workout Name') : get(row, 'title')).trim() || 'Workout'
+    const name = (isStrong ? get(row, 'Workout Name') : get(row, 'title')).trim().slice(0, MAX_NAME) || 'Workout'
     const start = parseDate(startText)
-    const exerciseName = (isStrong ? get(row, 'Exercise Name') : get(row, 'exercise_title')).trim()
+    const exerciseName = (isStrong ? get(row, 'Exercise Name') : get(row, 'exercise_title')).trim().slice(0, MAX_NAME)
     if (start === undefined || !exerciseName) continue
     const key = `${start}|${name}`
     let workout = byKey.get(key)
@@ -178,11 +183,15 @@ export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; wo
       weight = col('weight_kg') >= 0 ? num(get(row, 'weight_kg')) : toKg(num(get(row, 'weight_lbs')), 'lb')
       distance = col('distance_km') >= 0 ? num(get(row, 'distance_km')) : num(get(row, 'distance_miles')) * MI
     }
-    const set: ImportedSet = {
-      weight: Math.max(0, weight), reps: Math.max(0, Math.round(num(get(row, isStrong ? 'Reps' : 'reps')))), warmup,
-      ...(kind ? { kind } : {}),
-    }
+    const reps = Math.max(0, Math.round(num(get(row, isStrong ? 'Reps' : 'reps'))))
     const seconds = num(get(row, isStrong ? 'Seconds' : 'duration_seconds'))
+    // Topes: un archivo con 99999999999 kg o 1e9 repeticiones entraba tal cual y rompía récords, 1RM y volumen. La fila se salta.
+    if (Math.abs(weight) > MAX_WEIGHT_KG || reps > MAX_REPS || seconds > MAX_SECONDS || distance > MAX_KM) continue
+    const set: ImportedSet = {
+      weight: Math.abs(weight), reps, warmup,
+      ...(kind ? { kind } : {}),
+      ...(weight < 0 ? { assist: true } : {}),
+    }
     if (seconds > 0) set.duration = Math.round(seconds)
     if (distance > 0) set.distance = Math.round(distance * 1000) / 1000
     const rpe = optRpe(get(row, isStrong ? 'RPE' : 'rpe'))
@@ -419,6 +428,8 @@ export function toSessions(workouts: ImportedWorkout[], mapping: Map<string, Exe
         muscle: match?.muscle ?? '',
         rest: 90, repsMin: 0, repsMax: 0,
         ...(tracking !== 'weight_reps' ? { tracking } : {}),
+        // «Assisted Pull Up» (Hevy) o peso negativo (Strong): el peso es la ayuda, no una carga de 30 kg.
+        ...(x.sets.some((s) => s.assist) || /assist/i.test(x.name) ? { assisted: true } : {}),
         ...(x.group ? { groupId: groups.get(x.group) ?? groups.set(x.group, uid()).get(x.group)! } : {}),
         sets,
       }

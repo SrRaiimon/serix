@@ -48,7 +48,8 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   // El ajuste según el peso se mantiene al recalcular (se puede quitar).
   const [keepAdjust, setKeepAdjust] = useState(true)
   // Solo con el mismo objetivo (un −150 de perder grasa no se arrastra a ganar músculo) y sin bajar del suelo.
-  const adjust = saved?.adjust && keepAdjust && saved.aim === aim && computed ? clampAdjust(computed, saved.adjust) : 0
+  const fitted = saved?.adjust && saved.aim === aim && computed ? clampAdjust(computed, saved.adjust) : 0
+  const adjust = keepAdjust ? fitted : 0
   const result = manual ? ownGoals : computed && adjust ? adjustGoals(computed, adjust) : computed
   // La proteína por kilo que sale de verdad (con su tope) y si no hay déficit posible al perder grasa.
   const reference = ready ? proteinReference(w!, h!) : 0
@@ -129,12 +130,15 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
             options={PROTEIN_PER_KG.map((x) => ({ value: String(x), label: `${editable(x)} g` }))} />
         </>
       )}
-      {!manual && !!saved?.adjust && (
+      {/* Lo que se aplica de verdad (`fitted`), no lo guardado: con el suelo o con otro objetivo el −150 se quedaba en el texto y no en el resultado. */}
+      {!manual && !!saved?.adjust && saved.aim === aim && (
         <div className="list-row card-row">
-          <span className="grow small">{keepAdjust
-            ? t(`Incluye ${saved.adjust > 0 ? '+' : '−'}${int(Math.abs(saved.adjust))} kcal del ajuste según tu peso.`, `Includes ${saved.adjust > 0 ? '+' : '−'}${int(Math.abs(saved.adjust))} kcal from the weight adjustment.`)
-            : t('Sin el ajuste según tu peso.', 'Without the weight adjustment.')}</span>
-          <button className="nav-btn small" onClick={() => setKeepAdjust(!keepAdjust)}>{keepAdjust ? t('Quitarlo', 'Remove it') : t('Mantenerlo', 'Keep it')}</button>
+          <span className="grow small">{fitted === 0
+            ? t('El ajuste según tu peso no cabe: ya estás en tu mínimo de calorías.', 'The weight-based adjustment does not fit: you are already at your minimum calories.')
+            : keepAdjust
+              ? t(`Incluye ${fitted > 0 ? '+' : '−'}${int(Math.abs(fitted))} kcal del ajuste según tu peso.`, `Includes ${fitted > 0 ? '+' : '−'}${int(Math.abs(fitted))} kcal from the weight adjustment.`)
+              : t('Sin el ajuste según tu peso.', 'Without the weight adjustment.')}</span>
+          {fitted !== 0 && <button className="nav-btn small" onClick={() => setKeepAdjust(!keepAdjust)}>{keepAdjust ? t('Quitarlo', 'Remove it') : t('Mantenerlo', 'Keep it')}</button>}
         </div>
       )}
       {result && (
