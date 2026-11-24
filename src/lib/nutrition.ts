@@ -431,16 +431,17 @@ function weeklyRate(weights: { date: number; weight?: number }[], from: number, 
  * apuntado bastante comida y comes bastante más o menos de tu objetivo, no propone nada: primero hay
  * que comer lo que marca.
  */
-export function weightAdvice(weights: { date: number; weight?: number }[], goals: NutritionGoals, entries: FoodEntry[], now = Date.now()): WeightAdvice | undefined {
+export function weightAdvice(weights: { date: number; weight?: number }[], goals: NutritionGoals, entries: FoodEntry[], now = Date.now(), since = 0): WeightAdvice | undefined {
   if (!goals.aim || goals.proteinOnly) return undefined
-  const from = now - 21 * 86400000
+  // Solo pesos posteriores al último ajuste (o aviso descartado): con los de antes, el cambio de calorías aún no se notaba.
+  const from = Math.max(now - 21 * 86400000, since)
   const [min, max] = WEIGHT_RATE[goals.aim]
   const current = weeklyRate(weights, from, now)
   if (!current) return undefined
   const { rate, pct } = current
-  // Dos evaluaciones seguidas: la de hace una semana (si hay datos para ella) tiene que ir en el mismo sentido; una semana
-  // rara de agua o de sal no basta para tocar las calorías.
-  const earlier = weeklyRate(weights, from - 7 * 86400000, now - 7 * 86400000)
+  // Dos evaluaciones seguidas: las 3 semanas anteriores (sin solapar con estas; si hay datos para ellas) tienen que ir en el
+  // mismo sentido; unas semanas raras de agua o de sal no bastan para tocar las calorías.
+  const earlier = since > now - 42 * 86400000 ? undefined : weeklyRate(weights, now - 42 * 86400000, now - 21 * 86400000)
   const dir = (p: number) => (p < min ? -1 : p > max ? 1 : 0)
   if (earlier && dir(earlier.pct) !== dir(pct)) return undefined
   let change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0

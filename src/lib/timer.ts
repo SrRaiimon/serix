@@ -39,7 +39,7 @@ function set(next: TimerState) {
   // El descanso en curso se recuerda: si el móvil cierra la app (al cambiar a la música) o se recarga,
   // la cuenta atrás sigue donde iba en vez de desaparecer.
   try {
-    if (next.endAt) localStorage.setItem(SAVED, JSON.stringify({ endAt: next.endAt, total: next.total, next: nextLabel, setId: restSetId }))
+    if (next.endAt) localStorage.setItem(SAVED, JSON.stringify({ endAt: next.endAt, total: next.total, next: nextLabel, setId: restSetId, eff: effortApplied }))
     else localStorage.removeItem(SAVED)
   } catch { /* sin almacenamiento: solo se pierde al recargar */ }
   listeners.forEach((l) => l())
@@ -243,7 +243,9 @@ export function adjustRestForEffort(setId: string, rpe: number | undefined, base
   const delta = effortRestDelta(rpe, base) - effortApplied
   if (!delta) return undefined
   effortApplied += delta
-  addRest(delta)
+  // Si bajarlo agota lo que quedaba, el descanso termina como cualquiera (con su aviso), no se corta en silencio.
+  if (delta < 0 && state.endAt + delta * 1000 <= Date.now()) finish()
+  else addRest(delta)
   return effortApplied
 }
 
@@ -310,10 +312,12 @@ document.addEventListener('visibilitychange', () => {
 
 // Descanso que seguía en marcha al cerrar o recargar la app.
 try {
-  const saved = JSON.parse(localStorage.getItem(SAVED) ?? 'null') as { endAt?: number; total?: number; next?: string; setId?: string } | null
+  const saved = JSON.parse(localStorage.getItem(SAVED) ?? 'null') as { endAt?: number; total?: number; next?: string; setId?: string; eff?: number } | null
   if (saved?.endAt && saved.endAt > Date.now() + 1000 && saved.total) {
     nextLabel = saved.next
     restSetId = saved.setId
+    // Lo ya aplicado por el esfuerzo: si se cambia el RPE tras recargar, solo se suma la diferencia (no otra vez todo).
+    effortApplied = typeof saved.eff === 'number' ? saved.eff : 0
     set({ endAt: saved.endAt, total: saved.total })
     // Tras recargar no hay contexto de audio ni gesto que lo active: sin esto el pitido del final no sonaba hasta
     // tocar la pantalla. Se crea ya y se desbloquea con el primer toque.

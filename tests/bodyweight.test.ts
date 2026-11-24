@@ -71,3 +71,10 @@ test('lastre con «+» aunque no conste el peso corporal', () => {
   registerBodyweightExercises([])
   assert.equal(addsLoad({ exerciseId: 'Pushups' }), false)
 })
+
+test('peso corporal: al rellenar entrenos viejos solo valen pesos medidos, no el del objetivo de Comidas', () => {
+  const d = { measurements: [], settings: { ...defaultSettings, nutrition: { kcal: 2500, protein: 150, carbs: 300, fat: 70, weightKg: 85 } } }
+  assert.equal(bodyweightAt(d, T0), 85)
+  assert.equal(bodyweightAt(d, T0, true), undefined)
+  assert.equal(bodyweightAt({ ...d, measurements: [{ id: 'a', date: T0 - DAY, weight: 80 }] }, T0, true), 80)
+})

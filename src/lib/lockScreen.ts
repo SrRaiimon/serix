@@ -69,7 +69,8 @@ export function showRestOnLockScreen(endAt: number, total: number, controls: Loc
     session.playbackState = 'playing'
     // Barra de progreso del descanso en los controles multimedia.
     const duration = total / 1000
-    session.setPositionState?.({ duration, position: Math.min(duration, Math.max(0, duration - (endAt - Date.now()) / 1000)), playbackRate: 1 })
+    // Si el navegador rechaza la posición, el resto de controles se registra igual.
+    try { session.setPositionState?.({ duration, position: Math.min(duration, Math.max(0, duration - (endAt - Date.now()) / 1000)), playbackRate: 1 }) } catch { /* sin barra de progreso */ }
     session.setActionHandler('seekforward', () => controls.onAdd(15))
     session.setActionHandler('seekbackward', () => controls.onAdd(-15))
     // «Pausa» en la pantalla bloqueada = saltar el descanso (pausar el audio congelaría la página).

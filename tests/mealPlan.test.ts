@@ -317,15 +317,18 @@ test('objetivos: con pocas calorías la grasa no baja de 0,8 g por kilo', () => 
   assert.equal(normal.fat, Math.round((normal.kcal * 0.25) / 9))
 })
 
-test('ajuste según el peso: hacen falta dos evaluaciones seguidas en el mismo sentido', () => {
+test('ajuste según el peso: hacen falta dos evaluaciones seguidas (3 semanas cada una) en el mismo sentido', () => {
   const now = new Date(2026, 2, 22, 9).getTime()
   const day = 86400000
   const lose = { ...goals, kcal: 2200, aim: 'lose' as const }
-  // Hace una semana bajaba bien (−0,5 kg/sem) y estas 3 semanas se queda plano: la semana anterior sí iba bien → no se toca.
-  const before = [-34, -30, -26, -22, -18].map((d, i) => ({ date: now + d * day, weight: 82 - i * 0.25 }))
-  const flatNow = [-14, -10, -6, -2, 0].map((d) => ({ date: now + d * day, weight: 80 }))
+  const flatNow = [-20, -16, -12, -8, -4, 0].map((d) => ({ date: now + d * day, weight: 80 }))
+  // Las 3 semanas de antes bajaban bien (−0,5 kg/sem) y estas se quedan planas: no es una tendencia sostenida → no se toca.
+  const before = [-41, -37, -33, -29, -25, -21.5].map((d, i) => ({ date: now + d * day, weight: 83 - i * 0.5 }))
   assert.equal(weightAdvice([...before, ...flatNow], lose, [], now), undefined)
-  // Plano también la semana anterior: se propone.
-  const flatBefore = [-34, -30, -26, -22, -18].map((d) => ({ date: now + d * day, weight: 80 }))
+  // Planas también las de antes: se propone.
+  const flatBefore = [-41, -37, -33, -29, -25, -21.5].map((d) => ({ date: now + d * day, weight: 80 }))
   assert.equal(weightAdvice([...flatBefore, ...flatNow], lose, [], now)!.change, -150)
+  // Sin datos de antes: se propone igual. Y con un ajuste hace 10 días solo cuentan los pesos de después (no hay 14 días): nada.
+  assert.equal(weightAdvice(flatNow, lose, [], now)!.change, -150)
+  assert.equal(weightAdvice(flatNow, lose, [], now, now - 10 * day), undefined)
 })

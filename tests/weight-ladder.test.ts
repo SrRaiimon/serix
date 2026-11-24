@@ -102,3 +102,11 @@ test('barra vacía: un básico con barra no baja de 20 kg / 45 lb (el curl, sí,
   assert.equal(lowerWeight(bench, 22.5, 'kg'), 20)
   assert.equal(lowerWeight('Barbell_Curl', 20, 'kg'), 17.5)
 })
+
+test('kettlebell más pesada que la lista: de 4 en 4 kg o de 10 en 10 lb (50,5 no existe)', () => {
+  use()
+  assert.equal(48 + progressionStep('quads', 'kg', 'Goblet_Squat', 48), 52)
+  assert.equal(lowerWeight('Goblet_Squat', 52, 'kg'), 48)
+  const w = toKg(106, 'lb')
+  assert.ok(close(fromKg(w + progressionStep('quads', 'lb', 'Goblet_Squat', w), 'lb'), 116))
+})

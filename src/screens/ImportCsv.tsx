@@ -69,7 +69,7 @@ export function ImportCsvSheet({ text, onClose, onDone }: { text: string; onClos
         <FileUp size={19} /> {sessions.length ? `${t('Importar', 'Import')} ${plural(sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}` : t('Nada nuevo que importar', 'Nothing new to import')}
       </button>}>
       <Card>
-        <strong>{plural(workouts.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}{workouts.length > 0 && ` · ${shortDay(workouts[0].start)} – ${shortDay(workouts[workouts.length - 1].start)}`}</strong>
+        <strong>{plural(workouts.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}{workouts.length > 0 && ` · ${shortDay(workouts[0].start)}${shortDay(workouts[0].start) === shortDay(workouts[workouts.length - 1].start) ? '' : ` – ${shortDay(workouts[workouts.length - 1].start)}`}`}</strong>
         {dropped > 0 && <span className="small muted">{t(`${dropped} series se han omitido por tener valores imposibles (más de 2.000 kg, 1.000 repeticiones o 24 h).`, `${dropped} sets were skipped for having impossible values (over 2,000 kg, 1,000 reps or 24 h).`)}</span>}
         {skipped > 0 && <span className="small muted">{t(`${skipped} ya estaban en Serix y no se repetirán.`, `${skipped} were already in Serix and will not be duplicated.`)}</span>}
         {parsed.format === 'strong' && (

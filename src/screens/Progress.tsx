@@ -315,7 +315,7 @@ function WeightFoodCard() {
   // montada, React se rompía (distinto número de hooks entre dos renders).
   if (!fed.length && weighed.length < 2) return null
   return (
-    <Card title={t('Calorías y peso', 'Calories and weight')} icon={Utensils}>
+    <Card title={fed.length > 0 ? t('Calorías y peso', 'Calories and weight') : t('Peso', 'Weight')} icon={Utensils}>
       {fed.length > 0 && (
         <>
           <BarChart data={weeks.map((w) => ({ label: shortDay(w.start), value: w.kcal }))} reference={goal && !goal.proteinOnly ? goal.kcal : undefined} currentLabel={t('esta sem.', 'this wk')} />

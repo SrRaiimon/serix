@@ -659,7 +659,12 @@ export function FriendImportScreen({ code }: { code: string }) {
   const unit = data.settings.unit
   const exercise = useExerciseName()
   const [friend, setFriend] = useState<FriendSnapshot | null>()
-  useEffect(() => { void decodeSnapshot(code).then((f) => setFriend(f ?? null)) }, [code])
+  useEffect(() => {
+    // Si el enlace cambia antes de terminar de leerse, el resultado del anterior no pisa al nuevo.
+    let current = true
+    void decodeSnapshot(code).then((f) => { if (current) setFriend(f ?? null) })
+    return () => { current = false }
+  }, [code])
   const known = friend && data.friends.some((f) => friendKey(f.name) === friendKey(friend.name))
   const newer = friend ? newerSnapshot(data.friends, friend) : undefined
   // ¿Tu propio enlace (para probarlo o reenviado)? Con tu nombre te verías dos veces en la liga. Solo un

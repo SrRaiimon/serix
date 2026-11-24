@@ -502,7 +502,9 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                 <input className="field" style={{ width: 90 }} placeholder="3-1-1" defaultValue={e.tempo ?? ''} aria-label={t('Tempo', 'Tempo')}
                   onChange={(ev) => {
                     const v = ev.target.value.trim()
-                    edit((r) => { r.exercises[i].tempo = /^\d-\d-\d(-\d)?$/.test(v) ? v : undefined })
+                    const valid = /^\d-\d-\d(-\d)?$/.test(v)
+                    ev.target.setAttribute('aria-invalid', String(!!v && !valid)) // un tempo mal escrito no se guarda: se marca en vez de callar
+                    edit((r) => { r.exercises[i].tempo = valid ? v : undefined })
                   }} />
               </label>
             )}
@@ -522,7 +524,10 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
                   aria-label={t('Máximo de entrenamiento', 'Training max')}
                   onChange={(ev) => {
                     const v = parseDecimal(ev.target.value)
-                    edit((r) => { r.exercises[i].trainingMax = v && v > 0 ? toKg(v, data.settings.unit) : undefined; r.exercises[i].tmSince = Date.now() })
+                    // Hasta 1.000 kg (2.200 lb): una cifra de más no debe romper el cálculo de los pesos del ciclo.
+                    const ok = !!v && v > 0 && toKg(v, data.settings.unit) <= 1000
+                    ev.target.setAttribute('aria-invalid', String(!!ev.target.value.trim() && !ok))
+                    edit((r) => { r.exercises[i].trainingMax = ok ? toKg(v!, data.settings.unit) : undefined; r.exercises[i].tmSince = Date.now() })
                   }} />
               </label>
             )}
@@ -564,7 +569,12 @@ export function RoutineEditor({ id, onClose }: { id: string; onClose: () => void
       {picker && <ExercisePicker onDone={add} onClose={() => setPicker(false)} />}
       {replacing !== undefined && routine.exercises[replacing] && (
         <AlternativesSheet current={routine.exercises[replacing]} onClose={() => setReplacing(undefined)}
-          onPick={(picked) => edit((r) => { r.exercises[replacing] = { ...planned(picked, r.exercises[replacing]), groupId: r.exercises[replacing].groupId } })} />
+          onPick={(picked) => edit((r) => {
+            const old = r.exercises[replacing]
+            const next = planned(picked, old)
+            // Se conserva la progresión de doble o lineal y el tempo (el TM del 5/3/1 y el porcentaje eran del otro ejercicio, no se arrastran).
+            r.exercises[replacing] = { ...next, groupId: old.groupId, ...(next.tracking === 'weight_reps' && (old.progression === 'double' || old.progression === 'linear') ? { progression: old.progression } : {}), ...(old.tempo ? { tempo: old.tempo } : {}) }
+          })} />
       )}
     </Sheet>
   )

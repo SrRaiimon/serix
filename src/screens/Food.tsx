@@ -39,7 +39,7 @@ export function FoodScreen() {
   const target = baseGoals && goalsForDay(baseGoals, data.nutrition.entries, day, goalOpts)
   const advice = useMemo(() => {
     if (!baseGoals || day !== today || (data.settings.nutritionAdviceAt ?? 0) > Date.now() - 14 * 86400000) return undefined
-    return weightAdvice(data.measurements, baseGoals, data.nutrition.entries)
+    return weightAdvice(data.measurements, baseGoals, data.nutrition.entries, Date.now(), data.settings.nutritionAdviceAt ?? 0)
   }, [baseGoals, day, today, data.settings.nutritionAdviceAt, data.measurements, data.nutrition.entries])
   const proteinOnly = target?.proteinOnly === true
   const [month, setMonth] = useState(false)

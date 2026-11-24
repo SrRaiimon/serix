@@ -89,7 +89,7 @@ export interface LoadSuggestion {
  * serie hecha se alejó un punto o más de lo previsto, se propone ese ajuste para las series que faltan
  * con el mismo peso: hasta −10 % si costó de más y, por prudencia, como mucho +5 % si sobró.
  */
-export function loadSuggestion(e: SessionExercise, target: number, unit: Unit): LoadSuggestion | undefined {
+export function loadSuggestion(e: SessionExercise, target: number, unit: Unit, used: number[] = []): LoadSuggestion | undefined {
   if (e.deload || e.auto?.kind === 'wave') return undefined
   const done = e.sets.filter((s) => s.done && !s.warmup && s.kind !== 'drop' && s.kind !== 'amrap' && s.weight > 0)
   const last = done[done.length - 1]
@@ -103,9 +103,9 @@ export function loadSuggestion(e: SessionExercise, target: number, unit: Unit): 
   // A un peso que existe (mancuernas de 2 kg, barra de 2,5…), como la descarga: bajar con lowerWeight, subir un escalón de progresión.
   // Si el escalón real se pasa mucho del ajuste (un 5 % de 20 kg no es +2,5), no se propone.
   let to: number
-  if (e.assisted) to = pct > 0 ? raiseAssist(last.weight, unit) : lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
-  else if (pct < 0) to = lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
-  else to = last.weight + progressionStep(e.muscle, unit, e.exerciseId, last.weight)
+  if (e.assisted) to = pct > 0 ? raiseAssist(last.weight, unit) : lowerWeight(e.exerciseId, last.weight, unit, used, 1 + pct)
+  else if (pct < 0) to = lowerWeight(e.exerciseId, last.weight, unit, used, 1 + pct)
+  else to = last.weight + progressionStep(e.muscle, unit, e.exerciseId, last.weight, used)
   if (Math.abs(to - last.weight) > last.weight * Math.min(0.15, Math.max(0.08, Math.abs(pct) * 1.75))) return undefined
   if (Math.abs(to - last.weight) < 0.01 || to <= 0) return undefined
   return { setId: last.id, rpe: last.rpe, target, from: last.weight, to, apply: pending.map((s) => s.id) }

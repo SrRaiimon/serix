@@ -74,3 +74,12 @@ test('vuelta a la calma: estiramientos guiados con su indicación', () => {
   assert.equal(work.length, 6)
   assert.ok(work.every((x) => x.label && x.cue && x.seconds === 40))
 })
+
+test('recordatorio de peso: una medida con fecha futura no lo tapa', () => {
+  const now = T0
+  const nutrition = { kcal: 2500, protein: 150, carbs: 300, fat: 70 }
+  const settings = { ...defaultSettings, nutrition }
+  assert.equal(weighDue({ measurements: [{ id: 'a', date: now + 300 * DAY, weight: 80 }], settings }, now), true)
+  // Una de mañana (reloj adelantado un día) sí cuenta como reciente.
+  assert.equal(weighDue({ measurements: [{ id: 'a', date: now + DAY / 2, weight: 80 }], settings }, now), false)
+})

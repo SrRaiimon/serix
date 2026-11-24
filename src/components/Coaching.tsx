@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { loadSuggestion, PAIN_WARN, targetRpe } from '../lib/autoreg'
 import { day, weight } from '../lib/format'
 import { t } from '../lib/i18n'
-import { rpeOn, type SessionExercise, type Settings } from '../lib/store'
+import { usedWeights } from '../lib/progression'
+import { finishedSessions, getData, rpeOn, type SessionExercise, type Settings } from '../lib/store'
 import { Chip, Sheet } from './ui'
 
 // Consejos durante el entrenamiento (ver lib/autoreg.ts): ajustar el peso según el RPE y avisar si un
@@ -18,7 +19,7 @@ export function EffortSuggestion({ exercise, settings, at, onApply }: {
 }) {
   const [dismissed, setDismissed] = useState<string>()
   if (!rpeOn(settings)) return null
-  const s = loadSuggestion(exercise, targetRpe(settings.block, at), settings.unit)
+  const s = loadSuggestion(exercise, targetRpe(settings.block, at), settings.unit, usedWeights(exercise.exerciseId, finishedSessions(getData())))
   if (!s || dismissed === s.setId) return null
   const down = s.to < s.from
   const n = s.apply.length
@@ -43,7 +44,8 @@ export function EffortSuggestion({ exercise, settings, at, onApply }: {
 }
 
 /** Aviso: este ejercicio molestó la última vez. */
-export function PainWarning({ last, onLighter, onAlternatives }: {
+export function PainWarning({ last, onLighter, onAlternatives, assisted }: {
+  assisted?: boolean
   last: { pain: number; date: number; note?: string }
   onLighter: () => void
   onAlternatives: () => void
@@ -60,7 +62,7 @@ export function PainWarning({ last, onLighter, onAlternatives }: {
         </span>
       </span>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button className="btn small secondary" onClick={() => { onLighter(); setHidden(true) }}>{t('Bajar un 10 %', 'Go 10% lighter')}</button>
+        <button className="btn small secondary" onClick={() => { onLighter(); setHidden(true) }}>{assisted ? t('Aumentar ayuda un 10 %', 'Increase assistance by 10%') : t('Bajar un 10 %', 'Go 10% lighter')}</button>
         <button className="btn small plain" onClick={onAlternatives}>{t('Ver alternativas', 'Alternatives')}</button>
         <button className="btn small plain" onClick={() => setHidden(true)}>{t('Hoy va bien', 'Feels fine today')}</button>
       </div>

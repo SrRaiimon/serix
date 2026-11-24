@@ -110,8 +110,8 @@ export function PlateInventory() {
         ))}
       </div>
       <span className="small muted">
-        {t(`Salto mínimo de peso: ${editable(stepFor(plates))} ${unit} (el disco más pequeño en cada lado). La app redondea a él los pesos que propone: calentamiento, progresión automática y descargas.`,
-          `Smallest weight jump: ${editable(stepFor(plates))} ${unit} (the smallest plate on each side). The app rounds the weights it suggests to it: warm-up, automatic progression and deloads.`)}
+        {t(`Salto mínimo de peso: ${editable(stepFor(plates))} ${unit} (el doble del disco más pequeño: uno a cada lado de la barra). La app redondea a él los pesos que propone: calentamiento, progresión automática y descargas.`,
+          `Smallest weight jump: ${editable(stepFor(plates))} ${unit} (twice the smallest plate: one on each side of the bar). The app rounds the weights it suggests to it: warm-up, automatic progression and deloads.`)}
       </span>
     </div>
   )

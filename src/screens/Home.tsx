@@ -120,7 +120,8 @@ export function HomeScreen() {
       ] : undefined} />
 
       {/* El entrenador tira del generador y de las alternativas: se carga después de pintar Inicio. */}
-      {!active && <Suspense fallback={null}><CoachCard /></Suspense>}
+      {/* El día que ya has entrenado, el consejo espera: con «Hoy ya has entrenado» y la copia eran tres bloques. */}
+      {!active && !trainedTodayHome && <Suspense fallback={null}><CoachCard /></Suspense>}
 
       <FoodTodayCard />
 

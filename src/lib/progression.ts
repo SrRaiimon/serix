@@ -76,6 +76,8 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
   if (equipment === 'kettlebell' && weight > 0) {
     const next = kbNext(weight, unit)
     if (next !== undefined) return toKg(next, unit) - weight
+    // Más pesadas que la última de la lista (48 kg / 106 lb): de 4 en 4 kg o de 10 en 10 lb, no 2,5 (50,5 no existe).
+    return toKg(unit === 'kg' ? 4 : 10, unit)
   }
   // Mancuernas en libras: de 5 en 5 (a la siguiente que existe: 25 → 30, no 27).
   if (unit === 'lb' && equipment === 'dumbbell' && weight > 0) { const w = isLb(weight); return toKg(5 - (w % 5 || 0) || 5, 'lb') }
@@ -111,6 +113,7 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
     // La más cercana al 10 % menos entre las que existen, siempre por debajo (24 → 20, 18 → 16).
     const list = KETTLEBELLS[unit].filter((x) => x < kbValue(weight, unit) - 0.01)
     if (!list.length) return 0
+    if (kbValue(weight, unit) > KETTLEBELLS[unit][KETTLEBELLS[unit].length - 1]) return weight - toKg(unit === 'kg' ? 4 : 10, unit)
     const tl = fromKg(target, unit)
     return toKg(list.reduce((best, x) => (Math.abs(x - tl) < Math.abs(best - tl) ? x : best)), unit)
   }

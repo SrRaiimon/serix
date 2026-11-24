@@ -15,9 +15,9 @@ export const BODYWEIGHT_LIFTS: ReadonlySet<string> = new Set([
 
 /**
  * Peso corporal (kg) en una fecha: la última medida de antes; si no hay, la primera de después; si
- * tampoco, el peso del objetivo de Comidas.
+ * tampoco, el peso del objetivo de Comidas (salvo con `measuredOnly`).
  */
-export function bodyweightAt(d: Pick<AppData, 'measurements' | 'settings'>, at: number): number | undefined {
+export function bodyweightAt(d: Pick<AppData, 'measurements' | 'settings'>, at: number, measuredOnly = false): number | undefined {
   let before: { date: number; weight: number } | undefined
   let after: { date: number; weight: number } | undefined
   for (const m of d.measurements) {
@@ -25,7 +25,7 @@ export function bodyweightAt(d: Pick<AppData, 'measurements' | 'settings'>, at: 
     if (m.date <= at) { if (!before || m.date > before.date) before = { date: m.date, weight: m.weight } }
     else if (!after || m.date < after.date) after = { date: m.date, weight: m.weight }
   }
-  return before?.weight ?? after?.weight ?? d.settings.nutrition?.weightKg
+  return before?.weight ?? after?.weight ?? (measuredOnly ? undefined : d.settings.nutrition?.weightKg)
 }
 
 /**
@@ -35,11 +35,11 @@ export function bodyweightAt(d: Pick<AppData, 'measurements' | 'settings'>, at: 
 export function fillBodyweights() {
   const d = getData()
   const missing = (s: AppData['sessions'][number]) => s.exercises.some((e) => BODYWEIGHT_LIFTS.has(e.exerciseId) && e.bodyweight === undefined)
-  if (!d.sessions.some((s) => missing(s) && bodyweightAt(d, s.start) !== undefined)) return
+  if (!d.sessions.some((s) => missing(s) && bodyweightAt(d, s.start, true) !== undefined)) return
   update((draft) => {
     for (const s of draft.sessions) {
       if (!missing(s)) continue
-      const kg = bodyweightAt(draft, s.start)
+      const kg = bodyweightAt(draft, s.start, true) // solo pesos medidos: el del objetivo de Comidas no se graba para siempre en entrenos viejos
       if (kg === undefined) continue
       for (const e of s.exercises) if (BODYWEIGHT_LIFTS.has(e.exerciseId) && e.bodyweight === undefined) e.bodyweight = kg
     }

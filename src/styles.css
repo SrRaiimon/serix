@@ -2992,3 +2992,6 @@ a.list-row { color: var(--text); text-decoration: none; }
 .discomfort-actions button { min-height: 44px; }
 .discomfort-advice { font-size: 13px; color: var(--text-2); margin: 8px 0; }
 .discomfort-record { display: grid; gap: 4px; padding: 10px 0; overflow-wrap: anywhere; }
+
+/* Un campo con un valor que no se guarda (tempo mal escrito, TM demasiado grande): borde rojo, no solo color. */
+.field[aria-invalid="true"] { box-shadow: inset 0 0 0 2px var(--red-text); }

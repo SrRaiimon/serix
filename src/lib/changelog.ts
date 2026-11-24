@@ -9,6 +9,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.57',
+    items: [
+      ['Inicio: el día que ya has entrenado, «Tu entrenador» espera al siguiente (junto a «Hoy ya has entrenado» y la copia eran tres bloques). Progreso: «Calorías y peso» se llama «Peso» si no hay comidas, y al importar de Strong un solo día no repite la fecha.', 'Home: on the day you have already trained, «Your coach» waits for the next one (next to «You already trained today» and the backup there were three blocks). Progress: «Calories and weight» is called «Weight» when there are no meals, and importing from Strong with a single day no longer repeats the date.'],
+      ['Calculadora de discos: el salto mínimo dice «el doble del disco más pequeño: uno a cada lado de la barra».', 'Plate calculator: the smallest jump says «twice the smallest plate: one on each side of the bar».'],
+      ['Pesos: las sugerencias por esfuerzo conocen tu juego de mancuernas, «Aumentar ayuda» sale también con una molestia en una máquina asistida, y las kettlebells más pesadas que las de la lista suben y bajan de 4 en 4 kg o de 10 en 10 lb.', 'Weights: effort-based suggestions know your dumbbell set, «Increase assistance» also appears with discomfort on an assisted machine, and kettlebells heavier than the list go up and down in 4 kg or 10 lb steps.'],
+      ['Descanso: si bajas el esfuerzo y ya no queda tiempo, termina con su aviso; tras recargar a mitad de descanso el ajuste por esfuerzo no se aplica dos veces; un peso con fecha futura no tapa el aviso de pesarte.', 'Rest: if lowering the effort leaves no time, it ends with its notice; after reloading mid-rest the effort adjustment is not applied twice; a weight with a future date no longer hides the weigh-in reminder.'],
+      ['Rutinas: al sustituir un ejercicio se conserva la progresión (doble o lineal) y el tempo; el TM del 5/3/1 tiene tope de 1.000 kg y un tempo o TM que no valen se marcan en rojo en vez de no guardarse en silencio.', 'Routines: when replacing an exercise the progression (double or linear) and the tempo are kept; the 5/3/1 TM is capped at 1,000 kg and a tempo or TM that is not valid is marked in red instead of silently not being saved.'],
+      ['Comida: el aviso de ajustar calorías según tu peso compara tus últimas 3 semanas con las 3 anteriores y solo cuenta pesos posteriores al último ajuste; las copias antiguas ya no se rellenan con el peso del objetivo de Comidas.', 'Food: the notice to adjust calories by your weight compares your last 3 weeks with the 3 before and only counts weights after the last adjustment; old workouts are no longer filled with the weight from your Food goal.'],
+    ],
+  },
+  {
     version: '0.1.56',
     items: [
       ['Retos: «Salir del reto» ya no vuelve a ofrecértelo mientras un amigo lo siga compartiendo, dos toques en «Crear e invitar» ya no crean dos retos, y quitar a un amigo guarda antes la clasificación de los retos terminados.', 'Challenges: «Leave challenge» no longer offers it back to you while a friend keeps sharing it, two taps on «Create and invite» no longer create two challenges, and removing a friend saves the standings of finished challenges first.'],

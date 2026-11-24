@@ -11,7 +11,7 @@ import { discomfortSide, discomfortZone, lastDiscomfort, lightenDiscomfort, repe
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
 import { stallOffered } from '../lib/exerciseHints'
-import { lowerWeight } from '../lib/progression'
+import { lowerWeight, raiseAssist } from '../lib/progression'
 import { progressionHint, STALL_SESSIONS, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { startRest, stopRest } from '../lib/timer'
@@ -231,9 +231,9 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
       )}
 
       {!hasZoneHistory && !exercise.discomfort && painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
-        <PainWarning last={painBefore} onAlternatives={() => setReplacing(true)}
+        <PainWarning last={painBefore} assisted={exercise.assisted} onAlternatives={() => setReplacing(true)}
           onLighter={() => edit((e) => {
-            for (const x of e.sets) if (!x.done && x.weight > 0) { const lower = lowerWeight(e.exerciseId, x.weight, unit); if (lower > 0) x.weight = lower }
+            for (const x of e.sets) if (!x.done && x.weight > 0) { const lower = e.assisted ? raiseAssist(x.weight, unit) : lowerWeight(e.exerciseId, x.weight, unit); if (lower > 0) x.weight = lower }
           })} />
       )}
       {exercise.pain !== undefined && (

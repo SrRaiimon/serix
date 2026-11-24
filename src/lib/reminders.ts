@@ -15,7 +15,9 @@ export const lastWeighIn = (d: Pick<AppData, 'measurements'>) =>
  * peso necesita pesadas frecuentes), si hace una semana o más del último peso.
  */
 export function weighDue(d: Pick<AppData, 'measurements' | 'settings'>, now = Date.now()): boolean {
-  const last = lastWeighIn(d)
+  const recorded = lastWeighIn(d)
+  // Un peso con fecha futura (reloj mal puesto, dato importado) no tapa el recordatorio.
+  const last = recorded !== undefined && recorded > now + DAY ? undefined : recorded
   if (last === undefined && !d.settings.nutrition) return false
   if (d.settings.weighSnooze && now < d.settings.weighSnooze) return false
   return last === undefined || now - last >= WEIGH_EVERY * DAY
