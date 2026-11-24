@@ -47,7 +47,8 @@ const status = (g: GroupRecovery) =>
 const tone = (g: GroupRecovery) => (g.ready >= 1 ? 'ready' : g.ready >= RECOVERING ? 'almost' : 'recovering')
 
 export function RecoveryCard({ sessions }: { sessions: Session[] }) {
-  const groups = useRecovery(sessions)
+  // Los más cerca de estar listos primero (con ocho de nueve «Recuperándose», todo salía en el orden fijo de los grupos).
+  const groups = [...useRecovery(sessions)].sort((a, b) => b.ready - a.ready)
   return (
     <Card title={t('Recuperación muscular', 'Muscle recovery')} icon={HeartPulse}>
       <div className="recovery-list">

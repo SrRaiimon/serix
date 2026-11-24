@@ -45,9 +45,13 @@ export function HomeScreen() {
   const thisMonth = sessions.filter((s) => new Date(s.start).getMonth() === new Date().getMonth() && new Date(s.start).getFullYear() === new Date().getFullYear())
   const risk = streakAtRisk(sessions.map((s) => s.start), streakWeeks(sessions))
   const recapDue = useMemo(() => weekdayIndex(Date.now()) <= 1 && data.settings.recapSeen !== weekStart && !!weekRecap(data, addDays(new Date(weekStart), -7).getTime()), [data, weekStart])
+  // Si la tarjeta de «Siguiente» ya avisa de que sigues recuperándote, la copia espera: dos avisos juntos empujaban la semana fuera de la pantalla.
+  const recovery = useRecovery(sessions)
+  const recoveryHint = !!next && !routineFacts(data, next).deload
+    && recovery.some((g) => g.ready < RECOVERING && g.muscles.some((m) => next.exercises.some((e) => e.muscle === m)))
   const notice = ([
     ['risk', !!risk],
-    ['backup', backupDue(data, sessions.length)],
+    ['backup', backupDue(data, sessions.length) && !recoveryHint],
     ['news', newsDue(data.settings.seenVersion)],
     ['recap', recapDue],
     ['weigh', weighDue(data)],

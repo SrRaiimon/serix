@@ -2295,7 +2295,7 @@ html.scroll-locked body {
 .recovery-list { display: flex; flex-direction: column; gap: 10px; }
 .recovery-row { display: grid; grid-template-columns: 7.5em 1fr auto; align-items: center; gap: 10px; }
 .recovery-name { font-size: 15px; font-weight: 600; }
-.recovery-bar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.recovery-bar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; box-shadow: inset 0 0 0 1px var(--text-3); }
 .recovery-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--text-2); }
 /* Recuperarse es lo normal tras entrenar: la barra (en tinta, a 3:1 o más) dice cuánto falta y el texto destaca lo que
    aún se recupera; «Listo» va discreto (sin rojo, verde ni ámbar). */

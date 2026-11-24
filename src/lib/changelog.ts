@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.46',
+    items: [
+      ['Progreso › Recuperación muscular pone arriba los grupos más cerca de estar listos, y las barras se ven mejor en oscuro.', 'In Progress › Muscle recovery, the groups closest to being ready come first, and the bars are easier to see in dark mode.'],
+      ['En Inicio, si ya te avisa de que sigues recuperándote, el recordatorio de la copia de seguridad espera: un solo aviso a la vez.', 'On Home, if it already tells you that you are still recovering, the backup reminder waits: one notice at a time.'],
+      ['En «Tus mejores marcas», las dominadas y los fondos dicen cuánto lastre llevas: «con tu peso, +10 kg».', 'In «Your best lifts», pull-ups and dips say how much added weight you used: «incl. bodyweight, +10 kg».'],
+    ],
+  },
+  {
     version: '0.1.45',
     items: [
       ['Las descargas no cuentan como entrenos flojos en «Lo que te hace rendir mejor», y un entreno libre solo se compara con otro que tenga los mismos ejercicios.', 'Deloads no longer count as weak workouts in «What makes you perform better», and a free workout is only compared with one that has the same exercises.'],

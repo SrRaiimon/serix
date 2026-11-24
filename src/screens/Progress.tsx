@@ -424,7 +424,9 @@ function BestLifts({ sessions, unit }: { sessions: Session[]; unit: Unit }) {
             <strong>{r.added === undefined && addsLoad(r) ? '+' : ''}{int(fromKg(r.e1rm, unit))}<small> {unit}</small></strong>
             {/* Dominadas, fondos…: el máximo incluye el peso corporal; sin decirlo, 124 kg en dominadas desconcierta.
                 Va con el nombre (no en una línea más) para no descuadrar las columnas. */}
-            <span className="clamp-2">{r.name}{r.added !== undefined && <span className="muted"> · {t('con tu peso', 'incl. bodyweight')}</span>}</span>
+            <span className="clamp-2">{r.name}{r.added !== undefined && <span className="muted"> · {r.added > 0
+              ? t(`con tu peso, +${int(fromKg(r.added, unit))} ${unit}`, `incl. bodyweight, +${int(fromKg(r.added, unit))} ${unit}`)
+              : t('con tu peso', 'incl. bodyweight')}</span>}</span>
             {(r.e1rm - (before.get(r.exerciseId) ?? r.e1rm)) >= 0.5 && (
               <em title={t('Mejora en los últimos 30 días', 'Gain in the last 30 days')}>+{int(fromKg(r.e1rm - before.get(r.exerciseId)!, unit))} {unit} · 30 d</em>
             )}
