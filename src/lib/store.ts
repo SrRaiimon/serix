@@ -119,7 +119,8 @@ export interface SessionExercise {
 }
 
 export type AutoProgress =
-  | { kind: 'up'; from: number; to: number; mode: 'double' | 'linear' }
+  /** `assist`: máquina asistida; subir de nivel es MENOS ayuda (to < from). */
+  | { kind: 'up'; from: number; to: number; mode: 'double' | 'linear'; assist?: true }
   /** reason 'rpe': se completó, pero al límite (RPE 9,5-10), así que aún no se sube. */
   | { kind: 'hold'; mode: 'double' | 'linear'; reason?: 'rpe' }
   /** Tres sesiones seguidas sin completar el objetivo (lineal): se baja un 10 % para volver a subir. */

@@ -32,7 +32,9 @@ test('funcional y HIIT en casa: usan los ejercicios propios nuevos', () => {
   const box = ids('functional3', 'gym')
   for (const id of ['Barbell_Thruster', 'Chest_To_Bar_Pull_Up', 'Rowing_Machine', 'Toes_To_Bar']) assert.ok(box.includes(id), id)
   const home = ids('home-hiit', 'bodyweight')
-  for (const id of ['Burpee', 'Towel_Door_Row', 'Bodyweight_Bulgarian_Split_Squat', 'Hollow_Hold']) assert.ok(home.includes(id), id)
+  for (const id of ['Burpee', 'Towel_Door_Row', 'Hollow_Hold']) assert.ok(home.includes(id), id)
+  // Es un programa para quien empieza: sentadilla o pared en vez de la búlgara (a una pierna).
+  assert.ok(!home.includes('Bodyweight_Bulgarian_Split_Squat') && home.some((id) => /Squat|Wall_Sit|Split/.test(id)), home.join())
 })
 
 test('5×5: básicos con progresión lineal y accesorios sin ella', () => {

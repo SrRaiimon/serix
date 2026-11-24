@@ -188,6 +188,8 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.strict && /kipping/i.test(e.id)) return false
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
+  // A una pierna y de equilibrio (búlgara, peso muerto a una pierna): no para quien empieza, que antes ha de dominar la sentadilla y la zancada.
+  if (r.level === 'beginner' && /Bulgarian|Single_Leg_Deadlift/i.test(e.id)) return false
   // El curl nórdico (en el suelo) a 3-6 repeticiones es de nivel avanzado: en intermedio sale mal hecho o no se hace.
   if (r.level !== 'advanced' && /Glute-Ham_Raise/i.test(e.id)) return false
   // Cualquier dominada (barra V, agarre abierto…) es tan dura para empezar como la normal: remos hasta poder.
@@ -867,6 +869,28 @@ function balanceWeek(days: Picked[][], c: GeneratorConfig, add: (day: number, sl
       if (hi) { hi.ex.sets--; if (ok()) continue; hi.ex.sets++ }
       break
     }
+  }
+  // Y en la semana entera: si, aun cuadrando cada día, el empuje pasa de 1,5 veces el tirón (3 días de cuerpo completo en casa), una
+  // serie más a un tirón donde quepa (quitando antes una serie de acondicionamiento del día si hace falta), sin sacar ningún grupo
+  // de su rango.
+  for (let k = 0; k < 6; k++) {
+    const v = totals()
+    if (v[N] <= 1.5 * v[N + 1]) break
+    let added = false
+    for (const day of days) {
+      for (const lo of day.filter((p) => p.kind !== 'conditioning' && mainGroup(p) === BACK_GROUP && p.ex.sets < setCap(p.kind, c.level))) {
+        const cond = day.find((p) => p.kind === 'conditioning' && p.ex.sets > 1)
+        lo.ex.sets++
+        let freed = false
+        if (!fits(day) && cond) { cond.ex.sets--; freed = true }
+        const after = totals()
+        if (fits(day) && after.slice(0, N).every((x, g) => x <= ranges[g][1] || x <= v[g])) { added = true; break }
+        lo.ex.sets--
+        if (freed) cond!.ex.sets++
+      }
+      if (added) break
+    }
+    if (!added) break
   }
   // Bíceps y tríceps del mismo día, como mucho a una serie de diferencia (Torso B salía con curl 4× y francés 2×):
   // una serie pasa del que más tiene al otro si cabe.

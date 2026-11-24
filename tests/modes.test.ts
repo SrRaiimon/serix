@@ -64,10 +64,10 @@ test('el modo de cada ejercicio se recuerda al empezar la rutina', () => {
   replaceData(data)
   startRoutine(getData().routines[0])
   const [pull, lunge] = activeSession(getData())!.exercises
-  // Asistida: sin progresión automática (subir sería dar más ayuda); copia la ayuda de la última vez.
+  // Asistida: completó todas las repeticiones (10 × 3) con doble progresión → un escalón menos de ayuda.
   assert.equal(pull.assisted, true)
-  assert.equal(pull.auto, undefined)
-  assert.deepEqual(pull.sets.map((s) => s.weight), [25, 25, 25])
+  assert.deepEqual(pull.auto, { kind: 'up', from: 25, to: 22.5, mode: 'double', assist: true })
+  assert.deepEqual(pull.sets.map((s) => s.weight), [22.5, 22.5, 22.5])
   // Por lados: 2 series × 2 lados, y cada lado copia lo que hizo la última vez.
   assert.equal(lunge.unilateral, true)
   assert.deepEqual(lunge.sets.map((s) => [s.side, s.weight, s.reps]), [['L', 12, 10], ['R', 14, 10], ['L', 12, 9], ['R', 14, 9]])

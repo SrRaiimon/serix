@@ -326,6 +326,22 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
 }
 
 /**
+ * Máquina asistida: el peso es la ayuda y progresar es quitarla. Si la última vez se completaron todas las series y repeticiones
+ * (doble o lineal), un escalón menos de ayuda (hasta 0) y vuelta al mínimo del rango. Si no, `undefined` (se copia lo de siempre).
+ */
+export function planAssisted(ex: PlanInput, last: SetEntry[], unit: Unit): Plan | undefined {
+  if ((ex.progression !== 'double' && ex.progression !== 'linear') || ex.repsMax <= 0) return undefined
+  const main = last.filter((s) => s.kind !== 'drop' && s.weight > 0)
+  const count = Math.max(ex.sets, 1)
+  if (!main.length || main.length < count || !main.every((s) => s.reps >= ex.repsMax)) return undefined
+  const from = Math.max(...main.map((s) => s.weight))
+  const step = increment(unit)
+  const to = toKg(Math.max(0, Math.round(fromKg(from, unit) / step) * step - step), unit)
+  if (to >= from - 0.01) return undefined
+  return { sets: Array.from({ length: count }, () => blank(to, ex.progression === 'linear' ? ex.repsMax : ex.repsMin)), auto: { kind: 'up', from, to, mode: ex.progression, assist: true } }
+}
+
+/**
  * Sin peso (todas las series de la última vez a 0 kg, con repeticiones): al llegar al máximo del rango en
  * todas, una repetición más por serie. Pasado el máximo + 5 ya no se sube más: toca una variante más
  * difícil o lastre (se avisa). Si aún no se llega, se rellena como siempre.

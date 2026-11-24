@@ -114,12 +114,13 @@ test('service worker: los iconos, de la red y sin conexión de lo guardado (el l
   assert.equal(await sw.get('icons/serix-192.png'), 'red:/serix/icons/serix-192.png', 'red colgada')
 })
 
-test('service worker: al activarse conserva la versión anterior y borra las más viejas, nunca lo ajeno', async () => {
-  const sw = load('c')
-  for (const name of ['serix-a', 'serix-b', 'gym-app-v9', 'gym-img-v1', 'serix-ocr-v1', 'serix-aesan-v3', 'otra-app']) await sw.caches.open(name)
+test('service worker: al activarse conserva las dos versiones anteriores y borra las más viejas, nunca lo ajeno', async () => {
+  const sw = load('d')
+  for (const name of ['serix-a', 'serix-b', 'serix-c', 'gym-app-v9', 'gym-img-v1', 'serix-ocr-v1', 'serix-aesan-v3', 'otra-app']) await sw.caches.open(name)
   await sw.fire('install')
   await sw.fire('activate')
-  assert.deepEqual((await sw.caches.keys()).sort(), ['otra-app', 'serix-aesan-v3', 'serix-b', 'serix-c', 'serix-ocr-v1'])
+  // Con dos despliegues seguidos, una pestaña a mitad de entreno aún tiene sus pantallas (c y b); la a se borra.
+  assert.deepEqual((await sw.caches.keys()).sort(), ['otra-app', 'serix-aesan-v3', 'serix-b', 'serix-c', 'serix-d', 'serix-ocr-v1'])
 })
 
 test('service worker: pantallas, idiomas y lectores opcionales se guardan al visitarlos y funcionan offline', async () => {

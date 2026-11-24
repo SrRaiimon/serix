@@ -310,6 +310,27 @@ document.addEventListener('visibilitychange', () => {
   void clearRestNotification()
 })
 
+// Con la app abierta en dos pestañas, el descanso va igual en las dos: parar o cambiar el tiempo en una lo refleja la otra (el evento
+// «storage» solo llega a la otra pestaña, así que no hay bucle). Sin esto, la que se recargaba restauraba un descanso ya parado.
+if (typeof addEventListener === 'function') addEventListener('storage', (e) => {
+  if (e.key !== SAVED) return
+  if (!e.newValue) {
+    if (state.endAt) { clearTimeout(finishTimeout); clearTimeout(voiceTimeout); cancelBeep(); state = { total: 0 }; listeners.forEach((l) => l()) }
+    return
+  }
+  try {
+    const saved = JSON.parse(e.newValue) as { endAt?: number; total?: number; next?: string; setId?: string; eff?: number }
+    if (!saved.endAt || !saved.total || saved.endAt <= Date.now() || saved.endAt === state.endAt) return
+    nextLabel = saved.next
+    restSetId = saved.setId
+    effortApplied = typeof saved.eff === 'number' ? saved.eff : 0
+    state = { ...state, endAt: saved.endAt, total: saved.total }
+    listeners.forEach((l) => l())
+    // Solo suena la pestaña que se ve: dos pitidos a la vez no.
+    if (document.visibilityState === 'visible') schedule()
+  } catch { /* dato roto: se ignora */ }
+})
+
 // Descanso que seguía en marcha al cerrar o recargar la app.
 try {
   const saved = JSON.parse(localStorage.getItem(SAVED) ?? 'null') as { endAt?: number; total?: number; next?: string; setId?: string; eff?: number } | null

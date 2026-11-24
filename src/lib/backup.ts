@@ -38,7 +38,7 @@ function autoProgress(v: unknown): AutoProgress | undefined {
   const mode = oneOf(v.mode, ['double', 'linear'] as const)
   if (v.kind === 'up' && mode) {
     const from = optNum(v.from, 0, 2000), to = optNum(v.to, 0, 2000)
-    return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode } : undefined
+    return from !== undefined && to !== undefined ? { kind: 'up', from, to, mode, ...(v.assist === true ? { assist: true as const } : {}) } : undefined
   }
   if (v.kind === 'hold' && mode) return { kind: 'hold', mode, ...(v.reason === 'rpe' ? { reason: 'rpe' as const } : {}) }
   if (v.kind === 'down' && mode) {

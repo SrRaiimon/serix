@@ -6,6 +6,7 @@ import type { SessionExercise } from './store'
 export function todayWhy(planned: SessionExercise, unit: Unit): string {
   const auto = planned.auto
   return planned.deload ? t('Descarga', 'Deload')
+    : auto?.kind === 'up' && auto.assist ? t(`↓ −${weight(auto.from - auto.to, unit)} de ayuda`, `↓ −${weight(auto.from - auto.to, unit)} assistance`)
     : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
       // Bajada por estancamiento (doble progresión): decía «Igual que antes» con 55 kg cuando antes eran 60.
       : auto?.kind === 'down' ? `↓ −${weight(auto.from - auto.to, unit)}`

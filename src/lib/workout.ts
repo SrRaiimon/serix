@@ -8,7 +8,7 @@ import { defaultTracking, isSetFilled, trackingOf, type Tracking } from './track
 import { activeSession, expectedMinutes, finishedSessions, getData, lastPerformed, routineMinutes, routineSets, update, type AppData, type Routine, type Session, type SessionExercise, type Progression, type SetEntry, type SetKind, withUndo } from './store'
 import { resetRestView } from './timer'
 import { t } from './i18n'
-import { equipmentOf, lowerWeight, plan, raiseAssist, usedWeights } from './progression'
+import { equipmentOf, lowerWeight, plan, planAssisted, raiseAssist, usedWeights } from './progression'
 import { BARBELL_EQUIPMENT, plannedWarmup } from './warmup'
 import { BARS } from './plates'
 import { blockWeek } from './block'
@@ -96,8 +96,8 @@ function sessionExercise(ex: PlannedExercise, history: Session[], unit: Unit = g
   const last = mode.unilateral ? lastAll.filter((s) => s.side !== 'R') : lastAll
   const count = Math.max(ex.sets, 1)
   // Con progresión automática las series se calculan; si no, se copian de la última vez. En las
-  // máquinas asistidas no: progresar es quitar ayuda, y eso se decide a mano.
-  const auto = trackingOf(ex) === 'weight_reps' && !mode.assisted ? plan(ex, last, history, unit) : undefined
+  // máquinas asistidas, progresar es quitar ayuda (planAssisted).
+  const auto = trackingOf(ex) !== 'weight_reps' ? undefined : mode.assisted ? planAssisted(ex, last, unit) : plan(ex, last, history, unit)
   const sets = auto?.sets ?? prefillSets(count, last)
   const bodyweight = BODYWEIGHT_LIFTS.has(ex.exerciseId) ? bodyweightAt(getData(), Date.now()) : undefined
   return {

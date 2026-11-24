@@ -538,7 +538,10 @@ function StallBox({ best, unit, onDeload, onVariants }: { best: number; unit: Un
 
 /** Explica lo que ha hecho la progresión automática con este ejercicio. */
 function AutoNote({ auto, unit, repsMax }: { auto: AutoProgress; unit: Unit; repsMax?: number }) {
-  const text = auto.kind === 'up'
+  const text = auto.kind === 'up' && auto.assist
+    ? t(`Menos ayuda: baja a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)} de ayuda).`,
+      `Less assistance: down to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)} of assistance).`)
+  : auto.kind === 'up'
     ? t(`Progresión automática: sube a ${weight(auto.to, unit)} (la última vez completaste todas las repeticiones con ${weight(auto.from, unit)}).`,
       `Automatic progression: up to ${weight(auto.to, unit)} (last time you completed every rep with ${weight(auto.from, unit)}).`)
     : auto.kind === 'down'

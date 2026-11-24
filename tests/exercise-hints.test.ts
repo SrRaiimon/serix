@@ -9,6 +9,7 @@ const withAuto = (auto: unknown, extra = {}) => ({ ...exercise('Barbell_Curl', [
 test('rutina: la bajada dice «↓ −5 kg» y un ejercicio sin cambio no dice nada', () => {
   assert.match(todayWhy(withAuto({ kind: 'down', from: 60, to: 55, mode: 'double' }), 'kg'), /^↓ −5/)
   assert.match(todayWhy(withAuto({ kind: 'up', from: 55, to: 57.5, mode: 'double' }), 'kg'), /^↑ \+2[.,]5/)
+  assert.match(todayWhy(withAuto({ kind: 'up', from: 40, to: 37.5, mode: 'double', assist: true }), 'kg'), /^↓ −2[.,]5.*ayuda/)
   assert.equal(todayWhy(withAuto(undefined), 'kg'), '')
   assert.equal(todayWhy(withAuto({ kind: 'hold', mode: 'linear' }), 'kg'), 'Repite el peso')
 })

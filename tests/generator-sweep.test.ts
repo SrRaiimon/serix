@@ -139,3 +139,7 @@ test('barrido: con banda, a 12-20 también los aislamientos; con el material «B
 test('barrido: el curl nórdico en el suelo (Glute-Ham Raise) solo en nivel avanzado', () => {
   fails(all.filter(({ c }) => c.level !== 'advanced').flatMap(({ p, tag }) => p.days.flatMap((d) => d.exercises.filter((x) => /Glute-Ham_Raise/i.test(x.exercise.id)).map((x) => `${tag}: ${x.exercise.id}`))))
 })
+
+test('barrido: la búlgara y el peso muerto a una pierna no salen a quien empieza', () => {
+  fails(all.filter(({ c }) => c.level === 'beginner').flatMap(({ p, tag }) => p.days.flatMap((d) => d.exercises.filter((x) => /Bulgarian|Single_Leg_Deadlift/i.test(x.exercise.id)).map((x) => `${tag}: ${x.exercise.id}`))))
+})

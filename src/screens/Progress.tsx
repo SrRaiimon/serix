@@ -97,7 +97,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const pct = (v: number) => `${(v / scale) * 100}%`
   // Los que más faltan primero y como mucho tres (con un entreno de cuerpo entero salían cinco sin orden): lo urgente a la vista.
   const lowAll = groups.map((g, i) => ({ g, gap: range(i)[0] - g.sets })).filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).map((x) => t(...x.g.name).toLowerCase())
-  const low = lowAll.length > 3 ? [...lowAll.slice(0, 3), t(`${lowAll.length - 3} más`, `${lowAll.length - 3} more`)] : lowAll
+  const lowShown = lowAll.slice(0, 3).join(', ') + (lowAll.length > 3 ? t(` y ${lowAll.length - 3} más`, ` and ${lowAll.length - 3} more`) : '')
+  const low = lowAll
   const high = groups.filter((g, i) => g.sets > range(i)[1]).map((g) => t(...g.name).toLowerCase())
   return (
     <Card title={t('Series por semana y grupo', 'Weekly sets per group')} icon={Dumbbell}>
@@ -120,8 +121,8 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
       <span className="small muted">
         {span >= 1.5 ? t(`Media de las últimas ${weeks} semanas.`, `Average of the last ${weeks} weeks.`) : span > 1 ? t(`Por semana, con tus ${Math.round(span * 7)} días.`, `Per week, over your ${Math.round(span * 7)} days.`) : t('Esta semana.', 'This week.')}
         {' '}{t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
-        {' '}{range(ABS_GROUP)[0] === 0 ? t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.') : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
-        {low.length > 0 && ` ${t(`Por debajo: ${low.join(', ')}.`, `Below: ${low.join(', ')}.`)}`}
+        {' '}{range(ABS_GROUP)[0] === 0 ? (calves > 0 ? t('El abdomen y los gemelos no tienen mínimo: los trabajan los básicos.', 'Abs and calves have no minimum: the main lifts work them.') : t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.')) : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
+        {low.length > 0 && ` ${t(`Por debajo: ${lowShown}.`, `Below: ${lowShown}.`)}`}
         {/* Con uno o dos días a la semana no llega a todo: no es un fallo del plan. */}
         {low.length > 0 && ((settings.trainingDays?.length ?? settings.days) <= 2 || settings.minutes <= 30) && ` ${t('Con tus días y minutos de entreno es normal: suma lo que puedas.', 'With your training days and minutes that is normal: add what you can.')}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
@@ -174,21 +175,29 @@ function BalanceCard({ sessions }: { sessions: Session[] }) {
 
 function WeeklyMuscles({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
+  // 7 días (lo reciente) o 4 semanas (la misma ventana que «Series por semana» y el equilibrio): se elige, no se mezclan sin decirlo.
+  const [days, setDays] = useState<7 | 28>(7)
   const load = useMemo(
-    () => muscleLoad(sessions, Date.now() - 7 * 86400000, (id) => catalog.get(id)?.secondaryMuscles ?? []),
-    [sessions, catalog],
+    () => muscleLoad(sessions, Date.now() - days * 86400000, (id) => catalog.get(id)?.secondaryMuscles ?? []),
+    [sessions, catalog, days],
   )
   const trained = Object.values(load).some((v) => v > 0)
   const missing = MAIN_GROUPS.filter(([, keys]) => keys.every((k) => (load[k] ?? 0) < 1)).map(([label]) => t(...label))
+  // Con su artículo: «los últimos 7 días» pero «las últimas 4 semanas» (con una sola plantilla salía «los últimos 4 semanas»).
+  const span = days === 7 ? t('los últimos 7 días', 'the last 7 days') : t('las últimas 4 semanas', 'the last 4 weeks')
   return (
-    <Card title={t('Músculos en los últimos 7 días', 'Muscles in the last 7 days')} icon={PersonStanding}>
+    <Card title={t(`Músculos en ${span}`, `Muscles in ${span}`)} icon={PersonStanding}>
+      <Segmented value={days === 7 ? 'week' : 'month'} onChange={(v) => setDays(v === 'week' ? 7 : 28)} options={[
+        { value: 'week', label: t('7 días', '7 days') },
+        { value: 'month', label: t('4 semanas', '4 weeks') },
+      ]} />
       <MuscleHeatMap load={load} />
       <span className="small muted">
         {!trained
-          ? t('No has entrenado en los últimos 7 días.', 'You have not trained in the last 7 days.')
+          ? t(`No has entrenado en ${span}.`, `You have not trained in ${span}.`)
           : missing.length
-            ? t(`Sin trabajar en los últimos 7 días: ${missing.join(', ')}.`, `Not trained in the last 7 days: ${missing.join(', ')}.`)
-            : t('Has trabajado todos los grupos principales en los últimos 7 días.', 'You have trained every main group in the last 7 days.')}
+            ? t(`Sin trabajar en ${span}: ${missing.join(', ')}.`, `Not trained in ${span}: ${missing.join(', ')}.`)
+            : t(`Has trabajado todos los grupos principales en ${span}.`, `You have trained every main group in ${span}.`)}
       </span>
     </Card>
   )

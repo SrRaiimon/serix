@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { LIFTS_531, lowerWeight, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
+import { LIFTS_531, lowerWeight, plan, planAssisted, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
 import { fromKg, toKg } from '../src/lib/format'
 import { exercise, session, set } from './helpers'
 import { warmupSets } from '../src/lib/warmup'
@@ -249,4 +249,18 @@ test('lineal: las sesiones cortadas (menos series, todas al objetivo) no cuentan
   const cut = (day: number) => session(day, [exercise('squat', [set(100, 5)], { muscle: 'quads' })])
   const history = [cut(0), cut(3), cut(6)]
   assert.equal(plan(squat, [set(100, 5)], history, 'kg')?.auto?.kind, 'hold')
+})
+
+test('asistidas: con todas las repeticiones, un escalón menos de ayuda; si no, se copia lo de siempre', () => {
+  const pull = { exerciseId: 'Assisted_Pull-Up', muscle: 'lats', sets: 3, repsMin: 6, repsMax: 10, progression: 'double' as const }
+  const done = [set(40, 10), set(40, 10), set(40, 10)]
+  const p = planAssisted(pull, done, 'kg')!
+  assert.deepEqual(shape(p), ['37.5x6', '37.5x6', '37.5x6'])
+  assert.deepEqual(p.auto, { kind: 'up', from: 40, to: 37.5, mode: 'double', assist: true })
+  // Sin completar, sin progresión automática o con sesión cortada: nada (el entreno copia la última vez).
+  assert.equal(planAssisted(pull, [set(40, 10), set(40, 9), set(40, 10)], 'kg'), undefined)
+  assert.equal(planAssisted({ ...pull, progression: undefined }, done, 'kg'), undefined)
+  assert.equal(planAssisted(pull, [set(40, 10)], 'kg'), undefined)
+  // Con 2,5 kg de ayuda, la siguiente es sin ayuda (0): el peso corporal solo.
+  assert.equal(planAssisted(pull, [set(2.5, 10), set(2.5, 10), set(2.5, 10)], 'kg')?.sets[0].weight, 0)
 })

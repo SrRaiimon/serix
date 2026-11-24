@@ -9,6 +9,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.59',
+    items: [
+      ['Descanso con la app abierta en dos pestañas: parar o cambiar el tiempo en una lo refleja la otra, y tras un despliegue se conservan las dos versiones anteriores sin conexión (un entreno largo ya no pierde pantallas).', 'Rest with the app open in two tabs: stopping or changing the time in one is reflected in the other, and after a deploy the two previous versions are kept offline (a long workout no longer loses screens).'],
+      ['Programas para quien empieza en casa: sin la sentadilla búlgara ni el peso muerto a una pierna (sentadilla, zancada y pared primero), y la semana se compensa con más tirón si el empuje se pasa.', 'Programs for beginners at home: no Bulgarian split squat or single-leg deadlift (squat, lunge and wall sit first), and the week is balanced with more pulling if pushing runs over.'],
+      ['Máquinas asistidas: si completas todas las series y repeticiones, la siguiente vez te propone un escalón menos de ayuda («↓ −2,5 kg de ayuda»), con doble o lineal.', 'Assisted machines: if you complete every set and rep, next time it suggests one step less assistance («↓ −2.5 kg assistance»), with double or linear progression.'],
+      ['Progreso › Músculos: el mapa se puede ver con 7 días o con 4 semanas (la misma ventana que las series por semana y el equilibrio).', 'Progress › Muscles: the map can be shown for 7 days or 4 weeks (the same window as weekly sets and balance).'],
+    ],
+  },
+  {
     version: '0.1.58',
     items: [
       ['Programas: el curl nórdico en el suelo (Glute-Ham Raise) a 3-6 repeticiones ya solo sale en nivel avanzado, no en intermedio.', 'Programs: the floor Glute-Ham Raise at 3-6 reps now only appears at advanced level, not intermediate.'],
