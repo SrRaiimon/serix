@@ -40,6 +40,9 @@ export function fromBase64Url(text: string): Uint8Array {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0))
 }
 
+/** La salida de una descompresión pasó el tope: no es un archivo dañado, es demasiado grande. */
+export class TooLargeError extends Error {}
+
 /** Comprime o descomprime; con `maxBytes` corta si la salida lo supera (un archivo pequeño puede descomprimirse a gigas). */
 export async function transform(bytes: Uint8Array, stream: CompressionStream | DecompressionStream, maxBytes = Infinity): Promise<Uint8Array> {
   const reader = new Blob([bytes as BlobPart]).stream().pipeThrough(stream).getReader()
@@ -51,7 +54,7 @@ export async function transform(bytes: Uint8Array, stream: CompressionStream | D
     size += value.length
     if (size > maxBytes) {
       void reader.cancel()
-      throw new Error(t('Los datos son demasiado grandes.', 'The data is too large.'))
+      throw new TooLargeError(t('Los datos son demasiado grandes.', 'The data is too large.'))
     }
     chunks.push(value)
   }
@@ -104,6 +107,7 @@ export async function decodePlan(code: string, catalog: Catalog): Promise<Import
     return await decode(code, catalog)
   } catch (e) {
     if (e instanceof ShareError) throw e
+    if (e instanceof TooLargeError) throw new ShareError(e.message)
     // Base64 o compresión rotos: casi siempre un enlace cortado al copiarlo.
     throw new ShareError(t('El enlace está incompleto o dañado. Pide que te lo vuelvan a enviar.', 'The link is incomplete or damaged. Ask for it to be sent again.'))
   }

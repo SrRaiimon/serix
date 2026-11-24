@@ -38,6 +38,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.51 | 9,6 | 9,6 | 9,8 | 9,6 | 9,7 (9,65) |
 | 0.1.52 | 9,6 | 9,6 | 9,6 | 9,6 | 9,6 (9,6) |
 | 0.1.53 | 9,6 | 9,6 | 9,3 | — (se detuvo; sin relanzar) | — |
+| 0.1.54 | 9,6 | 9,5 | 9,2 | 9,6 | 9,5 (9,475) |
 
 ## Rotación de zonas (serix-code)
 
@@ -49,7 +50,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 |---|---|---|
 | Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | 0.1.48 |
 | Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | 0.1.42 |
-| Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | 0.1.43 |
+| Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | 0.1.54 |
 | Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | 0.1.44 |
 | Guardado y varias pestañas | lib/store.ts (migraciones, mergeData, deshacer), lib/customExercises.ts | 0.1.45 |
 | Pantallas de edición | screens/SessionEdit.tsx, screens/Profile.tsx (medidas), screens/Photos.tsx, lib/photos.ts | 0.1.46 |
@@ -105,3 +106,29 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
 - Tercer intento fallido en el generador: reordenar `squat` (sentadilla de peso corporal antes que la búlgara) rompe el barrido (fatLoss/intermediate/bodyweight/3d/45: empuje 28, tirón 18,5). Hace falta primero el segundo `homePull` y tocar `balanceWeek`.
 - Sigue sin hacer: ventana única de Músculos, Gemelos en «Series por semana», chunk de entrada, restDayKcal (sin criterio concreto), 5/3/1 por semana de calendario, partir ficheros grandes.
 - Tercera pasada 0.1.54: «Equilibrio muscular» con la misma ventana que «Series por semana», Gemelos en «Series por semana» (`weeklyCalfSets`, fuera de MAIN_GROUPS). El 5/3/1 ya iba por semana de calendario. Siguen sin hacer: generador (principiante en casa, `homePull` extra), chunk de entrada (Home va en el entry; sin perfilar), `restDayKcal`.
+
+## Pendientes tras 0.1.54 (global 9,5; coach 9,2 por el generador)
+
+### Fallos míos de la 0.1.54
+- **Test de la bomba de compresión (migrate-share) no prueba nada** (code): `transform` lanza un `Error` genérico y `decodePlan` lo convierte en «incompleto o dañado»; el test acepta ese mensaje y pasaría con el código viejo. Lanzar `ShareError` con el mensaje «demasiado grandes» y comprobarlo exacto.
+- **«Guarda una copia» con el entreno en curso** (ux, `Home.tsx:101`): la tarjeta sale siempre con `active`; respetar `trainedTodayHome` también ahí. Además, en quien siempre se está recuperando el aviso de copia no sale nunca (con 77 entrenos y «Copia: Nunca»).
+- **Modo foco** (perf, `WorkoutFocus.tsx` ~95 y ~108): dos h1 visibles («Entrenamiento: …» y `.focus-name`) y axe `region` en `.focus-mode`: `.focus-name` a h2 y envolver en landmark.
+- **Campos Edad/Altura/Peso del objetivo** a 80×40: subir a 44 de alto. «0 años / 0 cm» en gris como si fueran valores.
+- `loadSuggestion` con barra ligera: −4 % de 20 kg baja a 17,5 (−12,5 %) y con mancuernas ligeras la subida de un escalón (>15 %) no se propone; kettlebell en lb con pesos guardados en kg (16 kg = 35,27 lb) compara con tolerancia 0,01 en vez de redondear; `exerciseHints.ts` redeclara `Unit` y `stallOffered` recibe `unknown`; el test de `restoreData` lee el código fuente con regex.
+- `lowerWeight` con barra de 20 kg / 45 lb baja por debajo de la barra vacía; `autoreg.ts:106` pasa `used=[]` (mancuernas de 20/30 siempre en la serie de 2 kg); ruido de coma flotante (309,99999999999994 lb).
+
+### serix-ux (9,6)
+- Músculos: mapa a 7 días y series/equilibrio a 4 semanas (rotulado, no unificado); Gemelos sin mínimo sin explicarlo (como el abdomen); «Calorías y peso» solo pinta peso sin comidas; racha de 27 en Home frente a 26 en Logros (puede ser siembra); Importar de Strong repite «4 mar – 4 mar» con un solo día; calculadora de discos ambigua («Salto mínimo 2,5 kg»); «Tu entrenador» el día de entreno, mapa oscuro y «+10 kcal sobre tus 1210» sin verificar.
+
+### serix-code (9,5)
+- Zona Temporizadores, avisos y PWA leída entera (0.1.54), sin fallos altos ni medios. Bajos: `effortApplied` vuelve a 0 al recargar a mitad de descanso (el ajuste se aplica dos veces); sin sincronía entre pestañas en el descanso; `adjustRestForEffort` puede cortar el descanso sin aviso (`timer.ts:241`); peso con fecha futura retrasa `weighDue`; `vite:preloadError` recarga sin red; `lockScreen.ts:72` si `setPositionState` lanza no registra manejadores; el service worker solo conserva una versión anterior.
+- Siguen: `plates.ts` `loadBar`, `bodyweight.ts` `fillBodyweights`, `plannedSets`, partir generator/figures/nutrition/Food, `dropped` sin tope de km, TM del 5/3/1 y tempo sin tope, sustituir ejercicio pierde progression/tempo/percent, «Bajar un 10 %» en asistidas.
+- Zona más antigua ahora: Amigos y retos (0.1.42).
+
+### serix-coach (9,2)
+- Barrido propio de pesos limpio (sube y baja siempre, escalones reales). Solo saltos grandes con pesos raros: mancuerna de 3,5 a 7,5 kg baja −33 % a −71 %, kettlebell > 48 kg, barra de 20 kg.
+- Generador (el motivo de la nota): perder grasa en gimnasio 4 d/45 min con cuádriceps 19, isquios 5, pecho 6, espalda 4+3; mancuernas en casa intermedio con `Floor_Glute-Ham_Raise` (avanzado) y bíceps 4 / tríceps 6 frente a cuádriceps 18 / isquios 11; peso corporal principiante con búlgara y peso muerto a una pierna y bíceps 2; principiante en gimnasio con RDL 4×8-12, tríceps 2 y dorsal 4; asistidas sin progresión de ayuda reducida (`plan()` las salta); `weightAdvice` con ventanas que se solapan en 14 de 21 días; `restDayKcal`.
+- Cada retoque aislado al generador rompe el barrido (empuje/tirón): hace falta un segundo `homePull`, retocar `balanceWeek` y subir tren superior e isquios en perder grasa y mancuernas, con el barrido abierto.
+
+### serix-perf-a11y (9,6)
+- Lighthouse móvil 99-100 (FCP 0,9-1,0 s, LCP 1,8-1,9 s, TBT 0-10 ms, CLS 0-0,003); axe 0 violaciones en todas las pantallas y hojas, claro y oscuro; solo el entreno en modo foco da 1 `region`. Abiertos: chunk de entrada de ~312 kB (Home dentro), recorte de texto en el e2e.

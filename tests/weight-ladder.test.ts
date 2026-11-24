@@ -86,3 +86,10 @@ test('kettlebell: solo pesos que hay, en kg y lb (18 → 16, 35 lb → 26)', () 
   assert.ok(close(fromKg(lowerWeight('Goblet_Squat', toKg(35, 'lb'), 'lb'), 'lb'), 26))
   assert.ok(close(fromKg(toKg(35, 'lb') + progressionStep('quads', 'lb', 'Goblet_Squat', toKg(35, 'lb')), 'lb'), 44))
 })
+
+test('kettlebell en lb con una pesa guardada en kg: 16 kg es la de 35 lb, no «35,27»', () => {
+  use()
+  const w = 16
+  assert.ok(close(fromKg(lowerWeight('Goblet_Squat', w, 'lb'), 'lb'), 26))
+  assert.ok(close(fromKg(w + progressionStep('quads', 'lb', 'Goblet_Squat', w), 'lb'), 44))
+})

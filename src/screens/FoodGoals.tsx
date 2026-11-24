@@ -75,7 +75,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
     <label className="list-row">
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, minHeight: 40, fontSize: 17 }} value={value} onChange={(e) => set(e.target.value)} aria-label={label} />
+      <input inputMode="decimal" placeholder="–" style={{ textAlign: 'right', width: 80, minHeight: 44, fontSize: 17 }} value={value} onChange={(e) => set(e.target.value)} aria-label={label} />
       <span className="muted" style={{ width: 36 }}>{unit}</span>
     </label>
   )

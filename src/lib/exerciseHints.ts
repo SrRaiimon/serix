@@ -1,8 +1,6 @@
-import { weight } from './format'
+import { weight, type Unit } from './format'
 import { t } from './i18n'
 import type { SessionExercise } from './store'
-
-type Unit = 'kg' | 'lb'
 
 /** Lo que se enseña bajo cada ejercicio de la rutina sobre lo que cambia hoy (↑ +2,5 kg, ↓ −5 kg…); vacío si no cambia nada. */
 export function todayWhy(planned: SessionExercise, unit: Unit): string {
@@ -24,6 +22,6 @@ export function todayWhy(planned: SessionExercise, unit: Unit): string {
  * ¿Se ofrece la descarga por estancamiento? No si ya hay descarga, una sugerencia de subida, la semana del 5/3/1 o una bajada
  * automática (era el mismo aviso dos veces), ni con series ya hechas.
  */
-export function stallOffered(exercise: SessionExercise, hint: unknown, stalled: unknown): boolean {
+export function stallOffered(exercise: SessionExercise, hint: string | null | undefined, stalled: object | null | undefined): boolean {
   return !exercise.deload && !hint && !!stalled && exercise.auto?.kind !== 'wave' && exercise.auto?.kind !== 'down' && !exercise.sets.some((x) => x.done)
 }

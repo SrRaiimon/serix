@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import { defaultSettings, getData, replaceData, undo, type Session } from '../src/lib/store'
 import { applyDeload, plannedSets, saveAsRoutine } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
-import { backupJson, restoreData } from '../src/lib/protect'
+import { backupJson, backupOverdue, restoreData } from '../src/lib/protect'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
 import { parseNutritionLabel, type BasicFood, type FoodEntry } from '../src/lib/nutrition'
 import { exercise, fakeIndexedDB, session, set } from './helpers'
@@ -151,4 +151,13 @@ test('restaurar una copia y recibir datos por QR pasan por restoreData (con desh
     assert.match(src, /restoreData\(/, file)
     assert.doesNotMatch(src, /replaceData\(/, file)
   }
+})
+
+test('copia atrasada: nunca o con el doble del plazo, ya no cede el sitio a otros avisos', () => {
+  reset([])
+  const d = getData()
+  const now = Date.now()
+  assert.equal(backupOverdue(d, now), true)
+  assert.equal(backupOverdue({ ...d, settings: { ...d.settings, lastBackupAt: now - 40 * 86400000 } }, now), false)
+  assert.equal(backupOverdue({ ...d, settings: { ...d.settings, lastBackupAt: now - 70 * 86400000 } }, now), true)
 })

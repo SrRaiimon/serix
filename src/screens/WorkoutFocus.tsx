@@ -92,8 +92,8 @@ export function FocusMode({ session, unit, onClose }: { session: Session; unit: 
   if (!exercise || !set) {
     return (
       <Overlay>
-        <div className="focus-mode">
-          <h1>{t('¡Todo hecho!', 'All done!')}</h1>
+        <div className="focus-mode" role="region" aria-label={t('Modo foco', 'Focus mode')}>
+          <h2>{t('¡Todo hecho!', 'All done!')}</h2>
           <p className="muted">{t('Cierra el modo foco y pulsa «Terminar» para guardar el entreno.', 'Close focus mode and tap "Finish" to save the workout.')}</p>
           <button className="btn primary focus-done" onClick={onClose}>{t('Cerrar', 'Close')}</button>
         </div>
@@ -105,12 +105,12 @@ export function FocusMode({ session, unit, onClose }: { session: Session; unit: 
   const timed = trackingOf(exercise) !== 'weight_reps'
   return (
     <Overlay>
-      <div className="focus-mode">
+      <div className="focus-mode" role="region" aria-label={t('Modo foco', 'Focus mode')}>
         <div className="row between">
           <span className="small muted">{session.name}</span>
           <button className="btn small secondary" onClick={onClose}>{t('Salir del foco', 'Exit focus')}</button>
         </div>
-        <h1 className="focus-name">{exercise.name}</h1>
+        <h2 className="focus-name">{exercise.name}</h2>
         <span className="muted">{set.warmup ? t('Calentamiento', 'Warm-up') : t(`Serie ${number} de ${working.length}`, `Set ${number} of ${working.length}`)}{exercise.repsMax > 0 ? ` · ${exercise.repsMin === exercise.repsMax ? exercise.repsMin : `${exercise.repsMin}-${exercise.repsMax}`} reps` : ''}</span>
         {resting ? (
           <div className="focus-rest">

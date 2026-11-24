@@ -2820,7 +2820,7 @@ a.list-row { color: var(--text); text-decoration: none; }
 
 /* Modo foco del entreno: la serie que toca, en grande. */
 .focus-mode { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: flex; flex-direction: column; gap: 14px; padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 20px); overflow-y: auto; }
-.focus-mode h1 { margin: 0; }
+.focus-mode h1, .focus-mode h2 { margin: 0; }
 .focus-name { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.05; }
 .focus-fields { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
 .focus-field { display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; gap: 10px; }

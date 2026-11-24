@@ -114,7 +114,9 @@ test('un enlace manipulado: topes de rutinas y ejercicios, repeticiones al revé
   assert.deepEqual([many.routines[0].exercises[0].repsMin, many.routines[0].exercises[0].repsMax], [5, 20])
   // Una carga que se descomprime a más del tope se corta (ceros comprimidos: unos pocos bytes → 3 MB).
   const bomb = 'z' + deflateRawSync(Buffer.alloc(3_000_000, 0x20)).toString('base64url')
-  await assert.rejects(decodePlan(bomb, catalog), /demasiado grandes|too large|incompleto/)
+  await assert.rejects(decodePlan(bomb, catalog), /demasiado grandes/)
+  // Y no se confunde con un enlace dañado.
+  await assert.rejects(decodePlan(bomb, catalog), (e: Error) => !/incompleto/.test(e.message))
 })
 
 test('enlaces dañados o ajenos dan un mensaje claro', async () => {

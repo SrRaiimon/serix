@@ -54,7 +54,9 @@ const KETTLEBELLS: Record<Unit, number[]> = {
   kg: [2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48],
   lb: [9, 13, 18, 26, 35, 44, 53, 62, 70, 80, 90, 106],
 }
-const kbNext = (w: number, unit: Unit) => KETTLEBELLS[unit].find((x) => x > fromKg(w, unit) + 0.01)
+// En libras, a la libra entera: una pesa de 16 kg guardada antes de cambiar de unidad son 35,27 lb y es la de 35.
+const kbValue = (w: number, unit: Unit) => (unit === 'lb' ? Math.round(fromKg(w, unit)) : fromKg(w, unit))
+const kbNext = (w: number, unit: Unit) => KETTLEBELLS[unit].find((x) => x > kbValue(w, unit) + 0.01)
 const only25 = (w: number) => w % 2.5 === 0 && w % 2 !== 0
 /** La serie de mancuernas desde 10 kg (de 2 o de 2,5 kg) que dicen los pesos ya usados. La usa también el calentamiento. */
 export const dumbbellSeries = (used: number[]): 2 | 2.5 => (used.some((w) => w >= 10 && only25(w)) ? 2.5 : 2)
@@ -107,7 +109,7 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
   }
   if (equipment === 'kettlebell' && weight > 0) {
     // La más cercana al 10 % menos entre las que existen, siempre por debajo (24 → 20, 18 → 16).
-    const list = KETTLEBELLS[unit].filter((x) => x < fromKg(weight, unit) - 0.01)
+    const list = KETTLEBELLS[unit].filter((x) => x < kbValue(weight, unit) - 0.01)
     if (!list.length) return 0
     const tl = fromKg(target, unit)
     return toKg(list.reduce((best, x) => (Math.abs(x - tl) < Math.abs(best - tl) ? x : best)), unit)

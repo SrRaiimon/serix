@@ -68,6 +68,11 @@ export function backupDue(d: AppData, finishedSessions: number, now = Date.now()
   return !d.settings.lastBackupAt || now - d.settings.lastBackupAt > BACKUP_EVERY_DAYS * DAY
 }
 
+/** Copia muy atrasada (nunca, o hace el doble del plazo): ya no cede el sitio a otros avisos, o quien siempre se está recuperando no la vería jamás. */
+export function backupOverdue(d: AppData, now = Date.now()): boolean {
+  return !d.settings.lastBackupAt || now - d.settings.lastBackupAt > 2 * BACKUP_EVERY_DAYS * DAY
+}
+
 export function snoozeBackup() {
   updateSettings({ backupSnoozeUntil: Date.now() + SNOOZE_DAYS * DAY })
 }

@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.55',
+    items: [
+      ['Modo foco: un solo encabezado principal y su propia región para lectores de pantalla; los campos de edad, altura y peso del objetivo llegan a 44 px y ya no enseñan «0 años / 0 cm» como si fueran valores.', 'Focus mode: a single main heading and its own region for screen readers; the age, height and weight fields of the goal reach 44 px and no longer show «0 yrs / 0 cm» as if they were values.'],
+      ['«Guarda una copia» ya no sale mientras entrenas, y si llevas mucho sin guardarla (o nunca) ya no cede el sitio al aviso de recuperación: antes quien siempre se estaba recuperando no la veía jamás.', '«Back up your data» no longer shows while you train, and if you have gone a long time without one (or never) it no longer gives way to the recovery notice: before, someone who was always recovering never saw it.'],
+      ['Un enlace de rutina demasiado grande dice «Los datos son demasiado grandes» y no «enlace dañado»; las sugerencias por esfuerzo no proponen un escalón mucho mayor que el ajuste con barras ligeras, y la kettlebell en libras se lee bien si la guardaste en kilos.', 'A routine link that is too large says «The data is too large» and not «damaged link»; effort-based suggestions no longer propose a step much bigger than the adjustment with light bars, and kettlebells in pounds read correctly if you saved them in kilos.'],
+    ],
+  },
+  {
     version: '0.1.54',
     items: [
       ['Progreso › Músculos: «Equilibrio muscular» usa las mismas semanas que «Series por semana y grupo» (antes dividía siempre entre 4 y con poco historial salían la mitad de series), y los gemelos salen en las series por semana cuando los has trabajado.', 'Progress › Muscles: «Muscle balance» uses the same weeks as «Weekly sets per group» (before it always divided by 4 and with little history it showed half the sets), and calves show up in the weekly sets once you have trained them.'],

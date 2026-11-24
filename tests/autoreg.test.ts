@@ -77,3 +77,8 @@ test('gemelos por semana: principales a 1 y secundarios a media, fuera de los gr
   assert.equal(weeklyCalfSets(s, (id) => (id === 'Barbell_Squat' ? ['calves'] : []), now), 4) // 3 + 2 × 0,5
   assert.equal(weeklyCalfSets([], () => [], now), 0)
 })
+
+test('autorregulación: con una barra ligera no propone un escalón mucho mayor que el ajuste (−4 % de 20 kg no es −12,5 %)', () => {
+  const e = exercise('Barbell_Curl', [set(20, 8, { rpe: 9 }), set(20, 8, { done: false })])
+  assert.equal(loadSuggestion(e, 8, kg), undefined)
+})
