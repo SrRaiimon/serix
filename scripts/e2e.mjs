@@ -335,7 +335,7 @@ async function main() {
   const weightsBefore = (await data()).sessions.find((s) => !s.end).exercises[0].sets.filter((s) => !s.done).map((s) => s.weight)
   await click('^Bajar un 10 %$')
   const weightsAfter = (await data()).sessions.find((s) => !s.end).exercises[0].sets.filter((s) => !s.done).map((s) => s.weight)
-  check(JSON.stringify(weightsAfter) === JSON.stringify(weightsBefore.map((w) => Math.max(0, Math.floor(w * 0.9 / 2.5) * 2.5))), 'La propuesta no bajó al escalón de peso esperado')
+  check(JSON.stringify(weightsAfter) === JSON.stringify(weightsBefore.map((w) => { const r = Math.round(w * 0.9 / 2.5) * 2.5; return Math.max(0, r < w ? r : w - 2.5) })), 'La propuesta no bajó al escalón de peso esperado (el más cercano al −10 %, de 2,5 en 2,5)')
   await click('^Cambiar de ejercicio$')
   check(await run(() => !!document.querySelector('input[placeholder="Buscar otro ejercicio"]')), 'No abrió las alternativas existentes')
   await browserBack()
