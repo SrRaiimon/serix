@@ -30,17 +30,53 @@ export interface Loading {
   missing: number
 }
 
-/** Reparte el peso (en kg) en discos por lado, empezando por los más grandes. */
+/**
+ * Reparte el peso (en kg) en discos por lado: la combinación que más se acerca al objetivo sin pasarse y, a igual suma, con
+ * menos discos. Antes era voraz (de mayor a menor): con discos de 20 y 15 y 30 por lado ponía 20 y se quedaba corto, y con
+ * 15 + 15 llegaba exacto.
+ */
 export function loadBar(targetKg: number, barWeight: number, unit: Unit, plates: number[] = PLATES[unit]): Loading {
   const target = fromKg(targetKg, unit)
-  let side = Math.max(0, (target - barWeight) / 2)
-  const perSide: number[] = []
-  for (const plate of plates) {
-    while (side >= plate - 1e-6) {
-      perSide.push(plate)
-      side -= plate
+  const side = Math.max(0, (target - barWeight) / 2)
+  // Lo habitual primero: de mayor a menor (25 + 10 + 5, no 20 + 20). Solo si así se queda corto se busca una combinación que llegue.
+  const greedy = fill(side, plates)
+  if (greedy.left < 1e-6) return result(greedy.perSide)
+  const QUANTUM = 0.25
+  const cap = Math.min(4000, Math.floor(side / QUANTUM + 1e-6))
+  const sizes = [...plates].filter((p) => p > 0).sort((a, b) => b - a).map((p) => ({ p, u: Math.round(p / QUANTUM) })).filter((x) => x.u > 0)
+  // best[v]: menos discos para sumar exactamente v (en cuartos); prev[v]: último disco usado.
+  const best = new Array<number>(cap + 1).fill(Infinity)
+  const prev = new Array<number>(cap + 1).fill(-1)
+  best[0] = 0
+  for (let v = 1; v <= cap; v++) {
+    for (let i = 0; i < sizes.length; i++) {
+      const u = sizes[i].u
+      if (u <= v && best[v - u] + 1 < best[v]) { best[v] = best[v - u] + 1; prev[v] = i }
     }
   }
-  const total = barWeight + 2 * perSide.reduce((a, b) => a + b, 0)
-  return { perSide, total, missing: Math.max(0, Math.round((target - total) * 100) / 100) }
+  let reach = cap
+  while (reach > 0 && best[reach] === Infinity) reach--
+  const perSide: number[] = []
+  for (let v = reach; v > 0; v -= sizes[prev[v]].u) perSide.push(sizes[prev[v]].p)
+  perSide.sort((a, b) => b - a)
+  const exactSide = perSide.reduce((a, b) => a + b, 0)
+  return result(exactSide > greedy.perSide.reduce((a, b) => a + b, 0) + 1e-9 ? perSide : greedy.perSide)
+
+  function result(list: number[]): Loading {
+    const total = barWeight + 2 * list.reduce((a, b) => a + b, 0)
+    return { perSide: list, total, missing: Math.max(0, Math.round((target - total) * 100) / 100) }
+  }
+}
+
+/** El reparto voraz de un lado (de mayor a menor) y lo que queda sin cubrir. */
+function fill(side: number, plates: number[]): { perSide: number[]; left: number } {
+  const perSide: number[] = []
+  let left = side
+  for (const plate of [...plates].sort((a, b) => b - a)) {
+    while (left >= plate - 1e-6) {
+      perSide.push(plate)
+      left -= plate
+    }
+  }
+  return { perSide, left }
 }

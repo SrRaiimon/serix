@@ -188,6 +188,8 @@ function suits(e: Exercise, r: PickRules): boolean {
   if (r.strict && /kipping/i.test(e.id)) return false
   if (r.bar === false && NEEDS_BAR.test(e.id)) return false
   if (r.level === 'beginner' && (e.level === 'expert' || HARD_START.test(e.id))) return false
+  // El curl nórdico (en el suelo) a 3-6 repeticiones es de nivel avanzado: en intermedio sale mal hecho o no se hace.
+  if (r.level !== 'advanced' && /Glute-Ham_Raise/i.test(e.id)) return false
   // Cualquier dominada (barra V, agarre abierto…) es tan dura para empezar como la normal: remos hasta poder.
   if (r.level === 'beginner' && /pull[-_]?up|chin[-_]?up/i.test(e.id) && !/assisted|negative/i.test(e.id)) return false
   // Fondos en paralelas: fuera del gimnasio no hay paralelas (los de banco, con una silla, sí).

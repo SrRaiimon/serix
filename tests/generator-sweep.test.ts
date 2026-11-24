@@ -135,3 +135,7 @@ test('barrido: con banda, a 12-20 también los aislamientos; con el material «B
     return [`${tag}: ${x.exercise.id} ${x.repsMin}-${x.repsMax}`]
   }))))
 })
+
+test('barrido: el curl nórdico en el suelo (Glute-Ham Raise) solo en nivel avanzado', () => {
+  fails(all.filter(({ c }) => c.level !== 'advanced').flatMap(({ p, tag }) => p.days.flatMap((d) => d.exercises.filter((x) => /Glute-Ham_Raise/i.test(x.exercise.id)).map((x) => `${tag}: ${x.exercise.id}`))))
+})

@@ -9,6 +9,13 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.58',
+    items: [
+      ['Programas: el curl nórdico en el suelo (Glute-Ham Raise) a 3-6 repeticiones ya solo sale en nivel avanzado, no en intermedio.', 'Programs: the floor Glute-Ham Raise at 3-6 reps now only appears at advanced level, not intermediate.'],
+      ['Calculadora de discos: con discos poco habituales (por ejemplo solo 20 y 15), si el reparto de mayor a menor se queda corto busca la combinación que llega (15 + 15 en vez de 20 y falta).', 'Plate calculator: with unusual plates (for example only 20 and 15), if loading from largest to smallest falls short it looks for the combination that reaches the weight (15 + 15 instead of 20 and a shortfall).'],
+    ],
+  },
+  {
     version: '0.1.57',
     items: [
       ['Inicio: el día que ya has entrenado, «Tu entrenador» espera al siguiente (junto a «Hoy ya has entrenado» y la copia eran tres bloques). Progreso: «Calorías y peso» se llama «Peso» si no hay comidas, y al importar de Strong un solo día no repite la fecha.', 'Home: on the day you have already trained, «Your coach» waits for the next one (next to «You already trained today» and the backup there were three blocks). Progress: «Calories and weight» is called «Weight» when there are no meals, and importing from Strong with a single day no longer repeats the date.'],

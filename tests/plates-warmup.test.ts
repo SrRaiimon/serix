@@ -87,3 +87,12 @@ test('el salto mínimo cambia los redondeos de la app', () => {
   }
   assert.equal(increment('kg'), 2.5)
 })
+
+test('discos no habituales: si el reparto voraz se queda corto, se busca la combinación que llega (15 + 15, no 20 y falta)', () => {
+  // Solo discos de 20 y 15: 30 por lado. El voraz pone 20 y se queda en 10 de menos.
+  const l = loadBar(80, 20, 'kg', [20, 15])
+  assert.deepEqual(l.perSide, [15, 15])
+  assert.equal(l.missing, 0)
+  // Con los habituales, el reparto de siempre.
+  assert.deepEqual(loadBar(100, 20, 'kg').perSide, [25, 15])
+})
