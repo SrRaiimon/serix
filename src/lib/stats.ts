@@ -459,12 +459,20 @@ function topSet(s: Session, exerciseId: string): SetEntry | undefined {
   return sets.reduce((a, b) => (score(b) > score(a) ? b : a))
 }
 
+/** Nombres que pone la app a un entreno libre, en los cuatro idiomas (se guarda el del idioma de ese momento): no dicen qué se hizo. */
+export const DEFAULT_SESSION_NAMES = new Set(['Entrenamiento libre', 'Free workout', 'Entraînement libre', 'Treino livre'])
+
+/** Los ejercicios distintos de un entreno, ordenados: lo que dice si dos entrenos libres son el mismo. */
+export const exerciseKey = (s: Session) => [...new Set(s.exercises.map((e) => e.exerciseId))].sort().join('|')
+
 /**
  * El entrenamiento frente al anterior de la misma rutina (o, si no es de rutina, con el mismo nombre):
- * duración, peso movido y la mejor serie de cada ejercicio que se hizo las dos veces.
+ * duración, peso movido y la mejor serie de cada ejercicio que se hizo las dos veces. Con el nombre por defecto
+ * («Entrenamiento libre», que comparten entrenos sin relación) también tienen que coincidir los ejercicios.
  */
 export function compareWithLast(session: Session, history: Session[]): Comparison | undefined {
-  const same = (s: Session) => (session.routineId ? s.routineId === session.routineId : !s.routineId && s.name === session.name)
+  const same = (s: Session) => (session.routineId ? s.routineId === session.routineId
+    : !s.routineId && s.name === session.name && (!DEFAULT_SESSION_NAMES.has(s.name) || exerciseKey(s) === exerciseKey(session)))
   const previous = history.filter((s) => s.id !== session.id && s.end !== undefined && s.start < session.start && same(s)).sort((a, b) => b.start - a.start)[0]
   if (!previous) return undefined
   const exercises: ExerciseChange[] = []

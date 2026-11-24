@@ -503,7 +503,7 @@ function SettingsMenu({ exercise, kit: { barbell, pairs }, simple, unit, edit, s
       }] : []),
       ...(tracking === 'weight_reps' && !simple ? [exercise.deload
         ? { label: t('Quitar la descarga de hoy', 'Undo today\'s deload'), onSelect: () => edit((e) => undoDeload(e)) }
-        : { label: t('Hacer sesión de descarga', 'Make it a deload session'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
+        : { label: t('Hacer una descarga', 'Do a deload'), onSelect: () => edit((e) => applyDeload(e, unit)) }] : []),
     ]} />
   )
 }
@@ -521,8 +521,8 @@ function StallBox({ best, unit, onDeload, onVariants }: { best: number; unit: Un
       {open && (
         <>
           <span className="small">
-            {t(`Tu mejor marca: máx. estimado de ~${int(fromKg(best, unit))} ${unit}. Una sesión de descarga (menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
-              `Your best: est. max of ~${int(fromKg(best, unit))} ${unit}. A deload session (fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
+            {t(`Tu mejor marca: máx. estimado de ~${int(fromKg(best, unit))} ${unit}. Una descarga (menos series y −10 % de peso) o cambiar a una variante suele ayudar a volver a progresar.`,
+              `Your best: est. max of ~${int(fromKg(best, unit))} ${unit}. A deload (fewer sets and −10% weight) or switching to a variation usually helps you progress again.`)}
           </span>
           <div className="row" style={{ gap: 8 }}>
             <button className="btn small secondary" onClick={onDeload}>{t('Hacer descarga', 'Deload')}</button>

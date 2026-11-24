@@ -277,7 +277,7 @@ export function OnboardingScreen() {
               <img className="onb-logo" src="icons/serix.svg" width={72} height={72} alt="" />
               <h1 className="onb-title">{t('Tu entrenador de bolsillo', 'Your pocket coach')}</h1>
               <p className="onb-lead">
-                {t('Más de 900 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Over 900 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
+                {t('Más de 1.000 ejercicios con los músculos que trabaja cada uno, rutinas adaptadas a ti, registro de cada serie y estadísticas de tu progreso.', 'Over 1,000 exercises with the muscles each one works, routines tailored to you, logging for every set and stats on your progress.')}
               </p>
             </div>
             <ul className="onb-features">

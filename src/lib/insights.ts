@@ -21,6 +21,8 @@ export function sessionScores(sessions: Session[]): { s: Session; score: number 
   for (const s of [...sessions].filter((x) => x.end).sort((a, b) => a.start - b.start)) {
     const ratios: number[] = []
     for (const e of s.exercises) {
+      // Una descarga (menos peso a propósito) puntuaría por debajo de lo que rindes y sesgaría las conclusiones.
+      if (e.deload) continue
       const top = Math.max(0, ...loadSets(e).filter((x) => x.kind !== 'drop').map((x) => e1rm(x.weight, x.reps)))
       if (!top) continue
       const prev = best.get(e.exerciseId)

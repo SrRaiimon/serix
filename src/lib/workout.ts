@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Exercise } from './catalog'
 import { fromKg, increment, startOfWeek, toKg, uid, type Unit } from './format'
-import { lastSets, setUnits, workingSets } from './stats'
+import { DEFAULT_SESSION_NAMES, exerciseKey, lastSets, setUnits, workingSets } from './stats'
 import { BODYWEIGHT_LIFTS, bodyweightAt } from './bodyweight'
 import { normalizeGroups } from './groups'
 import { defaultTracking, isSetFilled, trackingOf, type Tracking } from './tracking'
@@ -459,18 +459,14 @@ export function discardSession(id: string) {
   setUI({ open: false })
 }
 
-/** Nombres que pone la app a un entreno libre, en los cuatro idiomas (se guarda el del idioma de ese momento): no dicen qué se hizo. */
-const DEFAULT_NAMES = new Set(['Entrenamiento libre', 'Free workout', 'Entraînement libre', 'Treino livre'])
-
 /**
  * Si un entreno anterior es el mismo que `session` y pasa a su rutina al guardarla: sin rutina, terminado, con el
  * mismo nombre y los mismos ejercicios. Con el nombre por defecto nunca: «Entrenamiento libre» lo comparten entrenos
  * que no tienen nada que ver, y guardar uno como «Pierna» se llevaba a la rutina los de pecho o espalda, sin deshacer.
  */
 export function joinsRoutine(s: Session, session: Session): boolean {
-  if (s.id === session.id || s.routineId || s.end === undefined || s.name !== session.name || DEFAULT_NAMES.has(s.name)) return false
-  const ids = (x: Session) => [...new Set(x.exercises.map((e) => e.exerciseId))].sort().join('|')
-  return ids(s) === ids(session)
+  if (s.id === session.id || s.routineId || s.end === undefined || s.name !== session.name || DEFAULT_SESSION_NAMES.has(s.name)) return false
+  return exerciseKey(s) === exerciseKey(session)
 }
 
 /**

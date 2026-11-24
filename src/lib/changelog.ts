@@ -9,6 +9,14 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.45',
+    items: [
+      ['Las descargas no cuentan como entrenos flojos en «Lo que te hace rendir mejor», y un entreno libre solo se compara con otro que tenga los mismos ejercicios.', 'Deloads no longer count as weak workouts in «What makes you perform better», and a free workout is only compared with one that has the same exercises.'],
+      ['La tarjeta de tu récord en dominadas y fondos enseña el lastre añadido («+10 kg × 8») en vez del peso con tu cuerpo.', 'Your record card for pull-ups and dips shows the added weight («+10 kg × 8») instead of the weight including your body.'],
+      ['«Descarga» se llama igual en toda la app (antes también «sesión de descarga»), y la bienvenida dice «más de 1.000 ejercicios».', '«Deload» is called the same everywhere in the app (it was also «deload session»), and the welcome screen says «over 1,000 exercises».'],
+    ],
+  },
+  {
     version: '0.1.44',
     items: [
       ['En Amigos y retos, si falta tu nombre se explica junto a los botones de compartir en vez de dejarlos en gris sin motivo.', 'In Friends and challenges, if your name is missing it is explained next to the share buttons instead of leaving them greyed out with no reason.'],

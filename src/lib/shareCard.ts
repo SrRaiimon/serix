@@ -94,10 +94,13 @@ export function shareCardSVG({ session, unit, records, secondaryOf, story = fals
     ? `<text x="80" y="${L.rows + shown.length * L.step}" font-size="24" fill="${C.text3}">${extra === 1 ? t('y 1 ejercicio más', 'and 1 more exercise') : t(`y ${extra} ejercicios más`, `and ${extra} more exercises`)}</text>`
     : ''
   // Récord: el protagonista cuando lo hay. Cinta pequeña, ejercicio y la marca en grande y en naranja.
+  // Dominadas y fondos: `weight` incluye el peso corporal; lo apuntado es el lastre («+10 kg», o −10 si es ayuda).
+  const recordText = !record ? '' : record.added === undefined ? `${weight(record.weight, unit)} × ${record.reps}`
+    : record.added === 0 ? `${record.reps} rep.` : `${record.added > 0 ? '+' : '−'}${weight(Math.abs(record.added), unit)} × ${record.reps}`
   const recordRow = record
     ? `<path d="M60 ${L.record + 4}h20v32l-10-8-10 8z" fill="${C.accent}"/>
       <text x="96" y="${L.record + 30}" font-size="28" font-weight="600" fill="${C.text2}">${t('Nuevo récord', 'New record')} · ${esc(cut(record.name, 34))}</text>
-      <text x="60" y="${L.record + 108}" font-family="${DISPLAY}" font-size="72" font-weight="800" fill="${C.accent}" style="font-stretch:106%">${esc(weight(record.weight, unit))} × ${record.reps}</text>
+      <text x="60" y="${L.record + 108}" font-family="${DISPLAY}" font-size="72" font-weight="800" fill="${C.accent}" style="font-stretch:106%">${esc(recordText)}</text>
       ${rule(L.record + 140, W)}`
     : ''
 

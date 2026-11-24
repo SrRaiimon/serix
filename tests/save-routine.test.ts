@@ -66,6 +66,14 @@ test('guardar como rutina: el nombre por defecto en francés y portugués tampoc
   }
 })
 
+test('comparar con el anterior: un entreno libre solo con otro de los mismos ejercicios', () => {
+  const squat = session(-4, [exercise('Barbell_Squat', [set(100, 5)])], { name: 'Entrenamiento libre' })
+  const bench = session(-2, [exercise('Barbell_Bench_Press_-_Medium_Grip', [set(60, 8)])], { name: 'Entrenamiento libre' })
+  const now = session(0, [exercise('Barbell_Squat', [set(105, 5)])], { name: 'Entrenamiento libre' })
+  assert.equal(compareWithLast(now, [squat, bench])?.previous.id, squat.id)
+  assert.equal(compareWithLast(now, [bench]), undefined)
+})
+
 test('repetir o guardar un entreno de descarga: las series de antes de recortar, no las de la descarga', () => {
   const deload = { ...exercise('Barbell_Squat', [set(90, 5), set(90, 5), set(90, 5)]), deload: true }
   // Sin rutina: la cuenta de deloadSets al revés (3 → 5).
