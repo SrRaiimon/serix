@@ -51,7 +51,9 @@ export function LargeTitle({ title, subtitle, actions }: { title: string; subtit
 }
 
 /** Barra superior de pantallas secundarias y hojas. */
-export function NavBar({ title, left, right, showBack }: { title?: string; left?: ReactNode; right?: ReactNode; showBack?: boolean }) {
+export function NavBar({ title, left, right, showBack, sheet }: { title?: string; left?: ReactNode; right?: ReactNode; showBack?: boolean; sheet?: boolean }) {
+  // En una hoja el encabezado principal sigue siendo el de la pantalla de detrás: la hoja usa h2 (con dos h1 se leían dos «títulos»).
+  const Heading = sheet ? 'h2' : 'h1'
   return (
     <div className="nav-bar">
       <div className="left">
@@ -63,7 +65,7 @@ export function NavBar({ title, left, right, showBack }: { title?: string; left?
         {left}
       </div>
       {/* El título de la pantalla es su encabezado principal (lectores de pantalla). */}
-      {title ? <h1 className="title">{title}</h1> : <div className="title" />}
+      {title ? <Heading className="title">{title}</Heading> : <div className="title" />}
       <div className="right">{right}</div>
     </div>
   )
@@ -349,7 +351,7 @@ export function Sheet({ title, left, right, footer, children, onClose, scrollKey
     <Overlay>
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet" ref={dialog} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
-        <NavBar title={title} left={left} right={right} />
+        <NavBar title={title} left={left} right={right} sheet />
         <div className="sheet-body" ref={body}>{children}</div>
         {footer && <div className="sheet-footer">{footer}</div>}
       </div>

@@ -26,7 +26,9 @@ export function useRecovery(sessions: Session[]): GroupRecovery[] {
     const byMuscle = new Map<string, MuscleRecovery>(
       muscleRecovery(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? [], now).map((r) => [r.muscle, r]),
     )
-    return MAIN_GROUPS.map(([label, muscles]) => {
+    // Gemelos fuera de MAIN_GROUPS (sus índices van en enlaces de amigos y en el generador): solo si se han trabajado.
+    const groups: typeof MAIN_GROUPS = byMuscle.has('calves') ? [...MAIN_GROUPS, [['Gemelos', 'Calves'], ['calves']]] : MAIN_GROUPS
+    return groups.map(([label, muscles]) => {
       // El grupo está tan recuperado como su parte menos recuperada.
       const worst = muscles.map((m) => byMuscle.get(m)).filter((r): r is MuscleRecovery => !!r).sort((a, b) => a.ready - b.ready)[0]
       return {

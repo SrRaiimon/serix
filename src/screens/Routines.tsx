@@ -1,4 +1,5 @@
 import { BlockCard } from '../components/Block'
+import { todayWhy } from '../lib/exerciseHints'
 import { dueToday } from '../lib/schedule'
 import { ArrowDown, ArrowLeftRight, ArrowUp, ChevronDown, ChevronRight, ClipboardList, Library, Clock, Dumbbell, Ellipsis, FilePlus2, Flame, Link2, Minus, Pencil, Play, Plus, Timer, Trash2, Unlink, WandSparkles, Link as LinkIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -231,17 +232,7 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   const same = sets.filter((s) => s.weight === top.weight).map((s) => s.reps)
   const reps = same.every((r) => r === same[0]) ? `${same[0]}` : same.join('/')
   const auto = planned.auto
-  const why = planned.deload ? t('Descarga', 'Deload')
-    : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
-      // Bajada por estancamiento (doble progresión): decía «Igual que antes» con 55 kg cuando antes eran 60.
-      : auto?.kind === 'down' ? `↓ −${weight(auto.from - auto.to, unit)}`
-      : auto?.kind === 'reps' ? (auto.harder ? t('Prueba una variante', 'Try a harder variation') : `↑ ${auto.to} reps`)
-      : auto?.kind === 'wave' && auto.reset ? t('5/3/1 · TM −10 %', '5/3/1 · TM −10%')
-      : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
-        : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
-          : auto?.kind === 'hold' ? t('Repite el peso', 'Repeat the weight')
-            // Sin cambio, nada: «Igual que antes» repetido en cada fila era ruido.
-            : ''
+  const why = todayWhy(planned, unit)
   return (
     <span className="ex-last">
       {/* Dominadas, fondos…: el peso es el lastre, con su «+» como en el entreno. */}

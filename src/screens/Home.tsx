@@ -47,12 +47,12 @@ export function HomeScreen() {
   const recapDue = useMemo(() => weekdayIndex(Date.now()) <= 1 && data.settings.recapSeen !== weekStart && !!weekRecap(data, addDays(new Date(weekStart), -7).getTime()), [data, weekStart])
   // Si la tarjeta de «Siguiente» ya avisa de que sigues recuperándote, la copia espera: dos avisos juntos empujaban la semana fuera de la pantalla.
   const recovery = useRecovery(sessions)
-  const trainedTodayHome = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
+  const trainedTodayHome = trainedOnToday(sessions)
   const recoveryHint = !!next && !trainedTodayHome && !routineFacts(data, next).deload
     && recovery.some((g) => g.ready < RECOVERING && g.muscles.some((m) => next.exercises.some((e) => e.muscle === m)))
   const notice = ([
     ['risk', !!risk],
-    ['backup', backupDue(data, sessions.length) && !recoveryHint],
+    ['backup', backupDue(data, sessions.length) && !recoveryHint && !trainedTodayHome], // el día que entrenas la copia espera al siguiente
     ['news', newsDue(data.settings.seenVersion)],
     ['recap', recapDue],
     ['weigh', weighDue(data)],
@@ -206,7 +206,7 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
   const muscles = new Set(routine.exercises.map((e) => e.muscle))
   const tired = useRecovery(sessions).filter((g) => g.ready < RECOVERING && g.muscles.some((m) => muscles.has(m)))
   const plan = dayPlan(data.settings)
-  const trainedToday = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
+  const trainedToday = trainedOnToday(sessions)
   // Lo que se nota de un vistazo: días sin entrenar y el grupo que más tiempo llevas sin tocar.
   const daysOff = sessions.length ? Math.round((startOfDay(Date.now()).getTime() - startOfDay(Math.max(...sessions.map((s) => s.start))).getTime()) / 86400000) : undefined
   const forgotten = forgottenGroups(sessions)[0]
@@ -490,6 +490,9 @@ function FriendReminderCard({ friends }: { friends: number }) {
     </Card>
   )
 }
+
+/** Si ya hay un entreno hoy (Inicio lo usa para no apilar avisos). */
+const trainedOnToday = (sessions: { start: number }[]) => sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
 
 /** Recordatorio de copia: los datos solo están en este móvil. */
 function BackupCard({ lastBackupAt }: { lastBackupAt?: number }) {

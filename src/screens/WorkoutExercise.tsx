@@ -10,6 +10,8 @@ import { clock, fromKg, increment, int, num, rest, restOptions, toKg, weight, ty
 import { discomfortSide, discomfortZone, lastDiscomfort, lightenDiscomfort, repeatedDiscomfort, resolveDiscomfort } from '../lib/discomfort'
 import { t } from '../lib/i18n'
 import { muscleLabel } from '../lib/labels'
+import { stallOffered } from '../lib/exerciseHints'
+import { lowerWeight } from '../lib/progression'
 import { progressionHint, STALL_SESSIONS, type Stall } from '../lib/stats'
 import { finishedSessions, update, useData, withUndo, type AutoProgress, type Session, type SessionExercise, type SetEntry } from '../lib/store'
 import { startRest, stopRest } from '../lib/timer'
@@ -158,7 +160,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
   const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
   // Si la progresión automática ya ha bajado el peso por el estancamiento («down»), no se ofrece además una descarga: era el mismo aviso dos veces.
-  const stallShown = !exercise.deload && !hint && !!stalled && exercise.auto?.kind !== 'wave' && exercise.auto?.kind !== 'down' && !exercise.sets.some((x) => x.done)
+  const stallShown = stallOffered(exercise, hint, stalled)
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
   const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? `${target.replace('-', '\u2011')}\u00a0reps` : '')
     : tracking === 'time' ? `${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''
@@ -231,8 +233,7 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
       {!hasZoneHistory && !exercise.discomfort && painBefore && exercise.pain === undefined && !exercise.sets.some((x) => x.done) && (
         <PainWarning last={painBefore} onAlternatives={() => setReplacing(true)}
           onLighter={() => edit((e) => {
-            const step = increment(unit)
-            for (const x of e.sets) if (!x.done && x.weight > 0) x.weight = toKg(Math.round(fromKg(x.weight * 0.9, unit) / step) * step, unit)
+            for (const x of e.sets) if (!x.done && x.weight > 0) { const lower = lowerWeight(e.exerciseId, x.weight, unit); if (lower > 0) x.weight = lower }
           })} />
       )}
       {exercise.pain !== undefined && (

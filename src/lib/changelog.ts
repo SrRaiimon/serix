@@ -9,6 +9,20 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.54',
+    items: [
+      ['Progreso › Músculos: «Equilibrio muscular» usa las mismas semanas que «Series por semana y grupo» (antes dividía siempre entre 4 y con poco historial salían la mitad de series), y los gemelos salen en las series por semana cuando los has trabajado.', 'Progress › Muscles: «Muscle balance» uses the same weeks as «Weekly sets per group» (before it always divided by 4 and with little history it showed half the sets), and calves show up in the weekly sets once you have trained them.'],
+      ['Las kettlebells suben y bajan por las que existen (kg y lb: 18 → 16, 35 lb → 26), y una sesión cortada en lineal no cuenta como fallo para bajar el peso.', 'Kettlebells go up and down by the ones that exist (kg and lb: 18 → 16, 35 lb → 26), and a cut-short session in linear does not count as a failure for lowering the weight.'],
+      ['Comida: el ajuste según tu peso espera a que la tendencia se repita dos semanas seguidas, y «Más calorías los días de entreno» no se ofrece si el cambio sería menor de 60 kcal.', 'Food: the weight-based adjustment waits for the trend to repeat two weeks in a row, and «More calories on training days» is not offered if the change would be under 60 kcal.'],
+      ['Las hojas (Importar, Objetivo diario…) tienen el título centrado aunque el botón de un lado sea ancho, y ya no hay dos encabezados principales; los campos del objetivo son más altos.', 'Sheets (Import, Daily goal…) have the title centred even when the button on one side is wide, and there are no longer two main headings; the goal fields are taller.'],
+      ['Enlaces de rutina y envíos por QR más seguros: tope de rutinas, ejercicios y tamaño al descomprimir; las copias con ids repetidos ya no pierden sesiones ni rutinas.', 'Routine links and QR transfers are safer: limits on routines, exercises and size when decompressing; backups with repeated ids no longer lose sessions or routines.'],
+      ['Bajar el peso es igual en todas partes: la descarga, «Bajar un 10 %» por una molestia o por cansancio y el ajuste por esfuerzo caen siempre en pesos que existen (mancuernas de 5 en 5 lb, barra de 2,5 kg / 5 lb también en el curl), y la subida usa la misma escalera.', 'Lowering the weight works the same everywhere: the deload, «Go 10% lighter» for discomfort or tiredness and the effort-based adjustment always land on weights that exist (dumbbells in 5 lb steps, 2.5 kg / 5 lb bar even for curls), and going up uses the same ladder.'],
+      ['En máquinas asistidas con poca ayuda (5 o 10 kg), la descarga y «Aumentar ayuda» suben al menos un escalón; un lastre pequeño ya no se queda en 0 en la descarga.', 'On assisted machines with little assistance (5 or 10 kg), the deload and «Increase assistance» go up at least one step; a small added weight no longer drops to 0 in the deload.'],
+      ['Recuperación muscular: los gemelos aparecen cuando los has trabajado. «Por debajo» enseña primero lo que más falta, como mucho tres grupos. Inicio: el día que entrenas, «Guarda una copia» espera al siguiente.', 'Muscle recovery: calves appear once you have trained them. «Below» shows what is lacking most first, three groups at most. Home: on the day you train, «Back up your data» waits for the next day.'],
+      ['Las fechas futuras (reloj adelantado, datos importados) ya no dicen «Hace -3 días», y 999,9 kg se escribe en toneladas, no «1000 kg».', 'Future dates (clock set ahead, imported data) no longer say «-3 days ago», and 999.9 kg is written in tonnes, not «1000 kg».'],
+    ],
+  },
+  {
     version: '0.1.53',
     items: [
       ['La descarga baja a pesos que existen (la mancuerna de 24 kg a 22, no a 22,5) y también baja con pesos pequeños (un curl de 12,5 kg ya no se queda igual); las descargas ya no cuentan como historial para deducir tu juego de mancuernas.', 'The deload goes down to weights that exist (the 24 kg dumbbell to 22, not 22.5) and also goes down with small weights (a 12.5 kg curl no longer stays the same); deloads no longer count as history when working out your dumbbell set.'],

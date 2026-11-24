@@ -1,7 +1,7 @@
 import { lang, setLang } from '../src/lib/i18n'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { clock, editable, fromKg, parseDecimal, rest, startOfWeek, toKg, tons } from '../src/lib/format'
+import { clock, editable, fromKg, parseDecimal, relative, rest, startOfWeek, toKg, tons } from '../src/lib/format'
 import { digitsToSeconds, formatDigits, secondsToDigits } from '../src/lib/tracking'
 
 test('kg ↔ lb ida y vuelta', () => {
@@ -68,4 +68,14 @@ test('volumen de Inicio: toneladas escritas en español e inglés, y kg por deba
   } finally {
     setLang(before)
   }
+})
+
+test('relative: una fecha futura no dice «Hace -3 días»', () => {
+  assert.ok(!/-\d/.test(relative(Date.now() + 3 * 86400000)))
+  assert.equal(relative(Date.now()), lang() === 'en' ? 'Today' : 'Hoy')
+})
+
+test('tons: 999,9 kg pasa a toneladas, no sale «1000 kg»', () => {
+  assert.ok(!/^1000 kg/.test(tons(999.9, 'kg')), tons(999.9, 'kg'))
+  assert.ok(/t$/.test(tons(999.9, 'kg')), tons(999.9, 'kg'))
 })

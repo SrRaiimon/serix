@@ -1,6 +1,7 @@
 import { blockWeek, type TrainingBlock } from './block'
-import { fromKg, increment, toKg, type Unit } from './format'
+import type { Unit } from './format'
 import { MAIN_GROUPS } from './labels'
+import { lowerWeight, progressionStep, raiseAssist } from './progression'
 import { setCount, workingSets } from './stats'
 import type { Session, SessionExercise } from './store'
 import { groupShares } from './volume'
@@ -46,6 +47,24 @@ export function weeklyGroupSets(sessions: Session[], secondaryOf: (exerciseId: s
   return MAIN_GROUPS.map(([name], g) => ({ name, sets: Math.round((load[g] / weeks) * 2) / 2 }))
 }
 
+/**
+ * Series por semana de gemelos (principales y secundarias a media), con la misma ventana que weeklyGroupSets. Van aparte de
+ * MAIN_GROUPS: sus índices viajan en enlaces de amigos y en el generador.
+ */
+export function weeklyCalfSets(sessions: Session[], secondaryOf: (exerciseId: string) => string[], now = Date.now()): number {
+  const weeks = volumeWeeks(sessions, now)
+  const since = now - weeks * 7 * 86400000
+  let load = 0
+  for (const s of sessions) {
+    if (s.start < since || s.start > now) continue
+    for (const e of s.exercises) {
+      const n = setCount(e)
+      if (n) load += n * (e.muscle === 'calves' ? 1 : secondaryOf(e.exerciseId).includes('calves') ? 0.5 : 0)
+    }
+  }
+  return Math.round((load / weeks) * 2) / 2
+}
+
 // MARK: Autorregulación por RPE
 
 /** RPE previsto: el del bloque (10 − RIR) o 8 (dejar unas 2 en la recámara). */
@@ -81,8 +100,13 @@ export function loadSuggestion(e: SessionExercise, target: number, unit: Unit): 
   if (!pending.length) return undefined
   // En una máquina asistida el peso es la ayuda: si costó de más, más ayuda (al revés que con carga).
   const pct = Math.max(-0.1, Math.min(0.05, -diff * 0.04)) * (e.assisted ? -1 : 1)
-  const step = increment(unit)
-  const to = toKg(Math.round(fromKg(last.weight * (1 + pct), unit) / step) * step, unit)
+  // A un peso que existe (mancuernas de 2 kg, barra de 2,5…), como la descarga: bajar con lowerWeight, subir un escalón de progresión.
+  // Si el escalón real se pasa mucho del ajuste (un 5 % de 20 kg no es +2,5), no se propone.
+  let to: number
+  if (e.assisted) to = pct > 0 ? raiseAssist(last.weight, unit) : lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
+  else if (pct < 0) to = lowerWeight(e.exerciseId, last.weight, unit, [], 1 + pct)
+  else to = last.weight + progressionStep(e.muscle, unit, e.exerciseId, last.weight)
+  if (Math.abs(to - last.weight) > last.weight * 0.15) return undefined
   if (Math.abs(to - last.weight) < 0.01 || to <= 0) return undefined
   return { setId: last.id, rpe: last.rpe, target, from: last.weight, to, apply: pending.map((s) => s.id) }
 }

@@ -18,7 +18,7 @@ import { RecoveryCard } from '../components/Recovery'
 import { YearMap } from '../components/YearMap'
 import { RepRecordsCard } from '../components/RepRecords'
 import { balanceTip, muscleBalance } from '../lib/balance'
-import { volumeWeeks, weeklyGroupSets } from '../lib/autoreg'
+import { volumeWeeks, weeklyCalfSets, weeklyGroupSets } from '../lib/autoreg'
 import { ABS_GROUP, groupRange, weeklyRange } from '../lib/volume'
 import { AchievementsList } from '../components/Achievements'
 import { locale, t } from '../lib/i18n'
@@ -82,17 +82,22 @@ export function ProgressScreen() {
 function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
   const { settings } = useData()
-  const groups = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
+  const base = useMemo(() => weeklyGroupSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
+  const calves = useMemo(() => weeklyCalfSets(sessions, (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
+  // Gemelos: solo si se han trabajado, y sin mínimo (como el abdomen, los básicos de pierna ya los tocan).
+  const groups = calves > 0 ? [...base, { name: ['Gemelos', 'Calves'] as [string, string], sets: calves }] : base
   // Con 8-13 días de historial, la media es por semana pero de esos días (no «Esta semana» dividiendo entre 1,4).
   const span = volumeWeeks(sessions)
   const weeks = Math.round(span)
   if (!groups.some((g) => g.sets > 0)) return null
   const [min, max] = weeklyRange(settings.goal, settings.level)
   // Cada grupo con su rango (el abdomen pide menos: lo trabajan los básicos).
-  const range = (i: number) => groupRange(settings.goal, settings.level, i)
+  const range = (i: number): [number, number] => (i >= base.length ? [0, max] : groupRange(settings.goal, settings.level, i))
   const scale = Math.max(max * 1.25, ...groups.map((g) => g.sets))
   const pct = (v: number) => `${(v / scale) * 100}%`
-  const low = groups.filter((g, i) => g.sets < range(i)[0]).map((g) => t(...g.name).toLowerCase())
+  // Los que más faltan primero y como mucho tres (con un entreno de cuerpo entero salían cinco sin orden): lo urgente a la vista.
+  const lowAll = groups.map((g, i) => ({ g, gap: range(i)[0] - g.sets })).filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).map((x) => t(...x.g.name).toLowerCase())
+  const low = lowAll.length > 3 ? [...lowAll.slice(0, 3), t(`${lowAll.length - 3} más`, `${lowAll.length - 3} more`)] : lowAll
   const high = groups.filter((g, i) => g.sets > range(i)[1]).map((g) => t(...g.name).toLowerCase())
   return (
     <Card title={t('Series por semana y grupo', 'Weekly sets per group')} icon={Dumbbell}>
@@ -125,17 +130,20 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   )
 }
 
-const perWeek = (sets: number) => Math.round((sets / 4) * 2) / 2
 
 /** Equilibrio entre músculos opuestos en las últimas 4 semanas (lib/balance.ts). */
 function BalanceCard({ sessions }: { sessions: Session[] }) {
   const catalog = useCatalog()
   const balance = useMemo(() => muscleBalance(sessions, Date.now(), (id) => catalog.get(id)?.secondaryMuscles ?? []), [sessions, catalog])
+  // La misma ventana que «Series por semana y grupo» (hasta 4 semanas, las que haya): antes dividía siempre entre 4 y con 2 semanas de historial salían la mitad de series.
+  const span = volumeWeeks(sessions)
+  const weeks = Math.round(span)
+  const perWeek = (sets: number) => Math.round((sets / span) * 2) / 2
   if (balance.total === 0) return null
   return (
-    <Card title={t('Equilibrio muscular (4 semanas)', 'Muscle balance (4 weeks)')} icon={Scale}>
+    <Card title={span >= 1.5 ? t(`Equilibrio muscular (${weeks} semanas)`, `Muscle balance (${weeks} weeks)`) : t('Equilibrio muscular', 'Muscle balance')} icon={Scale}>
       {/* En series por semana, como «Series por grupo» de arriba: así las cifras de las dos tarjetas se comparan. */}
-      <span className="small muted">{t('Series por semana (media de 4 semanas), contadas igual que arriba.', 'Sets per week (4-week average), counted the same way as above.')}</span>
+      <span className="small muted">{span >= 1.5 ? t(`Series por semana (media de ${weeks} semanas), contadas igual que arriba.`, `Sets per week (${weeks}-week average), counted the same way as above.`) : t('Series por semana, contadas igual que arriba.', 'Sets per week, counted the same way as above.')}</span>
       {balance.pairs.map((p) => {
         const [a, b] = p.sets
         const total = a + b

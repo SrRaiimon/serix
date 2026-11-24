@@ -37,6 +37,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.50 | 9,6 | 9,5 | 9,8 | 9,6 | 9,6 (9,625) |
 | 0.1.51 | 9,6 | 9,6 | 9,8 | 9,6 | 9,7 (9,65) |
 | 0.1.52 | 9,6 | 9,6 | 9,6 | 9,6 | 9,6 (9,6) |
+| 0.1.53 | 9,6 | 9,6 | 9,3 | — (se detuvo; sin relanzar) | — |
 
 ## Rotación de zonas (serix-code)
 
@@ -57,7 +58,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Copia de seguridad | lib/backup.ts, lib/protect.ts | 0.1.50 |
 | Progresión y autorregulación | lib/progression.ts, lib/autoreg.ts, lib/warmup.ts, lib/plates.ts, lib/bodyweight.ts | 0.1.51 |
 | Entreno | lib/workout.ts, screens/Workout*.tsx, screens/Routines.tsx (editor) | 0.1.52 |
-| Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.15 |
+| Fechas y semanas | lib/format.ts, lib/recap.ts, lib/block.ts, lib/wod.ts, router | 0.1.53 |
 
 ## Revisiones fuera del panel (Claude, 0.1.37-0.1.41)
 
@@ -97,3 +98,10 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
 ### serix-perf-a11y (9,6)
 - Lighthouse móvil 99/100/100/100 en dos pasadas (FCP 0,9-1,0 s, LCP 1,9-2,0 s, TBT 0-100 ms, CLS 0-0,003). axe 0 violaciones en todas las pantallas y temas, también con 0, 1 y 5 grupos recuperándose y la fila resumen. Zonas táctiles cumplen (con `::after`).
 - Abiertos: chunk de entrada de ~312 kB (LCP < 1,5 s), dos h1 en «Objetivo diario», campos de objetivo a 80×25, recorte de texto en el e2e; sin re-medir el entreno en curso ni el peso de Inicio.
+
+## Pendientes tras 0.1.53 (hecho en la 0.1.54: escaleras de peso unificadas, descarga de asistidas y lastre, lightenDiscomfort/onLighter/loadSuggestion/lighten con lowerWeight, mancuernas en lb, curl con barra al subir, relative(), tons(), Gemelos en recuperación, «Por debajo» ordenado, copia el día de entreno, history en blockDeload, test de barrido)
+- Sin hacer: generador (homeLegs por nivel, Negative_Pull-Up con barra, segundo homePull; rompió el barrido dos veces), nutrición (restDayKcal, `up < 60`, 2 evaluaciones, 5/3/1), Gemelos en «Series por semana» (el índice de MAIN_GROUPS va en enlaces de amigos y el generador), ventana única de Músculos, chunk de entrada de 312 kB, h1 doble de «Objetivo diario», campos de 80×25, share/transfer/backup (topes), partir ficheros grandes, kettlebell en lb y fuera de serie, `failedStreak` lineal con sesiones cortadas, tests de RecoveryCard/TodayTarget/stallShown, importar de Strong centrado.
+- Hecho además en la 0.1.54 (segunda pasada): kettlebell por serie real (kg y lb), `failedStreak` sin sesiones cortadas, 2 evaluaciones en `weightAdvice`, aviso de entreno extra solo si `up >= 60`, topes de share/transfer/backup (rutinas, ejercicios, descompresión, ids repetidos, trainingTime), título de hojas centrado y h2 en hojas, `todayWhy`/`stallOffered` con test.
+- Tercer intento fallido en el generador: reordenar `squat` (sentadilla de peso corporal antes que la búlgara) rompe el barrido (fatLoss/intermediate/bodyweight/3d/45: empuje 28, tirón 18,5). Hace falta primero el segundo `homePull` y tocar `balanceWeek`.
+- Sigue sin hacer: ventana única de Músculos, Gemelos en «Series por semana», chunk de entrada, restDayKcal (sin criterio concreto), 5/3/1 por semana de calendario, partir ficheros grandes.
+- Tercera pasada 0.1.54: «Equilibrio muscular» con la misma ventana que «Series por semana», Gemelos en «Series por semana» (`weeklyCalfSets`, fuera de MAIN_GROUPS). El 5/3/1 ya iba por semana de calendario. Siguen sin hacer: generador (principiante en casa, `homePull` extra), chunk de entrada (Home va en el entry; sin perfilar), `restDayKcal`.

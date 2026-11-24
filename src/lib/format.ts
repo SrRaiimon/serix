@@ -36,7 +36,7 @@ const volume = (kg: number, unit: Unit) => `${int(fromKg(kg, unit))} ${unit}`
  * Antes convivían cuatro formatos (8068 kg, 12.678 kg, 8,1 t…): el separador de miles del español solo sale
  * desde 5 cifras, así que el mismo dato cambiaba de aspecto según la pantalla.
  */
-export const tons = (kg: number, unit: Unit, full = false) => (fromKg(kg, unit) < 1000 ? volume(kg, unit) : tonnes(kg, unit, full))
+export const tons = (kg: number, unit: Unit, full = false) => (Math.round(fromKg(kg, unit)) < 1000 ? volume(kg, unit) : tonnes(kg, unit, full))
 
 /** Siempre en toneladas con un decimal («0,4 t»): para comparar con una cifra que ya va en toneladas. */
 export const tonnes = (kg: number, unit: Unit, full = false) => {
@@ -132,6 +132,7 @@ export function addDays(d: Date, n: number): Date {
 
 export function relative(d: Date | number): string {
   const days = Math.round((startOfDay(Date.now()).getTime() - startOfDay(d).getTime()) / 86400000)
+  if (days < 0) return shortDay(d) // fecha futura (reloj adelantado, dato importado): sin «Hace -3 días»
   if (days === 0) return t('Hoy', 'Today')
   if (days === 1) return t('Ayer', 'Yesterday')
   if (days < 7) return t(`Hace ${days} días`, `${days} days ago`)

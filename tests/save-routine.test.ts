@@ -143,3 +143,12 @@ test('descarga: baja a pesos que existen y no cuenta como historial de mancuerna
   applyDeload(again, 'kg', [earlier])
   assert.equal(again.sets[0].weight, 18)
 })
+
+test('restaurar una copia y recibir datos por QR pasan por restoreData (con deshacer)', () => {
+  // Las pantallas no se pueden montar aquí: se comprueba que usan la función probada y no un replaceData suelto.
+  for (const file of ['src/screens/Profile.tsx', 'src/screens/Transfer.tsx']) {
+    const src = readFileSync(file, 'utf8')
+    assert.match(src, /restoreData\(/, file)
+    assert.doesNotMatch(src, /replaceData\(/, file)
+  }
+})

@@ -316,3 +316,16 @@ test('objetivos: con pocas calorías la grasa no baja de 0,8 g por kilo', () => 
   const normal = computeGoals({ sex: 'm', age: 30, heightCm: 178, weightKg: 80, activity: 1.55, aim: 'keep' })
   assert.equal(normal.fat, Math.round((normal.kcal * 0.25) / 9))
 })
+
+test('ajuste según el peso: hacen falta dos evaluaciones seguidas en el mismo sentido', () => {
+  const now = new Date(2026, 2, 22, 9).getTime()
+  const day = 86400000
+  const lose = { ...goals, kcal: 2200, aim: 'lose' as const }
+  // Hace una semana bajaba bien (−0,5 kg/sem) y estas 3 semanas se queda plano: la semana anterior sí iba bien → no se toca.
+  const before = [-34, -30, -26, -22, -18].map((d, i) => ({ date: now + d * day, weight: 82 - i * 0.25 }))
+  const flatNow = [-14, -10, -6, -2, 0].map((d) => ({ date: now + d * day, weight: 80 }))
+  assert.equal(weightAdvice([...before, ...flatNow], lose, [], now), undefined)
+  // Plano también la semana anterior: se propone.
+  const flatBefore = [-34, -30, -26, -22, -18].map((d) => ({ date: now + d * day, weight: 80 }))
+  assert.equal(weightAdvice([...flatBefore, ...flatNow], lose, [], now)!.change, -150)
+})

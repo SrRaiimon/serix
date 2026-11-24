@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { deflateRawSync } from 'node:zlib'
 import { fakeIndexedDB } from './helpers'
 import { Catalog, emptyFilter, type RawExercise } from '../src/lib/catalog'
 import { cleanCustomExercise } from '../src/lib/customExercises'
@@ -101,6 +102,19 @@ test('un enlace manipulado no mete objetos ni valores raros en las rutinas', asy
   assert.equal(plan.routines[0].exercises[0].tracking, 'weight_reps')
   const named = await decodePlan(forge({ v: 1, p: 'P'.repeat(200), r: [] }), catalog)
   assert.equal(named.programName?.length, 80)
+})
+
+test('un enlace manipulado: topes de rutinas y ejercicios, repeticiones al revés y bombas de compresión', async () => {
+  const forge = (payload: unknown) => 'j' + Buffer.from(JSON.stringify(payload)).toString('base64url')
+  const ex = ['Barbell_Bench_Press', 3, 20, 5, 90, 'weight_reps', 0, 0]
+  const many = await decodePlan(forge({ v: 1, r: Array.from({ length: 80 }, () => ({ n: 'R', x: Array.from({ length: 150 }, () => ex) })) }), catalog)
+  assert.equal(many.routines.length, 50)
+  assert.equal(many.routines[0].exercises.length, 100)
+  // repsMin 20 y repsMax 5 → 5-20, no un rango imposible.
+  assert.deepEqual([many.routines[0].exercises[0].repsMin, many.routines[0].exercises[0].repsMax], [5, 20])
+  // Una carga que se descomprime a más del tope se corta (ceros comprimidos: unos pocos bytes → 3 MB).
+  const bomb = 'z' + deflateRawSync(Buffer.alloc(3_000_000, 0x20)).toString('base64url')
+  await assert.rejects(decodePlan(bomb, catalog), /demasiado grandes|too large|incompleto/)
 })
 
 test('enlaces dañados o ajenos dan un mensaje claro', async () => {

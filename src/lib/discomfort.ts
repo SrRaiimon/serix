@@ -1,5 +1,6 @@
-import { addDays, fromKg, increment, startOfDay, toKg, type Unit } from './format'
+import { addDays, startOfDay, type Unit } from './format'
 import { t } from './i18n'
+import { lowerWeight, raiseAssist } from './progression'
 import type { Session, SessionExercise } from './store'
 
 // Zonas elegidas por la persona, sin deducir diagnósticos de ejercicios ni de notas antiguas.
@@ -67,13 +68,9 @@ export function resolveDiscomfort(sessions: Session[], record: DiscomfortRecord)
 
 /** Solo las series pendientes; en máquinas asistidas bajar la carga significa dar más ayuda. */
 export function lightenDiscomfort(exercise: SessionExercise, unit: Unit) {
-  const step = increment(unit)
   for (const set of exercise.sets) if (!set.done && set.weight > 0) {
-    const current = fromKg(set.weight, unit)
-    // Se redondea en la dirección que alivia y siempre se cambia al menos un escalón.
-    const next = exercise.assisted
-      ? Math.max(Math.ceil(current * 1.1 / step) * step, (Math.floor(current / step) + 1) * step)
-      : Math.min(Math.floor(current * 0.9 / step) * step, (Math.ceil(current / step) - 1) * step)
-    set.weight = toKg(Math.max(0, next), unit)
+    // Un peso que existe y siempre un escalón distinto (el mismo que usa la descarga).
+    const lower = lowerWeight(exercise.exerciseId, set.weight, unit)
+    set.weight = exercise.assisted ? raiseAssist(set.weight, unit) : lower > 0 ? lower : set.weight
   }
 }

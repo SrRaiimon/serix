@@ -104,14 +104,15 @@ test('molestias: redondea a pesos montables en kg y lb y respeta el escalón con
     setWeightSteps({})
     const e = exercise('bench', [set(60, 8, { done: false }), set(2.5, 8, { done: false })])
     lightenDiscomfort(e, 'kg')
-    assert.deepEqual(e.sets.map((s) => s.weight), [52.5, 0])
+    // Al peso que existe más cercano al −10 % (55), y una carga de 2,5 kg no pasa a 0.
+    assert.deepEqual(e.sets.map((s) => s.weight), [55, 2.5])
     e.sets = [set(toKg(60, 'lb'), 8, { done: false })]
     lightenDiscomfort(e, 'lb')
-    assert.ok(Math.abs(fromKg(e.sets[0].weight, 'lb') - 50) < 1e-8)
+    assert.ok(Math.abs(fromKg(e.sets[0].weight, 'lb') - 55) < 1e-8)
     setWeightSteps({ kg: 5 })
     e.sets = [set(60, 8, { done: false })]
     lightenDiscomfort(e, 'kg')
-    assert.equal(e.sets[0].weight, 50)
+    assert.equal(e.sets[0].weight, 55)
     e.assisted = true
     e.sets = [set(2.5, 8, { done: false }), set(60, 8, { done: false })]
     lightenDiscomfort(e, 'kg')

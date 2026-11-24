@@ -60,6 +60,16 @@ function autoProgress(v: unknown): AutoProgress | undefined {
   return undefined
 }
 const DAY = 86400000
+/** Con ids repetidos (copia manipulada o mezclada a mano) la segunda no se pierde: se queda con otro id. */
+function uniqueIds<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>()
+  return items.map((x) => {
+    const item = seen.has(x.id) ? { ...x, id: uid() } : x
+    seen.add(item.id)
+    return item
+  })
+}
+
 const EPOCH_MIN = Date.UTC(2000, 0, 1)
 const EPOCH_MAX = Date.now() + 365 * DAY
 
@@ -194,7 +204,7 @@ function settings(v: unknown): Settings {
     weighSnooze: optNum(s.weighSnooze, EPOCH_MIN, EPOCH_MAX),
     dayRoutines: isObj(s.dayRoutines) ? Object.fromEntries(Object.entries(s.dayRoutines)
       .filter(([k, v]) => /^[0-6]$/.test(k) && typeof v === 'string').map(([k, v]) => [Number(k), (v as string).slice(0, 50)])) : undefined,
-    trainingTime: typeof s.trainingTime === 'string' && /^\d{2}:\d{2}$/.test(s.trainingTime) ? s.trainingTime : undefined,
+    trainingTime: typeof s.trainingTime === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s.trainingTime) ? s.trainingTime : undefined,
     trainingDays: Array.isArray(s.trainingDays) && s.trainingDays.length
       ? [...new Set(s.trainingDays.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort() : undefined,
     activeProgram: str(s.activeProgram, '', 100), onboarded: true,
@@ -414,8 +424,8 @@ export function parseBackup(text: string): AppData {
 function sanitize(raw: Record<string, unknown>): AppData {
   return {
     version: DATA_VERSION,
-    routines: list(raw.routines, routine, 1000),
-    sessions: list(raw.sessions, session, 20000),
+    routines: uniqueIds(list(raw.routines, routine, 1000)),
+    sessions: uniqueIds(list(raw.sessions, session, 20000)),
     measurements: list(raw.measurements, measurement, 5000),
     exerciseNotes: exerciseNotes(raw.exerciseNotes),
     friends: list(raw.friends, cleanSnapshot, 200),

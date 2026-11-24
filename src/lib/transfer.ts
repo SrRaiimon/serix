@@ -1,4 +1,4 @@
-import { parseBackup } from './backup'
+import { MAX_BACKUP_BYTES, parseBackup } from './backup'
 import { canCompress, fromBase64Url, toBase64Url, transform } from './share'
 import type { AppData } from './store'
 import { t } from './i18n'
@@ -80,7 +80,7 @@ export async function assemble(s: Received): Promise<AppData> {
   let bytes = fromBase64Url(text)
   if (s.format === 'z') {
     if (typeof DecompressionStream === 'undefined') throw new Error(t('Este navegador no puede descomprimir los datos. Actualízalo.', 'This browser cannot decompress the data. Please update it.'))
-    bytes = await transform(bytes, new DecompressionStream('deflate-raw'))
+    bytes = await transform(bytes, new DecompressionStream('deflate-raw'), MAX_BACKUP_BYTES)
   }
   return parseBackup(new TextDecoder().decode(bytes))
 }

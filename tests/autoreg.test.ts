@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { lastPain, loadSuggestion, targetRpe, weeklyGroupSets } from '../src/lib/autoreg'
+import { lastPain, loadSuggestion, targetRpe, weeklyCalfSets, weeklyGroupSets } from '../src/lib/autoreg'
 import { weeklyRange } from '../src/lib/volume'
 import { DAY, exercise, session, set, T0 } from './helpers'
 
@@ -24,7 +24,7 @@ test('autorregulación: costó de más → bajar las que quedan con ese peso', (
 
 test('autorregulación: sobró fuerza → subir con prudencia (máx. +5 %)', () => {
   const e = exercise('bench', [set(100, 5, { rpe: 6 }), set(100, 5, { done: false })])
-  assert.equal(loadSuggestion(e, 8, kg)?.to, 105)
+  assert.equal(loadSuggestion(e, 8, kg)?.to, 102.5) // un escalón de la barra, sin pasarse del +5 %
 })
 
 test('autorregulación: sin propuesta si va según lo previsto o no aplica', () => {
@@ -67,4 +67,13 @@ test('autorregulación en una asistida: si costó de más, más ayuda (no menos)
   const e = { ...exercise('Assisted_Pull-Up', [set(40, 6, { rpe: 10 }), set(40, 6, { done: false })]), assisted: true }
   const s = loadSuggestion(e, 8, kg)!
   assert.ok(s.to > 40, `propone ${s.to} kg de ayuda`)
+})
+
+test('gemelos por semana: principales a 1 y secundarios a media, fuera de los grupos principales', () => {
+  const now = Date.now()
+  const calf = exercise('Standing_Calf_Raises', [set(40, 12), set(40, 12), set(40, 12)], { muscle: 'calves' })
+  const squat = exercise('Barbell_Squat', [set(80, 5), set(80, 5)], { muscle: 'quads' })
+  const s = [{ ...session(0, [calf, squat]), start: now - 86400000 }]
+  assert.equal(weeklyCalfSets(s, (id) => (id === 'Barbell_Squat' ? ['calves'] : []), now), 4) // 3 + 2 × 0,5
+  assert.equal(weeklyCalfSets([], () => [], now), 0)
 })

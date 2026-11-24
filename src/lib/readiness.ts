@@ -1,4 +1,5 @@
-import { fromKg, increment, toKg, type Unit } from './format'
+import type { Unit } from './format'
+import { lowerWeight } from './progression'
 import type { Session } from './store'
 
 // «¿Cómo estás hoy?» antes de entrenar: sueño, energía y agujetas del 1 al 5. Con una nota baja se
@@ -14,13 +15,13 @@ export const readinessLevel = (r: Readiness): 'low' | 'ok' | 'high' => {
   return s <= 2.34 ? 'low' : s >= 4 ? 'high' : 'ok'
 }
 
-/** Un 10 % menos de peso en las series pendientes, redondeado al incremento de la unidad. */
+/** Un 10 % menos de peso en las series pendientes, a un peso que existe (como la descarga). */
 export function lighten(session: Session, unit: Unit) {
-  const step = increment(unit)
   for (const e of session.exercises) {
     for (const x of e.sets) {
       if (x.done || x.weight <= 0 || e.assisted) continue
-      x.weight = toKg(Math.max(step, Math.round(fromKg(x.weight * 0.9, unit) / step) * step), unit)
+      const lower = lowerWeight(e.exerciseId, x.weight, unit)
+      if (lower > 0) x.weight = lower
     }
   }
 }

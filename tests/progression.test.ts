@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { LIFTS_531, lowerWeight, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
+import { fromKg, toKg } from '../src/lib/format'
 import { exercise, session, set } from './helpers'
 import { warmupSets } from '../src/lib/warmup'
 
@@ -220,8 +221,9 @@ test('mancuernas y kettlebells: suben al siguiente peso que existe, por material
   assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20), 2)
   assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20, [15, 17.5, 20]), 2.5)
   assert.equal(progressionStep('pectorals', 'kg', 'Incline_Dumbbell_Press', 20, [16, 18, 20]), 2)
-  // En libras, como siempre.
-  assert.equal(progressionStep('pectorals', 'lb', 'Incline_Dumbbell_Press', 50), progressionStep('pectorals', 'lb'))
+  // En libras, de 5 en 5 a la siguiente que existe (25 → 30, 27 → 30).
+  assert.ok(Math.abs(fromKg(progressionStep('pectorals', 'lb', 'Incline_Dumbbell_Press', toKg(25, 'lb')), 'lb') - 5) < 1e-6)
+  assert.ok(Math.abs(fromKg(progressionStep('pectorals', 'lb', 'Incline_Dumbbell_Press', toKg(27, 'lb')), 'lb') - 3) < 1e-6)
 })
 
 
@@ -240,4 +242,11 @@ test('mancuernas: el calentamiento usa tu juego (el de 2,5 si ya lo has usado)',
   rememberEquipment([{ id: 'Incline_Dumbbell_Press', equipment: 'dumbbell' }])
   const ramp = warmupSets(20, 'kg', undefined, false, 'Incline_Dumbbell_Press', [15, 17.5, 20]).map((w) => w.weight)
   assert.ok(ramp.every((w) => w < 10 || w % 2.5 === 0), ramp.join(', '))
+})
+
+test('lineal: las sesiones cortadas (menos series, todas al objetivo) no cuentan como fallos', () => {
+  const squat = { exerciseId: 'squat', muscle: 'quads', sets: 3, repsMin: 5, repsMax: 5, progression: 'linear' as const }
+  const cut = (day: number) => session(day, [exercise('squat', [set(100, 5)], { muscle: 'quads' })])
+  const history = [cut(0), cut(3), cut(6)]
+  assert.equal(plan(squat, [set(100, 5)], history, 'kg')?.auto?.kind, 'hold')
 })

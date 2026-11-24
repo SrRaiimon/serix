@@ -412,6 +412,19 @@ export interface WeightAdvice {
   eaten?: number
 }
 
+/** Ritmo de cambio de peso (kg y % por semana) en una ventana, por mínimos cuadrados; sin datos suficientes (4 pesos en 14 días), undefined. */
+function weeklyRate(weights: { date: number; weight?: number }[], from: number, to: number): { rate: number; pct: number } | undefined {
+  const points = weights.filter((m) => m.weight !== undefined && m.date >= from && m.date <= to).map((m) => ({ x: m.date / 86400000, y: m.weight! }))
+  if (points.length < 4) return undefined
+  const span = Math.max(...points.map((p) => p.x)) - Math.min(...points.map((p) => p.x))
+  if (span < 14) return undefined
+  const mx = points.reduce((n, p) => n + p.x, 0) / points.length
+  const my = points.reduce((n, p) => n + p.y, 0) / points.length
+  const slope = points.reduce((n, p) => n + (p.x - mx) * (p.y - my), 0) / points.reduce((n, p) => n + (p.x - mx) ** 2, 0)
+  const rate = slope * 7
+  return { rate, pct: (rate / my) * 100 }
+}
+
 /**
  * Si en las últimas 3 semanas el peso no va al ritmo de tu objetivo, propone subir o bajar 150 kcal.
  * Hace falta pesarse al menos 4 veces en 14 días o más (la tendencia, no un día suelto). Si has
@@ -421,17 +434,15 @@ export interface WeightAdvice {
 export function weightAdvice(weights: { date: number; weight?: number }[], goals: NutritionGoals, entries: FoodEntry[], now = Date.now()): WeightAdvice | undefined {
   if (!goals.aim || goals.proteinOnly) return undefined
   const from = now - 21 * 86400000
-  const points = weights.filter((m) => m.weight !== undefined && m.date >= from && m.date <= now).map((m) => ({ x: m.date / 86400000, y: m.weight! }))
-  if (points.length < 4) return undefined
-  const span = Math.max(...points.map((p) => p.x)) - Math.min(...points.map((p) => p.x))
-  if (span < 14) return undefined
-  // Recta de mínimos cuadrados: kg por día.
-  const mx = points.reduce((n, p) => n + p.x, 0) / points.length
-  const my = points.reduce((n, p) => n + p.y, 0) / points.length
-  const slope = points.reduce((n, p) => n + (p.x - mx) * (p.y - my), 0) / points.reduce((n, p) => n + (p.x - mx) ** 2, 0)
-  const rate = slope * 7
-  const pct = (rate / my) * 100
   const [min, max] = WEIGHT_RATE[goals.aim]
+  const current = weeklyRate(weights, from, now)
+  if (!current) return undefined
+  const { rate, pct } = current
+  // Dos evaluaciones seguidas: la de hace una semana (si hay datos para ella) tiene que ir en el mismo sentido; una semana
+  // rara de agua o de sal no basta para tocar las calorías.
+  const earlier = weeklyRate(weights, from - 7 * 86400000, now - 7 * 86400000)
+  const dir = (p: number) => (p < min ? -1 : p > max ? 1 : 0)
+  if (earlier && dir(earlier.pct) !== dir(pct)) return undefined
   let change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0
   if (!change) return undefined
   // Bajar más no es una opción por debajo del suelo ni del metabolismo en reposo: antes cada «sí» sumaba otros −150 (1200 → 1050 → 900).

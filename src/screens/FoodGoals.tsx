@@ -75,7 +75,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
   const numberRow = (label: string, value: string, set: (v: string) => void, unit: string) => (
     <label className="list-row">
       <span className="grow">{label}</span>
-      <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, fontSize: 17 }} value={value} onChange={(e) => set(e.target.value)} aria-label={label} />
+      <input inputMode="decimal" placeholder="0" style={{ textAlign: 'right', width: 80, minHeight: 40, fontSize: 17 }} value={value} onChange={(e) => set(e.target.value)} aria-label={label} />
       <span className="muted" style={{ width: 36 }}>{unit}</span>
     </label>
   )
@@ -192,13 +192,14 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
         const { up, down } = trainingShift(base?.kcal ?? 2500, perWeek, base ? Math.max(0, base.kcal - dayFloor(base)) : Infinity)
         return (
           <>
-          <label className="list-row card-row">
+          {/* Con menos de +60 kcal (suelo de calorías o pocos días) el cambio no se nota: no se ofrece, salvo que ya lo tengas activado. */}
+          {(up >= 60 || split) && <label className="list-row card-row">
             <span className="grow">
               <span className="bold" style={{ display: 'block' }}>{t('Más calorías los días de entreno', 'More calories on training days')}</span>
               <span className="small muted">{t(`Entrenando ${perWeek} días a la semana: +${up} kcal los días que entrenas y −${down} los de descanso, en hidratos. A la semana comes lo mismo.`, `Training ${perWeek} days a week: +${up} kcal on training days and −${down} on rest days, as carbs. Your weekly total stays the same.`)}</span>
             </span>
             <input type="checkbox" className="toggle" checked={split} onChange={(e) => setSplit(e.target.checked)} />
-          </label>
+          </label>}
           {split && (
             <div className="card" style={{ gap: 8 }}>
               <Segmented value={burned ? 'burned' : 'fixed'} onChange={(v) => setBurned(v === 'burned')}

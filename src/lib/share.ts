@@ -40,10 +40,29 @@ export function fromBase64Url(text: string): Uint8Array {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0))
 }
 
-export async function transform(bytes: Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
-  const out = new Blob([bytes as BlobPart]).stream().pipeThrough(stream)
-  return new Uint8Array(await new Response(out).arrayBuffer())
+/** Comprime o descomprime; con `maxBytes` corta si la salida lo supera (un archivo pequeño puede descomprimirse a gigas). */
+export async function transform(bytes: Uint8Array, stream: CompressionStream | DecompressionStream, maxBytes = Infinity): Promise<Uint8Array> {
+  const reader = new Blob([bytes as BlobPart]).stream().pipeThrough(stream).getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    size += value.length
+    if (size > maxBytes) {
+      void reader.cancel()
+      throw new Error(t('Los datos son demasiado grandes.', 'The data is too large.'))
+    }
+    chunks.push(value)
+  }
+  const out = new Uint8Array(size)
+  let at = 0
+  for (const c of chunks) { out.set(c, at); at += c.length }
+  return out
 }
+
+/** Tope de lo que puede ocupar un enlace de rutina una vez descomprimido. */
+const MAX_PLAN_BYTES = 2_000_000
 
 export const canCompress = () => typeof CompressionStream !== 'undefined'
 
@@ -96,7 +115,7 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
   let json: Uint8Array
   if (kind === 'z') {
     if (typeof DecompressionStream === 'undefined') throw new ShareError(t('Este navegador no puede abrir enlaces comprimidos. Actualízalo o prueba con otro.', 'This browser cannot open compressed links. Update it or try another one.'))
-    json = await transform(bytes, new DecompressionStream('deflate-raw'))
+    json = await transform(bytes, new DecompressionStream('deflate-raw'), MAX_PLAN_BYTES)
   } else if (kind === 'j') {
     json = bytes
   } else {
@@ -118,17 +137,19 @@ async function decode(code: string, catalog: Catalog): Promise<ImportedPlan> {
   }
 
   let skipped = 0
-  const routines = payload.r.map((r) => {
+  // Topes: un enlace manipulado podía traer miles de rutinas o ejercicios.
+  const routines = payload.r.slice(0, 50).map((r) => {
     const groupIds = new Map<number, string>()
-    const exercises = r.x.flatMap(([id, sets, repsMin, repsMax, rest, tracking, targetSeconds, group]): RoutineExercise[] => {
+    const exercises = r.x.slice(0, 100).flatMap(([id, sets, repsMin, repsMax, rest, tracking, targetSeconds, group]): RoutineExercise[] => {
       const exercise = lookup(id)
       if (!exercise) {
         skipped++
         return []
       }
+      const min = clampInt(repsMin, 1, 100, 8), max = clampInt(repsMax, 1, 100, 12)
       return [{
         exerciseId: id, name: exercise.name, muscle: exercise.muscle,
-        sets: clampInt(sets, 1, 20, 3), repsMin: clampInt(repsMin, 1, 100, 8), repsMax: clampInt(repsMax, 1, 100, 12),
+        sets: clampInt(sets, 1, 20, 3), repsMin: Math.min(min, max), repsMax: Math.max(min, max),
         rest: clampInt(rest, 0, 900, 90),
         tracking: TRACKINGS.find((x) => x === tracking) ?? defaultTracking(exercise),
         ...(targetSeconds ? { targetSeconds: clampInt(targetSeconds, 5, 7200, 45) } : {}),

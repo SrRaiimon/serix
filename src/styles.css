@@ -248,7 +248,8 @@ img {
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* minmax(0, …): con un botón ancho a un lado (Cancelar, Importar) el título se descentraba. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   padding: calc(var(--safe-top) + 8px) 12px 8px;

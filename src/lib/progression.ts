@@ -46,6 +46,15 @@ function dumbbellStep(weight: number, used: number[]): number {
   return dumbbellSeries(used)
 }
 
+/** Barra o EZ: se carga con discos (saltos de 2,5 kg / 5 lb), también en aislamiento. */
+const barLoaded = (exerciseId: string, equipment: string) => equipment === 'barbell' || equipment === 'e-z curl bar' || /barbell|(^|_)ez/i.test(exerciseId)
+const isLb = (w: number) => Math.round(fromKg(w, 'lb') * 100) / 100
+/** Kettlebells que hay en casi todos los gimnasios (kg y lb): la subida y la bajada van de una a la contigua. */
+const KETTLEBELLS: Record<Unit, number[]> = {
+  kg: [2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48],
+  lb: [9, 13, 18, 26, 35, 44, 53, 62, 70, 80, 90, 106],
+}
+const kbNext = (w: number, unit: Unit) => KETTLEBELLS[unit].find((x) => x > fromKg(w, unit) + 0.01)
 const only25 = (w: number) => w % 2.5 === 0 && w % 2 !== 0
 /** La serie de mancuernas desde 10 kg (de 2 o de 2,5 kg) que dicen los pesos ya usados. La usa también el calentamiento. */
 export const dumbbellSeries = (used: number[]): 2 | 2.5 => (used.some((w) => w >= 10 && only25(w)) ? 2.5 : 2)
@@ -62,8 +71,13 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
   if (unit === 'kg' && equipment === 'dumbbell' && weight > 0) return dumbbellStep(weight, used)
   // Kettlebells (la goblet del catálogo): de 2 en 2 kg hasta 16 y de 4 en 4 desde ahí (16, 20, 24…: las que hay en
   // casi todos los gimnasios), a la siguiente que existe.
-  if (unit === 'kg' && equipment === 'kettlebell' && weight > 0) return weight >= 16 ? 4 - (weight % 4) : 2 - (weight % 2)
-  if (exerciseId && isIsolation(exerciseId)) {
+  if (equipment === 'kettlebell' && weight > 0) {
+    const next = kbNext(weight, unit)
+    if (next !== undefined) return toKg(next, unit) - weight
+  }
+  // Mancuernas en libras: de 5 en 5 (a la siguiente que existe: 25 → 30, no 27).
+  if (unit === 'lb' && equipment === 'dumbbell' && weight > 0) { const w = isLb(weight); return toKg(5 - (w % 5 || 0) || 5, 'lb') }
+  if (exerciseId && isIsolation(exerciseId) && !barLoaded(exerciseId, equipment)) {
     const fine = unit === 'kg' ? 0.5 : 1
     const min = unit === 'kg' ? 1 : 2
     return toKg(Math.max(min, Math.round((fromKg(weight, unit) * 0.05) / fine) * fine), unit)
@@ -77,13 +91,30 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
  * no hay). Mancuernas y kettlebells bajan a la siguiente que hay; el aislamiento, de 0,5 kg / 1 lb; el resto, al
  * paso de la unidad.
  */
-export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used: number[] = []): number {
-  const target = weight * 0.9
+export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used: number[] = [], factor = 0.9): number {
+  const target = weight * factor
   const equipment = equipmentOf(exerciseId) ?? ''
-  if (unit === 'kg' && (equipment === 'dumbbell' || equipment === 'kettlebell') && weight > 0) {
+  if (unit === 'lb' && equipment === 'dumbbell' && weight > 0) {
+    // Mancuernas en libras: de 5 en 5, al más cercano al objetivo y siempre uno por debajo.
+    const wl = isLb(weight), tl = fromKg(target, 'lb')
+    let lower = wl % 5 === 0 ? wl - 5 : Math.floor(wl / 5) * 5
+    while (lower > tl && lower > 0) {
+      const next = Math.max(0, lower - 5)
+      if (Math.abs(next - tl) < Math.abs(lower - tl)) lower = next
+      else break
+    }
+    return toKg(Math.max(0, lower), 'lb')
+  }
+  if (equipment === 'kettlebell' && weight > 0) {
+    // La más cercana al 10 % menos entre las que existen, siempre por debajo (24 → 20, 18 → 16).
+    const list = KETTLEBELLS[unit].filter((x) => x < fromKg(weight, unit) - 0.01)
+    if (!list.length) return 0
+    const tl = fromKg(target, unit)
+    return toKg(list.reduce((best, x) => (Math.abs(x - tl) < Math.abs(best - tl) ? x : best)), unit)
+  }
+  if (unit === 'kg' && equipment === 'dumbbell' && weight > 0) {
     // Un escalón hacia abajo: el espejo de dumbbellStep (hasta 10 kg de 1 en 1; desde ahí, la serie de 2 o de 2,5 kg).
     const step = (w: number) => {
-      if (equipment === 'kettlebell') return w > 16 ? 4 : 2
       if (w <= 10) return w % 1 === 0 ? 1 : 2.5
       if (only25(w)) return 2.5
       if (w % 2 === 0 && w % 2.5 !== 0) return 2
@@ -100,10 +131,16 @@ export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used
   }
   // Barra y discos: a la unidad de la barra (2,5 kg / 5 lb), también en aislamiento (un curl con barra a 0,5 kg no existe).
   // Poleas y máquinas en aislamiento: pasos finos (0,5 kg / 1 lb), como al subir; si no, 10 kg bajaba a 7,5 (−25 %).
-  const barLoaded = equipment === 'barbell' || equipment === 'e-z curl bar' || /barbell|(^|_)ez/i.test(exerciseId)
-  const step = exerciseId && isIsolation(exerciseId) && !barLoaded ? (unit === 'kg' ? 0.5 : 1) : increment(unit)
+  const step = exerciseId && isIsolation(exerciseId) && !barLoaded(exerciseId, equipment) ? (unit === 'kg' ? 0.5 : 1) : increment(unit)
   const rounded = toKg(Math.round(fromKg(target, unit) / step) * step, unit)
   return rounded < weight - 0.01 ? Math.max(0, rounded) : Math.max(0, toKg(fromKg(weight, unit) - step, unit))
+}
+
+/** Más ayuda en una máquina asistida (un 10 % más, y siempre al menos un escalón: 5 kg × 1,1 se quedaba en 5). */
+export function raiseAssist(weight: number, unit: Unit): number {
+  const step = increment(unit)
+  const w = fromKg(weight, unit)
+  return toKg(Math.max(Math.ceil((w * 1.1) / step - 1e-9) * step, (Math.floor(w / step + 1e-9) + 1) * step), unit)
 }
 
 /** Pesos de trabajo ya usados en el ejercicio (sin calentamiento, drop sets ni descargas: no dicen qué juego de mancuernas tienes). */
@@ -121,6 +158,8 @@ function failedStreak(ex: PlanInput, history: Session[], weight: number): number
     if (Math.abs(Math.max(...main.map((x) => x.weight)) - weight) > 0.01) break
     const completed = main.length >= Math.max(ex.sets, 1) && main.every((x) => x.reps >= ex.repsMax)
     if (completed) break
+    // Una sesión cortada (menos series, todas al objetivo) no es un fallo: la dejaste a la mitad, como en la doble.
+    if (main.length < Math.max(ex.sets, 1) && main.every((x) => x.reps >= ex.repsMax)) continue
     n++
   }
   return n

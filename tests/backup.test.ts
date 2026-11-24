@@ -99,3 +99,15 @@ test('el modo sencillo desactivado a mano se conserva en la copia', () => {
   data.settings.simpleMode = false
   assert.equal(parseBackup(JSON.stringify(data)).settings.simpleMode, false)
 })
+
+test('ids repetidos en sesiones y rutinas: ninguna se pierde, la segunda recibe otro id; hora de entreno imposible fuera', () => {
+  const data = sample()
+  const twin = { ...data.sessions[0], name: 'Gemela' }
+  const bad = { ...data, sessions: [data.sessions[0], twin], routines: [data.routines[0], { ...data.routines[0], name: 'Otra' }], settings: { ...data.settings, trainingTime: '99:99' } }
+  const parsed = parseBackup(JSON.stringify(bad))
+  assert.equal(parsed.sessions.length, 2)
+  assert.notEqual(parsed.sessions[0].id, parsed.sessions[1].id)
+  assert.notEqual(parsed.routines[0].id, parsed.routines[1].id)
+  assert.equal(parsed.settings.trainingTime, undefined)
+  assert.equal(parseBackup(JSON.stringify({ ...data, settings: { ...data.settings, trainingTime: '07:30' } })).settings.trainingTime, '07:30')
+})
