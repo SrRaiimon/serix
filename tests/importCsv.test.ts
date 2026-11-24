@@ -79,7 +79,8 @@ test('CSV: filas con valores imposibles se saltan, y las asistidas guardan la ay
     + '2024-03-04 18:30:00,Dia,1h,Squat (Barbell),2,100,1000000000,0,0,,,\n'
     + '2024-03-04 18:30:00,Dia,1h,Squat (Barbell),3,100,5,0,0,,,\n'
     + '2024-03-04 18:30:00,Dia,1h,Pull Up (Assisted),1,-20,8,0,0,,,\n'
-  const { workouts } = parseWorkouts(csv, 'kg')
+  const { workouts, dropped } = parseWorkouts(csv, 'kg')
+  assert.equal(dropped, 2)
   const [squat, assisted] = workouts[0].exercises
   assert.equal(squat.sets.length, 1)
   assert.equal(squat.sets[0].weight, 100)
@@ -89,6 +90,12 @@ test('CSV: filas con valores imposibles se saltan, y las asistidas guardan la ay
   const [session] = toSessions(workouts, new Map(), [])
   assert.equal(session.exercises[1].assisted, true)
   assert.equal(session.exercises[0].assisted, undefined)
+  // Un «Pull Up» con series de −10 y de +10 kg (lastre): no es asistido (mandan las positivas).
+  const mixed = parseWorkouts(header
+    + '2024-03-04 18:30:00,Dia,1h,Pull Up,1,-10,8,0,0,,,\n'
+    + '2024-03-04 18:30:00,Dia,1h,Pull Up,2,10,6,0,0,,,\n'
+    + '2024-03-04 18:30:00,Dia,1h,Pull Up,3,10,6,0,0,,,\n', 'kg')
+  assert.equal(toSessions(mixed.workouts, new Map(), [])[0].exercises[0].assisted, undefined)
 })
 
 test('archivo que no es de Strong ni de Hevy', () => {

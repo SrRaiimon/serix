@@ -180,7 +180,7 @@ export function GoalsSheet({ onClose }: { onClose: () => void }) {
           <span className="grow">
             <span className="bold" style={{ display: 'block' }}>{t('Compensar al día siguiente', 'Make up for it the next day')}</span>
             <span className="small muted">{t(`Si un día te pasas de calorías, al siguiente se resta lo que te pasaste (como mucho un ${CARRY_OVER_MAX * 100} % del objetivo, para no comer demasiado poco).`, `If you go over your calories one day, the excess comes off the next day (at most ${CARRY_OVER_MAX * 100}% of the goal, so you don't eat too little).`)}</span>
-            <span className="small muted" style={{ display: 'block' }}>{t('Con «Ganar músculo» no se compensa, y nunca por debajo de 1.200 kcal (mujeres) o 1.500 (hombres).', 'With «Gain muscle» it is not made up, and never below 1,200 kcal (women) or 1,500 (men).')}</span>
+            <span className="small muted" style={{ display: 'block' }}>{t('Con «Ganar músculo» no se compensa, y nunca por debajo de 1200 kcal (mujeres) o 1500 (hombres).', 'With «Gain muscle» it is not made up, and never below 1,200 kcal (women) or 1,500 (men).')}</span>
           </span>
           <input type="checkbox" className="toggle" checked={carry} onChange={(e) => setCarry(e.target.checked)} />
         </label>

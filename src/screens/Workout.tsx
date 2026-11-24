@@ -193,8 +193,9 @@ export function WorkoutScreen({ session }: { session: Session }) {
           <div className="workout-head">
             <div className="workout-head-row">
               <input className="workout-name" aria-label={t('Nombre del entrenamiento', 'Workout name')} maxLength={80} value={session.name} onChange={(e) => editSession(session.id, (s) => { s.name = e.target.value })} onBlur={() => editSession(session.id, (s) => { s.name = s.name.trim() || t('Entrenamiento', 'Workout') })} />
-              {total > 0 && <span className="workout-count">{t(`${done} de ${total} series`, `${done} of ${total} sets`)}</span>}
             </div>
+            {/* La cuenta debajo del nombre y no a su lado: con «Día 1 · Cuerpo completo A» el nombre salía cortado («Cuerpo com…»). */}
+            {total > 0 && <span className="workout-count" style={{ alignSelf: 'flex-end', marginTop: -4 }}>{t(`${done} de ${total} series`, `${done} of ${total} sets`)}</span>}
             {total > 0 && <Progress value={done} total={total} />}
             <BlockStatus at={session.start} />
             {/* La semana de descarga, una vez arriba. Descargar un solo ejercicio (estancado) se dice en ese ejercicio. */}

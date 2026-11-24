@@ -432,10 +432,18 @@ export function weightAdvice(weights: { date: number; weight?: number }[], goals
   const rate = slope * 7
   const pct = (rate / my) * 100
   const [min, max] = WEIGHT_RATE[goals.aim]
-  const change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0
+  let change = pct < min ? ADJUST_STEP : pct > max ? -ADJUST_STEP : 0
   if (!change) return undefined
   // Bajar más no es una opción por debajo del suelo ni del metabolismo en reposo: antes cada «sí» sumaba otros −150 (1200 → 1050 → 900).
-  if (change < 0 && goals.kcal + change < Math.max(goals.sex ? MIN_KCAL[goals.sex] : 0, bmrOf(goals) ?? 0)) return undefined
+  // Y si solo cabe una parte, esa parte (a decenas): antes todo o nada, y con 1300 kcal y un mínimo de 1209 no proponía ni −80.
+  if (change < 0) {
+    const room = goals.kcal - Math.max(goals.sex ? MIN_KCAL[goals.sex] : 0, bmrOf(goals) ?? 0)
+    if (room < -change) {
+      const fit = Math.floor(room / 10) * 10
+      if (fit < 30) return undefined
+      change = -fit
+    }
+  }
   // ¿Comes lo que marca el objetivo? Solo con 7 días apuntados o más.
   const fromDay = dayKey(from), today = dayKey(now)
   const byDay = new Map<string, FoodEntry[]>()

@@ -4,7 +4,7 @@ import { QrCode } from '../components/Qr'
 import { Card, NavBar, useCatalog } from '../components/ui'
 import { migrateCatalog } from '../lib/migrate'
 import { navigate } from '../lib/router'
-import { finishedSessions, flush, getData, replaceData, storageProblem, useData, type AppData } from '../lib/store'
+import { finishedSessions, flush, getData, replaceData, storageProblem, useData, withUndo, type AppData } from '../lib/store'
 import { addFrame, assemble, emptyReceived, encodeTransfer, isComplete, parseFrame, type Received } from '../lib/transfer'
 import { keepScreenOn } from '../lib/workout'
 import { plural, t } from '../lib/i18n'
@@ -168,9 +168,12 @@ function Receiver() {
 
   const apply = async () => {
     if (!result) return
-    await replaceData(result)
-    // Por si los datos vienen de una versión antigua con el catálogo anterior.
-    migrateCatalog(catalog)
+    // Con deshacer, como al restaurar un archivo.
+    withUndo(t('Datos recibidos', 'Data received'), () => {
+      void replaceData(result)
+      // Por si los datos vienen de una versión antigua con el catálogo anterior.
+      migrateCatalog(catalog)
+    })
     await flush()
     if (storageProblem()) {
       setPhase('error')

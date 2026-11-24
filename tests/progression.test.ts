@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { LIFTS_531, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
+import { LIFTS_531, lowerWeight, plan, progressionStep, rememberEquipment, trainingMaxFrom } from '../src/lib/progression'
 import { exercise, session, set } from './helpers'
 import { warmupSets } from '../src/lib/warmup'
 
@@ -96,6 +96,30 @@ test('doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos desde 
   assert.equal(plan(press, [set(60, 10), set(60, 9), set(60, 9)], improving, 'kg')?.auto?.kind, 'hold')
   // Con solo 3 sesiones con ese peso, aún no.
   assert.equal(plan(press, [set(60, 10), set(60, 9), set(60, 9)], stalled.slice(1), 'kg')?.auto?.kind, 'hold')
+})
+
+test('la bajada de la doble progresión siempre baja, también con pesos pequeños y mancuernas', () => {
+  rememberEquipment([{ id: 'Hammer_Curls', equipment: 'dumbbell' }])
+  // Curl de barra de 12,5 y de 10 kg: antes 11,25 → 12,5 y 9 → 10 (no bajaban nunca).
+  assert.equal(lowerWeight('Barbell_Curl', 12.5, 'kg'), 11.5)
+  assert.equal(lowerWeight('Barbell_Curl', 10, 'kg'), 9)
+  // Press y sentadilla: un 10 % al paso de la barra, y como mínimo un escalón.
+  assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 60, 'kg'), 55)
+  assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 20, 'kg'), 17.5)
+  assert.equal(lowerWeight('Barbell_Bench_Press_-_Medium_Grip', 5, 'kg'), 2.5)
+  // Mancuernas de 2 en 2 kg: 24 → 22 (no 22,5, que no existe).
+  assert.equal(lowerWeight('Hammer_Curls', 24, 'kg'), 22)
+})
+
+test('doble: una sesión cortada no cuenta como estancamiento, y con RPE bajo se mantiene', () => {
+  const press = { exerciseId: 'press', muscle: 'pectorals', sets: 3, repsMin: 8, repsMax: 12, progression: 'double' as const }
+  const at = (day: number, reps: number[], rpe?: number) => session(day, [exercise('press', reps.map((r) => ({ ...set(60, r), ...(rpe ? { rpe } : {}) })), { muscle: 'pectorals' })])
+  // Tres sesiones buenas iguales y una abandonada con 1 serie: solo hay 3 completas, no 4 → no baja.
+  const cut = [at(0, [10, 9, 9]), at(3, [10, 9, 9]), at(6, [9]), at(9, [10, 9, 9])]
+  assert.equal(plan(press, [set(60, 10), set(60, 9), set(60, 9)], cut, 'kg')?.auto?.kind, 'hold')
+  // Estancado pero con RPE 6: sobra fuerza, se mantiene.
+  const easy = [at(0, [10, 9, 9], 6), at(3, [10, 9, 9], 6), at(6, [10, 9, 8], 6), at(9, [10, 9, 9], 6)]
+  assert.equal(plan(press, [{ ...set(60, 10), rpe: 6 }, { ...set(60, 9), rpe: 6 }, { ...set(60, 9), rpe: 6 }], easy, 'kg')?.auto?.kind, 'hold')
 })
 
 test('lineal: tras 3 sesiones sin completar, un 10 % menos', () => {

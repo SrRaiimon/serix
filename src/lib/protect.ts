@@ -16,7 +16,11 @@ const SNOOZE_DAYS = 14
  */
 export async function exportBackup(): Promise<boolean> {
   const name = `serix-copia-${dayKey()}.json`
-  const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' })
+  // La fecha de la copia va DENTRO de la copia: serializaba antes de apuntarla y, al restaurar, el archivo traía la anterior y la
+  // tarjeta «Guarda una copia» volvía a salir al instante.
+  const at = Date.now()
+  const data = getData()
+  const blob = new Blob([JSON.stringify({ ...data, settings: { ...data.settings, lastBackupAt: at, backupSnoozeUntil: undefined } }, null, 1)], { type: 'application/json' })
   const file = new File([blob], name, { type: 'application/json' })
   if (navigator.canShare?.({ files: [file] })) {
     try {
@@ -29,7 +33,7 @@ export async function exportBackup(): Promise<boolean> {
   } else {
     download(blob, name)
   }
-  updateSettings({ lastBackupAt: Date.now(), backupSnoozeUntil: undefined })
+  updateSettings({ lastBackupAt: at, backupSnoozeUntil: undefined })
   return true
 }
 

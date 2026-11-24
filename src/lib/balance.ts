@@ -1,3 +1,4 @@
+import { num } from './format'
 import { t } from './i18n'
 import { MAIN_GROUPS } from './labels'
 import { setCount } from './stats'
@@ -78,7 +79,13 @@ export function muscleBalance(sessions: Session[], now = Date.now(), secondaryOf
 
 /** Qué añadir para compensar. */
 export function balanceTip(p: BalancePair): string {
-  if (p.short === undefined) return t('La proporción entre los dos es normal.', 'The ratio between the two is normal.')
+  if (p.short === undefined) {
+    // Con la cifra y el límite: «normal» idéntico para 19:22 y para 7,5:4 no decía por qué lo es.
+    const [a, b] = p.sets
+    const ratio = Math.max(a, b) / Math.max(Math.min(a, b), 1)
+    const limit = a >= b ? p.max : 1 / p.min
+    return t(`Proporción de ${num(Math.round(ratio * 10) / 10)} a 1: dentro de lo normal (hasta ${num(limit)} a 1).`, `Ratio of ${num(Math.round(ratio * 10) / 10)} to 1: within the normal range (up to ${num(limit)} to 1).`)
+  }
   if (p.id === 'pushPull') {
     return p.short === 1
       ? t('Haces bastante más empuje que tirón: añade remos, dominadas o jalones (y algo de face pull) hasta igualarlos.', 'You do a lot more pushing than pulling: add rows, pull-ups or pulldowns (and some face pulls) until they even out.')

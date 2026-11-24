@@ -2,7 +2,7 @@ import './browser-stubs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { defaultSettings, getData, replaceData, type Session } from '../src/lib/store'
+import { defaultSettings, getData, replaceData, undo, withUndo, type Session } from '../src/lib/store'
 import { plannedSets, saveAsRoutine } from '../src/lib/workout'
 import { compareWithLast } from '../src/lib/stats'
 import { buildDishes, fitDish } from '../src/lib/mealPlan'
@@ -72,6 +72,16 @@ test('comparar con el anterior: un entreno libre solo con otro de los mismos eje
   const now = session(0, [exercise('Barbell_Squat', [set(105, 5)])], { name: 'Entrenamiento libre' })
   assert.equal(compareWithLast(now, [squat, bench])?.previous.id, squat.id)
   assert.equal(compareWithLast(now, [bench]), undefined)
+})
+
+test('restaurar una copia se puede deshacer', async () => {
+  const mine = session(0, [exercise('Barbell_Squat', [set(100, 5)])], { name: 'Mío' })
+  reset([mine])
+  const other = { ...getData(), sessions: [session(-30, [exercise('Pullups', [set(0, 8)])], { name: 'Copia vieja' })] }
+  withUndo('Copia restaurada', () => { void replaceData(other) })
+  assert.deepEqual(getData().sessions.map((x) => x.name), ['Copia vieja'])
+  assert.equal(undo(), true)
+  assert.deepEqual(getData().sessions.map((x) => x.name), ['Mío'])
 })
 
 test('repetir o guardar un entreno de descarga: las series de antes de recortar, no las de la descarga', () => {

@@ -42,22 +42,22 @@ export function achievementDefs(unit: Unit): AchievementDef[] {
     ...[1, 10, 25, 50, 100, 250].map((n): AchievementDef => ({
       id: `sessions-${n}`, group: 'consistency',
       title: n === 1 ? ['Primer entrenamiento', 'First workout'] : [`${n} entrenamientos`, `${n} workouts`],
-      detail: n === 1 ? ['Terminaste tu primer entrenamiento.', 'You finished your first workout.'] : [`Has completado ${n} entrenamientos.`, `You have completed ${n} workouts.`],
+      detail: n === 1 ? ['Termina tu primer entrenamiento.', 'Finish your first workout.'] : [`Completa ${n} entrenamientos.`, `Complete ${n} workouts.`],
     })),
     ...[4, 12, 26, 52].map((n): AchievementDef => ({
       id: `streak-${n}`, group: 'consistency',
       title: [`Racha de ${n} semanas`, `${n}-week streak`],
-      detail: [`Entrenaste al menos una vez a la semana durante ${n} semanas seguidas.`, `You trained at least once a week for ${n} weeks in a row.`],
+      detail: [`Entrena al menos una vez a la semana durante ${n} semanas seguidas.`, `Train at least once a week for ${n} weeks in a row.`],
     })),
     ...[10, 100, 1000].map((n): AchievementDef => ({
       id: `volume-${n}`, group: 'volume',
       title: [`${n.toLocaleString('es-ES')} toneladas`, `${n.toLocaleString('en-GB')} tonnes`],
-      detail: [`Has levantado ${n.toLocaleString('es-ES')} toneladas en total (peso × repeticiones).`, `You have lifted ${n.toLocaleString('en-GB')} tonnes in total (weight × reps).`],
+      detail: [`Levanta ${n.toLocaleString('es-ES')} toneladas en total (peso × repeticiones).`, `Lift ${n.toLocaleString('en-GB')} tonnes in total (weight × reps).`],
     })),
     ...[10, 50].map((n): AchievementDef => ({
       id: `records-${n}`, group: 'records',
       title: [`${n} récords`, `${n} records`],
-      detail: [`Has batido ${n} récords personales.`, `You have broken ${n} personal records.`],
+      detail: [`Bate ${n} récords personales.`, `Break ${n} personal records.`],
     })),
     {
       id: 'club-1', group: 'strength',

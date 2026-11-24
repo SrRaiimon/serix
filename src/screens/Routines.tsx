@@ -233,19 +233,22 @@ function TodayTarget({ planned, unit }: { planned: SessionExercise; unit: AppDat
   const auto = planned.auto
   const why = planned.deload ? t('Descarga', 'Deload')
     : auto?.kind === 'up' ? `↑ +${weight(auto.to - auto.from, unit)}`
+      // Bajada por estancamiento (doble progresión): decía «Igual que antes» con 55 kg cuando antes eran 60.
+      : auto?.kind === 'down' ? `↓ −${weight(auto.from - auto.to, unit)}`
       : auto?.kind === 'reps' ? (auto.harder ? t('Prueba una variante', 'Try a harder variation') : `↑ ${auto.to} reps`)
       : auto?.kind === 'wave' && auto.reset ? t('5/3/1 · TM −10 %', '5/3/1 · TM −10%')
       : auto?.kind === 'wave' ? t(`5/3/1 · sem. ${auto.week}`, `5/3/1 · wk ${auto.week}`)
         : auto?.kind === 'hold' && auto.mode === 'double' ? t(`Meta: ${planned.repsMax} reps`, `Goal: ${planned.repsMax} reps`)
           : auto?.kind === 'hold' ? t('Repite el peso', 'Repeat the weight')
-            : t('Igual que antes', 'Same as before')
+            // Sin cambio, nada: «Igual que antes» repetido en cada fila era ruido.
+            : ''
   return (
     <span className="ex-last">
       {/* Dominadas, fondos…: el peso es el lastre, con su «+» como en el entreno. */}
       {/* El peso arriba y las repeticiones debajo: en una línea («57,5 kg × 10/9/8/7») le quitaba el sitio al nombre. */}
       <strong>{top.weight > 0 ? `${addsLoad(planned) ? '+' : ''}${weight(top.weight, unit)}` : `${reps} reps`}</strong>
       {top.weight > 0 && <span className="tiny">× {reps}</span>}
-      <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>
+      {why && <span className={`tiny ${auto?.kind === 'up' || (auto?.kind === 'reps' && !auto.harder) ? 'up' : 'muted'}`}>{why}</span>}
     </span>
   )
 }

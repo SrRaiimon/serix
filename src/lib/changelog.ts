@@ -9,6 +9,18 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.51',
+    items: [
+      ['Doble progresión: la bajada por estancamiento elige un peso que existe (curl de 10 kg, mancuernas de 2 kg) y siempre baja; una sesión cortada o con esfuerzo bajo no cuenta como estancamiento.', 'Double progression: the drop for a plateau picks a weight that exists (10 kg curl, 2 kg dumbbells) and always goes down; a cut-short session or a low-effort one does not count as a plateau.'],
+      ['En un ejercicio estancado ya no sale además la oferta de descarga cuando la app acaba de bajar el peso, y el detalle de rutina dice «↓ −5 kg» en vez de «Igual que antes» (que ya no se repite en cada fila).', 'On a plateaued exercise the deload offer no longer appears when the app has just lowered the weight, and the routine detail says «↓ −5 kg» instead of «Same as before» (which no longer repeats on every row).'],
+      ['Importar un CSV de Strong o Hevy te dice cuántas series se han omitido por tener valores imposibles, y un ejercicio con peso negativo solo es asistido si lo son la mayoría de sus series.', 'Importing a Strong or Hevy CSV tells you how many sets were skipped for having impossible values, and an exercise with negative weight is only assisted if most of its sets are.'],
+      ['Restaurar una copia de seguridad o recibir datos por QR se puede deshacer, y la copia que guardas lleva dentro su propia fecha (al restaurarla no vuelve a pedirte otra al instante).', 'Restoring a backup or receiving data by QR can be undone, and the backup you save carries its own date inside (restoring it does not ask for another one straight away).'],
+      ['Progreso › Músculos resume en una línea los grupos que se recuperan al mismo tiempo, y el equilibrio muscular dice la proporción y su límite. En Inicio, el día que ya has entrenado no sale además el aviso de recuperación, y el nombre del entreno ya no se corta.', 'Progress › Muscles sums up in one line the groups recovering at the same time, and the muscle balance states the ratio and its limit. On Home, the day you have already trained the recovery notice no longer appears as well, and the workout name is no longer cut off.'],
+      ['Los logros dicen qué hay que hacer (en presente, también los pendientes), la racha se escribe igual en toda la app y los miles de cuatro cifras van sin punto (1200 kcal).', 'Achievements say what to do (in the present tense, pending ones too), the streak is written the same everywhere in the app and four-digit thousands have no separator (1200 kcal).'],
+      ['Comida: el ajuste según tu peso propone la parte que cabe sobre tu mínimo de calorías (antes todo o nada), y un día de entreno con cambio mínimo dice «sin cambio».', 'Food: the weight-based adjustment suggests the part that fits above your minimum calories (before it was all or nothing), and a training day with a tiny change says «no change».'],
+    ],
+  },
+  {
     version: '0.1.50',
     items: [
       ['Si un ejercicio con doble progresión lleva tres sesiones sin mejorar con el mismo peso, la app te propone un 10 % menos y volver a empezar el rango, en vez de repetir siempre lo mismo.', 'If an exercise on double progression goes three sessions without improving at the same weight, the app suggests 10% less and restarting the range, instead of repeating the same thing forever.'],

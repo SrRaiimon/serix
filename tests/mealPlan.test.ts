@@ -196,6 +196,11 @@ test('ajuste según el peso: no propone bajar por debajo del suelo', () => {
   assert.equal(weightAdvice(flat, woman, [], now), undefined)
   // Con margen, sí.
   assert.equal(weightAdvice(flat, { ...woman, kcal: 1800 }, [], now)!.change, -150)
+  // Con poco margen (mujer de 52 kg: mínimo de ~1240 y 1300 kcal), solo lo que cabe, no todo o nada.
+  const light = { ...computeGoals({ sex: 'f', age: 30, heightCm: 165, weightKg: 52, activity: 1.2, aim: 'lose' }), kcal: 1300 }
+  const flat52 = flat.map((m) => ({ ...m, weight: 52 }))
+  const room = weightAdvice(flat52, light, [], now)
+  assert.ok(room && room.change < 0 && room.change > -150 && room.change % 10 === 0)
 })
 
 test('ajuste según el peso: propone ±150 kcal si la tendencia de 3 semanas no va al ritmo del objetivo', () => {

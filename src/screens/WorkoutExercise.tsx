@@ -157,7 +157,8 @@ export function ExerciseBlock({ sessionId, exercise, index, total, slot, nextNam
   const targetSeconds = exercise.targetSeconds ?? defaultTargetSeconds
   // Con progresión automática el peso ya viene calculado: no hace falta sugerirlo.
   const hint = tracking === 'weight_reps' && !exercise.auto && !exercise.assisted ? progressionHint(previous, exercise.repsMax) : null
-  const stallShown = !exercise.deload && !hint && !!stalled && exercise.auto?.kind !== 'wave' && !exercise.sets.some((x) => x.done)
+  // Si la progresión automática ya ha bajado el peso por el estancamiento («down»), no se ofrece además una descarga: era el mismo aviso dos veces.
+  const stallShown = !exercise.deload && !hint && !!stalled && exercise.auto?.kind !== 'wave' && exercise.auto?.kind !== 'down' && !exercise.sets.some((x) => x.done)
   // En el 5/3/1 las repeticiones cambian cada semana: lo explica la nota de la progresión.
   const objective = tracking === 'weight_reps' ? (hasTarget && exercise.auto?.kind !== 'wave' ? `${target.replace('-', '\u2011')}\u00a0reps` : '')
     : tracking === 'time' ? `${t('Objetivo', 'Target')} ${clock(targetSeconds)}` : ''

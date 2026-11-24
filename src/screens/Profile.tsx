@@ -62,9 +62,12 @@ export function ProfileScreen({ section }: { section?: ProfileSection }) {
     try {
       const parsed = parseBackup(await file.text())
       if (!confirm(t(`Se sustituirán tus datos actuales por la copia (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). ¿Continuar?`, `Your current data will be replaced by the backup (${plural(parsed.sessions.length, ['entrenamiento', 'entrenamientos'], ['workout', 'workouts'])}). Continue?`))) return
-      await replaceData(parsed)
-      // Las copias hechas con el catálogo anterior se adaptan al actual.
-      migrateCatalog(catalog)
+      // Con deshacer: restaurar una copia vieja sustituía todo lo posterior sin vuelta atrás.
+      withUndo(t('Copia restaurada', 'Backup restored'), () => {
+        void replaceData(parsed)
+        // Las copias hechas con el catálogo anterior se adaptan al actual.
+        migrateCatalog(catalog)
+      })
       await flush()
       showToast(storageProblem() ? t('Copia cargada, pero no se ha podido guardar', 'Backup loaded, but it could not be saved') : t('Copia restaurada', 'Backup restored'))
     } catch (e) {

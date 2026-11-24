@@ -47,7 +47,8 @@ export function HomeScreen() {
   const recapDue = useMemo(() => weekdayIndex(Date.now()) <= 1 && data.settings.recapSeen !== weekStart && !!weekRecap(data, addDays(new Date(weekStart), -7).getTime()), [data, weekStart])
   // Si la tarjeta de «Siguiente» ya avisa de que sigues recuperándote, la copia espera: dos avisos juntos empujaban la semana fuera de la pantalla.
   const recovery = useRecovery(sessions)
-  const recoveryHint = !!next && !routineFacts(data, next).deload
+  const trainedTodayHome = sessions.some((s) => startOfDay(s.start).getTime() === startOfDay(Date.now()).getTime())
+  const recoveryHint = !!next && !trainedTodayHome && !routineFacts(data, next).deload
     && recovery.some((g) => g.ready < RECOVERING && g.muscles.some((m) => next.exercises.some((e) => e.muscle === m)))
   const notice = ([
     ['risk', !!risk],
@@ -107,7 +108,7 @@ export function HomeScreen() {
 
       {/* Las cifras (racha, mes, peso movido), en una línea al pie de la semana: antes eran otra banda de tarjetas. */}
       <WeekCard sessions={thisWeek} goal={weeklyGoal} weekStart={weekStart} planned={data.settings.trainingDays} facts={sessions.length > 0 ? [
-        t(`${streakWeeks(sessions)} sem. de racha`, `${streakWeeks(sessions)}-week streak`),
+        t(`Racha de ${streakWeeks(sessions)} semanas`, `${streakWeeks(sessions)}-week streak`),
         t(`${thisMonth.length} este mes`, `${thisMonth.length} this month`),
         // Lo de esta semana con dos entrenos o más. Con uno solo, su volumen ya sale en «Últimos entrenamientos», y sin
         // ninguno, el de la pasada sale en su resumen de arriba: en esos casos, lo movido este mes (la misma cifra dos
@@ -244,7 +245,8 @@ function NextCard({ routine, sessions }: { routine: Routine; sessions: Session[]
         </span>
       ) : null}
       {/* En descarga ya se baja el peso: «algo menos de peso» sobraba. */}
-      {tired.length > 0 && !duration.deload && (
+      {/* Ya entrenado hoy, que sigues recuperándote es evidente: el aviso se queda para el día siguiente. */}
+      {tired.length > 0 && !duration.deload && !trainedToday && (
         <span className="small row hero-warning">
           <HeartPulse size={15} style={{ flexShrink: 0 }} />
           <span>

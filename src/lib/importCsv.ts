@@ -131,7 +131,7 @@ const MAX_WEIGHT_KG = 2000, MAX_REPS = 1000, MAX_SECONDS = 86400, MAX_KM = 1000,
  * Convierte el CSV en entrenamientos. `unit` es la unidad del peso cuando el archivo no la indica
  * (Strong); las distancias en esa misma unidad se toman como km (kg) o millas (lb).
  */
-export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; workouts: ImportedWorkout[] } {
+export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; workouts: ImportedWorkout[]; dropped: number } {
   const rows = parseCsv(text)
   const header = rows[0]?.map((h) => h.trim()) ?? []
   const format = detectFormat(header)
@@ -141,6 +141,7 @@ export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; wo
   const byKey = new Map<string, ImportedWorkout>()
   const lastExercise = new Map<string, ImportedExercise>()
   const MI = 1.609344
+  let dropped = 0
 
   for (const row of rows.slice(1)) {
     const isStrong = format === 'strong'
@@ -186,7 +187,10 @@ export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; wo
     const reps = Math.max(0, Math.round(num(get(row, isStrong ? 'Reps' : 'reps'))))
     const seconds = num(get(row, isStrong ? 'Seconds' : 'duration_seconds'))
     // Topes: un archivo con 99999999999 kg o 1e9 repeticiones entraba tal cual y rompía récords, 1RM y volumen. La fila se salta.
-    if (Math.abs(weight) > MAX_WEIGHT_KG || reps > MAX_REPS || seconds > MAX_SECONDS || distance > MAX_KM) continue
+    if (Math.abs(weight) > MAX_WEIGHT_KG || reps > MAX_REPS || seconds > MAX_SECONDS || distance > MAX_KM) {
+      dropped++
+      continue
+    }
     const set: ImportedSet = {
       weight: Math.abs(weight), reps, warmup,
       ...(kind ? { kind } : {}),
@@ -213,7 +217,7 @@ export function parseWorkouts(text: string, unit: Unit): { format: CsvFormat; wo
     }
   }
   const workouts = [...byKey.values()].filter((w) => w.exercises.length).sort((a, b) => a.start - b.start)
-  return { format, workouts }
+  return { format, workouts, dropped }
 }
 
 // MARK: Emparejar ejercicios con el catálogo
@@ -403,6 +407,15 @@ export const customId = (name: string) => `custom:${normalize(name).replace(/[^a
 /** Clave para no importar dos veces el mismo entrenamiento. */
 export const workoutKey = (start: number, name: string) => `${Math.round(start / 60000)}|${name.trim().toLowerCase()}`
 
+/**
+ * ¿Es un ejercicio asistido? Por la mayoría de sus series con peso negativo (Strong), o por el nombre si ninguna lo es
+ * (Hevy). Antes bastaba una: un «Pull Up» con −10 y +10 kg pasaba a ser todo ayuda.
+ */
+function isAssisted(x: ImportedExercise): boolean {
+  const negative = x.sets.filter((s) => s.assist).length
+  return negative > 0 ? negative * 2 > x.sets.length : /\bassist/i.test(x.name)
+}
+
 export function toSessions(workouts: ImportedWorkout[], mapping: Map<string, Exercise | undefined>, existing: Session[]): Session[] {
   const seen = new Set(existing.map((s) => workoutKey(s.start, s.name)))
   const sessions: Session[] = []
@@ -429,7 +442,7 @@ export function toSessions(workouts: ImportedWorkout[], mapping: Map<string, Exe
         rest: 90, repsMin: 0, repsMax: 0,
         ...(tracking !== 'weight_reps' ? { tracking } : {}),
         // «Assisted Pull Up» (Hevy) o peso negativo (Strong): el peso es la ayuda, no una carga de 30 kg.
-        ...(x.sets.some((s) => s.assist) || /assist/i.test(x.name) ? { assisted: true } : {}),
+        ...(isAssisted(x) ? { assisted: true } : {}),
         ...(x.group ? { groupId: groups.get(x.group) ?? groups.set(x.group, uid()).get(x.group)! } : {}),
         sets,
       }

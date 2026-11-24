@@ -71,6 +71,31 @@ export function progressionStep(muscle: string, unit: Unit, exerciseId = '', wei
   return toKg(increment(unit) * (LOWER.has(muscle) && !LIGHT_LEG.test(exerciseId) ? 2 : 1), unit)
 }
 
+/**
+ * El peso tras bajar un 10 %: uno que existe y siempre más bajo que el actual. Redondear al paso de la barra (2,5 kg)
+ * dejaba 12,5 → 11,25 → 12,5 en un curl (no bajaba nunca), y las mancuernas de 24 kg pasaban a 22,5 (en series de 2 kg
+ * no hay). Mancuernas y kettlebells bajan a la siguiente que hay; el aislamiento, de 0,5 kg / 1 lb; el resto, al
+ * paso de la unidad.
+ */
+export function lowerWeight(exerciseId: string, weight: number, unit: Unit, used: number[] = []): number {
+  const target = weight * 0.9
+  const equipment = equipmentOf(exerciseId) ?? ''
+  if (unit === 'kg' && (equipment === 'dumbbell' || equipment === 'kettlebell') && weight > 0) {
+    const step = (w: number) => (equipment === 'kettlebell' ? (w > 16 ? 4 : 2) : w <= 10 ? 1 : only25(w) ? 2.5 : w % 2 === 0 ? 2 : dumbbellSeries(used))
+    // El más cercano al 10 % menos (24 → 22, no 20), siempre al menos un escalón por debajo.
+    let lower = Math.max(0, weight - step(weight))
+    while (lower > target && lower > 0) {
+      const next = Math.max(0, lower - step(lower))
+      if (Math.abs(next - target) < Math.abs(lower - target)) lower = next
+      else break
+    }
+    return lower
+  }
+  const step = exerciseId && isIsolation(exerciseId) ? (unit === 'kg' ? 0.5 : 1) : increment(unit)
+  const rounded = toKg(Math.round(fromKg(target, unit) / step) * step, unit)
+  return rounded < weight - 0.01 ? Math.max(0, rounded) : Math.max(0, toKg(fromKg(weight, unit) - step, unit))
+}
+
 /** Sesiones seguidas (de la más reciente hacia atrás) en las que no se completó el objetivo con este peso. */
 function failedStreak(ex: PlanInput, history: Session[], weight: number): number {
   let n = 0
@@ -93,6 +118,7 @@ function failedStreak(ex: PlanInput, history: Session[], weight: number): number
  * también es no completar. Sin esto, el ejercicio repetía el mismo peso («hold») indefinidamente.
  */
 function stalledDouble(ex: PlanInput, history: Session[], weight: number): boolean {
+  const count = Math.max(ex.sets, 1)
   const totals: number[] = []
   for (const s of [...history].sort((a, b) => b.start - a.start)) {
     const e = s.exercises.find((x) => x.exerciseId === ex.exerciseId && !x.deload)
@@ -100,6 +126,8 @@ function stalledDouble(ex: PlanInput, history: Session[], weight: number): boole
     const main = workingSets(e).filter((x) => x.kind !== 'drop' && x.weight > 0)
     if (!main.length) continue
     if (Math.abs(Math.max(...main.map((x) => x.weight)) - weight) > 0.01) break
+    // Una sesión cortada (la dejaste a la mitad) no dice nada de si estás estancado.
+    if (main.length < count) continue
     totals.push(main.reduce((n, x) => n + x.reps, 0))
   }
   return totals.length >= 4 && Math.max(...totals.slice(0, 3)) <= Math.max(...totals.slice(3))
@@ -216,9 +244,12 @@ export function plan(ex: PlanInput, last: SetEntry[], history: Session[], unit: 
     return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMax)), auto: { kind: 'down', from: weight, to: lower, mode: 'linear' } }
   }
   // Doble: tras 3 sesiones sin mejorar con el mismo peso, un 10 % menos y de nuevo desde el mínimo del rango.
-  if (ex.progression === 'double' && !completed && !easy && stalledDouble(ex, history, weight)) {
-    const lower = Math.max(0, round(weight * 0.9, unit))
-    if (lower < weight) return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMin)), auto: { kind: 'down', from: weight, to: lower, mode: 'double' } }
+  // Con esfuerzo bajo (RPE 7 o menos en todas) no es un estancamiento: sobra fuerza, se mantiene.
+  const sparing = allRated && Math.max(...rpes) <= 7
+  if (ex.progression === 'double' && !completed && !easy && !sparing && stalledDouble(ex, history, weight)) {
+    const used = history.flatMap((s) => s.exercises.filter((e) => e.exerciseId === ex.exerciseId).flatMap((e) => e.sets.filter((x) => !x.warmup && x.kind !== 'drop').map((x) => x.weight)))
+    const lower = lowerWeight(ex.exerciseId, weight, unit, used)
+    if (lower > 0 && lower < weight) return { sets: Array.from({ length: count }, () => blank(lower, ex.repsMin)), auto: { kind: 'down', from: weight, to: lower, mode: 'double' } }
   }
   if (completed || easy) {
     // Solo las series de trabajo: el calentamiento (redondeado a 2,5) y los drop sets no dicen qué juego tienes.
