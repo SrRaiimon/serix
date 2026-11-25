@@ -7,7 +7,8 @@ import type { Session, SessionExercise, SetEntry } from './store'
 /** 1RM estimado con la fórmula de Epley. */
 export function e1rm(weight: number, reps: number): number {
   if (reps <= 0 || weight <= 0) return 0
-  return reps === 1 ? weight : weight * (1 + reps / 30)
+  // Epley solo vale para pocas repeticiones: pasadas 12 no se estima más (100 reps × 20 kg daban un «récord» de 87 kg).
+  return reps === 1 ? weight : weight * (1 + Math.min(reps, 12) / 30)
 }
 
 /**

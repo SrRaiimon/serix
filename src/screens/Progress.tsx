@@ -98,7 +98,6 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
   // Los que más faltan primero y como mucho tres (con un entreno de cuerpo entero salían cinco sin orden): lo urgente a la vista.
   const lowAll = groups.map((g, i) => ({ g, gap: range(i)[0] - g.sets })).filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).map((x) => t(...x.g.name).toLowerCase())
   const lowShown = lowAll.slice(0, 3).join(', ') + (lowAll.length > 3 ? t(` y ${lowAll.length - 3} más`, ` and ${lowAll.length - 3} more`) : '')
-  const low = lowAll
   const high = groups.filter((g, i) => g.sets > range(i)[1]).map((g) => t(...g.name).toLowerCase())
   return (
     <Card title={t('Series por semana y grupo', 'Weekly sets per group')} icon={Dumbbell}>
@@ -122,9 +121,9 @@ function WeeklyVolume({ sessions }: { sessions: Session[] }) {
         {span >= 1.5 ? t(`Media de las últimas ${weeks} semanas.`, `Average of the last ${weeks} weeks.`) : span > 1 ? t(`Por semana, con tus ${Math.round(span * 7)} días.`, `Per week, over your ${Math.round(span * 7)} days.`) : t('Esta semana.', 'This week.')}
         {' '}{t(`Zona marcada: ${min}–${max} series por semana, lo orientativo para tu objetivo. Los músculos secundarios cuentan media serie.`, `Shaded zone: ${min}–${max} sets per week, the usual guide for your goal. Secondary muscles count as half a set.`)}
         {' '}{range(ABS_GROUP)[0] === 0 ? (calves > 0 ? t('El abdomen y los gemelos no tienen mínimo: los trabajan los básicos.', 'Abs and calves have no minimum: the main lifts work them.') : t('El abdomen no tiene mínimo: lo trabajan los básicos.', 'Abs have no minimum: the main lifts work them.')) : range(ABS_GROUP)[0] !== min ? t(`En abdomen, desde ${range(ABS_GROUP)[0]}.`, `For abs, from ${range(ABS_GROUP)[0]}.`) : ''}
-        {low.length > 0 && ` ${t(`Por debajo: ${lowShown}.`, `Below: ${lowShown}.`)}`}
+        {lowAll.length > 0 && ` ${t(`Por debajo: ${lowShown}.`, `Below: ${lowShown}.`)}`}
         {/* Con uno o dos días a la semana no llega a todo: no es un fallo del plan. */}
-        {low.length > 0 && ((settings.trainingDays?.length ?? settings.days) <= 2 || settings.minutes <= 30) && ` ${t('Con tus días y minutos de entreno es normal: suma lo que puedas.', 'With your training days and minutes that is normal: add what you can.')}`}
+        {lowAll.length > 0 && ((settings.trainingDays?.length ?? settings.days) <= 2 || settings.minutes <= 30) && ` ${t('Con tus días y minutos de entreno es normal: suma lo que puedas.', 'With your training days and minutes that is normal: add what you can.')}`}
         {high.length > 0 && ` ${t(`Por encima (vigila la recuperación): ${high.join(', ')}.`, `Above (watch your recovery): ${high.join(', ')}.`)}`}
       </span>
     </Card>
@@ -166,9 +165,7 @@ function BalanceCard({ sessions }: { sessions: Session[] }) {
           </div>
         )
       })}
-      {balance.neglected.length > 0 && (
-        <span className="small warn-text"><AlertTriangle size={14} style={{ verticalAlign: -2 }} /> {t(`Sin ninguna serie en 4 semanas: ${balance.neglected.map((n) => t(...n).toLowerCase()).join(', ')}.`, `No sets at all in 4 weeks: ${balance.neglected.map((n) => t(...n).toLowerCase()).join(', ')}.`)}</span>
-      )}
+      {/* Los grupos sin ninguna serie ya salen en «Por debajo» de las series por semana y bajo el mapa: no se repiten aquí. */}
     </Card>
   )
 }

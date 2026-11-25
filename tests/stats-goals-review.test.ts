@@ -40,3 +40,17 @@ test('tarjeta de récord: una mejora de menos de 1 kg no sale como «+0 kg»', (
   assert.ok(!svg.includes('+0 kg'))
   assert.match(svg, /\+0[,.]4 kg/)
 })
+
+test('logros: un ejercicio en dos bloques del mismo entreno es un solo récord (como el resumen)', () => {
+  // Primer entreno de base; luego diez entrenos con press en dos bloques, los dos por encima de la marca: 10 récords, no 20.
+  const sessions = [
+    session(0, [exercise('Barbell_Bench_Press_-_Medium_Grip', [set(60, 8)])]),
+    ...Array.from({ length: 10 }, (_, i) => session(1 + i, [
+      exercise('Barbell_Bench_Press_-_Medium_Grip', [set(62 + i * 2, 8)]),
+      exercise('Barbell_Bench_Press_-_Medium_Grip', [set(62 + i * 2, 8)]),
+    ])),
+  ]
+  const a = achievements(sessions, [], 'kg').find((x) => x.id === 'records-10')!
+  assert.notEqual(a.unlockedAt, undefined)
+  assert.equal(a.sessionId, sessions[10].id) // el décimo récord es el décimo entreno con mejora, no el quinto
+})

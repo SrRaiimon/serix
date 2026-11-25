@@ -191,7 +191,8 @@ function suits(e: Exercise, r: PickRules): boolean {
   // A una pierna y de equilibrio (búlgara, peso muerto a una pierna): no para quien empieza, que antes ha de dominar la sentadilla y la zancada.
   if (r.level === 'beginner' && /Bulgarian|Single_Leg_Deadlift/i.test(e.id)) return false
   // El curl nórdico (en el suelo) a 3-6 repeticiones es de nivel avanzado: en intermedio sale mal hecho o no se hace.
-  if (r.level !== 'advanced' && /Glute-Ham_Raise/i.test(e.id)) return false
+  // (Sin material es la única forma de trabajar el femoral con peso corporal: ahí el nórdico en el suelo se queda para intermedios.)
+  if (r.level !== 'advanced' && /Glute[-_]Ham_Raise/i.test(e.id) && (r.equipment !== 'bodyweight' || /^Floor_/.test(e.id))) return false
   // Cualquier dominada (barra V, agarre abierto…) es tan dura para empezar como la normal: remos hasta poder.
   if (r.level === 'beginner' && /pull[-_]?up|chin[-_]?up/i.test(e.id) && !/assisted|negative/i.test(e.id)) return false
   // Fondos en paralelas: fuera del gimnasio no hay paralelas (los de banco, con una silla, sí).

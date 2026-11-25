@@ -96,3 +96,11 @@ test('discos no habituales: si el reparto voraz se queda corto, se busca la comb
   // Con los habituales, el reparto de siempre.
   assert.deepEqual(loadBar(100, 20, 'kg').perSide, [25, 15])
 })
+
+test('discos que no son múltiplos de 0,25: el reparto no se pasa del objetivo', () => {
+  // Con discos de 1,1 y 0,7 (cada lado hasta 11,6 kg = 8 × 1,1 + 4 × 0,7 − …): el total nunca supera el peso pedido.
+  const l = loadBar(43.3, 20, 'kg', [1.1, 0.7])
+  assert.ok(l.total <= 43.3 + 1e-9, `total ${l.total}`)
+  // Un disco inválido (0 o negativo) se ignora en vez de romper.
+  assert.deepEqual(loadBar(60, 20, 'kg', [20, 0, -5]).perSide, [20])
+})

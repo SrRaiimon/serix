@@ -9,6 +9,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '0.1.61',
+    items: [
+      ['Entrenador: el cardio y los saltos ya no se proponen como «una serie más» para un grupo (no cuentan en su volumen y el consejo volvía cada semana). Logros: un ejercicio en dos bloques del mismo entreno cuenta un solo récord, y el 1RM estimado no pasa de 12 repeticiones.', 'Coach: cardio and jumps are no longer suggested as «one more set» for a muscle group (they do not count toward its volume and the tip came back every week). Achievements: an exercise in two blocks of the same workout counts as a single record, and the estimated 1RM stops at 12 reps.'],
+      ['Los controles del editor de rutinas (series, repeticiones, descanso, tempo, TM), de «Opciones del reto» y de la lista de alimentos tienen zona táctil de 44 px; el tipo de reto se ve entero (sin cortarse por la derecha) y la barra de la calculadora de discos se elige en una sola fila.', 'The controls of the routine editor (sets, reps, rest, tempo, TM), of «Challenge options» and of the food list have a 44 px touch area; the challenge type is fully visible (no longer cut off on the right) and the plate calculator bar is chosen in a single row.'],
+      ['Progreso › Músculos: un grupo sin entrenos recientes dice «Sin entreno reciente» en vez de «Listo», y el equilibrio ya no repite los grupos sin series que ya salen en «Por debajo».', 'Progress › Muscles: a group with no recent workouts says «No recent training» instead of «Ready», and the balance no longer repeats the groups with no sets that already appear under «Below».'],
+      ['Más robusta: la tarjeta de compartir no falla con caracteres de control en un nombre, la calculadora de discos acepta discos que no son múltiplos de 0,25 y un objetivo de comida desconocido (de datos de otra versión) ya no tumba Comidas.', 'More robust: the share card no longer fails with control characters in a name, the plate calculator accepts plates that are not multiples of 0.25 and an unknown food goal (from another version\'s data) no longer crashes Food.'],
+      ['Programas con material: el curl nórdico en el suelo solo sale a nivel avanzado, y el de rodillas deja de salir en intermedio con mancuernas, kettlebell o bandas.', 'Programs with equipment: the floor nordic curl only appears at advanced level, and the knee version no longer appears at intermediate with dumbbells, kettlebell or bands.'],
+    ],
+  },
+  {
     version: '0.1.60',
     items: [
       ['Repetir o guardar como rutina un entreno con descarga recuerda las series que tenía antes de recortar (antes salían 6 o 7 según la cuenta al revés).', 'Repeating or saving a workout with a deload as a routine remembers the sets it had before cutting (before it came out as 6 or 7 depending on the reverse count).'],

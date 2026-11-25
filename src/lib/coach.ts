@@ -58,11 +58,13 @@ export function plannedGroupSets(routines: Routine[], weeklyGoal: number, catalo
 }
 
 /** El ejercicio del programa que más series le da a un grupo (donde añadir o quitar una). */
-function mainExerciseOf(routines: Routine[], group: number): { routine: Routine; index: number } | undefined {
+function mainExerciseOf(routines: Routine[], group: number, catalog?: Catalog): { routine: Routine; index: number } | undefined {
   const muscles = MAIN_GROUPS[group][1]
   let best: { routine: Routine; index: number; sets: number } | undefined
   for (const routine of routines) {
     routine.exercises.forEach((e, index) => {
+      // Como al contar el volumen (plannedGroupSets): el cardio y los saltos no suben ni bajan las series del grupo, así que no son «donde añadir una».
+      if (catalog && !countsForVolume(e.exerciseId, catalog.get(e.exerciseId)?.category)) return
       if (muscles.includes(e.muscle) && (!best || e.sets > best.sets)) best = { routine, index, sets: e.sets }
     })
   }
@@ -121,7 +123,7 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
     const order = planned.map((sets, group) => ({ sets, group })).filter((x) => MAIN_GROUPS[x.group][0][0] !== 'Abdomen')
     for (const { sets, group } of [...order].sort((a, b) => a.sets - min - (b.sets - min))) {
       if (sets >= min - 1) break
-      const main = mainExerciseOf(routines, group)
+      const main = mainExerciseOf(routines, group, catalog)
       if (main) {
         const e = main.routine.exercises[main.index]
         tips.push({ id: `low:${group}`, kind: 'moreSets', group, planned: sets, min, routineId: main.routine.id, index: main.index, exerciseName: e.name })
@@ -138,7 +140,7 @@ export function coachTips({ routines: all, sessions, settings, catalog, now = Da
     }
     for (const { sets, group } of [...order].sort((a, b) => b.sets - a.sets)) {
       if (sets <= maxSets + 4) break
-      const main = mainExerciseOf(routines, group)
+      const main = mainExerciseOf(routines, group, catalog)
       if (main && main.routine.exercises[main.index].sets > 2) {
         tips.push({ id: `high:${group}`, kind: 'fewerSets', group, planned: sets, max: maxSets, routineId: main.routine.id, index: main.index, exerciseName: main.routine.exercises[main.index].name })
       }

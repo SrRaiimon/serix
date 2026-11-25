@@ -303,7 +303,6 @@
 "Bandas elásticas": "Élastiques",
 "Barra": "Barre",
 "Barra Z": "Barre EZ",
-"Barra de {0} {1}": "Barre de {0} {1}",
 "Barra hexagonal": "Barre hexagonale",
 "Barras, máquinas, poleas y mancuernas.": "Barres, machines, poulies et haltères.",
 "Biblioteca": "Bibliothèque",
@@ -1787,7 +1786,6 @@
 "Sin material: flexiones, sentadillas, zancadas, remo invertido (con una mesa) y core.": "Sans matériel : pompes, squats, fentes, rowing inversé (sous une table) et gainage.",
 "Sin medidas": "Aucune mesure",
 "Sin mejorar últimamente ({0})": "Sans progrès récemment ({0})",
-"Sin ninguna serie en 4 semanas: {0}.": "Aucune série en 4 semaines : {0}.",
 "Sin nombre": "Sans nom",
 "Sin objetivo, gana quien más sume": "Sans objectif, le plus gros total gagne",
 "Sin permiso de notificaciones: actívalo en los ajustes del navegador para esta web": "Pas d'autorisation de notification : active-la dans les réglages du navigateur pour ce site",
@@ -2426,5 +2424,11 @@
 "Sin trabajar en {0}: {1}.": "Non travaillés sur {0} : {1}.",
 "Repetir o guardar como rutina un entreno con descarga recuerda las series que tenía antes de recortar (antes salían 6 o 7 según la cuenta al revés).": "Répéter ou enregistrer comme routine une séance avec décharge mémorise les séries d'avant la coupe (avant, cela donnait 6 ou 7 selon le calcul inverse).",
 "Si falta una pantalla y no hay conexión, la app ya no se recarga en cada navegación (como mucho una vez por minuto); el aviso de series omitidas al importar de Strong o Hevy incluye el tope de 1.000 km.": "Si un écran manque et qu'il n'y a pas de connexion, l'app ne se recharge plus à chaque navigation (au plus une fois par minute) ; l'avis des séries ignorées à l'import de Strong ou Hevy inclut la limite de 1 000 km.",
-"Retos: al terminarlos se guarda la clasificación con tus datos del momento (un reto unido desde otra pestaña no se pierde) y tu resumen se recalcula al cambiar de día con la pantalla abierta.": "Défis : à leur fin, le classement est enregistré avec tes données du moment (un défi rejoint depuis un autre onglet n'est pas perdu) et ton résumé se recalcule au changement de jour avec l'écran ouvert."
+"Retos: al terminarlos se guarda la clasificación con tus datos del momento (un reto unido desde otra pestaña no se pierde) y tu resumen se recalcula al cambiar de día con la pantalla abierta.": "Défis : à leur fin, le classement est enregistré avec tes données du moment (un défi rejoint depuis un autre onglet n'est pas perdu) et ton résumé se recalcule au changement de jour avec l'écran ouvert.",
+"Entrenador: el cardio y los saltos ya no se proponen como «una serie más» para un grupo (no cuentan en su volumen y el consejo volvía cada semana). Logros: un ejercicio en dos bloques del mismo entreno cuenta un solo récord, y el 1RM estimado no pasa de 12 repeticiones.": "Coach : le cardio et les sauts ne sont plus proposés comme « une série de plus » pour un groupe (ils ne comptent pas dans son volume et le conseil revenait chaque semaine). Succès : un exercice en deux blocs de la même séance compte un seul record, et le 1RM estimé s'arrête à 12 répétitions.",
+"Los controles del editor de rutinas (series, repeticiones, descanso, tempo, TM), de «Opciones del reto» y de la lista de alimentos tienen zona táctil de 44 px; el tipo de reto se ve entero (sin cortarse por la derecha) y la barra de la calculadora de discos se elige en una sola fila.": "Les commandes de l'éditeur de routines (séries, répétitions, repos, tempo, TM), des « Options du défi » et de la liste d'aliments ont une zone tactile de 44 px ; le type de défi s'affiche en entier (sans être coupé à droite) et la barre du calculateur de disques se choisit sur une seule ligne.",
+"Progreso › Músculos: un grupo sin entrenos recientes dice «Sin entreno reciente» en vez de «Listo», y el equilibrio ya no repite los grupos sin series que ya salen en «Por debajo».": "Progrès › Muscles : un groupe sans séances récentes indique « Pas d'entraînement récent » au lieu de « Prêt », et l'équilibre ne répète plus les groupes sans séries qui apparaissent déjà sous « En dessous ».",
+"Más robusta: la tarjeta de compartir no falla con caracteres de control en un nombre, la calculadora de discos acepta discos que no son múltiplos de 0,25 y un objetivo de comida desconocido (de datos de otra versión) ya no tumba Comidas.": "Plus robuste : la carte de partage n'échoue plus avec des caractères de contrôle dans un nom, le calculateur de disques accepte des disques qui ne sont pas des multiples de 0,25 et un objectif alimentaire inconnu (de données d'une autre version) ne fait plus planter Repas.",
+"Programas con material: el curl nórdico en el suelo solo sale a nivel avanzado, y el de rodillas deja de salir en intermedio con mancuernas, kettlebell o bandas.": "Programmes avec matériel : le curl nordique au sol n'apparaît qu'au niveau avancé, et la version à genoux n'apparaît plus en intermédiaire avec haltères, kettlebell ou bandes.",
+"Sin entreno reciente": "Pas d'entraînement récent"
 }

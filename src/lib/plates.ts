@@ -41,8 +41,11 @@ export function loadBar(targetKg: number, barWeight: number, unit: Unit, plates:
   // Lo habitual primero: de mayor a menor (25 + 10 + 5, no 20 + 20). Solo si así se queda corto se busca una combinación que llegue.
   const greedy = fill(side, plates)
   if (greedy.left < 1e-6) return result(greedy.perSide)
-  const QUANTUM = 0.25
-  const cap = Math.min(4000, Math.floor(side / QUANTUM + 1e-6))
+  // La unidad del reparto: el máximo común divisor de los discos (a centésimas): con discos de 1,1 y 0,7 el redondeo a 0,25 se pasaba del objetivo.
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
+  const hundredths = plates.filter((p) => p > 0).map((p) => Math.round(p * 100))
+  const QUANTUM = Math.max(0.01, hundredths.reduce(gcd, 0) / 100) || 0.25
+  const cap = Math.min(20000, Math.floor(side / QUANTUM + 1e-6))
   const sizes = [...plates].filter((p) => p > 0).sort((a, b) => b - a).map((p) => ({ p, u: Math.round(p / QUANTUM) })).filter((x) => x.u > 0)
   // best[v]: menos discos para sumar exactamente v (en cuartos); prev[v]: último disco usado.
   const best = new Array<number>(cap + 1).fill(Infinity)
@@ -72,7 +75,7 @@ export function loadBar(targetKg: number, barWeight: number, unit: Unit, plates:
 function fill(side: number, plates: number[]): { perSide: number[]; left: number } {
   const perSide: number[] = []
   let left = side
-  for (const plate of [...plates].sort((a, b) => b - a)) {
+  for (const plate of [...plates].filter((p) => p > 0).sort((a, b) => b - a)) {
     while (left >= plate - 1e-6) {
       perSide.push(plate)
       left -= plate

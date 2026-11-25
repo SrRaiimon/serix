@@ -332,3 +332,10 @@ test('ajuste según el peso: hacen falta dos evaluaciones seguidas (3 semanas ca
   assert.equal(weightAdvice(flatNow, lose, [], now)!.change, -150)
   assert.equal(weightAdvice(flatNow, lose, [], now, now - 10 * day), undefined)
 })
+
+test('ajuste según el peso: un objetivo desconocido no revienta, simplemente no aconseja', () => {
+  const now = new Date(2026, 2, 22, 9).getTime()
+  const day = 86400000
+  const flat = [-20, -16, -12, -8, -4, 0].map((d) => ({ date: now + d * day, weight: 80 }))
+  assert.equal(weightAdvice(flat, { ...goals, aim: 'maintain' as never }, [], now), undefined)
+})

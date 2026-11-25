@@ -40,6 +40,7 @@ pasan a cada evaluador la vez siguiente.
 | 0.1.53 | 9,6 | 9,6 | 9,3 | — (se detuvo; sin relanzar) | — |
 | 0.1.54 | 9,6 | 9,5 | 9,2 | 9,6 | 9,5 (9,475) |
 | 0.1.55 | 9,6 | 9,3 | 9,4 | 9,8 | 9,5 (9,525) |
+| 0.1.60 | 9,6 | 9,4 | 9,6 | 9,7 | 9,6 (9,575) |
 
 ## Rotación de zonas (serix-code)
 
@@ -52,7 +53,7 @@ volvía a leer. Al acabar el panel se apunta aquí la versión.
 | Comidas | lib/nutrition.ts, lib/mealPlan.ts, screens/Food*.tsx | 0.1.48 |
 | Amigos y retos | lib/friends.ts, lib/league.ts, screens/Friends.tsx | 0.1.55 |
 | Temporizadores, avisos y PWA | lib/timer.ts, lib/lockScreen.ts, lib/intervals.ts, lib/voice.ts, lib/reminders.ts, lib/pwa.ts, sw-template.js | 0.1.54 |
-| Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | 0.1.44 |
+| Estadísticas, metas y logros | lib/stats.ts, lib/goals.ts, lib/achievements.ts, lib/coach.ts, lib/insights.ts, lib/periodCard.ts, lib/shareCard.ts | 0.1.60 |
 | Guardado y varias pestañas | lib/store.ts (migraciones, mergeData, deshacer), lib/customExercises.ts | 0.1.45 |
 | Pantallas de edición | screens/SessionEdit.tsx, screens/Profile.tsx (medidas), screens/Photos.tsx, lib/photos.ts | 0.1.46 |
 | Generador y programas | lib/generator.ts, lib/generatorSlots.ts, lib/balance.ts, screens/RoutinesPrograms.tsx | 0.1.47 |
@@ -177,3 +178,24 @@ tabla de arriba sigue mandando en la rotación; esto es para no repetir lo ya vi
 - Siguen: partir ficheros grandes, chunk de entrada (React), `restDayKcal`.
 - Partidos en la 0.1.60 sin cambiar comportamiento (478 tests, build y e2e iguales): `nutrition.ts` (1029 → 784; los productos escaneados y las etiquetas, en `nutritionScan.ts`, reexportado), `Food.tsx` (817 → 529; tarjetas y hojas en `FoodCards.tsx`), `Friends.tsx` (740 → 472; retos en `FriendsChallenges.tsx`). Quedan `generator.ts` (1137, acoplado), `friends.ts` (539) y `figures.ts` (5028, datos).
 - Verificado en el navegador: sincronía del descanso entre dos pestañas (adopta y para), Comidas y Retos con los componentes movidos.
+
+## Pendientes tras 0.1.60 (global 9,6; ux 9,6, code 9,4, coach 9,6, perf 9,7)
+
+### serix-code (9,4): zona Estadísticas, metas y logros leída entera
+- **Media (probado):** `coach.ts:67-75` `mainExerciseOf` no aplica `countsForVolume` (sí lo hace `plannedGroupSets`): con sentadilla 2 series + `Freehand_Jump_Squat` 4, el consejo «una serie más de Freehand_Jump_Squat» vuelve cada semana sin subir el volumen. Filtrar con `countsForVolume` y test.
+- Bajas: `achievements.ts:155-162` récords por bloque, no por ejercicio (desajuste de 1 con el resumen); `stats.ts:112-130` `repRecords` sin ordenar (fecha del récord por repeticiones depende del orden); `achievements.ts:222-224` logros de comida con el día en curso a medias; `cardStyle.esc` no quita caracteres de control (SVG inválido con un backup manipulado); `e1rm` de Epley sin tope de repeticiones (100 reps × 20 kg = 87 kg).
+- Sin test: sincronía del descanso por `storage` (`timer.ts`), límite de `vite:preloadError`, `try` de `lockScreen.ts`, validación de tempo/TM. Pestaña oculta que adopta un descanso no programa aviso (si la visible muere, no suena). `loadBar` con discos no múltiplos de 0,25 se pasa (no alcanzable hoy); `Progress.tsx:98-99` `low`/`lowShown` casi duplicados; `exerciseHints.ts` aún con tipos laxos en `stallOffered`; `generator.ts` (1137) y `Progress.tsx` (828) grandes.
+
+### serix-coach (9,6)
+- Medios: `Natural_Glute_Ham_Raise` a intermedios con mancuernas (3×3-6; igual que `Floor_`); isquios muy bajos en casa sin material y suspensión (3,5-6 series/semana).
+- Bajos: principiantes con `Barbell_Deadlift` (4-5 d en gimnasio), `Kettlebell_One-Legged_Deadlift` y `Band_Good_Morning`; pecho 7,5 en perder grasa 4d/45; bíceps bajo (7,5-10) con peso corporal sin barra (38 casos); principiante en mancuernas 3d/45 con poca pierna (6 series cada grupo). Barrido de pesos: 0 fallos en 11 ejercicios, kg y lb; nutrición coherente.
+
+### serix-ux (9,6)
+- Progreso › Músculos repite el mismo aviso tres veces («Sin trabajar…», «Por debajo…», «Sin ninguna serie en 4 semanas…») y la pestaña pasa de ~1.900 px; «Listo» en grupos sin entreno en 4 semanas se lee como mérito; los chips de tipo en «Nuevo reto» se cortan por la derecha; chips de barra de la calculadora de discos en dos filas; racha 27/26 entre Inicio y Logros (hito frente a racha actual); sin ver en pantalla: «Calorías y peso» con comidas, «+10 kcal», importar de Strong, rojo de TM/tempo y de peso imposible en el entreno.
+
+### serix-perf-a11y (9,7)
+- Lighthouse 99/100/100/100 (LCP 2,0 s), axe 0 en todo. Baja por objetivos táctiles < 44 px sin ampliar (ninguno viola AA 24 px): hoja «Editar rutina» (steppers y campos de 30×30, selects y nombre 309×30/25, subir/bajar 38×38, cabecera 309×40), `.challenge-head` 309×36, input «Objetivo» de «Nuevo reto» 110×43, 121 filas `.quick-main` 261×38 de «Añadir a cena». Un `aim` desconocido (p. ej. `'maintain'`) en datos importados tumba Comidas: falta saneado en `backup.ts`/`store.ts`. LCP 2,0 s por React DOM.
+
+## Hecho en la 0.1.61 (verificado en el navegador a 375 px) y lo que sigue abierto
+- Hecho: `mainExerciseOf` con `countsForVolume` (test que falla antes), récords de logros por ejercicio, `e1rm` con tope de 12 reps, `esc` sin caracteres de control, `weightAdvice` con `aim` desconocido, `loadBar` con unidad = MCD de los discos y discos ≤ 0 ignorados, `syncRestFromStorage` exportado y con test, zonas táctiles de 44 px (steppers con `::after`, `.field`, `.edit-head`, `.challenge-head`, `.quick-main`), chips de tipo de reto en varias líneas, chips de barra en la calculadora de discos con etiqueta «Barra», «Sin entreno reciente» en recuperación, quitado el aviso duplicado de Equilibrio, `Floor_`/`Natural_Glute_Ham_Raise` fuera de intermedios (salvo `Natural_` sin material).
+- Abierto: isquios bajos en casa sin material (3,5-6 series/semana), `Barbell_Deadlift` a principiantes (los programas de la biblioteca como el 5×5 lo piden), pecho 7,5 en perder grasa 4d/45, bíceps bajo sin barra, pierna escasa en principiante con mancuernas 3d/45; sin test: límite de `vite:preloadError`, `try` de `lockScreen.ts`; pestaña oculta que adopta un descanso no programa aviso; racha 27/26 (hito frente a racha actual).

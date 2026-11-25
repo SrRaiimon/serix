@@ -150,3 +150,10 @@ test('semana cumplida: weekDone y sin «semana más suave» para esta semana', (
   assert.equal(weekDone({ sessions: week(3), settings: { weeklyGoal: 3 } }, NOW), !today)
   assert.equal(weekDone({ sessions: week(2), settings: { weeklyGoal: 3 } }, NOW), false)
 })
+
+test('entrenador: el cardio y los saltos no son «donde añadir una serie» a un grupo (el volumen no cambia con ellos)', () => {
+  // Sentadilla 2 series y saltos con sentadilla 4: los saltos no cuentan para cuádriceps; la serie sugerida va a la sentadilla.
+  const routines = [routine('a', [ex('Barbell_Full_Squat', 'quads', 2), ex('Freehand_Jump_Squat', 'quads', 4)])]
+  const tips = coachTips({ routines, sessions: history(), settings: { ...settings, weeklyGoal: 1 }, catalog, now: NOW }, 20)
+  for (const tip of tips) assert.ok(!/Freehand_Jump_Squat/.test(JSON.stringify(tip)), JSON.stringify(tip).slice(0, 200))
+})

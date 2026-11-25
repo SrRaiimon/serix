@@ -17,6 +17,8 @@ export interface GroupRecovery {
   ready: number
   /** Horas que faltan para estar listo. */
   hoursLeft: number
+  /** Ningún músculo del grupo tiene entrenos recientes (no hay nada que recuperar). */
+  untrained?: boolean
 }
 
 export function useRecovery(sessions: Session[]): GroupRecovery[] {
@@ -35,13 +37,15 @@ export function useRecovery(sessions: Session[]): GroupRecovery[] {
         label: t(...label), muscles,
         ready: worst?.ready ?? 1,
         hoursLeft: worst ? Math.max(0, Math.ceil((1 - worst.ready) * worst.hoursNeeded)) : 0,
+        untrained: !worst,
       }
     })
   }, [sessions, catalog])
 }
 
 const status = (g: GroupRecovery) =>
-  g.ready >= 1 ? t('Listo', 'Ready')
+  g.untrained ? t('Sin entreno reciente', 'No recent training') // «Listo» sin haber entrenado se leía como un mérito
+    : g.ready >= 1 ? t('Listo', 'Ready')
     : g.ready >= RECOVERING ? t(`Casi listo · ~${g.hoursLeft} h`, `Almost ready · ~${g.hoursLeft} h`)
     : t(`Recuperándose · ~${g.hoursLeft} h`, `Recovering · ~${g.hoursLeft} h`)
 

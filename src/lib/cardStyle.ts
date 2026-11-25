@@ -16,7 +16,8 @@ export const SANS = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hel
 /** Archivo va incrustada en la imagen al convertirla a PNG (ver svgToPng); si no carga, la del sistema. */
 export const DISPLAY = `'Archivo', ${SANS}`
 
-export const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+// Sin caracteres de control (un \u0001 en un nombre dejaría el SVG como XML inválido y «Compartir» fallaría).
+export const esc = (s: string) => s.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 /** Fondo, cinta naranja colgando del borde superior, marca «SERIX» y un texto a la derecha (fecha o periodo). */
 export function cardChrome(w: number, h: number, right: string): string {

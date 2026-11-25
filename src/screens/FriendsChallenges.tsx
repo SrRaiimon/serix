@@ -234,7 +234,7 @@ export function NewChallengeSheet({ onClose }: { onClose: () => void }) {
       left={<button className="nav-btn" onClick={onClose}>{t('Cancelar', 'Cancel')}</button>}
       footer={<button className="btn primary block" disabled={!valid} onClick={() => void create()}><Share2 size={18} /> {t('Crear e invitar', 'Create and invite')}</button>}>
       {nameRow}
-      <div className="chip-row">
+      <div className="chip-row wrap">
         {METRIC_OPTIONS.map((o) => <Chip key={o.value} label={o.label()} active={metric === o.value} onClick={() => setMetric(o.value)} />)}
       </div>
       {metric === 'proteinDays' && !data.settings.nutrition && <span className="small muted">{t('Para este reto necesitas un objetivo de proteína (Comidas → Objetivo); cada uno cuenta con el suyo.', 'For this challenge you need a protein goal (Food → Goal); each person counts with their own.')}</span>}

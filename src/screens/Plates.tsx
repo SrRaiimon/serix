@@ -45,9 +45,10 @@ export function PlatesView({ weightKg, showTotal = true }: { weightKg: number; s
   return (
       <div className="plates">
         {showTotal && <div className="plates-total">{weight(weightKg, unit)}</div>}
-        <div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+          <span className="small muted">{t('Barra', 'Bar')}</span>
           {bars.map((b) => (
-            <Chip key={b} label={t(`Barra de ${editable(b)} ${u}`, `${editable(b)} ${u} bar`)} active={b === bar} onClick={() => updateSettings({ barKg: toKg(b, unit) })} />
+            <Chip key={b} label={`${editable(b)} ${u}`} active={b === bar} onClick={() => updateSettings({ barKg: toKg(b, unit) })} />
           ))}
         </div>
         <svg viewBox="0 0 320 120" className="plates-svg" role="img"

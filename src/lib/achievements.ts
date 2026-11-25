@@ -136,6 +136,8 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
     if (hour >= 22) unlock('night-owl', s)
 
     const bodyWeight = bodyWeightAt(measurements, s.start)
+    // El mejor 1RM de cada ejercicio en este entreno (con el ejercicio en dos bloques cuenta una vez, como los récords del resumen).
+    const sessionTop = new Map<string, number>()
     for (const e of s.exercises) {
       const sets = loadSets(e)
       if (!sets.length) continue
@@ -151,10 +153,12 @@ export function achievements(sessions: Session[], measurements: Measurement[], u
       // Récord: mejora del mejor 1RM estimado del ejercicio (la primera vez no cuenta).
       // Como los récords del resumen (newRecords): sin carga no hay marca, y el primer entreno con peso no es récord.
       const top = Math.max(...sets.map((x) => e1rm(x.weight, x.reps)))
-      if (!top) continue
-      const prev = best.get(e.exerciseId)
+      if (top) sessionTop.set(e.exerciseId, Math.max(top, sessionTop.get(e.exerciseId) ?? 0))
+    }
+    for (const [id, top] of sessionTop) {
+      const prev = best.get(id)
       if (prev !== undefined && top > prev + 0.01) recordCount++
-      if (prev === undefined || top > prev) best.set(e.exerciseId, top)
+      if (prev === undefined || top > prev) best.set(id, top)
     }
     for (const target of [10, 100, 1000]) if (volume >= target * 1000) unlock(`volume-${target}`, s)
     for (const target of [10, 50]) if (recordCount >= target) unlock(`records-${target}`, s)

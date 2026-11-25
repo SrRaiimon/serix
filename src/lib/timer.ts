@@ -312,7 +312,8 @@ document.addEventListener('visibilitychange', () => {
 
 // Con la app abierta en dos pestañas, el descanso va igual en las dos: parar o cambiar el tiempo en una lo refleja la otra (el evento
 // «storage» solo llega a la otra pestaña, así que no hay bucle). Sin esto, la que se recargaba restauraba un descanso ya parado.
-if (typeof addEventListener === 'function') addEventListener('storage', (e) => {
+/** Lo que se hace al llegar el evento «storage» de otra pestaña (exportado para probarlo). */
+export function syncRestFromStorage(e: { key: string | null; newValue: string | null }) {
   if (e.key !== SAVED) return
   if (!e.newValue) {
     if (state.endAt) { clearTimeout(finishTimeout); clearTimeout(voiceTimeout); cancelBeep(); state = { total: 0 }; listeners.forEach((l) => l()) }
@@ -329,7 +330,8 @@ if (typeof addEventListener === 'function') addEventListener('storage', (e) => {
     // Solo suena la pestaña que se ve: dos pitidos a la vez no.
     if (document.visibilityState === 'visible') schedule()
   } catch { /* dato roto: se ignora */ }
-})
+}
+if (typeof addEventListener === 'function') addEventListener('storage', syncRestFromStorage)
 
 // Descanso que seguía en marcha al cerrar o recargar la app.
 try {

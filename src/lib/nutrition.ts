@@ -436,6 +436,8 @@ export function weightAdvice(weights: { date: number; weight?: number }[], goals
   if (!goals.aim || goals.proteinOnly) return undefined
   // Solo pesos posteriores al último ajuste (o aviso descartado): con los de antes, el cambio de calorías aún no se notaba.
   const from = Math.max(now - 21 * 86400000, since)
+  // Un objetivo desconocido (datos de otra versión o a mano) no debe tumbar Comidas: sin consejo.
+  if (!WEIGHT_RATE[goals.aim]) return undefined
   const [min, max] = WEIGHT_RATE[goals.aim]
   const current = weeklyRate(weights, from, now)
   if (!current) return undefined
